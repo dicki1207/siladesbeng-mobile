@@ -1,7 +1,6 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/camera_recording_page.dart';
+import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
 
 class VerificationPage extends StatefulWidget {
   const VerificationPage({super.key});
@@ -19,83 +18,25 @@ class _VerificationPageState extends State<VerificationPage> {
   String? _selectedKecamatanId;
   String? _selectedDesa;
 
-  List<Map<String, String>> _kecamatanList = [];
-  List<Map<String, String>> _desaList = [];
+  List<dynamic> _kecamatans = [];
+  List<dynamic> _desas = [];
 
-  bool _isLoadingKecamatan = false;
-  bool _isLoadingDesa = false;
+  bool _isLoadingRegions = true;
+  final KemitraanService _kemitraanService = KemitraanService();
 
   @override
   void initState() {
     super.initState();
-    _fetchKecamatan();
+    _fetchRegions();
   }
 
-  String _capitalize(String text) {
-    if (text.isEmpty) return text;
-    return text
-        .split(' ')
-        .map((word) {
-          if (word.isEmpty) return word;
-          return word[0].toUpperCase() + word.substring(1).toLowerCase();
-        })
-        .join(' ');
-  }
-
-  Future<void> _fetchKecamatan() async {
-    setState(() => _isLoadingKecamatan = true);
-    try {
-      // 1408 adalah ID Kabupaten Bengkalis
-      final response = await http.get(
-        Uri.parse(
-          'https://emsifa.github.io/api-wilayah-indonesia/api/districts/1408.json',
-        ),
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          _kecamatanList = data
-              .map(
-                (item) => {
-                  'id': item['id'].toString(),
-                  'name': 'Kecamatan ${_capitalize(item['name'].toString())}',
-                },
-              )
-              .toList();
-        });
-      }
-    } catch (e) {
-      debugPrint('Error fetching kecamatan: $e');
-    } finally {
-      setState(() => _isLoadingKecamatan = false);
-    }
-  }
-
-  Future<void> _fetchDesa(String kecamatanId) async {
-    setState(() => _isLoadingDesa = true);
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://emsifa.github.io/api-wilayah-indonesia/api/villages/$kecamatanId.json',
-        ),
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          _desaList = data
-              .map(
-                (item) => {
-                  'id': item['id'].toString(),
-                  'name': _capitalize(item['name'].toString()),
-                },
-              )
-              .toList();
-        });
-      }
-    } catch (e) {
-      debugPrint('Error fetching desa: $e');
-    } finally {
-      setState(() => _isLoadingDesa = false);
+  Future<void> _fetchRegions() async {
+    final regions = await _kemitraanService.getRegions();
+    if (mounted) {
+      setState(() {
+        _kecamatans = regions;
+        _isLoadingRegions = false;
+      });
     }
   }
 
@@ -116,7 +57,14 @@ class _VerificationPageState extends State<VerificationPage> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const CameraRecordingPage()),
+      MaterialPageRoute(builder: (_) => CameraRecordingPage(
+        nik: _nikController.text,
+        name: _nameController.text,
+        address: _addressController.text,
+        rtRw: _rtRwController.text,
+        kecamatan: _selectedKecamatan,
+        desa: _selectedDesa,
+      )),
     ).then((isVerified) {
       if (!mounted) return;
       if (isVerified == true) {
@@ -134,222 +82,192 @@ class _VerificationPageState extends State<VerificationPage> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Banner/Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.withAlpha(20),
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.blue.withAlpha(50)),
-              ),
-              child: Row(
+      body: _isLoadingRegions 
+          ? const Center(child: CircularProgressIndicator()) 
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(
-                    Icons.security,
-                    color: Colors.blueAccent,
-                    size: 40,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  // Banner/Header
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withAlpha(20),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.blue.withAlpha(50)),
+                    ),
+                    child: Row(
                       children: [
-                        const Text(
-                          'Keamanan Terjamin',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                        const Icon(
+                          Icons.security,
+                          color: Colors.blueAccent,
+                          size: 40,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Data Anda dienkripsi dan hanya digunakan untuk keperluan verifikasi BUMDes.',
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 12,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Data Pribadi Anda Aman',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Data Anda dienkripsi dan hanya digunakan untuk keperluan verifikasi BUMDes.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withAlpha(180),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
 
-            const Text(
-              'Lengkapi Data Diri & Alamat',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
+                  const SizedBox(height: 30),
 
-            _buildTextField(
-              controller: _nameController,
-              labelText: 'Nama Lengkap (Sesuai KTP)',
-              icon: Icons.person_outline,
-            ),
-
-            _buildTextField(
-              controller: _nikController,
-              labelText: 'NIK KTP (16 Digit)',
-              icon: Icons.badge_outlined,
-              keyboardType: TextInputType.number,
-            ),
-
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(5),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                  _buildTextField(
+                    controller: _nameController,
+                    labelText: 'Nama Lengkap (Sesuai KTP)',
+                    icon: Icons.person_outline,
                   ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Row(
-                children: [
-                  const Icon(Icons.map_outlined, color: Colors.grey),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonHideUnderline(
-                      child: _isLoadingKecamatan
-                          ? const Align(
-                              alignment: Alignment.centerLeft,
-                              child: SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            )
-                          : DropdownButton<String>(
-                              value: _selectedKecamatan,
+
+                  _buildTextField(
+                    controller: _nikController,
+                    labelText: 'NIK KTP (16 Digit)',
+                    icon: Icons.badge_outlined,
+                    keyboardType: TextInputType.number,
+                  ),
+
+                  // Kecamatan Dropdown
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(5),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.map_outlined, color: Colors.grey),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedKecamatanId,
                               isExpanded: true,
                               hint: const Text('Pilih Kecamatan'),
-                              items: _kecamatanList
-                                  .map(
-                                    (k) => DropdownMenuItem(
-                                      value: k['name'],
-                                      child: Text(k['name']!),
-                                    ),
-                                  )
-                                  .toList(),
+                              items: _kecamatans.map((kec) {
+                                return DropdownMenuItem<String>(
+                                  value: kec['id'].toString(),
+                                  child: Text(kec['name']),
+                                );
+                              }).toList(),
                               onChanged: (val) {
-                                if (val == null) return;
                                 setState(() {
-                                  _selectedKecamatan = val;
-                                  _selectedKecamatanId = _kecamatanList
-                                      .firstWhere(
-                                        (k) => k['name'] == val,
-                                      )['id'];
+                                  _selectedKecamatanId = val;
+                                  final selectedKec = _kecamatans.firstWhere((k) => k['id'].toString() == val);
+                                  _selectedKecamatan = selectedKec['name'];
                                   _selectedDesa = null;
-                                  _desaList = [];
+                                  _desas = selectedKec['children'] ?? [];
                                 });
-                                _fetchDesa(_selectedKecamatanId!);
                               },
                             ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
 
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(5),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-              child: Row(
-                children: [
-                  const Icon(Icons.location_city_outlined, color: Colors.grey),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonHideUnderline(
-                      child: _isLoadingDesa
-                          ? const Align(
-                              alignment: Alignment.centerLeft,
-                              child: SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            )
-                          : DropdownButton<String>(
+                  // Desa Dropdown
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(5),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_city_outlined, color: Colors.grey),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
                               value: _selectedDesa,
                               isExpanded: true,
                               hint: const Text('Pilih Desa / Kelurahan'),
-                              items: _desaList
-                                  .map(
-                                    (d) => DropdownMenuItem(
-                                      value: d['name'],
-                                      child: Text(d['name']!),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: _selectedKecamatan == null
-                                  ? null
-                                  : (val) =>
-                                        setState(() => _selectedDesa = val),
+                              items: _desas.map((desa) {
+                                return DropdownMenuItem<String>(
+                                  value: desa['name'].toString(),
+                                  child: Text(desa['name']),
+                                );
+                              }).toList(),
+                              onChanged: _desas.isEmpty ? null : (val) {
+                                setState(() {
+                                  _selectedDesa = val;
+                                });
+                              },
                             ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  _buildTextField(
+                    controller: _rtRwController,
+                    labelText: 'RT / RW (Contoh: 001/002)',
+                    icon: Icons.map_outlined,
+                  ),
+
+                  _buildTextField(
+                    controller: _addressController,
+                    labelText: 'Alamat Lengkap (Jalan, No. Rumah)',
+                    icon: Icons.home_outlined,
+                  ),
+
+                  const SizedBox(height: 30),
+                  ElevatedButton.icon(
+                    onPressed: _proceedToCamera,
+                    icon: const Icon(Icons.camera_alt_outlined),
+                    label: const Text(
+                      'Lanjut Rekam Wajah & KTP',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
                     ),
                   ),
                 ],
               ),
             ),
-
-            _buildTextField(
-              controller: _rtRwController,
-              labelText: 'RT / RW (Contoh: 001/002)',
-              icon: Icons.map_outlined,
-            ),
-
-            _buildTextField(
-              controller: _addressController,
-              labelText: 'Alamat Lengkap (Jalan, No. Rumah)',
-              icon: Icons.home_outlined,
-            ),
-
-            const SizedBox(height: 30),
-            ElevatedButton.icon(
-              onPressed: _proceedToCamera,
-              icon: const Icon(Icons.camera_alt_outlined),
-              label: const Text(
-                'Lanjut Rekam Wajah & KTP',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

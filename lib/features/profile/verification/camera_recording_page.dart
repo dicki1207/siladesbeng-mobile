@@ -7,9 +7,25 @@ import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:siladesbeng_mobile/services/kyc_service.dart';
 
 class CameraRecordingPage extends StatefulWidget {
-  const CameraRecordingPage({super.key});
+  final String? nik;
+  final String? name;
+  final String? address;
+  final String? rtRw;
+  final String? kecamatan;
+  final String? desa;
+
+  const CameraRecordingPage({
+    super.key,
+    this.nik,
+    this.name,
+    this.address,
+    this.rtRw,
+    this.kecamatan,
+    this.desa,
+  });
 
   @override
   State<CameraRecordingPage> createState() => _CameraRecordingPageState();
@@ -127,13 +143,17 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
     });
   }
 
+  bool _isUploadingKtp = false;
+  int? _kycId;
+  final KycService _kycService = KycService();
+
   Future<void> _takePhotoKTP() async {
     if (!mounted) return;
     try {
       if (_cameraController != null && _cameraController!.value.isInitialized) {
         final XFile file = await _cameraController!.takePicture();
         debugPrint('KTP Picture saved from camera to ${file.path}');
-        _proceedToLiveness();
+        _proceedToLiveness(file.path);
       }
     } catch (e) {
       debugPrint('Error taking picture: $e');
@@ -145,16 +165,46 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       debugPrint('KTP Picture selected from gallery: ${image.path}');
-      _proceedToLiveness();
+      _proceedToLiveness(image.path);
     }
   }
 
-  Future<void> _proceedToLiveness() async {
+  Future<void> _proceedToLiveness(String imagePath) async {
     setState(() {
-      _currentStep = 2;
-      _isCameraInitialized = false;
+      _isUploadingKtp = true;
     });
-    await _initializeCamera(useFrontCamera: true);
+
+    final response = await _kycService.processKtp(
+      imagePath: imagePath,
+      nik: widget.nik,
+      name: widget.name,
+      address: widget.address,
+      rtRw: widget.rtRw,
+      kecamatan: widget.kecamatan,
+      desa: widget.desa,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isUploadingKtp = false;
+    });
+
+    if (response['status'] == 'success') {
+      _kycId = response['kyc_id'];
+      setState(() {
+        _currentStep = 2;
+        _isCameraInitialized = false;
+      });
+      await _initializeCamera(useFrontCamera: true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Gagal memproses KTP'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   Future<void> _startLivenessDetection() async {
@@ -411,10 +461,42 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
     }
   }
 
+  bool _isUploadingFace = false;
+
   Future<void> _finishVerification() async {
     setState(() {
       _isRecording = false;
+      _isUploadingFace = true;
     });
+
+    if (_kycId != null) {
+      // Data dummy/simulasi frame wajah karena proses ML kit berjalan di lokal HP
+      final response = await _kycService.submitFace(
+        kycId: _kycId!,
+        faceData: [
+          {'timestamp': DateTime.now().toIso8601String(), 'status': 'liveness_passed'}
+        ],
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _isUploadingFace = false;
+      });
+
+      if (response['status'] != 'success') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Gagal memproses verifikasi wajah'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+    } else {
+      setState(() {
+        _isUploadingFace = false;
+      });
+    }
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_verified', true);
@@ -782,6 +864,24 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
           if (_currentStep == 2 && _isRecording) _buildLivenessProgress(),
 
           if (_currentStep == 0) Container(color: Colors.black87),
+
+          if (_isUploadingKtp || _isUploadingFace)
+            Container(
+              color: Colors.black87,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(color: Colors.white),
+                    const SizedBox(height: 16),
+                    Text(
+                      _isUploadingFace ? 'Mengirim Data Verifikasi...' : 'Sedang Mengupload KTP...',
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
           SafeArea(
             child: Column(
