@@ -44,45 +44,12 @@ class _RegisterPageState extends State<RegisterPage> {
       if (!mounted) return;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final prefs = await SharedPreferences.getInstance();
-        if (data['data'] != null && data['data']['token'] != null) {
-          await prefs.setString('auth_token', data['data']['token']);
-
-          final user = data['data']['user'];
-          if (user != null) {
-            await prefs.setString('profile_name', user['name'] ?? '');
-            await prefs.setString('profile_email', user['email'] ?? '');
-            if (data['data']['avatar_url'] != null) {
-              await prefs.setString(
-                'profile_image_url',
-                data['data']['avatar_url'],
-              );
-            }
-          }
-        }
-
-        if (!mounted) return;
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const AnimatedSuccessDialog(
-            message: 'Berhasil Daftar!',
-            isLogout: false,
-          ),
-        );
-
-        await Future.delayed(const Duration(seconds: 2));
-        if (!mounted) return;
-        Navigator.pop(context); // Close dialog
-        Navigator.pop(
-          context,
-          true,
-        ); // Close register page and indicate success to login page
+        // Tampilkan modal OTP jika register tahap 1 sukses
+        _showOtpDialog(_emailController.text);
       } else {
         String errorMsg = data['message'] ?? 'Gagal';
         if (data['errors'] != null) {
-          errorMsg = (data['errors'] as Map<String, dynamic>).values.first[0]
-              .toString();
+          errorMsg = (data['errors'] as Map<String, dynamic>).values.first[0].toString();
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -102,6 +69,139 @@ class _RegisterPageState extends State<RegisterPage> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showOtpDialog(String email) {
+    final otpController = TextEditingController();
+    bool isVerifying = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (stContext, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text('Verifikasi OTP', textAlign: TextAlign.center),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Masukkan kode 4 digit yang dikirim ke email:\n$email',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.blueGrey),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: otpController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 4,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.bold),
+                    decoration: InputDecoration(
+                      hintText: '0000',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isVerifying ? null : () => Navigator.pop(dialogContext),
+                  child: const Text('Batal', style: TextStyle(color: Colors.red)),
+                ),
+                ElevatedButton(
+                  onPressed: isVerifying
+                      ? null
+                      : () async {
+                          if (otpController.text.length != 4) return;
+                          
+                          setDialogState(() => isVerifying = true);
+                          
+                          try {
+                            final res = await http.post(
+                              Uri.parse('http://10.193.206.148:8000/api/register/verify-otp'),
+                              body: {
+                                'email': email,
+                                'otp_code': otpController.text,
+                              },
+                            );
+                            
+                            final data = json.decode(res.body);
+                            
+                            if (res.statusCode == 200 || res.statusCode == 201) {
+                              // OTP Benar, simpan token
+                              final prefs = await SharedPreferences.getInstance();
+                              if (data['data'] != null && data['data']['token'] != null) {
+                                await prefs.setString('auth_token', data['data']['token']);
+
+                                final user = data['data']['user'];
+                                if (user != null) {
+                                  await prefs.setString('profile_name', user['name'] ?? '');
+                                  await prefs.setString('profile_email', user['email'] ?? '');
+                                }
+                              }
+
+                              if (!dialogContext.mounted) return;
+                              Navigator.pop(dialogContext); // Tutup dialog OTP
+                              
+                              if (!context.mounted) return;
+                              // ignore: use_build_context_synchronously
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (successContext) => const AnimatedSuccessDialog(
+                                  message: 'Berhasil Daftar!',
+                                  isLogout: false,
+                                ),
+                              );
+
+                              await Future.delayed(const Duration(seconds: 2));
+                              if (!context.mounted) return;
+                              // ignore: use_build_context_synchronously
+                              Navigator.pop(context); // Tutup dialog success
+                              // ignore: use_build_context_synchronously
+                              Navigator.pop(context, true); // Kembali ke login
+                            } else {
+                              setDialogState(() => isVerifying = false);
+                              if (!dialogContext.mounted) return;
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                SnackBar(
+                                  content: Text(data['message'] ?? 'OTP Salah'),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isVerifying = false);
+                            if (!dialogContext.mounted) return;
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              const SnackBar(
+                                content: Text('Terjadi kesalahan jaringan'),
+                                backgroundColor: Colors.redAccent,
+                              ),
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: isVerifying
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text('Verifikasi', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
   }
 
   Widget _buildTextField({

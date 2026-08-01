@@ -112,6 +112,55 @@ class RentalService {
     }
   }
 
+  /// Booking paket alat sewa
+  Future<Map<String, dynamic>> bookPackage({
+    required String packageName,
+    required String itemsDescription,
+    required double totalAmount,
+    required int durationDays,
+    required String startDate,
+    required String endDate,
+    required String recipientName,
+    String? paymentMethod,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final body = json.encode({
+        'package_name': packageName,
+        'items_description': itemsDescription,
+        'total_amount': totalAmount,
+        'duration_days': durationDays,
+        'start_date': startDate,
+        'end_date': endDate,
+        'recipient_name': recipientName,
+        'payment_method': paymentMethod ?? 'tunai',
+      });
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/rental/booking-package'),
+        headers: headers,
+        body: body,
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'status': 'success',
+          'message': responseData['message'] ?? 'Booking paket berhasil.',
+          'data': responseData['data'],
+        };
+      } else {
+        return {
+          'status': 'error',
+          'message': responseData['message'] ?? 'Gagal membuat booking paket.',
+        };
+      }
+    } catch (e) {
+      return {'status': 'error', 'message': 'Terjadi kesalahan: $e'};
+    }
+  }
+
   /// Riwayat booking alat sewa
   Future<List<dynamic>> getMyRentalBookings() async {
     try {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:siladesbeng_mobile/services/news_service.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
 import 'package:siladesbeng_mobile/widgets/premium_header.dart';
@@ -25,6 +24,7 @@ class _NewsPageState extends State<NewsPage> {
 
   List<Map<String, dynamic>> _mockNews = [];
   bool _isLoading = true;
+  final NewsService _newsService = NewsService();
 
   @override
   void initState() {
@@ -33,44 +33,36 @@ class _NewsPageState extends State<NewsPage> {
   }
 
   Future<void> _fetchNews() async {
-    try {
-      final res = await http.get(Uri.parse('http://10.193.206.148:8000/api/announcements'));
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        if (data['data'] != null) {
-          final List fetchedData = data['data'];
-          if (!mounted) return;
-          setState(() {
-            _mockNews = fetchedData.map((e) => {
-              'title': e['title'] ?? 'Tanpa Judul',
-              'category': e['category'] ?? 'Pengumuman',
-              'date': e['date'] ?? e['created_at'] != null ? e['created_at'].toString().substring(0, 10) : 'Tanpa Tanggal',
-              'desc': e['content'] ?? 'Tanpa Deskripsi',
-              'image': e['image'] ?? 'https://picsum.photos/seed/picsum/400/300',
-            }).toList();
-            _isLoading = false;
-          });
-          return;
-        }
-      }
-    } catch (e) {
-      debugPrint('Error fetching news: $e');
-    }
-    
-    // Fallback if failed
-    if (!mounted) return;
     setState(() {
-      _mockNews = [
-        {
-          'title': 'Gagal memuat pengumuman',
-          'category': 'Pengumuman',
-          'date': '-',
-          'desc': 'Terjadi kesalahan saat mengambil data dari server.',
-          'image': 'https://picsum.photos/seed/error/400/300',
-        }
-      ];
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    final data = await _newsService.getNews(
+      type: _selectedCategory,
+      search: _searchController.text,
+    );
+    
+    if (!mounted) return;
+    
+    if (data.isNotEmpty) {
+      setState(() {
+        _mockNews = List<Map<String, dynamic>>.from(data);
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _mockNews = [
+          {
+            'title': 'Tidak ada pengumuman',
+            'category': 'Pengumuman',
+            'date': '-',
+            'desc': 'Belum ada berita atau pengumuman yang sesuai.',
+            'image': 'https://picsum.photos/seed/error/400/300',
+          }
+        ];
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -81,14 +73,7 @@ class _NewsPageState extends State<NewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredNews = _mockNews.where((item) {
-      bool catMatch =
-          _selectedCategory == 'Semua' || item['category'] == _selectedCategory;
-      bool searchMatch = item['title'].toLowerCase().contains(
-        _searchController.text.toLowerCase(),
-      );
-      return catMatch && searchMatch;
-    }).toList();
+    List<Map<String, dynamic>> filteredNews = _mockNews; // Filtering is handled by the backend API now.
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,

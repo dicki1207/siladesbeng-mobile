@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_ticket_page.dart';
+import 'package:siladesbeng_mobile/services/rental_service.dart';
 
 class RentalBookingPage extends StatefulWidget {
   final dynamic item;
@@ -23,6 +24,8 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
   String _driverOption = 'sendiri';
   String _eventCategory = 'sosial';
   bool _needsAdditionalFacilities = false;
+  bool _isSubmitting = false;
+  final RentalService _rentalService = RentalService();
 
   @override
   void initState() {
@@ -191,7 +194,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     );
   }
 
-  void _submitBooking() {
+  Future<void> _submitBooking() async {
     if (_nameController.text.isEmpty ||
         _addressController.text.isEmpty ||
         _waController.text.isEmpty) {
@@ -224,12 +227,14 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
       return;
     }
 
-    // Langsung navigasi ke halaman E-Tiket setelah pemesanan diklik (simulasi instan)
+    setState(() => _isSubmitting = true);
+
     final int pricePerDay =
         int.tryParse(widget.item['price']?.toString() ?? '0') ?? 0;
     final String itemType =
         widget.item['type']?.toString().toLowerCase() ?? 'alat';
     final String cat = widget.category?.toLowerCase() ?? '';
+    final int itemId = widget.item['id'] ?? 1;
 
     int total = pricePerDay * _durationDays;
     if ((itemType == 'fasilitas' || cat.contains('fasilitas')) &&
@@ -237,35 +242,90 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
       total = 0;
     }
 
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => RentalTicketPage(
-          itemName: widget.item['name'] ?? 'Penyewaan Gedung',
-          renterName: _nameController.text,
-          eventType: _eventCategory == 'sosial'
-              ? 'Sosial (Gratis)'
-              : 'Pribadi (Berbayar)',
-          needsLogistics: _needsAdditionalFacilities,
-          totalPrice: total,
-          durationDays: _durationDays,
+    String paymentMethod = 'tunai';
+    if (_paymentCategory == 'bank') paymentMethod = _selectedBank ?? 'bank_transfer_bca';
+    if (_paymentCategory == 'ewallet') paymentMethod = _selectedEWallet ?? 'qris';
+
+    final now = DateTime.now();
+    final startDateStr = now.toIso8601String().substring(0, 10);
+    final endDateStr = now.add(Duration(days: _durationDays)).toIso8601String().substring(0, 10);
+
+    Map<String, dynamic> result;
+
+    if (itemType == 'mobil' || cat.contains('mobil')) {
+      result = await _rentalService.bookMobil(
+        mobilId: itemId,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        recipientName: _nameController.text,
+        deliveryAddress: _addressController.text,
+        paymentMethod: paymentMethod,
+        denganSupir: _driverOption == 'supir',
+        rentalPurpose: _notesController.text,
+      );
+    } else if (itemType == 'fasilitas' || cat.contains('fasilitas')) {
+      result = await _rentalService.bookFasilitas(
+        fasilitasId: itemId,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        jenisAcara: _eventCategory,
+        butuhGudang: _needsAdditionalFacilities,
+        rentalPurpose: _notesController.text,
+      );
+    } else {
+      result = await _rentalService.bookRentalItem(
+        barangId: itemId,
+        quantity: 1, // Default 1 for now
+        startDate: startDateStr,
+        endDate: endDateStr,
+        recipientName: _nameController.text,
+        deliveryAddress: _addressController.text,
+        paymentMethod: paymentMethod,
+        rentalPurpose: _notesController.text,
+      );
+    }
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (result['status'] == 'success') {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500),
+          pageBuilder: (context, animation, secondaryAnimation) => RentalTicketPage(
+            itemName: widget.item['name'] ?? 'Penyewaan',
+            renterName: _nameController.text,
+            eventType: _eventCategory == 'sosial'
+                ? 'Sosial (Gratis)'
+                : 'Pribadi (Berbayar)',
+            needsLogistics: _needsAdditionalFacilities,
+            totalPrice: total,
+            durationDays: _durationDays,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
+            return FadeTransition(
+              opacity: curve,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.05),
+                  end: Offset.zero,
+                ).animate(curve),
+                child: child,
+              ),
+            );
+          },
         ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
-          return FadeTransition(
-            opacity: curve,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.0, 0.05),
-                end: Offset.zero,
-              ).animate(curve),
-              child: child,
-            ),
-          );
-        },
-      ),
-    );
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Gagal membuat pesanan'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -926,23 +986,30 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                 ],
               ),
               ElevatedButton(
-                onPressed: _submitBooking,
+                onPressed: _isSubmitting ? null : _submitBooking,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 14,
-                  ),
+                  backgroundColor: _isSubmitting ? Colors.grey : const Color(0xFF1E88E5),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  elevation: 0,
+                  elevation: _isSubmitting ? 0 : 8,
+                  shadowColor: const Color(0xFF1E88E5).withAlpha(100),
                 ),
-                child: const Text(
-                  'Ajukan Sewa',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text(
+                        'Pesan Sekarang',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ],
           ),

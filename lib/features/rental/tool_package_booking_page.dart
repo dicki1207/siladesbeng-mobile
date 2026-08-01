@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_ticket_page.dart';
+import 'package:siladesbeng_mobile/services/rental_service.dart';
 
 class ToolPackageBookingPage extends StatefulWidget {
   const ToolPackageBookingPage({super.key});
@@ -14,6 +15,8 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
   late TabController _tabController;
   int _durationDays = 1;
   String _renterName = 'Warga Desa';
+  bool _isSubmitting = false;
+  final RentalService _rentalService = RentalService();
 
   // State for Tab 1: Paket Admin Desa
   int? _selectedPackageIndex;
@@ -377,7 +380,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     }
   }
 
-  void _handleBooking() {
+  Future<void> _handleBooking() async {
     final int total = _getTotalPrice();
     if (total <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -389,34 +392,71 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       return;
     }
 
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => RentalTicketPage(
-          itemName: _getSummaryTitle(),
-          renterName: _renterName,
-          eventType:
-              'Sewa Alat (${_tabController.index == 0 ? "Paket Admin" : "Paket Sendiri"})',
-          needsLogistics: false, // alat rental itself
-          totalPrice: total,
-          durationDays: _durationDays,
-        ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
-          return FadeTransition(
-            opacity: curve,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.0, 0.05),
-                end: Offset.zero,
-              ).animate(curve),
-              child: child,
-            ),
-          );
-        },
-      ),
+    setState(() => _isSubmitting = true);
+
+    final String packageName = _tabController.index == 0
+        ? _getSummaryTitle()
+        : 'Paket Custom Bebas';
+    
+    final String itemsDesc = _tabController.index == 0 && _selectedPackageIndex != null
+        ? _adminPackages[_selectedPackageIndex!]['items']
+        : _getSummaryTitle();
+
+    final now = DateTime.now();
+    final startDateStr = now.toIso8601String().substring(0, 10);
+    final endDateStr = now.add(Duration(days: _durationDays)).toIso8601String().substring(0, 10);
+
+    final result = await _rentalService.bookPackage(
+      packageName: packageName,
+      itemsDescription: itemsDesc,
+      totalAmount: total.toDouble(),
+      durationDays: _durationDays,
+      startDate: startDateStr,
+      endDate: endDateStr,
+      recipientName: _renterName,
+      paymentMethod: 'tunai', // Default bayar saat ambil untuk paket
     );
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (result['status'] == 'success') {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          transitionDuration: const Duration(milliseconds: 500),
+          pageBuilder: (context, animation, secondaryAnimation) => RentalTicketPage(
+            itemName: _getSummaryTitle(),
+            renterName: _renterName,
+            eventType:
+                'Sewa Alat (${_tabController.index == 0 ? "Paket Admin" : "Paket Sendiri"})',
+            needsLogistics: false, // alat rental itself
+            totalPrice: total,
+            durationDays: _durationDays,
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
+            return FadeTransition(
+              opacity: curve,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.05),
+                  end: Offset.zero,
+                ).animate(curve),
+                child: child,
+              ),
+            );
+          },
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Gagal membuat pesanan paket'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -1082,24 +1122,31 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                   ),
                 ],
               ),
-              ElevatedButton.icon(
-                onPressed: _handleBooking,
-                icon: const Icon(Icons.confirmation_num),
-                label: const Text(
-                  'Sewa & Cetak Tiket',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+              ElevatedButton(
+                onPressed: _isSubmitting ? null : _handleBooking,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? Colors.blue[600] : Colors.blue[800],
+                  backgroundColor: _isSubmitting ? Colors.grey : (isDark ? Colors.blue[600] : Colors.blue[800]),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
+                    horizontal: 32,
                     vertical: 14,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(24),
                   ),
+                  elevation: _isSubmitting ? 0 : 8,
+                  shadowColor: Colors.blue.withAlpha(100),
                 ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text(
+                        'Pesan Paket',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
               ),
             ],
           ),
