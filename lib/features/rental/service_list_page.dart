@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 import 'package:intl/intl.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
 import 'tool_package_booking_page.dart';
+import 'package:siladesbeng_mobile/services/rental_service.dart';
 
 class ServiceListPage extends StatefulWidget {
   const ServiceListPage({super.key});
@@ -17,6 +16,7 @@ class ServiceListPage extends StatefulWidget {
 class _ServiceListPageState extends State<ServiceListPage> {
   List<dynamic> _rentals = [];
   bool _isLoading = true;
+  final RentalService _rentalService = RentalService();
 
   @override
   void initState() {
@@ -54,34 +54,12 @@ class _ServiceListPageState extends State<ServiceListPage> {
   }
 
   Future<void> _fetchRentals() async {
-    try {
-      final res = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/services'),
-      );
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body)['data'] as List;
-        final rentalData = data
-            .where((item) => item['type'] == 'rental')
-            .toList();
-        if (!mounted) return;
-        setState(() {
-          _rentals = rentalData.isNotEmpty ? rentalData : _getMockTools();
-          _isLoading = false;
-        });
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _rentals = _getMockTools();
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _rentals = _getMockTools();
-        _isLoading = false;
-      });
-    }
+    final data = await _rentalService.getRentalItems();
+    if (!mounted) return;
+    setState(() {
+      _rentals = data.isNotEmpty ? data : _getMockTools();
+      _isLoading = false;
+    });
   }
 
   @override

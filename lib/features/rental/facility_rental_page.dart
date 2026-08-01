@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
+import 'package:siladesbeng_mobile/services/rental_service.dart';
 
 class FacilityRentalPage extends StatefulWidget {
   final int initialTabIndex;
@@ -19,6 +18,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
   List<dynamic> _vehicles = [];
   List<dynamic> _buildings = [];
   bool _isLoading = true;
+  final RentalService _rentalService = RentalService();
 
   @override
   void initState() {
@@ -121,77 +121,19 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
 
   Future<void> _fetchFacilities() async {
     setState(() => _isLoading = true);
-    try {
-      final res = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/services'),
-      ).timeout(const Duration(milliseconds: 2000));
-      if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-        final data = json.decode(res.body)['data'] as List;
-        final facilityData = data
-            .where((item) => item['type'] == 'fasilitas')
-            .toList();
+    final data = await _rentalService.getFasilitasItems();
+    if (!mounted) return;
 
-        // Pisahkan data API ke kendaraan vs bangunan jika ada, jika kosong panggil mock modern
-        if (facilityData.isNotEmpty) {
-          final vehicles = facilityData
-              .where(
-                (i) =>
-                    (i['name'] ?? '').toString().toLowerCase().contains(
-                      'mobil',
-                    ) ||
-                    (i['name'] ?? '').toString().toLowerCase().contains(
-                      'ambulan',
-                    ) ||
-                    (i['name'] ?? '').toString().toLowerCase().contains(
-                      'bus',
-                    ) ||
-                    (i['name'] ?? '').toString().toLowerCase().contains(
-                      'kendaraan',
-                    ),
-              )
-              .toList();
-          final buildings = facilityData
-              .where(
-                (i) =>
-                    !((i['name'] ?? '').toString().toLowerCase().contains(
-                          'mobil',
-                        ) ||
-                        (i['name'] ?? '').toString().toLowerCase().contains(
-                          'ambulan',
-                        ) ||
-                        (i['name'] ?? '').toString().toLowerCase().contains(
-                          'bus',
-                        ) ||
-                        (i['name'] ?? '').toString().toLowerCase().contains(
-                          'kendaraan',
-                        )),
-              )
-              .toList();
+    if (data.isNotEmpty) {
+      final vehicles = data.where((i) => i['is_vehicle'] == true).toList();
+      final buildings = data.where((i) => i['is_vehicle'] != true).toList();
 
-          if (!mounted) return;
-          setState(() {
-            _vehicles = vehicles.isNotEmpty ? vehicles : _getMockVehicles();
-            _buildings = buildings.isNotEmpty ? buildings : _getMockBuildings();
-            _isLoading = false;
-          });
-        } else {
-          if (!mounted) return;
-          setState(() {
-            _vehicles = _getMockVehicles();
-            _buildings = _getMockBuildings();
-            _isLoading = false;
-          });
-        }
-      } else {
-        if (!mounted) return;
-        setState(() {
-          _vehicles = _getMockVehicles();
-          _buildings = _getMockBuildings();
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
+      setState(() {
+        _vehicles = vehicles.isNotEmpty ? vehicles : _getMockVehicles();
+        _buildings = buildings.isNotEmpty ? buildings : _getMockBuildings();
+        _isLoading = false;
+      });
+    } else {
       setState(() {
         _vehicles = _getMockVehicles();
         _buildings = _getMockBuildings();

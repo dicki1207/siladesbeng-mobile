@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_report_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_warga_list_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
+import 'package:siladesbeng_mobile/services/admin_wilayah_service.dart';
 
 class AdminPortalPage extends StatefulWidget {
   const AdminPortalPage({super.key});
@@ -17,9 +18,19 @@ class _AdminPortalPageState extends State<AdminPortalPage>
   String _role = 'rt';
   String _adminName = 'Aparat Desa';
 
+  // API Service & Data
+  final AdminWilayahService _wilayahService = AdminWilayahService();
+  int _totalLaporan = 0;
+  int _laporanBaru = 0;
+  int _laporanSelesai = 0;
+  int _totalWarga = 0;
+  String _slaStatus = 'aman';
+  bool _hasPending = false;
+  List<Map<String, dynamic>> _laporanTerbaru = [];
+
   // Live Countdown Timer for Report Service Level Agreement (SLA)
   late Timer _timer;
-  int _remainingSeconds = 7485; // 2 Jam : 4 Menit : 45 Detik
+  int _remainingSeconds = 10800; // Default 3 Jam (akan diupdate dari API)
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -27,6 +38,7 @@ class _AdminPortalPageState extends State<AdminPortalPage>
   void initState() {
     super.initState();
     _loadAdminProfile();
+    _loadDashboardStats();
 
     // Setup animated live pulsing indicator
     _pulseController = AnimationController(
@@ -67,6 +79,35 @@ class _AdminPortalPageState extends State<AdminPortalPage>
         }
         _role = loadedRole;
         _adminName = prefs.getString('profile_name') ?? 'Admin Pengurus';
+      });
+    }
+  }
+
+  Future<void> _loadDashboardStats() async {
+    final result = await _wilayahService.getDashboardStats();
+    if (!mounted) return;
+    if (result['success'] == true) {
+      final data = result['data'];
+      final statistik = data['statistik'] ?? {};
+      final sla = data['sla'] ?? {};
+      final laporanList = data['laporan_terbaru'] as List? ?? [];
+
+      setState(() {
+        _totalLaporan = statistik['total_laporan'] ?? 0;
+        _laporanBaru = statistik['laporan_baru'] ?? 0;
+        _laporanSelesai = statistik['laporan_selesai'] ?? 0;
+        _totalWarga = statistik['total_warga'] ?? 0;
+        _slaStatus = sla['status'] ?? 'aman';
+        _hasPending = sla['has_pending'] ?? false;
+
+        // Hitung sisa waktu SLA: target 3 jam (10800 detik) - waktu pending terlama
+        final int oldestMinutes = sla['oldest_pending_minutes'] ?? 0;
+        final int elapsedSeconds = oldestMinutes * 60;
+        _remainingSeconds = (10800 - elapsedSeconds).clamp(0, 10800);
+
+        _laporanTerbaru = laporanList.map<Map<String, dynamic>>((item) {
+          return Map<String, dynamic>.from(item);
+        }).toList();
       });
     }
   }
@@ -449,7 +490,9 @@ class _AdminPortalPageState extends State<AdminPortalPage>
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '3 Laporan Masuk Menunggu Tindak Lanjut!',
+                                    _hasPending
+                                        ? '$_laporanBaru Laporan Masuk Menunggu Tindak Lanjut!'
+                                        : 'Semua laporan sudah ditindaklanjuti ✓',
                                     style: TextStyle(
                                       fontSize: 13.5,
                                       fontWeight: FontWeight.w800,
@@ -562,24 +605,28 @@ class _AdminPortalPageState extends State<AdminPortalPage>
                         child: _buildAnimatedStatCard(
                           context: context,
                           title: 'Laporan',
-                          targetCount: _role == 'rw' ? 28 : 12,
-                          badge: _role == 'rw' ? '8 Baru' : '3 Baru',
+                          targetCount: _totalLaporan,
+                          badge: '$_laporanBaru Baru',
                           icon: Icons.assignment_turned_in_rounded,
                           color: const Color(0xFFF59E0B),
-                          progressText: '75% Selesai',
-                          progressValue: 0.75,
+                          progressText: _totalLaporan > 0
+                              ? '${((_laporanSelesai / _totalLaporan) * 100).round()}% Selesai'
+                              : '0% Selesai',
+                          progressValue: _totalLaporan > 0
+                              ? _laporanSelesai / _totalLaporan
+                              : 0.0,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildAnimatedStatCard(
                           context: context,
-                          title: _role == 'rw' ? 'Wilayah' : 'Agenda',
-                          targetCount: _role == 'rw' ? 4 : 5,
-                          badge: _role == 'rw' ? 'RT Aktif' : 'Aktif',
+                          title: _role == 'rw' ? 'Wilayah' : 'Selesai',
+                          targetCount: _role == 'rw' ? 4 : _laporanSelesai,
+                          badge: _role == 'rw' ? 'RT Aktif' : 'Ditangani',
                           icon: _role == 'rw'
                               ? Icons.account_tree_rounded
-                              : Icons.campaign_rounded,
+                              : Icons.check_circle_rounded,
                           color: const Color(0xFF10B981),
                           progressText: _role == 'rw' ? '100% Terpantau' : '100% Siap',
                           progressValue: 1.0,
@@ -590,12 +637,12 @@ class _AdminPortalPageState extends State<AdminPortalPage>
                         child: _buildAnimatedStatCard(
                           context: context,
                           title: _role == 'rw' ? 'Warga RW' : 'Warga RT',
-                          targetCount: _role == 'rw' ? 148 : 42,
+                          targetCount: _totalWarga,
                           badge: 'KK Valid',
                           icon: Icons.groups_rounded,
                           color: const Color(0xFF3B82F6),
-                          progressText: '98% Sync',
-                          progressValue: 0.98,
+                          progressText: '100% Sync',
+                          progressValue: 1.0,
                         ),
                       ),
                     ],
@@ -676,7 +723,7 @@ class _AdminPortalPageState extends State<AdminPortalPage>
                           subtitle: 'Verifikasi status,\ngeotagging & keputusan',
                           icon: Icons.assignment_turned_in_rounded,
                           accentColor: const Color(0xFFF59E0B),
-                          badgeText: '3 Menunggu',
+                          badgeText: '$_laporanBaru Menunggu',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -716,7 +763,7 @@ class _AdminPortalPageState extends State<AdminPortalPage>
                           subtitle: 'Daftar kepala keluarga\n& validasi surat desa',
                           icon: Icons.folder_shared_rounded,
                           accentColor: const Color(0xFF3B82F6),
-                          badgeText: '148 KK',
+                          badgeText: '$_totalWarga KK',
                           onTap: () {
                             Navigator.push(
                               context,
@@ -740,9 +787,11 @@ class _AdminPortalPageState extends State<AdminPortalPage>
                           accentColor: const Color(0xFF8B5CF6),
                           badgeText: 'Optimal',
                           onTap: () {
+                            final pctSelesai = _totalLaporan > 0 ? ((_laporanSelesai / _totalLaporan) * 100).round() : 0;
+                            final pctPending = _totalLaporan > 0 ? ((_laporanBaru / _totalLaporan) * 100).round() : 0;
                             _showInfoDialog(
                               'Statistik Pelayanan Bulan Ini',
-                              '• Laporan Aduan Masuk: 12\n• Ditindaklanjuti & Selesai: 9 (75%)\n• Dalam Proses Verifikasi: 3 (25%)\n• Agenda Gotong Royong: 2 Kegiatan Sukses.\n\nKinerja pengurusan wilayah Anda tergolong SANGAT OPTIMAL!',
+                              '• Laporan Aduan Masuk: $_totalLaporan\n• Ditindaklanjuti & Selesai: $_laporanSelesai ($pctSelesai%)\n• Dalam Proses Verifikasi: $_laporanBaru ($pctPending%)\n• Total Warga Terdaftar: $_totalWarga KK\n\nSLA Status: ${_slaStatus.toUpperCase()}',
                               Icons.analytics_rounded,
                               const Color(0xFF8B5CF6),
                             );
@@ -816,32 +865,65 @@ class _AdminPortalPageState extends State<AdminPortalPage>
                           ],
                         ),
                         const SizedBox(height: 16),
-                        _buildActivityLogItem(
-                          context,
-                          'Laporan Lampu Jalan Mati di Gang II',
-                          'Pelapor: I Nyoman Suartha • Menunggu Verifikasi',
-                          '10 Mnt lalu',
-                          Icons.warning_amber_rounded,
-                          Colors.amber.shade700,
-                        ),
-                        const Divider(height: 26),
-                        _buildActivityLogItem(
-                          context,
-                          'Banjir Ringan di Pertigaan Pasar',
-                          'Pelapor: Bpk. Hendrawan • Dalam Penanganan',
-                          '28 Mnt lalu',
-                          Icons.engineering_rounded,
-                          Colors.blue.shade600,
-                        ),
-                        const Divider(height: 26),
-                        _buildActivityLogItem(
-                          context,
-                          'Pengumuman Gotong Royong Bali Banjar',
-                          'Diterbitkan oleh Admin $roleText • Dibaca 84 Warga',
-                          '1 Hari lalu',
-                          Icons.check_circle_outline_rounded,
-                          Colors.green.shade600,
-                        ),
+                        if (_laporanTerbaru.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Text(
+                                'Belum ada aktivitas terbaru',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withAlpha(140),
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          ..._laporanTerbaru.asMap().entries.map((entry) {
+                            final item = entry.value;
+                            final isLast = entry.key == _laporanTerbaru.length - 1;
+                            final status = item['status'] ?? 'Pending';
+                            IconData logIcon;
+                            Color logColor;
+                            if (status == 'Selesai') {
+                              logIcon = Icons.check_circle_outline_rounded;
+                              logColor = Colors.green.shade600;
+                            } else if (status == 'Diproses') {
+                              logIcon = Icons.engineering_rounded;
+                              logColor = Colors.blue.shade600;
+                            } else {
+                              logIcon = Icons.warning_amber_rounded;
+                              logColor = Colors.amber.shade700;
+                            }
+
+                            final createdAt = item['created_at'] ?? '';
+                            String timeAgo = createdAt;
+                            try {
+                              final dt = DateTime.parse(createdAt);
+                              final diff = DateTime.now().difference(dt);
+                              if (diff.inMinutes < 60) {
+                                timeAgo = '${diff.inMinutes} Mnt lalu';
+                              } else if (diff.inHours < 24) {
+                                timeAgo = '${diff.inHours} Jam lalu';
+                              } else {
+                                timeAgo = '${diff.inDays} Hari lalu';
+                              }
+                            } catch (_) {}
+
+                            return Column(
+                              children: [
+                                _buildActivityLogItem(
+                                  context,
+                                  item['kategori'] ?? item['deskripsi'] ?? 'Laporan',
+                                  'Pelapor: ${item['pelapor'] ?? 'Warga'} • $status',
+                                  timeAgo,
+                                  logIcon,
+                                  logColor,
+                                ),
+                                if (!isLast) const Divider(height: 26),
+                              ],
+                            );
+                          }),
                       ],
                     ),
                   ),
