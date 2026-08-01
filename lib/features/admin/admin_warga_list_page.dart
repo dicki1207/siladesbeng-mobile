@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/services/admin_warga_service.dart';
 
 class AdminWargaListPage extends StatefulWidget {
   final String role;
@@ -14,6 +15,7 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
   String _selectedRtFilter = 'Seluruh RW 01';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final AdminWargaService _adminWargaService = AdminWargaService();
 
   final List<String> _filters = [
     'Semua',
@@ -47,155 +49,42 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
   }
 
   void _initializeData() {
-    _allWarga = [
-      // RT 01
-      {
-        'id': 'SLD-2026-1011',
-        'masked_nik': '5108••••••••1241',
-        'name': 'Bpk. Wayan Darma (Ketua RT 01)',
-        'family_role': 'Kepala Keluarga & RT',
-        'address': 'Banjar Kelod Blok A No. 01',
-        'rt_rw': 'RT 01 / RW 01',
-        'residency_type': 'Warga Menetap',
-        'verification_status': 'Tervalidasi AI',
-        'phone': '0812-4455-8811',
-        'members_count': 5,
-        'occupation': 'Pimpinan Lingkungan & Usaha',
-        'registered_date': '05 Jan 2026',
-      },
-      {
-        'id': 'SLD-2026-1024',
-        'masked_nik': '5108••••••••9023',
-        'name': 'Ni Kadek Anjani',
-        'family_role': 'Kepala Keluarga',
-        'address': 'Banjar Kelod Blok A No. 15',
-        'rt_rw': 'RT 01 / RW 01',
-        'residency_type': 'Warga Menetap',
-        'verification_status': 'Tervalidasi AI',
-        'phone': '0819-2233-9900',
-        'members_count': 3,
-        'occupation': 'Pengrajin Tenun Ikat',
-        'registered_date': '14 Feb 2026',
-      },
+    _allWarga = [];
+    _loadWargaFromApi();
+  }
 
-      // RT 02
-      {
-        'id': 'SLD-2026-8891',
-        'masked_nik': '5108••••••••8912',
-        'name': 'I Nyoman Suartha (Ketua RT 02)',
-        'family_role': 'Kepala Keluarga & RT',
-        'address': 'Jl. Bali Banjar Blok C No. 14',
-        'rt_rw': 'RT 02 / RW 01',
-        'residency_type': 'Warga Menetap',
-        'verification_status': 'Tervalidasi AI',
-        'phone': '0812-3456-7890',
-        'members_count': 4,
-        'occupation': 'Pesta Kriya & Pertanian',
-        'registered_date': '12 Jan 2026',
-      },
-      {
-        'id': 'SLD-2026-9042',
-        'masked_nik': '5108••••••••1045',
-        'name': 'Ni Wayan Sukerti',
-        'family_role': 'Kepala Keluarga',
-        'address': 'Jl. Utama Bengkala No. 08',
-        'rt_rw': 'RT 02 / RW 01',
-        'residency_type': 'Warga Menetap',
-        'verification_status': 'Menunggu Validasi',
-        'phone': '0819-8765-4321',
-        'members_count': 3,
-        'occupation': 'Tenun Kain & Kerajinan',
-        'registered_date': '27 Jul 2026',
-      },
-      {
-        'id': 'SLD-2026-7731',
-        'masked_nik': '5108••••••••5621',
-        'name': 'Drs. Hendrawan Kusuma',
-        'family_role': 'Kepala Keluarga',
-        'address': 'Gang Melati IV No. 2A',
-        'rt_rw': 'RT 02 / RW 01',
-        'residency_type': 'Pendatang / Kost',
-        'verification_status': 'Tervalidasi AI',
-        'phone': '0852-1122-3344',
-        'members_count': 2,
-        'occupation': 'Guru Sekolah Dasar',
-        'registered_date': '05 Mar 2026',
-      },
-      {
-        'id': 'SLD-2026-6652',
-        'masked_nik': '5108••••••••3318',
-        'name': 'Ketut Arka Wijaya',
-        'family_role': 'Kepala Keluarga',
-        'address': 'Jl. Raya Bengkala-Kubutambahan No. 22',
-        'rt_rw': 'RT 02 / RW 01',
-        'residency_type': 'Warga Menetap',
-        'verification_status': 'Tervalidasi AI',
-        'phone': '0813-9988-7766',
-        'members_count': 5,
-        'occupation': 'Wiraswasta & Usaha Tani',
-        'registered_date': '18 Feb 2026',
-      },
-      {
-        'id': 'SLD-2026-9110',
-        'masked_nik': '5108••••••••0098',
-        'name': 'Putu Gede Mahendra',
-        'family_role': 'Kepala Keluarga',
-        'address': 'Gang Mawar Putih No. 05',
-        'rt_rw': 'RT 02 / RW 01',
-        'residency_type': 'Pendatang / Kost',
-        'verification_status': 'Menunggu Validasi',
-        'phone': '0878-5566-4433',
-        'members_count': 1,
-        'occupation': 'Karyawan Lepas & Profesional',
-        'registered_date': '28 Jul 2026',
-      },
+  Future<void> _loadWargaFromApi() async {
+    final data = await _adminWargaService.getWargaList();
+    if (!mounted) return;
+    setState(() {
+      _allWarga = data.map<Map<String, dynamic>>((item) {
+        final String verStatus = item['verification_status'] ?? 'unverified';
+        String displayStatus;
+        if (verStatus == 'verified' || item['kyc_status'] == 'approved') {
+          displayStatus = 'Tervalidasi AI';
+        } else if (verStatus == 'pending' || item['kyc_status'] == 'pending') {
+          displayStatus = 'Menunggu Validasi';
+        } else {
+          displayStatus = 'Menunggu Validasi';
+        }
 
-      // RT 03 & RT 04
-      {
-        'id': 'SLD-2026-3011',
-        'masked_nik': '5108••••••••6651',
-        'name': 'Bpk. Ketut Santika (Ketua RT 03)',
-        'family_role': 'Kepala Keluarga & RT',
-        'address': 'Banjar Kaja No. 11',
-        'rt_rw': 'RT 03 / RW 01',
-        'residency_type': 'Warga Menetap',
-        'verification_status': 'Tervalidasi AI',
-        'phone': '0813-5577-9922',
-        'members_count': 4,
-        'occupation': 'Pamong & Budayawan',
-        'registered_date': '10 Mar 2026',
-      },
-      {
-        'id': 'SLD-2026-4019',
-        'masked_nik': '5108••••••••8819',
-        'name': 'Bpk. Gede Arini (Ketua RT 04)',
-        'family_role': 'Kepala Keluarga & RT',
-        'address': 'Banjar Kangin No. 45',
-        'rt_rw': 'RT 04 / RW 01',
-        'residency_type': 'Warga Menetap',
-        'verification_status': 'Tervalidasi AI',
-        'phone': '0878-1122-8877',
-        'members_count': 5,
-        'occupation': 'Ketua Kelopok Tani',
-        'registered_date': '20 Mar 2026',
-      },
-      {
-        'id': 'SLD-2026-4055',
-        'masked_nik': '5108••••••••4400',
-        'name': 'I Wayan Suteja',
-        'family_role': 'Kepala Keluarga',
-        'address': 'Banjar Kangin No. 12',
-        'rt_rw': 'RT 04 / RW 01',
-        'residency_type': 'Pendatang / Kost',
-        'verification_status': 'Menunggu Validasi',
-        'phone': '0812-7788-9944',
-        'members_count': 2,
-        'occupation': 'Teknisi Telekomunikasi',
-        'registered_date': '26 Jul 2026',
-      },
-    ];
-
-    _applyFiltersAndSearch();
+        return {
+          'id': item['id']?.toString() ?? '',
+          'masked_nik': item['kyc_nik'] != null ? '${item['kyc_nik'].toString().substring(0, 4)}••••••••${item['kyc_nik'].toString().length > 12 ? item['kyc_nik'].toString().substring(12) : ''}' : 'Belum KYC',
+          'name': item['name'] ?? '',
+          'family_role': 'Kepala Keluarga',
+          'address': item['address'] ?? '-',
+          'rt_rw': item['rt_rw'] ?? '-',
+          'residency_type': 'Warga Menetap',
+          'verification_status': displayStatus,
+          'phone': item['phone'] ?? '-',
+          'members_count': 1,
+          'occupation': '-',
+          'registered_date': item['registered_date'] ?? '-',
+        };
+      }).toList();
+      _applyFiltersAndSearch();
+    });
   }
 
   @override
@@ -248,36 +137,43 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
     });
   }
 
-  void _approveVerification(String id, String name) {
-    setState(() {
-      final index = _allWarga.indexWhere((item) => item['id'] == id);
-      if (index != -1) {
-        _allWarga[index]['verification_status'] = 'Tervalidasi AI';
-      }
-      _applyFiltersAndSearch();
-    });
+  Future<void> _approveVerification(String id, String name) async {
+    final response = await _adminWargaService.approveKyc(int.tryParse(id) ?? 0);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.verified_rounded, color: Colors.white, size: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Data domisili & scan wajah untuk $name telah berhasil disetujui oleh Koordinator.',
-                style: const TextStyle(fontWeight: FontWeight.w700),
+    if (!mounted) return;
+
+    if (response['status'] == 'success') {
+      await _loadWargaFromApi();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.verified_rounded, color: Colors.white, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Data verifikasi untuk $name telah berhasil disetujui.',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
         ),
-        backgroundColor: const Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Gagal menyetujui verifikasi'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showResidentDetailModal(Map<String, dynamic> warga) {

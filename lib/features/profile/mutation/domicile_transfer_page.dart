@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+import 'package:siladesbeng_mobile/services/mutasi_service.dart';
 
 class DomicileTransferPage extends StatefulWidget {
   const DomicileTransferPage({super.key});
@@ -14,6 +14,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
   late TabController _tabController;
   String _selectedFilter = 'Semua';
   bool _isLoading = false;
+  final MutasiService _mutasiService = MutasiService();
 
   // Form State
   final _formKey = GlobalKey<FormState>();
@@ -61,62 +62,70 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     'Pendidikan / Sekolah / Usaha',
   ];
 
-  // Dummy List matching Web Admin: Menunggu Pelepasan (Keluar), Menunggu Persetujuan (Masuk), Riwayat
-  final List<Map<String, dynamic>> _mutationList = [
-    {
-      'name': 'Bagus Prakoso',
-      'nik': '1403010101900001',
-      'tabType': 'Keluar', // Keluar, Masuk, Riwayat
-      'statusTitle': 'Menunggu Pelepasan (Keluar)',
-      'desaAsal': 'Desa Sila-DesBeng',
-      'desaTujuan': 'Desa Batin Solapan',
-      'pemohon': 'Mandiri (Bagus Prakoso)',
-      'alasan':
-          'Pindah domisili dikarenakan penugasan pekerjaan baru dan pindah ke kontrakan yang lebih dekat.',
-      'lockStatus': 'Gembok NIK Terkunci di Desa Sila-DesBeng',
-      'isLocked': true,
-      'date': '26 Juli 2026',
-      'color': Colors.amber[800]!,
-      'bgColor': Colors.amber.withAlpha(25),
-    },
-    {
-      'name': 'Hj. Siti Aminah (Lansia)',
-      'nik': '1403040202550089',
-      'tabType': 'Masuk',
-      'statusTitle': 'Menunggu Persetujuan Desa Lama',
-      'desaAsal': 'Desa Makmur Jaya',
-      'desaTujuan': 'Desa Sila-DesBeng (Desa Kita)',
-      'pemohon': 'Tarik Data Orang Tua / Lansia (Oleh: Budi Santoso)',
-      'alasan':
-          'Orang tua usia lanjut (Lansia) sekarang pindah menetap dan dirawat oleh anak di lingkungan RT 02 / RW 01 Sila-DesBeng.',
-      'lockStatus': 'Menunggu Kepala Desa Makmur Jaya membuka Kunci Gembok NIK',
-      'isLocked': true,
-      'date': '24 Juli 2026',
-      'color': Colors.blue[700]!,
-      'bgColor': Colors.blue.withAlpha(25),
-    },
-    {
-      'name': 'Rizky Pratama',
-      'nik': '1403020303980055',
-      'tabType': 'Riwayat',
-      'statusTitle': 'Mutasi Selesai (Handshake Sukses!)',
-      'desaAsal': 'Desa Pinggir',
-      'desaTujuan': 'Desa Sila-DesBeng (Desa Kita)',
-      'pemohon': 'Admin RT 02 / RW 01',
-      'alasan':
-          'Pindahan domisili resmi telah diverifikasi surat pindah antar kecamatan dan selesai cetak KK baru.',
-      'lockStatus': 'Gembok Terbuka • NIK Resmi Aktif di Desa Sila-DesBeng',
-      'isLocked': false,
-      'date': '15 Juli 2026',
-      'color': Colors.green[700]!,
-      'bgColor': Colors.green.withAlpha(25),
-    },
-  ];
+  List<Map<String, dynamic>> _mutationList = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadMutations();
+  }
+
+  Future<void> _loadMutations() async {
+    final data = await _mutasiService.getMyMutations();
+    if (!mounted) return;
+    setState(() {
+      _mutationList = data.map<Map<String, dynamic>>((item) {
+        final String tipe = item['tipe'] ?? 'keluar';
+        final String status = item['status'] ?? 'pending';
+        String tabType;
+        String statusTitle;
+        Color badgeCol;
+        Color bgCol;
+        bool isLocked;
+        String lockStatus;
+
+        if (status == 'completed') {
+          tabType = 'Riwayat';
+          statusTitle = 'Mutasi Selesai (Handshake Sukses!)';
+          badgeCol = Colors.green[700]!;
+          bgCol = Colors.green.withAlpha(25);
+          isLocked = false;
+          lockStatus = 'Gembok Terbuka • NIK Resmi Aktif';
+        } else if (tipe == 'keluar') {
+          tabType = 'Keluar';
+          statusTitle = 'Menunggu Pelepasan (Keluar)';
+          badgeCol = Colors.amber[800]!;
+          bgCol = Colors.amber.withAlpha(25);
+          isLocked = true;
+          lockStatus = 'Gembok NIK Terkunci • Menunggu persetujuan';
+        } else {
+          tabType = 'Masuk';
+          statusTitle = 'Menunggu Persetujuan Desa Lama';
+          badgeCol = Colors.blue[700]!;
+          bgCol = Colors.blue.withAlpha(25);
+          isLocked = true;
+          lockStatus = 'Menunggu Admin Desa Asal membuka Kunci Gembok NIK';
+        }
+
+        return {
+          'id': item['id'],
+          'name': item['nama'] ?? '',
+          'nik': item['nik'] ?? '',
+          'tabType': tabType,
+          'statusTitle': statusTitle,
+          'desaAsal': item['desa_asal'] ?? '',
+          'desaTujuan': item['desa_tujuan'] ?? '',
+          'pemohon': item['status_pemohon'] ?? '',
+          'alasan': item['alasan'] ?? '',
+          'lockStatus': lockStatus,
+          'isLocked': isLocked,
+          'date': item['created_at']?.toString().substring(0, 10) ?? '',
+          'color': badgeCol,
+          'bgColor': bgCol,
+        };
+      }).toList();
+    });
   }
 
   @override
@@ -165,65 +174,53 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     }
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1500));
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('transfer_status', 'pending');
 
     final bool isKeluar = _tipePermohonan.contains('Keluar');
-    final String tabType = isKeluar ? 'Keluar' : 'Masuk';
-    final String title = isKeluar
-        ? 'Menunggu Pelepasan (Keluar)'
-        : 'Menunggu Persetujuan Desa Lama';
-    final String lockText = isKeluar
-        ? 'Gembok NIK Terkunci • Menunggu persetujuan Admin Desa Sila-DesBeng'
-        : 'Menunggu Admin $_selectedDesaAsal membuka Kunci Gembok NIK';
-    final Color badgeCol = isKeluar ? Colors.amber[800]! : Colors.blue[700]!;
-    final Color bgCol = isKeluar
-        ? Colors.amber.withAlpha(25)
-        : Colors.blue.withAlpha(25);
 
-    final newMutation = {
-      'name': _nameController.text.trim(),
-      'nik': _nikController.text.trim(),
-      'tabType': tabType,
-      'statusTitle': title,
-      'desaAsal': _selectedDesaAsal,
-      'desaTujuan': _selectedDesaTujuan,
-      'pemohon':
-          '$_selectedPemohonStatus (${_nameController.text.split(' ')[0]})',
-      'alasan': _reasonController.text.trim(),
-      'lockStatus': lockText,
-      'isLocked': true,
-      'date': 'Hari Ini',
-      'color': badgeCol,
-      'bgColor': bgCol,
-    };
+    final response = await _mutasiService.store(
+      nama: _nameController.text.trim(),
+      nik: _nikController.text.trim(),
+      noKk: _kkController.text.trim(),
+      desaAsal: _selectedDesaAsal,
+      desaTujuan: _selectedDesaTujuan,
+      alamat: _addressController.text.trim(),
+      statusPemohon: _selectedPemohonStatus,
+      alasan: _reasonController.text.trim(),
+      tipe: isKeluar ? 'keluar' : 'masuk',
+    );
 
     if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-      _mutationList.insert(0, newMutation);
+    setState(() => _isLoading = false);
+
+    if (response['status'] == 'success') {
       _reasonController.clear();
       _hasAttachedDoc = false;
       _tabController.index = 0;
-      _selectedFilter = tabType; // Langsung sorot tab terkait
-    });
+      await _loadMutations();
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AnimatedSuccessDialog(
-        message: isKeluar
-            ? 'Pengajuan Pindah Keluar berhasil dikirim! NIK Anda kini dijadwalkan untuk pelepasan "Kunci Gembok" oleh Kepala Desa Sila-DesBeng menuju Desa Tujuan.'
-            : 'Permohonan Tarik Warga (Handshake) berhasil diposting! Sistem sedang mengirim notifikasi ke Kepala Desa Asal agar membuka Kunci Gembok NIK warga tersebut.',
-        isLogout: false,
-      ),
-    );
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AnimatedSuccessDialog(
+          message: isKeluar
+              ? 'Pengajuan Pindah Keluar berhasil dikirim!'
+              : 'Permohonan Tarik Warga (Handshake) berhasil diposting!',
+          isLogout: false,
+        ),
+      );
 
-    await Future.delayed(const Duration(seconds: 4));
-    if (mounted && Navigator.canPop(context)) {
-      Navigator.pop(context); // Tutup dialog sukses
+      await Future.delayed(const Duration(seconds: 4));
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Gagal mengirim pengajuan'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -258,9 +255,16 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(ctx);
-                setState(() => _mutationList.removeAt(index));
+                final itemId = item['id'];
+                if (itemId != null) {
+                  final res = await _mutasiService.cancel(itemId);
+                  if (res['status'] == 'success') {
+                    await _loadMutations();
+                  }
+                }
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('❌ Permohonan pindah berhasil dibatalkan.'),

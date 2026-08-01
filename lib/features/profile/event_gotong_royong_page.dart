@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/services/event_service.dart';
 
 class EventGotongRoyongPage extends StatefulWidget {
   const EventGotongRoyongPage({super.key});
@@ -11,6 +12,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _selectedFilter = 'Semua Wilayah';
+  final EventService _eventService = EventService();
 
   // Form State
   final _formKey = GlobalKey<FormState>();
@@ -80,76 +82,46 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     'Senter Patroli',
   ];
 
-  // Dummy Active Events & Gotong Royong
-  final List<Map<String, dynamic>> _events = [
-    {
-      'title': 'Gotong Royong Bersihkan Irigasi & Selokan Musim Hujan',
-      'wilayah': 'RW 02 - RT 01/03',
-      'tipe': 'Gotong Royong',
-      'koordinator': 'Pak Haris (Ketua RW 02)',
-      'jadwal': 'Minggu, 30 Juli 2026 • 07:00 WIB - Selesai',
-      'lokasi': 'Titik Kumpul: Balai Warga RW 02 & Sepanjang Aliran Irigasi',
-      'note':
-          'Mohon seluruh kepala keluarga dan pemuda meluangkan waktu demi mencegah banjir. Disediakan sarapan pagi, rebusan pisang, dan kopi hangat oleh Ibu-ibu PKK!',
-      'equipment': ['Cangkul / Sekop', 'Karung Sampah', 'Sarung Tangan Kerja'],
-      'participants': 24,
-      'isJoined': false,
-      'hasPoster': true,
-      'posterUrl': 'https://picsum.photos/seed/irigasi/500/260',
-      'color': Colors.teal,
-    },
-    {
-      'title': 'Pengumuman Jadwal Posyandu Balita & Lansia RW 01',
-      'wilayah': 'RW 01 (Seluruh RT)',
-      'tipe': 'Pengumuman Biasa',
-      'koordinator': 'Ibu Siti (Kader Posyandu RW 01)',
-      'jadwal': 'Rabu, 2 Agustus 2026 • 08:30 WIB - Selesai',
-      'lokasi': 'Posyandu Mawar Indah Raya RW 01',
-      'note':
-          'Diharapkan kehadiran para ibu yang memiliki balita dan lansia untuk pemeriksaan kesehatan gratis, pemberian vitamin A, dan penimbangan rutin bulan ini.',
-      'equipment': [],
-      'participants': 12,
-      'isJoined': false,
-      'hasPoster': false,
-      'color': Colors.blue,
-    },
-    {
-      'title': 'Kerja Bakti Pengecatan Gapura & Pembersihan Lingkungan',
-      'wilayah': 'RW 01 - RT 02',
-      'tipe': 'Gotong Royong',
-      'koordinator': 'Pak Budi (Ketua RT 02)',
-      'jadwal': 'Sabtu, 5 Agustus 2026 • 07:30 WIB - Selesai',
-      'lokasi': 'Gapura Utama Masuk RT 02 / RW 01',
-      'note':
-          'Persiapan menyambut agenda tahunan desa. Cat dan kuas utama dipersiapkan dari kas RT/RW, warga cukup membantu tenaga dan merapikan taman sekitar.',
-      'equipment': ['Sapu & Lidi', 'Sarung Tangan Kerja'],
-      'participants': 18,
-      'isJoined': true,
-      'hasPoster': false,
-      'color': Colors.teal,
-    },
-    {
-      'title': 'Festival Budaya & Bazar UMKM Warga Desa Sila-DesBeng',
-      'wilayah': 'Seluruh Desa (Umum)',
-      'tipe': 'Acara / Event',
-      'koordinator': 'Panitia Hari Besar Desa',
-      'jadwal': 'Sabtu & Minggu, 12-13 Agustus 2026 • 09:00 WIB',
-      'lokasi': 'Alun-Alun Balai Desa Sila-DesBeng',
-      'note':
-          'Ayo ramaikan pameran produk UMKM lokal dari 4 Dusun, pertunjukan seni anak desa, serta senam sehat bersama hadiah doorprize menarik!',
-      'equipment': [],
-      'participants': 45,
-      'isJoined': false,
-      'hasPoster': true,
-      'posterUrl': 'https://picsum.photos/seed/bazar/500/260',
-      'color': Colors.orange,
-    },
-  ];
+  List<Map<String, dynamic>> _events = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadEvents();
+  }
+
+  Future<void> _loadEvents() async {
+    final data = await _eventService.getEvents();
+    if (!mounted) return;
+    setState(() {
+      _events = data.map<Map<String, dynamic>>((item) {
+        final String tipe = item['tipe'] ?? 'gotong_royong';
+        Color badgeColor = Colors.teal;
+        String tipeLabel = 'Gotong Royong';
+        if (tipe == 'rapat' || tipe == 'kegiatan_sosial') {
+          badgeColor = Colors.orange[800]!;
+          tipeLabel = 'Acara / Event';
+        }
+
+        return {
+          'id': item['id'],
+          'title': item['judul'] ?? '',
+          'wilayah': '${item['rw'] ?? ''} ${item['rt'] != null ? '- ${item['rt']}' : '(Seluruh RT)'}',
+          'tipe': tipeLabel,
+          'koordinator': item['koordinator'] ?? '',
+          'jadwal': item['jadwal'] ?? '',
+          'lokasi': item['lokasi'] ?? '',
+          'note': item['catatan'] ?? '',
+          'equipment': item['peralatan'] is List ? List<String>.from(item['peralatan']) : <String>[],
+          'participants': item['jumlah_peserta'] ?? 0,
+          'isJoined': item['is_joined'] ?? false,
+          'hasPoster': item['poster_path'] != null,
+          'posterUrl': item['poster_path'] != null ? 'http://10.193.206.148:8000/storage/${item['poster_path']}' : null,
+          'color': badgeColor,
+        };
+      }).toList();
+    });
   }
 
   @override
@@ -163,50 +135,50 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     super.dispose();
   }
 
-  void _handleToggleJoin(int idx) {
-    setState(() {
-      final bool current = _events[idx]['isJoined'] as bool;
-      _events[idx]['isJoined'] = !current;
-      if (!current) {
-        _events[idx]['participants'] =
-            (_events[idx]['participants'] as int) + 1;
-      } else {
-        _events[idx]['participants'] =
-            (_events[idx]['participants'] as int) - 1;
-      }
-    });
+  Future<void> _handleToggleJoin(int idx) async {
+    final eventId = _events[idx]['id'];
+    if (eventId == null) return;
 
-    final bool isJoined = _events[idx]['isJoined'] as bool;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              isJoined ? Icons.check_circle : Icons.info_outline,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                isJoined
-                    ? 'Terima kasih atas kepedulian Anda! Anda tercatat berpartisipasi/siap hadir.'
-                    : 'Anda membatalkan partisipasi kehadiran untuk kegiatan ini.',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+    final response = await _eventService.toggleJoin(eventId);
+    if (!mounted) return;
+
+    if (response['status'] == 'success') {
+      setState(() {
+        _events[idx]['isJoined'] = response['joined'] ?? !(_events[idx]['isJoined'] as bool);
+        _events[idx]['participants'] = response['jumlah_peserta'] ?? _events[idx]['participants'];
+      });
+
+      final bool isJoined = _events[idx]['isJoined'] as bool;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                isJoined ? Icons.check_circle : Icons.info_outline,
+                color: Colors.white,
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isJoined
+                      ? 'Terima kasih! Anda tercatat berpartisipasi.'
+                      : 'Anda membatalkan partisipasi.',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: isJoined ? Colors.teal[700] : Colors.blueGrey[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
-        backgroundColor: isJoined ? Colors.teal[700] : Colors.blueGrey[700],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+      );
+    }
   }
 
-  void _handleSubmitEvent() {
+  Future<void> _handleSubmitEvent() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Determine target label
     String finalWilayah = 'Seluruh Desa (Umum)';
     if (_targetScope == 'Tingkat RW / Dusun') {
       finalWilayah = '${_selectedRw.split(' - ')[0]} (Seluruh RT)';
@@ -214,36 +186,26 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       finalWilayah = '${_selectedRw.split(' - ')[0]} • $_selectedRt';
     }
 
-    Color badgeColor = Colors.teal;
-    if (_formTipe == 'Acara / Event') badgeColor = Colors.orange[800]!;
-    if (_formTipe == 'Pengumuman Biasa') badgeColor = Colors.blue[700]!;
+    String tipeApi = 'gotong_royong';
+    if (_formTipe == 'Acara / Event') tipeApi = 'kegiatan_sosial';
+    if (_formTipe == 'Pengumuman Biasa') tipeApi = 'rapat';
 
-    final newEvent = {
-      'title': _titleController.text.trim(),
-      'wilayah': finalWilayah,
-      'tipe': _formTipe,
-      'koordinator': _coordinatorController.text.isEmpty
-          ? 'Pak Pengurus RT/RW'
-          : _coordinatorController.text.trim(),
-      'jadwal': _scheduleController.text.isEmpty
-          ? 'Segera / Sesuai Edaran'
-          : _scheduleController.text.trim(),
-      'lokasi': _locationController.text.isEmpty
-          ? 'Lingkungan Wilayah $finalWilayah'
-          : _locationController.text.trim(),
-      'note': _noteController.text.trim(),
-      'equipment': List<String>.from(_selectedEquipment),
-      'participants': 1, // Koordinator terdaftar
-      'isJoined': true,
-      'hasPoster': _hasAttachedPoster,
-      'posterUrl': _hasAttachedPoster
-          ? 'https://picsum.photos/seed/baru/500/260'
-          : null,
-      'color': badgeColor,
-    };
+    final response = await _eventService.store(
+      judul: _titleController.text.trim(),
+      tipe: tipeApi,
+      targetScope: _targetScope,
+      rw: _selectedRw,
+      rt: _targetScope == 'Spesifik Lingkungan RT' ? _selectedRt : null,
+      koordinator: _coordinatorController.text.trim(),
+      jadwal: _scheduleController.text.trim(),
+      lokasi: _locationController.text.trim(),
+      catatan: _noteController.text.trim(),
+      peralatan: _selectedEquipment,
+    );
 
-    setState(() {
-      _events.insert(0, newEvent);
+    if (!mounted) return;
+
+    if (response['status'] == 'success') {
       _titleController.clear();
       _scheduleController.clear();
       _locationController.clear();
@@ -251,31 +213,37 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       _selectedEquipment.clear();
       _hasAttachedPoster = false;
       _tabController.index = 0;
-    });
+      await _loadEvents();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.rocket_launch, color: Colors.amber),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                '🚀 Broadcast Berhasil! Pengumuman dihantarkan ke seluruh warga di lingkup: $finalWilayah.',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.rocket_launch, color: Colors.amber),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Broadcast Berhasil! Pengumuman dikirim ke: $finalWilayah.',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
+          backgroundColor: Colors.teal[800],
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        backgroundColor: Colors.teal[800],
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Gagal membuat event'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
