@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class PaymentInstructionPage extends StatelessWidget {
+class PaymentInstructionPage extends StatefulWidget {
   final Map<String, dynamic> paymentData;
   final VoidCallback onFinish;
 
@@ -12,11 +13,69 @@ class PaymentInstructionPage extends StatelessWidget {
   });
 
   @override
+  State<PaymentInstructionPage> createState() => _PaymentInstructionPageState();
+}
+
+class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
+  Timer? _timer;
+  Duration _remainingTime = Duration.zero;
+  bool _isExpired = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    final expiryTimeStr = widget.paymentData['expiry_time'];
+    if (expiryTimeStr == null || expiryTimeStr.isEmpty) return;
+
+    final expiryTime = DateTime.tryParse(expiryTimeStr);
+    if (expiryTime == null) return;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final now = DateTime.now();
+      final difference = expiryTime.difference(now);
+
+      if (difference.isNegative) {
+        timer.cancel();
+        if (mounted) {
+          setState(() {
+            _remainingTime = Duration.zero;
+            _isExpired = true;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _remainingTime = difference;
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String hours = twoDigits(duration.inHours);
+    String minutes = twoDigits(duration.inMinutes.remainder(60));
+    String seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$hours:$minutes:$seconds";
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final String channel = paymentData['channel']?.toString() ?? 'Metode Pembayaran';
-    final String vaNumber = paymentData['va_number']?.toString() ?? '';
-    final String qrUrl = paymentData['qr_url']?.toString() ?? '';
-    final String amount = paymentData['total_amount']?.toString() ?? '0';
+    final String channel = widget.paymentData['channel']?.toString() ?? 'Metode Pembayaran';
+    final String vaNumber = widget.paymentData['va_number']?.toString() ?? '';
+    final String qrUrl = widget.paymentData['qr_url']?.toString() ?? '';
+    final String amount = widget.paymentData['total_amount']?.toString() ?? '0';
     
     // Format nominal ke Rupiah
     final amountFormatted = 'Rp ${amount.replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), '.')}';
@@ -25,7 +84,7 @@ class PaymentInstructionPage extends StatelessWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        onFinish();
+        widget.onFinish();
       },
       child: Scaffold(
         appBar: AppBar(
@@ -33,7 +92,7 @@ class PaymentInstructionPage extends StatelessWidget {
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: onFinish,
+            onPressed: widget.onFinish,
           ),
         ),
         body: SingleChildScrollView(
@@ -41,33 +100,64 @@ class PaymentInstructionPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Sukses Icon
-              const Center(
-                child: Icon(
-                  Icons.check_circle_outline,
-                  color: Colors.green,
-                  size: 80,
+              // Timer
+              if (widget.paymentData['expiry_time'] != null && !_isExpired)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.timer_outlined, color: Colors.red[700], size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'SELESAIKAN PEMBAYARAN DALAM',
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _formatDuration(_remainingTime),
+                        style: TextStyle(
+                          color: Colors.red[700],
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Pesanan Berhasil Dibuat!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+              if (_isExpired)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'WAKTU PEMBAYARAN HABIS',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Selesaikan pembayaran Anda agar pesanan dapat segera diproses.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 32),
 
               // Kartu Informasi Pembayaran
               Container(
@@ -186,7 +276,6 @@ class PaymentInstructionPage extends StatelessWidget {
                         ),
                       ),
                     ] else ...[
-                      // Fallback jika tidak ada VA/QR (contoh: tunai)
                       Text(
                         'Instruksi pembayaran akan dikonfirmasi oleh Admin.',
                         textAlign: TextAlign.center,
@@ -200,7 +289,7 @@ class PaymentInstructionPage extends StatelessWidget {
               const SizedBox(height: 32),
               
               ElevatedButton(
-                onPressed: onFinish,
+                onPressed: widget.onFinish,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

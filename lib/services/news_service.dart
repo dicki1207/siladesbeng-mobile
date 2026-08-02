@@ -23,7 +23,7 @@ class NewsService {
   }
 
   /// Get all news/announcements with optional filters
-  Future<List<dynamic>> getNews({String? type, String? search}) async {
+  Future<List<dynamic>> getNews({String? type, String? search, String? postCategory}) async {
     try {
       final headers = await _getHeaders();
       
@@ -34,6 +34,9 @@ class NewsService {
       }
       if (search != null && search.isNotEmpty) {
         queryParams.add('search=$search');
+      }
+      if (postCategory != null && postCategory.isNotEmpty) {
+        queryParams.add('post_category=$postCategory');
       }
       
       String queryString = queryParams.isNotEmpty ? '?${queryParams.join('&')}' : '';

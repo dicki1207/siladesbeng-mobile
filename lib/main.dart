@@ -7,11 +7,17 @@ import 'splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   
-  // Inisialisasi Firebase Messaging
-  final fcmService = FirebaseMessagingService();
-  await fcmService.initNotifications();
+  try {
+    await Firebase.initializeApp();
+    
+    // Inisialisasi Firebase Messaging
+    final fcmService = FirebaseMessagingService();
+    await fcmService.initNotifications();
+  } catch (e, stackTrace) {
+    debugPrint('Error during initialization: $e');
+    debugPrint('StackTrace: $stackTrace');
+  }
   
   runApp(const MyApp());
 }

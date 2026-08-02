@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:siladesbeng_mobile/widgets/ticket_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TransactionReceiptPage extends StatelessWidget {
   final String orderNumber;
@@ -42,303 +43,315 @@ class TransactionReceiptPage extends StatelessWidget {
     required this.type,
   });
 
+  String _getUnitName() {
+    if (type == 'Gas') return 'Unit Pembelian Gas';
+    if (type == 'Sewa Mobil') return 'Unit Penyewaan Kendaraan';
+    if (type == 'Sewa Alat') return 'Unit Penyewaan Alat';
+    if (type == 'Fasilitas') return 'Unit Penyewaan Fasilitas';
+    return 'Unit Pelayanan Terpadu';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey[100],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          'Bukti Transaksi',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Bukti Transaksi'),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            TicketCard(
-              color: isDark ? Theme.of(context).cardColor : Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(24.0),
+        child: TicketCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // HEADER
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          type == 'Gas'
-                              ? Icons.local_fire_department
-                              : type == 'Sewa Mobil'
-                              ? Icons.directions_car
-                              : type == 'Sewa Alat'
-                              ? Icons.handyman
-                              : Icons.home_work,
-                          size: 50,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'BUKTI TRANSAKSI',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          'SILA-DESBENG',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? Colors.grey[400] : Colors.grey[600],
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const DashedLineSeparator(),
-                  const SizedBox(height: 20),
-
-                  // Info Table
-                  _buildInfoRow('No. Pesanan', orderNumber, isDark),
-                  _buildInfoRow('Waktu Pemesanan', orderTime, isDark),
-                  _buildInfoRow('Nama Akun', accountName, isDark),
-                  _buildInfoRow('Email Akun', accountEmail, isDark),
-
-                  const SizedBox(height: 15),
-                  const DashedLineSeparator(),
-                  const SizedBox(height: 15),
-
-                  const Text(
-                    'INFORMASI PENGIRIMAN',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildInfoRow('Nama Penerima', recipientName, isDark),
-                  _buildInfoRow('Alamat', address, isDark),
-                  _buildInfoRow('Metode', deliveryMethod, isDark),
-                  if (rentalPurpose != null)
-                    _buildInfoRow('Tujuan Sewa', rentalPurpose!, isDark),
-
-                  const SizedBox(height: 15),
-                  const DashedLineSeparator(),
-                  const SizedBox(height: 15),
-
-                  const Text(
-                    'INFORMASI PEMBAYARAN',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildInfoRow('Waktu Pembayaran', paymentTime, isDark),
-                  _buildInfoRow('Metode Pembayaran', paymentMethod, isDark),
-
-                  const SizedBox(height: 15),
-                  const DashedLineSeparator(),
-                  const SizedBox(height: 15),
-
-                  // Rincian Pesanan
-                  const Text(
-                    'RINCIAN PESANAN',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
+                  // Logo
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          itemName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                        ),
+                      Image.network(
+                        'http://10.193.206.148:8000/assets/img/logo.png', // Fallback
+                        height: 40,
+                        errorBuilder: (c, e, s) => const Icon(Icons.description, color: Colors.blue, size: 40),
                       ),
-                      Expanded(
-                        flex: 1,
-                        child: Text(
-                          '${qty}x',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: isDark ? Colors.grey[300] : Colors.black87),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          pricePerItem,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  const DashedLineSeparator(),
-                  const SizedBox(height: 15),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'TOTAL PEMBAYARAN',
+                      const SizedBox(width: 8),
+                      const Text(
+                        'SiladesBeng',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        totalPayment,
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
+                          color: Colors.blue,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 15),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'STATUS PESANAN',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: statusColor.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: Text(
-                          status.toUpperCase(),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          'Bukti Transaksi',
                           style: TextStyle(
-                            color: statusColor,
+                            color: Colors.blue,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 14,
                           ),
+                          textAlign: TextAlign.right,
                         ),
-                      ),
-                    ],
+                        Text(
+                          _getUnitName(),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.grey,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 10),
                 ],
               ),
-            ),
+              const SizedBox(height: 24),
 
-            const SizedBox(height: 30),
+              // INFO PESANAN
+              _buildInfoRow('No. Pesanan', orderNumber),
+              _buildInfoRow('Waktu Pesan', orderTime),
+              _buildInfoRow('Akun Pemesan', accountName),
+              _buildInfoRow('Email Akun', accountEmail),
 
-            // Download Button
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  String routeType = 'rental';
-                  if (type == 'Gas') routeType = 'gas';
-                  if (type == 'Sewa Mobil') routeType = 'mobil';
-                  if (type == 'Fasilitas') routeType = 'fasilitas';
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: DashedLineSeparator(),
+              ),
 
-                  final id = orderNumber.replaceAll(
-                    RegExp(r'[^0-9]'),
-                    '',
-                  ); // extract number for dummy ID
+              // NAMA DAN ALAMAT
+              Text(
+                type == 'Gas' ? 'Nama dan Alamat Pembeli Gas' : 'Nama dan Alamat Penyewa',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              _buildInfoRow('Nama Lengkap', recipientName),
+              _buildInfoRow('Alamat', address),
+              if (rentalPurpose != null && rentalPurpose!.isNotEmpty)
+                _buildInfoRow('Tujuan', rentalPurpose!),
+              if (type != 'Gas')
+                _buildInfoRow('Pengiriman', deliveryMethod),
 
-                  final url = Uri.parse(
-                    'http://10.193.206.148:8000/receipt/$routeType/$id/download',
-                  );
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: DashedLineSeparator(),
+              ),
 
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                  } else {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Tidak dapat membuka tautan unduhan struk $type',
-                          ),
-                        ),
-                      );
-                    }
-                  }
-                },
-                icon: const Icon(Icons.download_rounded, color: Colors.white),
-                label: const Text(
-                  'Unduh Struk Resmi',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 5,
+              // INFO PEMBAYARAN
+              const Text(
+                'Informasi Pembayaran',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              _buildInfoRow('Waktu Bayar', paymentTime),
+              _buildInfoRow('Metode', paymentMethod.toUpperCase().replaceAll('_', ' ')),
+              _buildInfoRow('Total Bayar', totalPayment),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Status',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    const Text(' : ', style: TextStyle(fontSize: 12)),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        status,
+                        style: TextStyle(fontSize: 12, color: statusColor, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: DashedLineSeparator(),
+              ),
+
+              // DETAIL PEMBELIAN
+              const Text(
+                'Detail Pesanan',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: const [
+                  Expanded(flex: 2, child: Text('Keterangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  Expanded(flex: 1, child: Text('Jml', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  Expanded(flex: 2, child: Text('Satuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  Expanded(flex: 2, child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                ],
+              ),
+              const Divider(thickness: 1),
+              Row(
+                children: [
+                  Expanded(flex: 2, child: Text(itemName, style: const TextStyle(fontSize: 12))),
+                  Expanded(flex: 1, child: Text('$qty', style: const TextStyle(fontSize: 12))),
+                  Expanded(flex: 2, child: Text(pricePerItem, style: const TextStyle(fontSize: 12))),
+                  Expanded(flex: 2, child: Text(totalPayment, style: const TextStyle(fontSize: 12))),
+                ],
+              ),
+              const Divider(thickness: 1),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Expanded(flex: 5, child: SizedBox()),
+                  Expanded(
+                    flex: 4,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total Pesanan', style: TextStyle(fontSize: 12)),
+                            Text(totalPayment, style: const TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            Text(totalPayment, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32),
+
+              // QR CODE & FOOTER
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'Bengkalis, ${orderTime.split(' ').first}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Hormat Kami',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 16),
+                    QrImageView(
+                      data: orderNumber,
+                      version: QrVersions.auto,
+                      size: 100.0,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'SiladesBeng',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const Text(
+                      'Platform E-Government Kab. Bengkalis',
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+              // Download Button
+              SizedBox(
+                width: double.infinity,
+                height: 45,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    String routeType = 'rental';
+                    if (type == 'Gas') routeType = 'gas';
+                    if (type == 'Sewa Mobil') routeType = 'mobil';
+                    if (type == 'Fasilitas') routeType = 'fasilitas';
+
+                    final id = orderNumber.replaceAll(
+                      RegExp(r'[^0-9]'),
+                      '',
+                    ); // extract number for dummy ID
+
+                    final url = Uri.parse(
+                      'http://10.193.206.148:8000/receipt/$routeType/$id/download',
+                    );
+
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Tidak dapat membuka tautan unduhan struk $type',
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.download_rounded, color: Colors.white, size: 20),
+                  label: const Text(
+                    'Unduh Struk Resmi',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value, bool isDark) {
+  Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 4.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 140,
+          Expanded(
+            flex: 2,
             child: Text(
               label,
-              style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[600], fontSize: 13),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ),
-          const Text(':', style: TextStyle(color: Colors.grey, fontSize: 13)),
-          const SizedBox(width: 8),
+          const Text(' : ', style: TextStyle(fontSize: 12)),
           Expanded(
+            flex: 3,
             child: Text(
               value,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isDark ? Colors.white : Colors.black87),
+              style: const TextStyle(fontSize: 12),
             ),
           ),
         ],

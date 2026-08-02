@@ -13,7 +13,7 @@ import 'package:siladesbeng_mobile/features/gas/gas_page.dart';
 import 'package:siladesbeng_mobile/features/report/report_page.dart';
 import 'package:siladesbeng_mobile/features/rental/facility_rental_page.dart';
 import 'package:siladesbeng_mobile/features/rental/car_rental_page.dart';
-import 'package:siladesbeng_mobile/features/news/news_page.dart';
+import 'package:siladesbeng_mobile/features/news/kabar_daerah_page.dart';
 import 'package:siladesbeng_mobile/features/home/search_page.dart';
 import 'package:siladesbeng_mobile/features/home/all_services_page.dart';
 import 'package:siladesbeng_mobile/features/assistant/assistant_page.dart';
@@ -1274,7 +1274,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Expanded(
                 child: Text(
-                  'Kabar Daerah & Event',
+                  'Kabar Daerah',
                   style: Theme.of(context).textTheme.titleLarge!.copyWith(
                     color: Theme.of(context).primaryColor,
                     fontSize: 20,
@@ -1285,7 +1285,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NewsPage()),
+                    MaterialPageRoute(builder: (context) => const KabarDaerahPage()),
                   );
                 },
                 child: Container(
