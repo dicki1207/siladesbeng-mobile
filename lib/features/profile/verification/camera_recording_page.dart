@@ -6,10 +6,10 @@ import 'dart:io' show Platform;
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:siladesbeng_mobile/services/kyc_service.dart';
 
 class CameraRecordingPage extends StatefulWidget {
+  final int? kycId;
   final String? nik;
   final String? name;
   final String? address;
@@ -19,6 +19,7 @@ class CameraRecordingPage extends StatefulWidget {
 
   const CameraRecordingPage({
     super.key,
+    required this.kycId,
     this.nik,
     this.name,
     this.address,
@@ -74,7 +75,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    // Langsung masuk ke rekam wajah
+    _currentStep = 2;
+    _initializeCamera(useFrontCamera: true);
   }
 
   Future<void> _initializeCamera({bool useFrontCamera = false}) async {
@@ -137,75 +140,12 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
     super.dispose();
   }
 
-  void _preparePhotoKTP() {
-    setState(() {
-      _currentStep = 1;
-    });
-  }
+  // Fitur ambil KTP sudah dipindahkan ke VerificationPage
+  // Variabel dan metode ini dibiarkan kosong atau dihapus
 
-  bool _isUploadingKtp = false;
-  int? _kycId;
+  final bool _isUploadingKtp = false;
+  // _kycId diambil dari widget.kycId
   final KycService _kycService = KycService();
-
-  Future<void> _takePhotoKTP() async {
-    if (!mounted) return;
-    try {
-      if (_cameraController != null && _cameraController!.value.isInitialized) {
-        final XFile file = await _cameraController!.takePicture();
-        debugPrint('KTP Picture saved from camera to ${file.path}');
-        _proceedToLiveness(file.path);
-      }
-    } catch (e) {
-      debugPrint('Error taking picture: $e');
-    }
-  }
-
-  Future<void> _pickKTPFromGallery() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      debugPrint('KTP Picture selected from gallery: ${image.path}');
-      _proceedToLiveness(image.path);
-    }
-  }
-
-  Future<void> _proceedToLiveness(String imagePath) async {
-    setState(() {
-      _isUploadingKtp = true;
-    });
-
-    final response = await _kycService.processKtp(
-      imagePath: imagePath,
-      nik: widget.nik,
-      name: widget.name,
-      address: widget.address,
-      rtRw: widget.rtRw,
-      kecamatan: widget.kecamatan,
-      desa: widget.desa,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _isUploadingKtp = false;
-    });
-
-    if (response['status'] == 'success') {
-      _kycId = response['kyc_id'];
-      setState(() {
-        _currentStep = 2;
-        _isCameraInitialized = false;
-      });
-      await _initializeCamera(useFrontCamera: true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response['message'] ?? 'Gagal memproses KTP'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-    }
-  }
 
   Future<void> _startLivenessDetection() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
@@ -469,13 +409,19 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
       _isUploadingFace = true;
     });
 
-    if (_kycId != null) {
+    if (widget.kycId != null) {
       // Data dummy/simulasi frame wajah karena proses ML kit berjalan di lokal HP
       final response = await _kycService.submitFace(
-        kycId: _kycId!,
+        kycId: widget.kycId!,
         faceData: [
           {'timestamp': DateTime.now().toIso8601String(), 'status': 'liveness_passed'}
         ],
+        nik: widget.nik,
+        name: widget.name,
+        address: widget.address,
+        rtRw: widget.rtRw,
+        kecamatan: widget.kecamatan,
+        desa: widget.desa,
       );
 
       if (!mounted) return;
@@ -891,8 +837,6 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
                   padding: const EdgeInsets.only(top: 20),
                   child: _currentStep == 0
                       ? _buildInfoChip('Siapkan KTP Asli Anda')
-                      : _currentStep == 1
-                      ? _buildInfoChip('Pastikan teks pada KTP terbaca jelas')
                       : _currentStep == 2 &&
                             !_isRecording &&
                             _brightnessWarning == null
@@ -902,34 +846,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
 
                 Padding(
                   padding: const EdgeInsets.only(bottom: 40),
-                  child: _currentStep == 0
-                      ? _buildPrimaryButton('Mulai Scan KTP', _preparePhotoKTP)
-                      : _currentStep == 1
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildPrimaryButton(
-                              'Jepret Foto KTP',
-                              _takePhotoKTP,
-                            ),
-                            const SizedBox(height: 12),
-                            TextButton.icon(
-                              onPressed: _pickKTPFromGallery,
-                              icon: const Icon(
-                                Icons.photo_library,
-                                color: Colors.white,
-                              ),
-                              label: const Text(
-                                'Unggah dari Galeri',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : _currentStep == 2 && !_isRecording
+                  child: _currentStep == 2 && !_isRecording
                       ? _buildRecordButton()
                       : const SizedBox(),
                 ),
@@ -960,21 +877,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
     );
   }
 
-  Widget _buildPrimaryButton(String text, VoidCallback onPressed) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
+
 
   Widget _buildRecordButton() {
     return GestureDetector(

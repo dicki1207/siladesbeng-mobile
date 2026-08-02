@@ -163,7 +163,7 @@ class ReportReceiptPage extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   final url = Uri.parse(
-                    'http://10.193.206.148:8000/user/laporan/export/$reportId',
+                    'http://10.250.3.148:8000/user/laporan/export/$reportId',
                   );
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url, mode: LaunchMode.externalApplication);

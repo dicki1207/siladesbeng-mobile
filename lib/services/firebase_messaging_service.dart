@@ -106,7 +106,7 @@ class FirebaseMessagingService {
       if (token == null) return;
 
       final res = await http.post(
-        Uri.parse('http://10.193.206.148:8000/api/fcm-token'),
+        Uri.parse('http://10.250.3.148:8000/api/fcm-token'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

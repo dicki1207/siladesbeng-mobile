@@ -76,7 +76,7 @@ class TransactionReceiptPage extends StatelessWidget {
                   Row(
                     children: [
                       Image.network(
-                        'http://10.193.206.148:8000/assets/img/logo.png', // Fallback
+                        'http://10.250.3.148:8000/assets/img/logo.png', // Fallback
                         height: 40,
                         errorBuilder: (c, e, s) => const Icon(Icons.description, color: Colors.blue, size: 40),
                       ),
@@ -291,7 +291,7 @@ class TransactionReceiptPage extends StatelessWidget {
                     ); // extract number for dummy ID
 
                     final url = Uri.parse(
-                      'http://10.193.206.148:8000/receipt/$routeType/$id/download',
+                      'http://10.250.3.148:8000/receipt/$routeType/$id/download',
                     );
 
                     if (await canLaunchUrl(url)) {

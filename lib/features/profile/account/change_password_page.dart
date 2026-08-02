@@ -51,7 +51,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       final token = prefs.getString('auth_token');
 
       final response = await http.post(
-        Uri.parse('http://10.193.206.148:8000/api/profile/password'),
+        Uri.parse('http://10.250.3.148:8000/api/profile/password'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

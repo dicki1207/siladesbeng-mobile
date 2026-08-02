@@ -51,7 +51,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
       if (token == null) return;
 
       final response = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/user'),
+        Uri.parse('http://10.250.3.148:8000/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -194,7 +194,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
       };
 
       final response = await http.post(
-        Uri.parse('http://10.193.206.148:8000/api/gas/booking'),
+        Uri.parse('http://10.250.3.148:8000/api/gas/booking'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -386,13 +386,17 @@ class _GasBookingPageState extends State<GasBookingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final int price =
-        int.tryParse(
-          widget.item['harga_satuan']?.toString() ??
-              widget.item['price']?.toString() ??
-              '0',
-        ) ??
-        0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF121212) : const Color(0xFFF5F7FA);
+    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final fieldColor = isDark ? const Color(0xFF2A2A2A) : Colors.grey.withAlpha(20);
+
+    final int price = double.tryParse(
+      widget.item['harga_satuan']?.toString() ??
+          widget.item['price']?.toString() ??
+          '0',
+    )?.toInt() ?? 0;
     final int total = price * _quantity;
     final int stock =
         int.tryParse(widget.item['stok']?.toString() ?? '10') ?? 10;
@@ -409,9 +413,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF5F7FA,
-      ), // Light greyish blue for premium feel
+      backgroundColor: bgColor,
       appBar: AppBar(
         title: const Text(
           'Pembelian Gas',
@@ -434,7 +436,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -497,12 +499,12 @@ class _GasBookingPageState extends State<GasBookingPage> {
                     decoration: BoxDecoration(
                       color: _deliveryMethod == 'antar'
                           ? Colors.blue.withAlpha(20)
-                          : Colors.white,
+                          : cardColor,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: _deliveryMethod == 'antar'
                             ? Colors.blue
-                            : Colors.grey.withAlpha(50),
+                            : (isDark ? Colors.grey[800]! : Colors.grey.withAlpha(50)),
                         width: _deliveryMethod == 'antar' ? 2 : 1,
                       ),
                     ),
@@ -539,12 +541,12 @@ class _GasBookingPageState extends State<GasBookingPage> {
                     decoration: BoxDecoration(
                       color: _deliveryMethod == 'jemput'
                           ? Colors.blue.withAlpha(20)
-                          : Colors.white,
+                          : cardColor,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: _deliveryMethod == 'jemput'
                             ? Colors.blue
-                            : Colors.grey.withAlpha(50),
+                            : (isDark ? Colors.grey[800]! : Colors.grey.withAlpha(50)),
                         width: _deliveryMethod == 'jemput' ? 2 : 1,
                       ),
                     ),
@@ -585,7 +587,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -599,30 +601,34 @@ class _GasBookingPageState extends State<GasBookingPage> {
               children: [
                 TextField(
                   controller: _nameController,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: 'Nama Lengkap',
+                    labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
                     prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Colors.grey.withAlpha(20),
+                    fillColor: fieldColor,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _addressController,
                   maxLines: 2,
+                  style: TextStyle(color: textColor),
                   decoration: InputDecoration(
                     labelText: 'Alamat Lengkap',
+                    labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
                     prefixIcon: const Icon(Icons.location_on_outlined),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Colors.grey.withAlpha(20),
+                    fillColor: fieldColor,
                   ),
                 ),
               ],
@@ -639,7 +645,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -661,15 +667,25 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => const Icon(
-                        Icons.propane_tank,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
-                    ),
+                    child: (imageUrl.startsWith('assets/') || imageUrl.contains('F2.png'))
+                        ? Image.asset(
+                            'assets/images/F2.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => const Icon(
+                              Icons.propane_tank,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (c, e, s) => const Icon(
+                              Icons.propane_tank,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -875,10 +891,10 @@ class _GasBookingPageState extends State<GasBookingPage> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(15),
+              color: Colors.black.withAlpha(10),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),

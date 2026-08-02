@@ -152,7 +152,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/user'),
+        Uri.parse('http://10.250.3.148:8000/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -218,7 +218,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.193.206.148:8000/api/profile/update'),
+        Uri.parse('http://10.250.3.148:8000/api/profile/update'),
       );
 
       request.headers.addAll({
@@ -282,7 +282,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final token = prefs.getString('auth_token');
       if (token != null) {
         await http.post(
-          Uri.parse('http://10.193.206.148:8000/api/logout'),
+          Uri.parse('http://10.250.3.148:8000/api/logout'),
           headers: {'Authorization': 'Bearer $token'},
         );
       }

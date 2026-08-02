@@ -30,7 +30,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
         'id': 1,
         'name': 'Tenda Pesta Ukuran 4x4m',
         'price': 100000,
-        'image': 'http://10.193.206.148:8000/User/img/elemen/F1.png',
+        'image': 'http://10.250.3.148:8000/User/img/elemen/F1.png',
         'description':
             'Tenda plafon standar yang kokoh, dilengkapi dengan rumbai samping yang elegan.',
       },
@@ -38,7 +38,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
         'id': 2,
         'name': 'Kursi Lipat Chitose',
         'price': 2500,
-        'image': 'http://10.193.206.148:8000/User/img/elemen/F2.png',
+        'image': 'http://10.250.3.148:8000/User/img/elemen/F2.png',
         'description':
             'Kursi lipat besi dengan bantalan spons hitam, sangat nyaman dan mudah ditata untuk acara besar.',
       },
@@ -46,7 +46,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
         'id': 3,
         'name': 'Sound System 1000W',
         'price': 500000,
-        'image': 'http://10.193.206.148:8000/User/img/elemen/fasilitas.png',
+        'image': 'http://10.250.3.148:8000/User/img/elemen/fasilitas.png',
         'description':
             'Paket sound system lengkap dengan 2 mic wireless, cocok untuk acara outdoor maupun hajatan desa.',
       },
@@ -272,7 +272,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Image.network(
-                                  'http://10.193.206.148:8000/User/img/elemen/F1.png',
+                                  'http://10.250.3.148:8000/User/img/elemen/F1.png',
                                   width: 150,
                                   height: 150,
                                   errorBuilder: (ctx, err, stack) => Icon(

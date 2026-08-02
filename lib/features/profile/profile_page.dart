@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/main_wrapper.dart';
 import 'package:siladesbeng_mobile/features/profile/account/edit_profile_page.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_history_page.dart';
-import 'package:siladesbeng_mobile/features/report/my_reports_page.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -65,7 +64,7 @@ class _ProfilePageState extends State<ProfilePage> {
     // Verifikasi token ke server di latar belakang
     try {
       final response = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/user'),
+        Uri.parse('http://10.250.3.148:8000/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -625,18 +624,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildMenuCard(
                     context,
                     Icons.receipt_long_rounded,
-                    'Riwayat Transaksi',
-                    'Lacak pemesanan gas & sewa fasilitas desa',
+                    'Riwayat Aktivitas',
+                    'Lacak pesanan gas, sewa & laporan warga',
                     targetPage: const TransactionHistoryPage(),
                     iconColor: Colors.blue[600],
-                  ),
-                  _buildMenuCard(
-                    context,
-                    Icons.campaign_rounded,
-                    'Laporan & Aspirasi Saya',
-                    'Pantau status tindak lanjut aduan Anda',
-                    targetPage: const MyReportsPage(),
-                    iconColor: Colors.orange[700],
                   ),
                   if (_role != 'warga')
                     _buildMenuCard(

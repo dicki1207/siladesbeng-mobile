@@ -24,34 +24,7 @@ class _GasPageState extends State<GasPage> {
     _fetchGas();
   }
 
-  List<Map<String, dynamic>> _getMockGas() {
-    return [
-      {
-        'id': 1,
-        'name': 'Gas Melon 3kg',
-        'price': 20000,
-        'image': 'assets/images/F2.png',
-        'description':
-            'Gas LPG subsidi ukuran 3kg untuk keperluan rumah tangga. Harga sudah termasuk ongkos kirim standar ke seluruh wilayah desa.',
-      },
-      {
-        'id': 2,
-        'name': 'Bright Gas 5.5kg',
-        'price': 105000,
-        'image': 'assets/images/F2.png',
-        'description':
-            'Gas LPG Non-Subsidi ukuran 5.5kg dengan teknologi katup ganda, lebih aman dan praktis untuk dapur modern.',
-      },
-      {
-        'id': 3,
-        'name': 'Elpiji 12kg',
-        'price': 225000,
-        'image': 'assets/images/F2.png',
-        'description':
-            'Tabung gas ukuran besar 12kg, sangat cocok untuk usaha kuliner, restoran, atau keluarga besar.',
-      },
-    ];
-  }
+
 
   Future<void> _fetchGas() async {
     try {
@@ -61,7 +34,7 @@ class _GasPageState extends State<GasPage> {
       if (token == null) {
         if (mounted) {
           setState(() {
-            _gasItems = _getMockGas();
+            _gasItems = [];
             _isLoading = false;
           });
         }
@@ -69,7 +42,7 @@ class _GasPageState extends State<GasPage> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/gas'),
+        Uri.parse('http://10.250.3.148:8000/api/gas'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -81,9 +54,14 @@ class _GasPageState extends State<GasPage> {
         if (data['status'] == 'success') {
           if (!mounted) return;
           setState(() {
-            _gasItems = (data['data'] as List).isNotEmpty
-                ? data['data']
-                : _getMockGas();
+            final rawItems = data['data'] as List? ?? [];
+            _gasItems = rawItems.map((item) {
+              item['name'] = item['jenis_gas'] ?? item['name'];
+              item['price'] = item['harga_satuan'] ?? item['price'];
+              item['image'] = item['image_url'] ?? item['image'] ?? 'assets/images/F2.png';
+              item['description'] = item['deskripsi'] ?? item['description'] ?? '';
+              return item;
+            }).toList();
             _isLoading = false;
           });
           return;
@@ -95,7 +73,7 @@ class _GasPageState extends State<GasPage> {
 
     if (!mounted) return;
     setState(() {
-      _gasItems = _getMockGas();
+      _gasItems = [];
       _isLoading = false;
     });
   }
@@ -155,22 +133,47 @@ class _GasPageState extends State<GasPage> {
                           ),
                         )
                       : _gasItems.isEmpty
-                      ? SliverToBoxAdapter(child: _buildEmptyState())
-                      : SliverGrid(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                          ? SliverToBoxAdapter(
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.inventory_2_outlined,
+                                        size: 80, color: Colors.grey[400]),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Belum Ada Gas',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Saat ini BUMDes belum menyediakan stok gas\ndi wilayah Anda.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Colors.grey[500]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : SliverGrid(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 16.0,
                                 mainAxisSpacing: 16.0,
                                 childAspectRatio: 0.55,
                               ),
-                          delegate: SliverChildBuilderDelegate((
-                            BuildContext context,
-                            int index,
-                          ) {
-                            return _buildPremiumGasCard(_gasItems[index]);
-                          }, childCount: _gasItems.length),
-                        ),
+                              delegate: SliverChildBuilderDelegate((
+                                BuildContext context,
+                                int index,
+                              ) {
+                                return _buildPremiumGasCard(_gasItems[index]);
+                              }, childCount: _gasItems.length),
+                            ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
@@ -363,62 +366,6 @@ class _GasPageState extends State<GasPage> {
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 50, left: 20, right: 20),
-      child: Container(
-        padding: const EdgeInsets.all(30),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0EA5E9).withAlpha(30),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0EA5E9).withAlpha(20),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.inventory_2_rounded,
-                size: 80,
-                color: Color(0xFF0EA5E9),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              "Stok Gas Sedang Kosong",
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color:
-                    Theme.of(context).textTheme.bodyLarge?.color ??
-                    const Color(0xFF0284C7),
-                fontSize: 20,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "Mohon maaf, stok LPG saat ini habis. Silakan cek kembali nanti atau hubungi BUMDes.",
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium!.copyWith(fontSize: 14, height: 1.5),
             ),
           ],
         ),

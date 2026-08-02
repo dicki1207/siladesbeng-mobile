@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class KycService {
-  static const String baseUrl = 'http://10.193.206.148:8000/api';
+  static const String baseUrl = 'http://10.250.3.148:8000/api';
 
   Future<Map<String, dynamic>> processKtp({
     required String imagePath,
@@ -53,6 +53,7 @@ class KycService {
         return {
           'status': 'success',
           'kyc_id': responseData['data']?['kyc_id'],
+          'ocr_data': responseData['data']?['ocr_data'],
         };
       } else {
         return {
@@ -68,10 +69,32 @@ class KycService {
   Future<Map<String, dynamic>> submitFace({
     required int kycId,
     required List<Map<String, dynamic>> faceData,
+    String? nik,
+    String? name,
+    String? address,
+    String? rtRw,
+    String? kecamatan,
+    String? desa,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? prefs.getString('token');
+
+      Map<String, dynamic> bodyData = {
+        'kyc_id': kycId,
+        'face_data': faceData,
+      };
+
+      if (nik != null) bodyData['nik'] = nik;
+      if (name != null) bodyData['name'] = name;
+      if (address != null) bodyData['address'] = address;
+      if (rtRw != null) {
+        final parts = rtRw.split('/');
+        if (parts.isNotEmpty) bodyData['rt'] = parts[0];
+        if (parts.length >= 2) bodyData['rw'] = parts[1];
+      }
+      if (kecamatan != null) bodyData['kecamatan'] = kecamatan;
+      if (desa != null) bodyData['desa'] = desa;
 
       final response = await http.post(
         Uri.parse('$baseUrl/kyc/submit'),
@@ -80,10 +103,7 @@ class KycService {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-        body: json.encode({
-          'kyc_id': kycId,
-          'face_data': faceData,
-        }),
+        body: json.encode(bodyData),
       );
 
       final responseData = json.decode(response.body);

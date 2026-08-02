@@ -81,17 +81,17 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     String url = '';
 
     if (val.contains('bca')) {
-      url = 'http://10.193.206.148:8000/assets/img/payment_logos/bca.jpg';
+      url = 'http://10.250.3.148:8000/assets/img/payment_logos/bca.jpg';
     } else if (val.contains('bri')) {
-      url = 'http://10.193.206.148:8000/assets/img/payment_logos/bri.png';
+      url = 'http://10.250.3.148:8000/assets/img/payment_logos/bri.png';
     } else if (val.contains('bni')) {
-      url = 'http://10.193.206.148:8000/assets/img/payment_logos/bni.png';
+      url = 'http://10.250.3.148:8000/assets/img/payment_logos/bni.png';
     } else if (val.contains('mandiri')) {
-      url = 'http://10.193.206.148:8000/assets/img/payment_logos/mandiri.png';
+      url = 'http://10.250.3.148:8000/assets/img/payment_logos/mandiri.png';
     } else if (val.contains('qris')) {
       url = 'https://qris.id/homepage/images/logo.png';
     } else if (val.contains('gopay')) {
-      url = 'http://10.193.206.148:8000/assets/img/payment_logos/gopay.png';
+      url = 'http://10.250.3.148:8000/assets/img/payment_logos/gopay.png';
     }
 
     if (url.isEmpty) return const SizedBox(width: 50);

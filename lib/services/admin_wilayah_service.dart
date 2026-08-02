@@ -13,7 +13,7 @@ class AdminWilayahService {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/wilayah/dashboard'),
+        Uri.parse('http://10.250.3.148:8000/api/wilayah/dashboard'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

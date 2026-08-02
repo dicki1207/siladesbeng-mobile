@@ -32,7 +32,7 @@ class _AllServicesPageState extends State<AllServicesPage> {
     setState(() => _isLoading = true);
     try {
       final res = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/services'),
+        Uri.parse('http://10.250.3.148:8000/api/services'),
       ).timeout(const Duration(milliseconds: 2000));
       if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
         if (!mounted) return;

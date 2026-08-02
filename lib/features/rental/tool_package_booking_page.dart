@@ -80,7 +80,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       'qty': 1,
       'unit': 'kursi',
       'selected': false,
-      'image': 'http://10.193.206.148:8000/User/img/elemen/F2.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/F2.png',
       'icon': Icons.chair_alt_rounded,
       'description':
           'Kursi lipat kerangka besi berlapis krom dengan bantalan jok busa tebal hitam yang nyaman untuk duduk durasi panjang.',
@@ -91,7 +91,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       'qty': 1,
       'unit': 'meja',
       'selected': false,
-      'image': 'http://10.193.206.148:8000/User/img/elemen/fasilitas.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/fasilitas.png',
       'icon': Icons.table_restaurant_rounded,
       'description':
           'Meja lipat kokoh berukuran 180x60 cm dengan alas finishing tahan air, mudah disusun untuk prasmanan maupun meja registrasi.',
@@ -102,7 +102,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       'qty': 1,
       'unit': 'tenda',
       'selected': false,
-      'image': 'http://10.193.206.148:8000/User/img/elemen/F1.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/F1.png',
       'icon': Icons.holiday_village_rounded,
       'description':
           'Tenda kerangka pipa baja tebal berlapis kain terpal tahan air & panas matahari. Sudah termasuk jasa pemasangan standar.',
@@ -113,7 +113,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       'qty': 1,
       'unit': 'set',
       'selected': false,
-      'image': 'http://10.193.206.148:8000/User/img/elemen/fasilitas.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/fasilitas.png',
       'icon': Icons.speaker_rounded,
       'description':
           'Speaker aktif portable bertenaga tinggi dilengkapi bluetooth/USB music player dan 2 mic wireless nirkabel berfrekuensi stabil.',
@@ -124,7 +124,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       'qty': 1,
       'unit': 'unit',
       'selected': false,
-      'image': 'http://10.193.206.148:8000/User/img/elemen/F1.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/F1.png',
       'icon': Icons.domain_rounded,
       'description':
           'Panggung bongkar pasang kokoh bertingkat untuk pembicara, musik, atau pelaminan desa berukuran modul 2x2m.',
@@ -135,7 +135,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       'qty': 1,
       'unit': 'unit',
       'selected': false,
-      'image': 'http://10.193.206.148:8000/User/img/elemen/F2.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/F2.png',
       'icon': Icons.bolt_rounded,
       'description':
           'Genset cadangan daya listrik kapasitas besar 5000W tangguh anti-padam untuk mengcover seluruh kebutuhan hajatan & acara.',

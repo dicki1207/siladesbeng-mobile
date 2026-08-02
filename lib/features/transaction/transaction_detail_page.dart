@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_receipt_page.dart';
-
+import 'package:siladesbeng_mobile/features/report/report_receipt_page.dart';
 class TransactionDetailPage extends StatelessWidget {
   final Map<String, dynamic> transaction;
 
@@ -182,12 +182,13 @@ class TransactionDetailPage extends StatelessWidget {
                     transaction['date'],
                     Icons.access_time_outlined,
                   ),
-                  _buildDetailRow(
-                    context,
-                    'Pembayaran',
-                    transaction['payment'],
-                    Icons.payment_outlined,
-                  ),
+                  if (transaction['payment'] != null && transaction['payment'] != '-')
+                    _buildDetailRow(
+                      context,
+                      'Pembayaran',
+                      transaction['payment'],
+                      Icons.payment_outlined,
+                    ),
 
                   const SizedBox(height: 32),
                   const Text(
@@ -246,29 +247,45 @@ class TransactionDetailPage extends StatelessWidget {
           ),
           child: ElevatedButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TransactionReceiptPage(
-                    orderNumber: transaction['id'] ?? 'TRX-12345',
-                    orderTime: transaction['date'] ?? '12 Juli 2026',
-                    accountName: 'Andi Desa',
-                    accountEmail: 'andi@example.com',
-                    recipientName: 'Andi Desa',
-                    address: 'Jl. Pemuda No. 4, Bengkalis',
-                    deliveryMethod: 'Diantar',
-                    paymentTime: transaction['date'] ?? '12 Juli 2026',
-                    paymentMethod: 'Transfer Bank',
-                    totalPayment: transaction['amount'] ?? 'Rp 0',
-                    status: transaction['status'] ?? 'Selesai',
-                    statusColor: transaction['statusColor'] ?? Colors.green,
-                    itemName: transaction['title'] ?? 'Layanan',
-                    qty: 1,
-                    pricePerItem: transaction['amount'] ?? 'Rp 0',
-                    type: transaction['type'] ?? 'Layanan',
+              if (transaction['category'] == 'Laporan Warga') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportReceiptPage(
+                      reportId: transaction['id']?.toString() ?? 'RPT-12345',
+                      category: transaction['category'] ?? 'Laporan Warga',
+                      date: transaction['date'] ?? '12 Juli 2026',
+                      description: transaction['title'] ?? 'Judul Laporan',
+                      status: transaction['status'] ?? 'Menunggu',
+                      statusColor: statusColor,
+                    ),
                   ),
-                ),
-              );
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TransactionReceiptPage(
+                      orderNumber: transaction['id']?.toString() ?? 'TRX-12345',
+                      orderTime: transaction['date'] ?? '12 Juli 2026',
+                      accountName: 'Andi Desa',
+                      accountEmail: 'andi@example.com',
+                      recipientName: 'Andi Desa',
+                      address: 'Jl. Pemuda No. 4, Bengkalis',
+                      deliveryMethod: 'Diantar',
+                      paymentTime: transaction['date'] ?? '12 Juli 2026',
+                      paymentMethod: transaction['payment'] ?? 'Transfer Bank',
+                      totalPayment: transaction['price'] ?? 'Rp 0',
+                      status: transaction['status'] ?? 'Selesai',
+                      statusColor: statusColor,
+                      itemName: transaction['title'] ?? 'Layanan',
+                      qty: 1,
+                      pricePerItem: transaction['price'] ?? 'Rp 0',
+                      type: transaction['category'] ?? 'Layanan',
+                    ),
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
@@ -278,9 +295,11 @@ class TransactionDetailPage extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Unduh Struk Digital',
-              style: TextStyle(
+            child: Text(
+              transaction['category'] == 'Laporan Warga'
+                  ? 'Lihat Bukti Laporan'
+                  : 'Unduh Struk Digital',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,

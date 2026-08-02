@@ -117,7 +117,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
           'participants': item['jumlah_peserta'] ?? 0,
           'isJoined': item['is_joined'] ?? false,
           'hasPoster': item['poster_path'] != null,
-          'posterUrl': item['poster_path'] != null ? 'http://10.193.206.148:8000/storage/${item['poster_path']}' : null,
+          'posterUrl': item['poster_path'] != null ? 'http://10.250.3.148:8000/storage/${item['poster_path']}' : null,
           'color': badgeColor,
         };
       }).toList();

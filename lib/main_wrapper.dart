@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/home/home_page.dart';
-import 'package:siladesbeng_mobile/features/news/news_page.dart';
+import 'package:siladesbeng_mobile/features/news/kabar_daerah_page.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_history_page.dart';
 import 'package:siladesbeng_mobile/features/profile/profile_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
@@ -51,7 +51,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 });
               },
             ),
-            const NewsPage(),
+            const KabarDaerahPage(),
             const AdminPortalPage(), // Tab Eksekutif Pengurus di Posisi Pusat Footer Nav
             TransactionHistoryPage(key: _activityKey),
             const ProfilePage(),
@@ -64,7 +64,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 });
               },
             ),
-            const NewsPage(),
+            const KabarDaerahPage(),
             TransactionHistoryPage(key: _activityKey),
             const ProfilePage(),
           ];

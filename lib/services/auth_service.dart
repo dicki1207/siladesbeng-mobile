@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  static const String baseUrl = 'http://10.193.206.148:8000/api';
+  static const String baseUrl = 'http://10.250.3.148:8000/api';
 
   Future<Map<String, dynamic>> forgotPassword(String emailOrPhone, String method) async {
     try {

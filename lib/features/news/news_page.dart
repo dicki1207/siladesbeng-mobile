@@ -6,8 +6,9 @@ import 'package:siladesbeng_mobile/widgets/premium_header.dart';
 
 class NewsPage extends StatefulWidget {
   final String postCategory; // 'Berita' or 'Pengumuman'
+  final bool isEmbedded;
 
-  const NewsPage({super.key, this.postCategory = 'Pengumuman'});
+  const NewsPage({super.key, this.postCategory = 'Pengumuman', this.isEmbedded = false});
 
   @override
   State<NewsPage> createState() => _NewsPageState();
@@ -54,17 +55,7 @@ class _NewsPageState extends State<NewsPage> {
       });
     } else {
       setState(() {
-        _mockNews = [
-          {
-            'title': widget.postCategory == 'Berita' ? 'Belum Ada Berita' : 'Belum Ada Pengumuman',
-            'category': widget.postCategory,
-            'date': '-',
-            'desc': widget.postCategory == 'Berita' 
-                ? 'Belum ada berita daerah yang dipublikasikan saat ini.' 
-                : 'Belum ada pengumuman yang sesuai.',
-            'image': 'https://picsum.photos/seed/error/400/300',
-          }
-        ];
+        _mockNews = [];
         _isLoading = false;
       });
     }
@@ -107,57 +98,60 @@ class _NewsPageState extends State<NewsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                PremiumHeader(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                          const Spacer(),
-                          Icon(isBerita ? Icons.newspaper : Icons.announcement, color: Colors.white, size: 30),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          isBerita ? 'Berita Daerah' : 'Pengumuman',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
+                if (!widget.isEmbedded)
+                  PremiumHeader(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            const Spacer(),
+                            Icon(isBerita ? Icons.newspaper : Icons.announcement, color: Colors.white, size: 30),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            isBerita ? 'Berita Daerah' : 'Pengumuman',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          isBerita 
-                              ? 'Dapatkan berita kegiatan terbaru seputar daerah.'
-                              : 'Informasi dan acara yang akan datang.',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 14,
+                        const SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            isBerita 
+                                ? 'Dapatkan berita kegiatan terbaru seputar daerah.'
+                                : 'Informasi dan acara yang akan datang.',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
-                ),
                 
                 // Content section with negative margin to overlap header
                 Transform.translate(
-                  offset: const Offset(0, -20),
+                  offset: Offset(0, widget.isEmbedded ? 0 : -20),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).scaffoldBackgroundColor,
-                      borderRadius: const BorderRadius.only(
+                      borderRadius: widget.isEmbedded 
+                          ? BorderRadius.zero
+                          : const BorderRadius.only(
                         topLeft: Radius.circular(30),
                         topRight: Radius.circular(30),
                       ),
@@ -251,18 +245,39 @@ class _NewsPageState extends State<NewsPage> {
               ? const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator()),
                 )
-              : SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final news = filteredNews[index];
-                        return _buildNewsCard(news, isBerita);
-                      },
-                      childCount: filteredNews.length,
+              : filteredNews.isEmpty
+                  ? SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
+                            const SizedBox(height: 16),
+                            Text(
+                              isBerita ? 'Belum Ada Berita' : 'Belum Ada Pengumuman',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isBerita ? 'Belum ada berita daerah yang dipublikasikan saat ini.' : 'Belum ada pengumuman yang sesuai.',
+                              style: TextStyle(color: Colors.grey[500]),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final news = filteredNews[index];
+                            return _buildNewsCard(news, isBerita);
+                          },
+                          childCount: filteredNews.length,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
                 
           // Bottom padding
           const SliverToBoxAdapter(

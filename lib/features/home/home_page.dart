@@ -127,10 +127,10 @@ class _HomePageState extends State<HomePage> {
       final timeoutDuration = const Duration(milliseconds: 2500);
 
       final results = await Future.wait([
-        http.get(Uri.parse('http://10.193.206.148:8000/api/banners')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('http://10.193.206.148:8000/api/announcements')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('http://10.193.206.148:8000/api/services')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('http://10.193.206.148:8000/api/unit-pelayanan'), headers: headers).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('http://10.250.3.148:8000/api/banners')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('http://10.250.3.148:8000/api/announcements')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('http://10.250.3.148:8000/api/services')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('http://10.250.3.148:8000/api/unit-pelayanan'), headers: headers).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
       ]);
 
       final bannerRes = results[0];
@@ -486,7 +486,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             child: ClipOval(
                               child: Image.network(
-                                'http://10.193.206.148:8000/User/img/logo/logocb.webp',
+                                'http://10.250.3.148:8000/User/img/logo/logocb.webp',
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,
@@ -819,7 +819,7 @@ class _HomePageState extends State<HomePage> {
               ]
             : _banners.map((banner) {
                 final imageUrl = banner['image_path'] != null
-                    ? 'http://10.193.206.148:8000/storage/${banner['image_path']}'
+                    ? 'http://10.250.3.148:8000/storage/${banner['image_path']}'
                     : banner['image_url'] ?? '';
 
                 return Builder(

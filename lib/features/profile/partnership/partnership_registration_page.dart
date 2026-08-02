@@ -128,13 +128,18 @@ class _PartnershipRegistrationPageState
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF121212) : Colors.grey[50];
+    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('Pengajuan Kemitraan', style: TextStyle(color: Colors.black87, fontSize: 16)),
-        backgroundColor: Colors.white,
+        title: Text('Pengajuan Kemitraan', style: TextStyle(color: textColor, fontSize: 16)),
+        backgroundColor: cardColor,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: textColor),
       ),
       body: _isLoadingRegions 
           ? const Center(child: CircularProgressIndicator()) 
@@ -145,8 +150,8 @@ class _PartnershipRegistrationPageState
                 child: Container(
                   padding: const EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withAlpha(10),
@@ -166,9 +171,9 @@ class _PartnershipRegistrationPageState
                           Expanded(
                             child: Column(
                               children: [
-                                const Text(
+                                Text(
                                   'FORM PENGAJUAN KEMITRAAN',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: textColor),
                                   textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(height: 4),
@@ -234,28 +239,29 @@ class _PartnershipRegistrationPageState
                       // Kabupaten (Statis)
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[300]!),
+                          color: isDark ? const Color(0xFF222222) : Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? Colors.transparent : Colors.grey[300]!),
                         ),
-                        child: const Text('Kabupaten Bengkalis', style: TextStyle(fontSize: 14, color: Colors.black87)),
+                        child: Text('Kabupaten Bengkalis', style: TextStyle(fontSize: 14, color: isDark ? Colors.white54 : Colors.black87)),
                       ),
                       const SizedBox(height: 12),
                       
                       // Kecamatan Dropdown
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[300]!),
+                          color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F9FA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? Colors.transparent : Colors.grey[300]!),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             isExpanded: true,
-                            hint: const Text('Kecamatan...', style: TextStyle(fontSize: 14)),
+                            hint: Text('Kecamatan...', style: TextStyle(fontSize: 14, color: isDark ? Colors.grey[500] : Colors.grey[600])),
+                            dropdownColor: cardColor,
                             value: _selectedKecamatanId,
                             icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
                             items: _kecamatans.map((kec) {
@@ -279,16 +285,17 @@ class _PartnershipRegistrationPageState
                       
                       // Desa Dropdown
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[300]!),
+                          color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F9FA),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? Colors.transparent : Colors.grey[300]!),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             isExpanded: true,
-                            hint: const Text('Semua Kelurahan/Desa', style: TextStyle(fontSize: 14)),
+                            hint: Text('Semua Kelurahan/Desa', style: TextStyle(fontSize: 14, color: isDark ? Colors.grey[500] : Colors.grey[600])),
+                            dropdownColor: cardColor,
                             value: _selectedDesaId,
                             icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
                             items: _desas.map((desa) {
@@ -307,35 +314,42 @@ class _PartnershipRegistrationPageState
                       ),
                       
                       const SizedBox(height: 24),
-                      const Text(
-                        'Unggah SK/Surat Tugas (Max 5MB)',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
-                      ),
+                      Text('Unggah SK/Surat Tugas (Max 5MB)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isDark ? Colors.white70 : Colors.black87)),
                       const SizedBox(height: 8),
                       InkWell(
                         onTap: _pickFile,
+                        borderRadius: BorderRadius.circular(12),
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 24),
                           decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            border: Border.all(color: Colors.blue[200]!),
-                            borderRadius: BorderRadius.circular(8),
+                            color: isDark ? const Color(0xFF1E2631) : Colors.blue[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: isDark ? Colors.blue[800]! : Colors.blue[200]!, width: 1.5),
                           ),
                           child: Column(
                             children: [
-                              const Icon(Icons.cloud_upload_outlined, color: Colors.blue, size: 32),
-                              const SizedBox(height: 8),
+                              Icon(
+                                _filePath != null ? Icons.check_circle : Icons.cloud_upload_outlined,
+                                color: _filePath != null ? Colors.green : Colors.blue,
+                                size: 36,
+                              ),
+                              const SizedBox(height: 12),
                               Text(
-                                _fileName != null ? 'File terpilih: $_fileName' : 'Pilih file atau seret dan lepas',
-                                style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w500, fontSize: 13),
+                                _fileName ?? 'Pilih file atau seret dan lepas',
+                                style: TextStyle(
+                                  color: _filePath != null ? Colors.green[700] : Colors.blue[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'PDF, PNG, JPG maksimal 5MB',
-                                style: TextStyle(color: Colors.grey, fontSize: 11),
-                              ),
+                              if (_filePath == null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'PDF, PNG, JPG maksimal 5MB',
+                                  style: TextStyle(color: isDark ? Colors.grey[500] : Colors.grey[500], fontSize: 11),
+                                ),
+                              ]
                             ],
                           ),
                         ),
@@ -400,17 +414,23 @@ class _PartnershipRegistrationPageState
     int maxLines = 1,
     String? helperText,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? Colors.white70 : Colors.black87;
+    final hintColor = isDark ? Colors.grey[600] : Colors.grey[400];
+    final fillColor = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF8F9FA);
+    final borderColor = isDark ? Colors.transparent : Colors.grey[300]!;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 13,
-              color: Colors.black87,
+              color: labelColor,
             ),
           ),
           const SizedBox(height: 8),
@@ -424,24 +444,28 @@ class _PartnershipRegistrationPageState
               }
               return null;
             },
-            style: const TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+              hintStyle: TextStyle(color: hintColor, fontSize: 14),
               filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              fillColor: fillColor,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: borderColor),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: borderColor),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.blue[400]!),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.blue[400]!, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.redAccent),
               ),
             ),
           ),

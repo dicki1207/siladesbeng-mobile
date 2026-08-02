@@ -48,7 +48,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       final response = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/history'),
+        Uri.parse('http://10.250.3.148:8000/api/history'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -75,23 +75,23 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
     {'name': 'Semua', 'icon': Icons.apps},
     {
       'name': 'Penyewaan',
-      'image': 'http://10.193.206.148:8000/User/img/elemen/F1.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/F1.png',
     },
     {
       'name': 'Pesanan Gas',
-      'image': 'http://10.193.206.148:8000/User/img/elemen/F2.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/F2.png',
     },
     {
       'name': 'Sewa Kendaraan',
-      'image': 'http://10.193.206.148:8000/User/img/elemen/mobil.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/mobil.png',
     },
     {
       'name': 'Fasilitas',
-      'image': 'http://10.193.206.148:8000/User/img/elemen/fasilitas.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/fasilitas.png',
     },
     {
       'name': 'Laporan Warga',
-      'image': 'http://10.193.206.148:8000/User/img/elemen/lapor.png',
+      'image': 'http://10.250.3.148:8000/User/img/elemen/lapor.png',
     },
   ];
 

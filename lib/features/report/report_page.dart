@@ -85,7 +85,7 @@ class _ReportPageState extends State<ReportPage> {
       if (token == null) return;
 
       final response = await http.get(
-        Uri.parse('http://10.193.206.148:8000/api/user'),
+        Uri.parse('http://10.250.3.148:8000/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -167,7 +167,7 @@ class _ReportPageState extends State<ReportPage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.193.206.148:8000/api/laporan'),
+        Uri.parse('http://10.250.3.148:8000/api/laporan'),
       );
 
       request.headers.addAll({

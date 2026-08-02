@@ -68,7 +68,7 @@ class RentalTicketPage extends StatelessWidget {
           // Background Kopsurat (Watermark)
           Positioned.fill(
             child: Image.network(
-              'http://10.193.206.148:8000/User/img/buktilapor/Halaman1buktipelaporan(kopsurat).png',
+              'http://10.250.3.148:8000/User/img/buktilapor/Halaman1buktipelaporan(kopsurat).png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return const Center(child: Text('Watermark tidak dapat dimuat'));

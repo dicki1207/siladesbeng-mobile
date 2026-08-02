@@ -35,14 +35,14 @@ class CustomBottomNav extends StatelessWidget {
             children: isAdmin
                 ? [
                     _buildNavItem(context, 0, Icons.home_rounded, 'Beranda'),
-                    _buildNavItem(context, 1, Icons.article_outlined, 'Berita'),
+                    _buildNavItem(context, 1, Icons.article_outlined, 'Kabar Daerah'),
                     _buildAdminNavItem(context, 2, Icons.admin_panel_settings_rounded, adminRoleLabel),
                     _buildNavItem(context, 3, Icons.receipt_long_outlined, 'Aktivitas'),
                     _buildNavItem(context, 4, Icons.person_outline, 'Profil'),
                   ]
                 : [
                     _buildNavItem(context, 0, Icons.home_rounded, 'Beranda'),
-                    _buildNavItem(context, 1, Icons.article_outlined, 'Berita'),
+                    _buildNavItem(context, 1, Icons.article_outlined, 'Kabar Daerah'),
                     _buildNavItem(context, 2, Icons.receipt_long_outlined, 'Aktivitas'),
                     _buildNavItem(context, 3, Icons.person_outline, 'Profil'),
                   ],

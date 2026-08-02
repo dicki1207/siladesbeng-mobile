@@ -57,7 +57,7 @@ class _AssistantPageState extends State<AssistantPage> {
       }
 
       final response = await http.post(
-        Uri.parse('http://10.193.206.148:8000/api/chatbot'),
+        Uri.parse('http://10.250.3.148:8000/api/chatbot'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',

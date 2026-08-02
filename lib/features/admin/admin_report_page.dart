@@ -49,7 +49,7 @@ class _AdminReportPageState extends State<AdminReportPage> {
     if (token != null) {
       try {
         final res = await http.get(
-          Uri.parse('http://10.193.206.148:8000/api/admin-reports'),
+          Uri.parse('http://10.250.3.148:8000/api/admin-reports'),
           headers: {
             'Authorization': 'Bearer $token',
             'Accept': 'application/json',

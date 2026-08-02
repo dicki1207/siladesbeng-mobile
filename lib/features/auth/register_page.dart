@@ -24,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse('http://10.193.206.148:8000/api/register');
+      final url = Uri.parse('http://10.250.3.148:8000/api/register');
       final body = {
         'email': _emailController.text,
         'password': _passwordController.text,
@@ -121,7 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           
                           try {
                             final res = await http.post(
-                              Uri.parse('http://10.193.206.148:8000/api/register/verify-otp'),
+                              Uri.parse('http://10.250.3.148:8000/api/register/verify-otp'),
                               body: {
                                 'email': email,
                                 'otp_code': otpController.text,
