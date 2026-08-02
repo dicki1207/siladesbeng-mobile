@@ -146,7 +146,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               if (!dialogContext.mounted) return;
                               Navigator.pop(dialogContext); // Tutup dialog OTP
                               
-                              if (!context.mounted) return;
+                              if (!mounted) return;
                               // ignore: use_build_context_synchronously
                               showDialog(
                                 context: context,
@@ -158,7 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               );
 
                               await Future.delayed(const Duration(seconds: 2));
-                              if (!context.mounted) return;
+                              if (!mounted) return;
                               // ignore: use_build_context_synchronously
                               Navigator.pop(context); // Tutup dialog success
                               // ignore: use_build_context_synchronously

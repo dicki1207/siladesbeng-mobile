@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class RentalTicketPage extends StatelessWidget {
   final String itemName;
@@ -22,7 +24,7 @@ class RentalTicketPage extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
-          'Membuka WhatsApp: Halo Pengurus, saya ingin konfirmasi E-Tiket penyewaan gedung...',
+          'Membuka WhatsApp: Halo Pengurus, saya ingin konfirmasi Bukti Transaksi...',
         ),
         backgroundColor: Colors.blue[800],
       ),
@@ -31,296 +33,240 @@ class RentalTicketPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    // Generate some mock data for the receipt
+    final String currentDate = DateFormat('dd MMMM yyyy').format(DateTime.now());
+    final String refNumber = 'RES/${DateTime.now().year}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+    
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF10192A) : Colors.grey[200],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'E-Tiket Reservasi',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Colors.blue[800],
-        foregroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: const Text('Unduh Bukti Transaksi', style: TextStyle(color: Colors.black87, fontSize: 16)),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black87),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Membagikan PDF Bukti Transaksi...')),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Menyimpan PDF ke perangkat...')),
+              );
+            },
+          ),
+        ],
       ),
-      body: TweenAnimationBuilder<double>(
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        duration: const Duration(milliseconds: 550),
-        curve: Curves.easeOutQuart,
-        builder: (context, value, child) {
-          return Opacity(
-            opacity: value,
-            child: Transform.translate(
-              offset: Offset(0, 30 * (1 - value)),
-              child: child,
+      body: Stack(
+        children: [
+          // Background Kopsurat (Watermark)
+          Positioned.fill(
+            child: Image.network(
+              'http://10.193.206.148:8000/User/img/buktilapor/Halaman1buktipelaporan(kopsurat).png',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(child: Text('Watermark tidak dapat dimuat'));
+              },
             ),
-          );
-        },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              // Karcis Container
-              Container(
-              decoration: BoxDecoration(
-                color: isDark ? Theme.of(context).cardColor : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(20),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Ticket Header
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[900],
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'BUKTI RESERVASI',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            letterSpacing: 2,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          itemName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Ticket Body
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
+          ),
+          
+          // Content
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 120, bottom: 40),
+              child: Container(
+                color: Colors.white.withAlpha(220), // Slight white overlay for text readability if needed
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Surat
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoRow('Nama Penyewa', renterName),
-                        const Divider(height: 24),
-                        _buildInfoRow('Tipe Acara', eventType),
-                        const Divider(height: 24),
-                        _buildInfoRow('Lama Sewa', '$durationDays Hari'),
-                        const Divider(height: 24),
-                        _buildInfoRow(
-                          'Total Biaya',
-                          totalPrice == 0 ? 'GRATIS' : 'Rp $totalPrice',
-                        ),
-
-                        if (needsLogistics) ...[
-                          const Divider(height: 24),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: isDark ? Colors.blue.withAlpha(40) : Colors.blue[50],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.inventory_2,
-                                  color: isDark ? Colors.blue[300] : Colors.blue[800],
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    'Membutuhkan logistik tambahan (Kursi/Speaker) dari dalam gudang.',
-                                    style: TextStyle(
-                                      color: isDark ? Colors.blue[200] : Colors.blue[900],
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        const Expanded(
+                          child: Text(
+                            'Bukti Transaksi Pemesanan',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
                             ),
                           ),
-                        ],
+                        ),
+                        Expanded(
+                          child: Text(
+                            'Nomor Ref: $refNumber',
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 30),
 
-                  // Ticket Dashed Line Separator
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            height: 20,
-                            width: 10,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF10192A) : const Color(0xFFEEEEEE),
-                                borderRadius: const BorderRadius.only(
-                                  topRight: Radius.circular(10),
-                                  bottomRight: Radius.circular(10),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                '----------------------------------------------------',
-                                maxLines: 1,
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 20,
-                            width: 10,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF10192A) : const Color(0xFFEEEEEE),
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(10),
-                                  bottomLeft: Radius.circular(10),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  // Ticket Footer (QR Code)
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
+                    // Section I
+                    const Text(
+                      'I. Identitas & Detail Pesanan',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTableRow('Nama Pemesan', renterName),
+                    _buildTableRow('Tanggal Transaksi', '$currentDate WIB'),
+                    _buildTableRow('Barang / Layanan', itemName),
+                    _buildTableRow('Tipe Acara', eventType),
+                    _buildTableRow('Lama Sewa', '$durationDays Hari'),
+                    _buildTableRow('Total Pembayaran', totalPrice == 0 ? 'GRATIS' : 'Rp ${NumberFormat('#,###', 'id_ID').format(totalPrice)}'),
+                    
+                    const SizedBox(height: 6),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Tunjukkan QR Code ini kepada pengurus',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        const SizedBox(
+                          width: 130,
+                          child: Text('Status Terkini', style: TextStyle(fontSize: 13, color: Colors.black87)),
                         ),
-                        const SizedBox(height: 16),
-                        Icon(
-                          Icons.qr_code_2,
-                          size: 150,
-                          color: Colors.blue[900],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'ID: RES-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
+                        const Text(':', style: TextStyle(fontSize: 13, color: Colors.black87)),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'Berhasil / Lunas',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 24),
+                    const SizedBox(height: 30),
 
-            // Instruction Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? Theme.of(context).cardColor : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? Colors.blue[900]! : Colors.blue[100]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.lightbulb, color: isDark ? Colors.blue[300] : Colors.blue[700]),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Instruksi Hari H',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                    // Section II
+                    const Text(
+                      'II. Instruksi & Catatan Tambahan',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[400]!),
+                        borderRadius: BorderRadius.circular(6),
+                        color: Colors.white,
+                      ),
+                      child: Text(
+                        needsLogistics
+                            ? 'Pesanan ini membutuhkan logistik tambahan (Kursi/Speaker) dari gudang. Harap hubungi pengurus pada hari H untuk serah terima kunci dan perlengkapan.'
+                            : 'Pesanan telah dicatat. Harap hubungi pengurus pada hari H untuk serah terima kunci/barang.',
+                        style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.5),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Tanda Tangan Elektronik
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text('Bengkalis, $currentDate', style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                          const SizedBox(height: 4),
+                          const Text('Sistem SilaDesBeng', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
+                          const Text('Admin BUMDes', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                          const SizedBox(height: 12),
+                          // QR Code
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              QrImageView(
+                                data: 'https://siladesbeng.id/validasi/transaksi/$refNumber',
+                                version: QrVersions.auto,
+                                size: 100.0,
+                              ),
+                              Container(
+                                color: Colors.white,
+                                padding: const EdgeInsets.all(2),
+                                child: const Icon(Icons.verified, color: Colors.blue, size: 20),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text('Tanda Tangan Elektronik', style: TextStyle(fontSize: 10, color: Colors.grey, fontStyle: FontStyle.italic)),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 60),
+
+                    // Disclaimer
+                    const Divider(thickness: 1, color: Colors.grey),
+                    const SizedBox(height: 8),
+                    const Center(
+                      child: Text(
+                        'Dokumen ini dicetak otomatis oleh Sistem SilaDesBeng dan sah tanpa tanda tangan basah.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    
+                    // Hubungi Pengurus Button (not part of PDF, just app action)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _simulateWhatsApp(context),
+                        icon: const Icon(Icons.wechat, size: 24),
+                        label: const Text('Hubungi Pengurus BUMDes', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[600],
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Harap hubungi pengurus gedung untuk keperluan serah terima kunci gedung dan pengambilan fasilitas dari gudang (jika ada).',
-                    style: TextStyle(color: isDark ? Colors.grey[300] : Colors.black87),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // WhatsApp Button
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                onPressed: () => _simulateWhatsApp(context),
-                icon: const Icon(
-                  Icons.wechat,
-                  size: 28,
-                ), // using wechat as alternative if WA icon missing
-                label: const Text(
-                  'Halo Layanan (Hubungi Pengurus)',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[700],
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-      ],
+  Widget _buildTableRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text(label, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+          ),
+          const Text(':', style: TextStyle(fontSize: 13, color: Colors.black87)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black)),
+          ),
+        ],
+      ),
     );
   }
 }
