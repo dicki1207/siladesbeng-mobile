@@ -10,7 +10,6 @@ import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:siladesbeng_mobile/features/profile/info/about_page.dart';
 import 'package:siladesbeng_mobile/features/profile/partnership/partnership_page.dart';
 import 'package:siladesbeng_mobile/features/profile/info/help_faq_page.dart';
-import 'package:siladesbeng_mobile/features/profile/statistics/statistics_page.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 import 'package:siladesbeng_mobile/features/profile/mutation/domicile_transfer_page.dart';
@@ -29,7 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String _email = 'mushlihul@example.com';
   String? _imagePath;
   String? _imageUrl;
-  String _role = 'rt'; // Changed to rt to show admin menu
+  String _role = 'warga';
   bool _isVerified = false;
 
   @override
@@ -57,7 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _email = prefs.getString('profile_email') ?? 'mushlihul@example.com';
       _imagePath = prefs.getString('profile_image');
       _imageUrl = prefs.getString('profile_image_url');
-      _role = 'rt'; // Force to 'rt' for testing Admin Menu
+      _role = prefs.getString('user_role') ?? 'warga';
       _isVerified = prefs.getBool('is_verified') ?? false;
     });
 
@@ -629,15 +628,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     targetPage: const TransactionHistoryPage(),
                     iconColor: Colors.blue[600],
                   ),
-                  if (_role != 'warga')
-                    _buildMenuCard(
-                      context,
-                      Icons.analytics_rounded,
-                      'Statistik Layanan Desa',
-                      'Analisis laporan warga & progres penanganan',
-                      targetPage: const StatisticsPage(),
-                      iconColor: Colors.purple[600],
-                    ),
                   const SizedBox(height: 20),
                   _buildSectionHeader(
                     context,
