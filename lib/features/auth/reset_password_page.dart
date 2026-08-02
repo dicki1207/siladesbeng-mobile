@@ -1,0 +1,255 @@
+import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/services/auth_service.dart';
+import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+
+class ResetPasswordPage extends StatefulWidget {
+  final String emailOrPhone;
+  final String resetToken;
+
+  const ResetPasswordPage({
+    super.key,
+    required this.emailOrPhone,
+    required this.resetToken,
+  });
+
+  @override
+  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
+}
+
+class _ResetPasswordPageState extends State<ResetPasswordPage> {
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscureText1 = true;
+  bool _obscureText2 = true;
+  final AuthService _authService = AuthService();
+
+  Future<void> _submit() async {
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kata sandi minimal 8 karakter')),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Konfirmasi kata sandi tidak cocok')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await _authService.resetPassword(
+      widget.emailOrPhone,
+      widget.resetToken,
+      password,
+      confirmPassword,
+    );
+
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['status'] == 'success') {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AnimatedSuccessDialog(
+          message: 'Kata Sandi Berhasil Diubah!',
+          isLogout: false,
+        ),
+      );
+
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      
+      // Kembali ke halaman Login (Pop until Login Page)
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Gagal'),
+          content: Text(result['message'] ?? 'Terjadi kesalahan sistem.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: const Text('Buat Kata Sandi Baru'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.lock_open_rounded,
+                size: 80,
+                color: Colors.blueAccent,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Kata Sandi Baru',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Silakan buat kata sandi baru yang kuat untuk akun Anda.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 40),
+
+              // Field Kata Sandi Baru
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: _obscureText1,
+                  decoration: InputDecoration(
+                    labelText: 'Kata Sandi Baru',
+                    border: InputBorder.none,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText1 ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText1 = !_obscureText1;
+                        });
+                      },
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Field Konfirmasi Kata Sandi Baru
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureText2,
+                  decoration: InputDecoration(
+                    labelText: 'Konfirmasi Kata Sandi',
+                    border: InputBorder.none,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText2 ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText2 = !_obscureText2;
+                        });
+                      },
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Simpan Kata Sandi',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

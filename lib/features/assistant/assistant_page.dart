@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AssistantPage extends StatefulWidget {
   const AssistantPage({super.key});
@@ -18,32 +21,93 @@ class _AssistantPageState extends State<AssistantPage> {
     },
   ];
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
+  bool _isTyping = false;
+
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
 
     setState(() {
       _messages.add({
         'isUser': true,
-        'text': _messageController.text.trim(),
+        'text': text,
         'time':
             '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
       });
       _messageController.clear();
+      _isTyping = true;
     });
 
-    // Simulasi balasan asisten
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      // Siapkan history untuk context
+      List<Map<String, String>> history = _messages
+          .where((m) => m['text'] != 'Halo! Saya Asisten Cerdas SiladesBeng. Ada yang bisa saya bantu terkait layanan BUMDes hari ini?')
+          .map((m) => {
+                'role': m['isUser'] ? 'user' : 'model',
+                'text': m['text'].toString(),
+              })
+          .toList();
+
+      // Jangan kirim pesan terakhir karena akan dikirim sebagai 'message' utama
+      if (history.isNotEmpty) {
+        history.removeLast();
+      }
+
+      final response = await http.post(
+        Uri.parse('http://10.193.206.148:8000/api/chatbot'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'message': text,
+          'history': history,
+        }),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isTyping = false;
+      });
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _messages.add({
+            'isUser': false,
+            'text': data['reply'] ?? 'Maaf, saya tidak mengerti.',
+            'time':
+                '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+          });
+        });
+      } else {
+        final data = json.decode(response.body);
+        setState(() {
+          _messages.add({
+            'isUser': false,
+            'text': data['error'] ?? 'Terjadi kesalahan sistem saat menghubungi AI.',
+            'time':
+                '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+          });
+        });
+      }
+    } catch (e) {
       if (!mounted) return;
       setState(() {
+        _isTyping = false;
         _messages.add({
           'isUser': false,
-          'text':
-              'Maaf, saat ini saya masih dalam tahap pengembangan. Silakan hubungi admin BUMDes untuk informasi lebih lanjut.',
+          'text': 'Koneksi gagal. Periksa jaringan Anda.',
           'time':
               '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
         });
       });
-    });
+    }
   }
 
   @override
@@ -69,6 +133,35 @@ class _AssistantPageState extends State<AssistantPage> {
               },
             ),
           ),
+          if (_isTyping)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 8),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 12,
+                    backgroundImage: AssetImage('logodomain.png'),
+                    backgroundColor: Colors.transparent,
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Text('Mengetik...', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+                  ),
+                ],
+              ),
+            ),
           _buildMessageInput(),
         ],
       ),

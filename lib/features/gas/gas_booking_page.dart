@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 import 'package:siladesbeng_mobile/features/gas/gas_kk_scanner_page.dart';
+import 'package:siladesbeng_mobile/features/transaction/payment_instruction_page.dart';
 
 class GasBookingPage extends StatefulWidget {
   final dynamic item;
@@ -207,62 +208,60 @@ class _GasBookingPageState extends State<GasBookingPage> {
       Navigator.pop(context); // Close loading dialog
 
       if (response.statusCode == 200 && data['success'] == true) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+        if (data['payment_data'] != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentInstructionPage(
+                paymentData: data['payment_data'],
+                onFinish: () {
+                  Navigator.pop(context); // Pop booking page
+                },
+              ),
             ),
-            title: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0, end: 1),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.elasticOut,
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: value,
-                  child: const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                    size: 80,
-                  ),
-                );
-              },
-            ),
-            content: const Text(
-              'Pesanan Gas Berhasil!\n\nMohon siapkan pembayaran Anda.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-            actions: [
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+          );
+        } else {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              title: const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 80,
+              ),
+              content: const Text(
+                'Pesanan Gas Berhasil!\n\nMohon siapkan pembayaran Anda (Tunai).',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      Navigator.pop(context); // Pop booking page
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 12,
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 14,
-                    ),
-                  ),
-                  child: const Text(
-                    'OK, Selesai',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    child: const Text('OK', style: TextStyle(color: Colors.white)),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
+              ],
+            ),
+          );
+        }
       } else {
         _showError(data['message'] ?? 'Gagal membuat pesanan');
       }

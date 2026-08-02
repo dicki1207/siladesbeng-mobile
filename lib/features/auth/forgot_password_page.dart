@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/services/auth_service.dart';
+import 'package:siladesbeng_mobile/features/auth/forgot_password_otp_page.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -8,24 +10,17 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  final _emailController = TextEditingController();
+  final _emailOrPhoneController = TextEditingController();
+  String _selectedMethod = 'email'; // email or whatsapp
   bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
   Future<void> _submit() async {
-    final email = _emailController.text.trim();
-    if (email.isEmpty) {
+    final input = _emailOrPhoneController.text.trim();
+    if (input.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Email tidak boleh kosong')));
-      return;
-    }
-
-    // Validasi email sederhana
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(email)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Format email tidak valid')));
+      ).showSnackBar(const SnackBar(content: Text('Email/No. HP tidak boleh kosong')));
       return;
     }
 
@@ -33,76 +28,56 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       _isLoading = true;
     });
 
-    // Simulasi pengiriman email
-    await Future.delayed(const Duration(seconds: 2));
+    final result = await _authService.forgotPassword(input, _selectedMethod);
 
     if (!mounted) return;
-
+    
     setState(() {
       _isLoading = false;
     });
 
-    // Menampilkan pesan sukses
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Icon(
-          Icons.mark_email_read,
-          color: Colors.greenAccent,
-          size: 60,
+    if (result['status'] == 'success') {
+      // Demo OTP jika ada (mode debug)
+      String? demoOtp = result['demo_otp'];
+      if (demoOtp != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Demo OTP: $demoOtp'),
+            duration: const Duration(seconds: 10),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ForgotPasswordOtpPage(
+            emailOrPhone: input,
+            otpMethod: _selectedMethod,
+          ),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Periksa Email Anda',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Tautan untuk mereset kata sandi telah dikirim ke $email.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Gagal'),
+          content: Text(result['message'] ?? 'Terjadi kesalahan sistem.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
             ),
           ],
         ),
-        actions: [
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Tutup dialog
-                Navigator.pop(context); // Kembali ke halaman login
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 12,
-                ),
-              ),
-              child: const Text(
-                'Kembali ke Login',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+      );
+    }
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _emailOrPhoneController.dispose();
     super.dispose();
   }
 
@@ -155,7 +130,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Masukkan alamat email yang terdaftar, kami akan mengirimkan instruksi untuk mereset kata sandi Anda.',
+                'Masukkan alamat email atau nomor WhatsApp yang terdaftar untuk menerima OTP.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey[500],
@@ -181,14 +156,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ],
                 ),
                 child: TextField(
-                  controller: _emailController,
+                  controller: _emailOrPhoneController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
-                    labelText: 'Email',
+                    labelText: 'Email / Nomor WhatsApp',
                     labelStyle: TextStyle(color: Colors.blueGrey, fontSize: 14),
                     border: InputBorder.none,
                     prefixIcon: Icon(
-                      Icons.email_outlined,
+                      Icons.account_circle_outlined,
                       color: Colors.blueAccent,
                     ),
                     contentPadding: EdgeInsets.symmetric(
@@ -198,6 +173,46 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+              
+              // Pilihan Metode OTP
+              Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile<String>(
+                      title: const Text('Kirim ke Email', style: TextStyle(fontSize: 14)),
+                      value: 'email',
+                      // ignore: deprecated_member_use
+                      groupValue: _selectedMethod,
+                      activeColor: Colors.blueAccent,
+                      contentPadding: EdgeInsets.zero,
+                      // ignore: deprecated_member_use
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMethod = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: RadioListTile<String>(
+                      title: const Text('Kirim ke WhatsApp', style: TextStyle(fontSize: 14)),
+                      value: 'whatsapp',
+                      // ignore: deprecated_member_use
+                      groupValue: _selectedMethod,
+                      activeColor: Colors.green,
+                      contentPadding: EdgeInsets.zero,
+                      // ignore: deprecated_member_use
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMethod = value!;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              
               const SizedBox(height: 32),
 
               ElevatedButton(
@@ -224,7 +239,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         ),
                       )
                     : const Text(
-                        'Kirim Tautan Reset',
+                        'Kirim Kode OTP',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
