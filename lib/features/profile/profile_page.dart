@@ -614,64 +614,78 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   _buildSectionHeader(
                     context,
-                    'Layanan & Riwayat Warga',
+                    'Aktivitas & Kemitraan',
                     Colors.blue[600]!,
                   ),
                   const SizedBox(height: 14),
-                  _buildMenuCard(
+                  _buildMenuGroup(
                     context,
-                    Icons.receipt_long_rounded,
-                    'Riwayat Aktivitas',
-                    'Lacak pesanan gas, sewa & laporan warga',
-                    targetPage: const TransactionHistoryPage(),
-                    iconColor: Colors.blue[600],
+                    [
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.receipt_long_rounded,
+                        title: 'Riwayat Aktivitas',
+                        subtitle: 'Lacak pesanan gas, sewa & laporan warga',
+                        targetPage: const TransactionHistoryPage(),
+                        iconColor: Colors.blue[600],
+                        isFirst: true,
+                        isLast: _isVerified, // Menjadi yang terakhir jika kemitraan disembunyikan
+                      ),
+                      if (!_isVerified)
+                        _buildMenuTile(
+                          context,
+                          icon: Icons.handshake_rounded,
+                          title: 'Gabung Kemitraan',
+                          subtitle: 'Daftarkan desa Anda ke Sila-DesBeng',
+                          targetPage: const PartnershipPage(),
+                          iconColor: Colors.teal[600],
+                          isFirst: false,
+                          isLast: true,
+                        ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   _buildSectionHeader(
                     context,
-                    'Kemitraan & Informasi',
-                    Colors.teal[600]!,
-                  ),
-                  const SizedBox(height: 14),
-                  _buildMenuCard(
-                    context,
-                    Icons.handshake_rounded,
-                    'Gabung Kemitraan BUMDes',
-                    'Daftarkan usaha atau jasa warga ke BUMDes',
-                    targetPage: const PartnershipPage(),
-                    iconColor: Colors.teal[600],
-                  ),
-                  _buildMenuCard(
-                    context,
-                    Icons.info_outline_rounded,
-                    'Tentang Sila-DesBeng',
-                    'Versi aplikasi & informasi pengembang desa',
-                    targetPage: const AboutPage(),
-                    iconColor: Colors.indigo[600],
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSectionHeader(
-                    context,
-                    'Pengaturan Akun & Bantuan',
+                    'Pengaturan & Informasi',
                     Colors.green[600]!,
                   ),
                   const SizedBox(height: 14),
-                  if (_isLoggedIn)
-                    _buildMenuCard(
-                      context,
-                      Icons.manage_accounts_rounded,
-                      'Edit Profil & PIN Keamanan',
-                      'Ubah data diri, kata sandi, dan keamanan akun',
-                      targetPage: const EditProfilePage(),
-                      iconColor: Colors.green,
-                    ),
-                  _buildMenuCard(
+                  _buildMenuGroup(
                     context,
-                    Icons.help_outline_rounded,
-                    'Pusat Bantuan & FAQ',
-                    'Panduan penggunaan dan pertanyaan umum',
-                    targetPage: const HelpFaqPage(),
-                    iconColor: Colors.amber[800],
+                    [
+                      if (_isLoggedIn)
+                        _buildMenuTile(
+                          context,
+                          icon: Icons.manage_accounts_rounded,
+                          title: 'Edit Profil & PIN Keamanan',
+                          subtitle: 'Ubah data diri, kata sandi, dan keamanan akun',
+                          targetPage: const EditProfilePage(),
+                          iconColor: Colors.green,
+                          isFirst: true,
+                          isLast: false,
+                        ),
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.help_outline_rounded,
+                        title: 'Pusat Bantuan & FAQ',
+                        subtitle: 'Panduan penggunaan dan pertanyaan umum',
+                        targetPage: const HelpFaqPage(),
+                        iconColor: Colors.amber[800],
+                        isFirst: !_isLoggedIn,
+                        isLast: false,
+                      ),
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.info_outline_rounded,
+                        title: 'Tentang Sila-DesBeng',
+                        subtitle: 'Versi aplikasi & informasi pengembang desa',
+                        targetPage: const AboutPage(),
+                        iconColor: Colors.indigo[600],
+                        isFirst: false,
+                        isLast: true,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 40),
 
@@ -767,104 +781,127 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildMenuCard(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String subtitle, {
-    Widget? targetPage,
-    Color? iconColor,
-  }) {
-    final Color activeColor = iconColor ?? Theme.of(context).primaryColor;
+  Widget _buildMenuGroup(BuildContext context, List<Widget> children) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: activeColor.withAlpha(35),
+          color: Colors.grey.withAlpha(30),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: activeColor.withAlpha(15),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+            color: Colors.black.withAlpha(10),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: () async {
-            if (targetPage != null) {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => targetPage),
-              );
-              if (result == true) {
-                _loadProfile();
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildMenuTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    Widget? targetPage,
+    Color? iconColor,
+    required bool isFirst,
+    required bool isLast,
+  }) {
+    final activeColor = iconColor ?? Theme.of(context).primaryColor;
+    return Column(
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(isFirst ? 18 : 0),
+              bottom: Radius.circular(isLast ? 18 : 0),
+            ),
+            onTap: () async {
+              if (targetPage != null) {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => targetPage),
+                );
+                if (result == true) {
+                  _loadProfile();
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fitur dalam pengembangan')),
+                );
               }
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fitur dalam pengembangan')),
-              );
-            }
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: activeColor.withAlpha(25),
-                    borderRadius: BorderRadius.circular(14),
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: activeColor.withAlpha(25),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: activeColor, size: 22),
                   ),
-                  child: Icon(icon, color: activeColor, size: 24),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                      ),
-                    ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle,
+                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withAlpha(25),
-                    shape: BoxShape.circle,
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withAlpha(20),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.grey,
+                      size: 12,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.grey,
-                    size: 14,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-      ),
+        if (!isLast)
+          Padding(
+            padding: const EdgeInsets.only(left: 64, right: 18),
+            child: Divider(
+              height: 1,
+              thickness: 1,
+              color: Colors.grey.withAlpha(30),
+            ),
+          ),
+      ],
     );
   }
   void _showVerificationInvitation(BuildContext context) {
