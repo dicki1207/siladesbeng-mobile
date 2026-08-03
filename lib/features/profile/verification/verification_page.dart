@@ -328,7 +328,7 @@ class _VerificationPageState extends State<VerificationPage> {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: DropdownButtonFormField<String>(
-              value: _selectedKecamatanId,
+              initialValue: _selectedKecamatanId,
               icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
               decoration: InputDecoration(
                 hintText: 'Pilih Kecamatan',
@@ -377,7 +377,7 @@ class _VerificationPageState extends State<VerificationPage> {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: DropdownButtonFormField<String>(
-              value: _selectedDesa,
+              initialValue: _selectedDesa,
               icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
               decoration: InputDecoration(
                 hintText: 'Pilih Desa / Kelurahan',

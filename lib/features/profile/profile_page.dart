@@ -28,7 +28,6 @@ class _ProfilePageState extends State<ProfilePage> {
   String _email = 'mushlihul@example.com';
   String? _imagePath;
   String? _imageUrl;
-  String _role = 'warga';
   bool _isVerified = false;
 
   @override
@@ -56,7 +55,6 @@ class _ProfilePageState extends State<ProfilePage> {
       _email = prefs.getString('profile_email') ?? 'mushlihul@example.com';
       _imagePath = prefs.getString('profile_image');
       _imageUrl = prefs.getString('profile_image_url');
-      _role = prefs.getString('user_role') ?? 'warga';
       _isVerified = prefs.getBool('is_verified') ?? false;
     });
 
