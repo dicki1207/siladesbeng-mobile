@@ -53,18 +53,21 @@ class TransactionReceiptPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey[100],
       appBar: AppBar(
         title: const Text('Bukti Transaksi'),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: isDark ? Theme.of(context).cardColor : Colors.white,
+        foregroundColor: isDark ? Colors.white : Colors.black,
         elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: TicketCard(
+          color: isDark ? Theme.of(context).cardColor : Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -106,9 +109,9 @@ class TransactionReceiptPage extends StatelessWidget {
                         ),
                         Text(
                           _getUnitName(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 9,
-                            color: Colors.grey,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
                           ),
                           textAlign: TextAlign.right,
                         ),
@@ -133,7 +136,11 @@ class TransactionReceiptPage extends StatelessWidget {
               // NAMA DAN ALAMAT
               Text(
                 type == 'Gas' ? 'Nama dan Alamat Pembeli Gas' : 'Nama dan Alamat Penyewa',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 14,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
               const SizedBox(height: 8),
               _buildInfoRow('Nama Lengkap', recipientName),
@@ -149,9 +156,13 @@ class TransactionReceiptPage extends StatelessWidget {
               ),
 
               // INFO PEMBAYARAN
-              const Text(
+              Text(
                 'Informasi Pembayaran',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 14,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
               const SizedBox(height: 8),
               _buildInfoRow('Waktu Bayar', paymentTime),
@@ -187,26 +198,30 @@ class TransactionReceiptPage extends StatelessWidget {
               ),
 
               // DETAIL PEMBELIAN
-              const Text(
+              Text(
                 'Detail Pesanan',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 14,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
-                children: const [
-                  Expanded(flex: 2, child: Text('Keterangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  Expanded(flex: 1, child: Text('Jml', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  Expanded(flex: 2, child: Text('Satuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  Expanded(flex: 2, child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                children: [
+                  Expanded(flex: 2, child: Text('Keterangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[700]))),
+                  Expanded(flex: 1, child: Text('Jml', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[700]))),
+                  Expanded(flex: 2, child: Text('Satuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[700]))),
+                  Expanded(flex: 2, child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[700]))),
                 ],
               ),
               const Divider(thickness: 1),
               Row(
                 children: [
-                  Expanded(flex: 2, child: Text(itemName, style: const TextStyle(fontSize: 12))),
-                  Expanded(flex: 1, child: Text('$qty', style: const TextStyle(fontSize: 12))),
-                  Expanded(flex: 2, child: Text(pricePerItem, style: const TextStyle(fontSize: 12))),
-                  Expanded(flex: 2, child: Text(totalPayment, style: const TextStyle(fontSize: 12))),
+                  Expanded(flex: 2, child: Text(itemName, style: TextStyle(fontSize: 12, color: isDark ? Colors.white : Colors.black87))),
+                  Expanded(flex: 1, child: Text('$qty', style: TextStyle(fontSize: 12, color: isDark ? Colors.white : Colors.black87))),
+                  Expanded(flex: 2, child: Text(pricePerItem, style: TextStyle(fontSize: 12, color: isDark ? Colors.white : Colors.black87))),
+                  Expanded(flex: 2, child: Text(totalPayment, style: TextStyle(fontSize: 12, color: isDark ? Colors.white : Colors.black87))),
                 ],
               ),
               const Divider(thickness: 1),
@@ -221,16 +236,16 @@ class TransactionReceiptPage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Total Pesanan', style: TextStyle(fontSize: 12)),
-                            Text(totalPayment, style: const TextStyle(fontSize: 12)),
+                            Text('Total Pesanan', style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[700])),
+                            Text(totalPayment, style: TextStyle(fontSize: 12, color: isDark ? Colors.white : Colors.black87)),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                            Text(totalPayment, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.white : Colors.black87)),
+                            Text(totalPayment, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.white : Colors.black87)),
                           ],
                         ),
                       ],
@@ -247,27 +262,40 @@ class TransactionReceiptPage extends StatelessWidget {
                   children: [
                     Text(
                       'Bengkalis, ${orderTime.split(' ').first}',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Hormat Kami',
-                      style: TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12, color: isDark ? Colors.white : Colors.black87),
                     ),
                     const SizedBox(height: 16),
-                    QrImageView(
-                      data: orderNumber,
-                      version: QrVersions.auto,
-                      size: 100.0,
+                    Container(
+                      color: Colors.white, // QR code background should always be white for scanability
+                      padding: const EdgeInsets.all(4),
+                      child: QrImageView(
+                        data: orderNumber,
+                        version: QrVersions.auto,
+                        size: 100.0,
+                        backgroundColor: Colors.white,
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: Colors.black,
+                        ),
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: Colors.black,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'SiladesBeng',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
                     ),
-                    const Text(
+                    Text(
                       'Platform E-Government Kab. Bengkalis',
-                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                      style: TextStyle(fontSize: 10, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -334,28 +362,40 @@ class TransactionReceiptPage extends StatelessWidget {
   }
 
   Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 4.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12, 
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.grey[400] : Colors.grey[700],
+                  ),
+                ),
+              ),
+              Text(' : ', style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[400] : Colors.grey[700])),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const Text(' : ', style: TextStyle(fontSize: 12)),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
-        ],
-      ),
+        );
+      }
     );
   }
 }

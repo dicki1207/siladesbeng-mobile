@@ -115,6 +115,15 @@ class PartnershipPage extends StatelessWidget {
                   _buildMapCard(context),
                   const SizedBox(height: 36),
                   Text(
+                    'Langkah Bergabung',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildStepByStep(context),
+                  const SizedBox(height: 36),
+                  Text(
                     'Keuntungan Mitra',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -384,6 +393,103 @@ class PartnershipPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStepByStep(BuildContext context) {
+    return Column(
+      children: [
+        _buildStepItem(
+            context,
+            '1',
+            'Isi Formulir',
+            'Lengkapi data profil BUMDes dan ajukan permohonan kemitraan melalui aplikasi.',
+            true),
+        _buildStepItem(
+            context,
+            '2',
+            'Verifikasi Admin',
+            'Tim kami akan melakukan validasi dan menyetujui pendaftaran BUMDes Anda.',
+            true),
+        _buildStepItem(
+            context,
+            '3',
+            'Mulai Beroperasi',
+            'Setelah disetujui, Anda dapat mulai mengelola transaksi penyewaan dan layanan BUMDes.',
+            false),
+      ],
+    );
+  }
+
+  Widget _buildStepItem(BuildContext context, String step, String title,
+      String desc, bool hasLine) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).primaryColor.withAlpha(50),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  step,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            if (hasLine)
+              Container(
+                width: 2,
+                height: 50,
+                color: Theme.of(context).primaryColor.withAlpha(50),
+              ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: hasLine ? 24.0 : 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

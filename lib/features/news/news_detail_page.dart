@@ -35,7 +35,7 @@ class NewsDetailPage extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    newsItem['image'],
+                    newsItem['image']?.toString() ?? '',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: Colors.grey[800],
@@ -100,7 +100,7 @@ class NewsDetailPage extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          newsItem['category'],
+                          newsItem['category']?.toString() ?? 'Pengumuman',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -117,7 +117,7 @@ class NewsDetailPage extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            newsItem['date'],
+                            newsItem['date']?.toString() ?? '-',
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey[500],
@@ -130,7 +130,7 @@ class NewsDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    newsItem['title'],
+                    newsItem['title']?.toString() ?? 'Tidak ada judul',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -142,17 +142,7 @@ class NewsDetailPage extends StatelessWidget {
                   Divider(color: Colors.grey.withAlpha(50), thickness: 1),
                   const SizedBox(height: 24),
                   Text(
-                    newsItem['desc'],
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.8,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Mockup for long content
-                  Text(
-                    'Pemerintah desa sangat menghargai partisipasi seluruh warga dalam menyukseskan kegiatan ini. Kehadiran Anda adalah wujud nyata kepedulian terhadap kemajuan dan kenyamanan lingkungan kita bersama. Jangan lupa untuk membawa peralatan yang diperlukan dan tetap menjaga protokol kesehatan.',
+                    newsItem['desc']?.toString() ?? newsItem['content']?.toString() ?? newsItem['description']?.toString() ?? 'Tidak ada konten.',
                     style: TextStyle(
                       fontSize: 16,
                       height: 1.8,

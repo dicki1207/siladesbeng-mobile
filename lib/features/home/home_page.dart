@@ -13,15 +13,18 @@ import 'package:siladesbeng_mobile/features/gas/gas_page.dart';
 import 'package:siladesbeng_mobile/features/report/report_page.dart';
 import 'package:siladesbeng_mobile/features/rental/facility_rental_page.dart';
 import 'package:siladesbeng_mobile/features/rental/car_rental_page.dart';
-import 'package:siladesbeng_mobile/features/news/kabar_daerah_page.dart';
+import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/home/search_page.dart';
 import 'package:siladesbeng_mobile/features/home/all_services_page.dart';
 import 'package:siladesbeng_mobile/features/assistant/assistant_page.dart';
 import 'package:siladesbeng_mobile/widgets/premium_header.dart';
+import 'package:siladesbeng_mobile/features/store/store_page.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToProfile;
-  const HomePage({super.key, required this.onNavigateToProfile});
+  final VoidCallback onNavigateToNews;
+
+  const HomePage({super.key, required this.onNavigateToProfile, required this.onNavigateToNews});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -46,6 +49,12 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, String>> _getDefaultUnitPelayanan() {
     return [
+      {
+        'action': 'Toko BUMDes',
+        'imageUrl': 'assets/images/F1.png',
+        'color': 'teal',
+        'title': 'Toko Material',
+      },
       {
         'action': 'Beli Gas',
         'imageUrl': 'assets/images/F2.png',
@@ -153,7 +162,18 @@ class _HomePageState extends State<HomePage> {
           try {
             final List data = json.decode(annRes.body)['data'] ?? [];
             if (data.isNotEmpty) {
-              _announcements = data;
+              // Fix localhost URLs in image fields
+              _announcements = data.map((item) {
+                if (item is Map<String, dynamic> && item['image'] != null) {
+                  String img = item['image'].toString();
+                  img = img.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
+                  img = img.replaceAll('http://localhost', 'http://10.250.3.148:8000');
+                  img = img.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
+                  img = img.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
+                  item['image'] = img;
+                }
+                return item;
+              }).toList();
             }
           } catch (_) {}
         }
@@ -173,7 +193,19 @@ class _HomePageState extends State<HomePage> {
         // Parse Services
         if (servicesRes.statusCode == 200 && servicesRes.body.trim().startsWith('{')) {
           try {
-            _availableServices = json.decode(servicesRes.body)['data'] ?? [];
+            final List rawServices = json.decode(servicesRes.body)['data'] ?? [];
+            // Fix localhost URLs in image fields
+            _availableServices = rawServices.map((item) {
+              if (item is Map<String, dynamic> && item['image'] != null) {
+                String img = item['image'].toString();
+                img = img.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
+                img = img.replaceAll('http://localhost', 'http://10.250.3.148:8000');
+                img = img.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
+                img = img.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
+                item['image'] = img;
+              }
+              return item;
+            }).toList();
           } catch (_) {}
         }
 
@@ -279,7 +311,12 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
-      if (actionName == 'Sewa Alat') {
+      if (actionName == 'Toko BUMDes') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const StorePage()),
+        );
+      } else if (actionName == 'Sewa Alat') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const ToolPackageBookingPage()),
@@ -383,6 +420,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               _buildHeroBanner(),
                               _buildUnitPelayanan(),
+                              _buildBumdesStoreMini(),
                               _buildAvailableServices(),
                               _buildKabarDaerah(),
                               const SizedBox(height: 120), // Spacing leluasa untuk clearing bottom nav & assistant
@@ -1057,6 +1095,137 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildBumdesStoreMini() {
+    final formatCurrency = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+
+    // Mock products for the mini showcase
+    final mockProducts = [
+      {'name': 'Semen Padang 50 Kg', 'price': 70000, 'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6sJ_jZ5UqU9q_0U9r7V_r_8_l_0_1_2_3_4&s'},
+      {'name': 'Pipa PVC Wavin 1 Inch', 'price': 25000, 'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s'},
+      {'name': 'Cangkul Baja', 'price': 85000, 'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s'},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.storefront,
+                      color: Theme.of(context).primaryColor,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Toko BUMDes',
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () {
+                    _checkLoginAndProceed('Toko BUMDes');
+                  },
+                  child: Text(
+                    'Lihat Semua',
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 180,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: mockProducts.length,
+              itemBuilder: (context, index) {
+                final product = mockProducts[index];
+                return GestureDetector(
+                  onTap: () => _checkLoginAndProceed('Toko BUMDes'),
+                  child: Container(
+                    width: 140,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(10),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.handyman, size: 40, color: Colors.grey),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product['name'].toString(),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                formatCurrency.format(product['price']),
+                                style: const TextStyle(
+                                  color: Color(0xFF0EA5E9),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAvailableServices() {
     if (_availableServices.isEmpty) return const SizedBox.shrink();
 
@@ -1273,20 +1442,31 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  'Kabar Daerah',
-                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 20,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Kabar dan Informasi Daerah',
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Pengumuman dan agenda terbaru',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const KabarDaerahPage()),
-                  );
+                  widget.onNavigateToNews();
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -1331,10 +1511,21 @@ class _HomePageState extends State<HomePage> {
                     itemCount: _announcements.length,
                     itemBuilder: (context, index) {
                       final ann = _announcements[index];
-                      return _buildTerbaruCard(
-                        ann['title'],
-                        ann['content'] ?? 'Lihat detail lebih lanjut...',
-                        'https://cdn-icons-png.flaticon.com/512/3176/3176298.png',
+                      return GestureDetector(
+                        onTap: () {
+                          if (ann['title'] == 'Tidak ada pengumuman') return;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NewsDetailPage(newsItem: ann),
+                            ),
+                          );
+                        },
+                        child: _buildTerbaruCard(
+                          ann['title']?.toString() ?? 'Tidak ada judul',
+                          ann['content']?.toString() ?? ann['desc']?.toString() ?? 'Lihat detail lebih lanjut...',
+                          ann['image']?.toString() ?? 'https://cdn-icons-png.flaticon.com/512/3176/3176298.png',
+                        ),
                       );
                     },
                   ),

@@ -50,6 +50,11 @@ class _MainWrapperState extends State<MainWrapper> {
                   _currentIndex = 4; // Switch ke tab Profil (indeks ke-4 jika ada Admin Tab)
                 });
               },
+              onNavigateToNews: () {
+                setState(() {
+                  _currentIndex = 1; // Switch ke tab Kabar Daerah
+                });
+              },
             ),
             const KabarDaerahPage(),
             const AdminPortalPage(), // Tab Eksekutif Pengurus di Posisi Pusat Footer Nav
@@ -61,6 +66,11 @@ class _MainWrapperState extends State<MainWrapper> {
               onNavigateToProfile: () {
                 setState(() {
                   _currentIndex = 3; // Switch ke tab Profil (indeks ke-3 untuk warga biasa)
+                });
+              },
+              onNavigateToNews: () {
+                setState(() {
+                  _currentIndex = 1; // Switch ke tab Kabar Daerah
                 });
               },
             ),

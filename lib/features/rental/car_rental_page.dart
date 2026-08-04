@@ -23,40 +23,11 @@ class _CarRentalPageState extends State<CarRentalPage> {
     _fetchRentals();
   }
 
-  List<Map<String, dynamic>> _getMockCars() {
-    return [
-      {
-        'id': 1,
-        'name': 'Avanza Veloz 2022',
-        'price': 350000,
-        'image': 'assets/images/mobil.png',
-        'description':
-            'Toyota Avanza Veloz terbaru dengan performa handal dan interior yang luas. Sangat cocok untuk perjalanan keluarga.',
-      },
-      {
-        'id': 2,
-        'name': 'Honda Brio RS 2023',
-        'price': 300000,
-        'image': 'assets/images/mobil.png',
-        'description':
-            'City car lincah dan irit bahan bakar, cocok untuk keliling kota dengan gaya modis.',
-      },
-      {
-        'id': 3,
-        'name': 'Mitsubishi Xpander',
-        'price': 400000,
-        'image': 'assets/images/mobil.png',
-        'description':
-            'Kenyamanan MPV premium dengan suspensi empuk, siap menemani perjalanan jarak jauh Anda.',
-      },
-    ];
-  }
-
   Future<void> _fetchRentals() async {
     final data = await _rentalService.getMobilItems();
     if (!mounted) return;
     setState(() {
-      _rentals = data.isNotEmpty ? data : _getMockCars();
+      _rentals = data;
       _isLoading = false;
     });
   }
@@ -331,7 +302,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
                             width: double.infinity,
                             color: isDark ? Colors.grey[850] : Colors.white,
                             padding: const EdgeInsets.all(12),
-                            child: (item['image'].toString().startsWith('assets/') || item['image'].toString().contains('mobil.png'))
+                            child: ((item['image']?.toString() ?? '').startsWith('assets/') || (item['image']?.toString() ?? '').contains('mobil.png'))
                                 ? Image.asset(
                                     'assets/images/mobil.png',
                                     fit: BoxFit.contain,
@@ -342,7 +313,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
                                     ),
                                   )
                                 : Image.network(
-                                    item['image'],
+                                    item['image']?.toString() ?? '',
                                     fit: BoxFit.contain,
                                     errorBuilder: (ctx, err, stack) => const Icon(
                                       Icons.directions_car,

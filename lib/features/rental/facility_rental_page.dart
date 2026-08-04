@@ -37,106 +37,35 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
     super.dispose();
   }
 
-  List<Map<String, dynamic>> _getMockVehicles() {
-    return [
-      {
-        'id': 101,
-        'name': 'Ambulans Siaga Desa 24 Jam',
-        'price': 0,
-        'price_display': 'Gratis (Fasilitas Desa)',
-        'type_badge': '🚨 SIAGA DARURAT & EVENT',
-        'badge_color': Colors.red[700],
-        'is_ambulance': true,
-        'image': 'assets/images/mobil.png',
-        'description':
-            'Fasilitas umum resmi yang disediakan oleh Pemerintah Desa untuk membawa warga yang sakit atau dalam keadaan darurat medis ke Rumah Sakit. Juga dapat dipinjam siaga untuk pengamanan event/kegiatan desa guna menghindari hal-hal yang tidak diinginkan.',
-      },
-      {
-        'id': 102,
-        'name': 'Bus Operasional Pemerintah Desa',
-        'price': 0,
-        'price_display': 'Gratis (BBM & Supir oleh Pengguna)',
-        'type_badge': '🚌 ANGKUTAN ROMBONGAN WARGA',
-        'badge_color': Colors.blue[700],
-        'is_ambulance': false,
-        'image': 'assets/images/mobil.png',
-        'description':
-            'Armada bus resmi operasional Desa yang diperuntukkan bagi kegiatan rombongan warga, kunjungan dinas, studi lapangan, atau kegiatan keagamaan antar kecamatan.',
-      },
-      {
-        'id': 103,
-        'name': 'Mobil Pick-Up Logistik & Gotong Royong',
-        'price': 0,
-        'price_display': 'Gratis untuk Kegiatan Desa & RT/RW',
-        'type_badge': '🚚 ANGKT LOGISTIK & AKSI WARGA',
-        'badge_color': Colors.blue[700],
-        'is_ambulance': false,
-        'image': 'assets/images/mobil.png',
-        'description':
-            'Kendaraan angkut bak terbuka milik desa untuk mendukung kegiatan gotong royong, kerja bakti lingkungan, atau penyaluran bantuan sosial kemasyarakatan.',
-      },
-    ];
-  }
-
-  List<Map<String, dynamic>> _getMockBuildings() {
-    return [
-      {
-        'id': 201,
-        'name': 'Gedung Serbaguna Balai Desa',
-        'price': 1500000,
-        'price_display': 'Rp 1.500.000 / event (Gratis untuk agenda RT/RW)',
-        'type_badge': '🏛️ AULA BALAI DESA',
-        'badge_color': Colors.blue[700],
-        'is_ambulance': false,
-        'image': 'assets/images/F1.png',
-        'description':
-            'Gedung serbaguna luas dengan fasilitas lengkap (AC, Sound System 2000W, Panggung, dan Kursi). Sangat cocok untuk resepsi pernikahan, rapat akbar warga, atau seminar.',
-      },
-      {
-        'id': 202,
-        'name': 'Lapangan Sepak Bola & Olahraga',
-        'price': 200000,
-        'price_display': 'Rp 200.000 (Tarif Kebersihan & Perawatan)',
-        'type_badge': '⚽ LAPANGAN OLAHRAGA',
-        'badge_color': Colors.blue[700],
-        'is_ambulance': false,
-        'image': 'assets/images/fasilitas.png',
-        'description':
-            'Lapangan rumput standar berfasilitas tribun ringan, ruang ganti, dan lampu malam. Dapat dipamerkan/booking untuk latihan rutin warga maupun turnamen antar RT/RW.',
-      },
-      {
-        'id': 203,
-        'name': 'Aula Balai Pertemuan & Taman RW',
-        'price': 300000,
-        'price_display': 'Rp 300.000 (Atau Izin Gratis Kegiatan Warga)',
-        'type_badge': '🌳 RUANG KOMUNITAS',
-        'badge_color': Colors.blue[700],
-        'is_ambulance': false,
-        'image': 'assets/images/F2.png',
-        'description':
-            'Ruang pertemuan semi-terbuka dengan suasana sejuk dan asri. Sangat nyaman untuk senam pagi, gathering warga, pelayanan posyandu, atau lokakarya UMKM.',
-      },
-    ];
-  }
-
   Future<void> _fetchFacilities() async {
     setState(() => _isLoading = true);
-    final data = await _rentalService.getFasilitasItems();
-    if (!mounted) return;
+    
+    try {
+      final data = await _rentalService.getFasilitasItems();
+      if (!mounted) return;
 
-    if (data.isNotEmpty) {
-      final vehicles = data.where((i) => i['is_vehicle'] == true).toList();
-      final buildings = data.where((i) => i['is_vehicle'] != true).toList();
+      if (data.isNotEmpty) {
+        // Safe access in case API doesn't return map or misses fields
+        final vehicles = data.where((i) => (i is Map && i['is_vehicle'] == true)).toList();
+        final buildings = data.where((i) => (i is Map && i['is_vehicle'] != true)).toList();
 
+        setState(() {
+          _vehicles = vehicles;
+          _buildings = buildings;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _vehicles = [];
+          _buildings = [];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _vehicles = vehicles.isNotEmpty ? vehicles : _getMockVehicles();
-        _buildings = buildings.isNotEmpty ? buildings : _getMockBuildings();
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _vehicles = _getMockVehicles();
-        _buildings = _getMockBuildings();
+        _vehicles = [];
+        _buildings = [];
         _isLoading = false;
       });
     }
@@ -786,7 +715,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                             color: isDark ? Colors.grey[850] : Colors.grey[100],
                             padding: const EdgeInsets.all(12),
                             child: _renderImage(
-                              item['image']?.toString(),
+                              item['image']?.toString() ?? '',
                               isAmbulance: isAmbulance,
                             ),
                           ),

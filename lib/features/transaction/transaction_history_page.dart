@@ -283,18 +283,19 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
 
   Widget _buildTransactionCard(Map<String, dynamic> item) {
     Color statusColor;
-    switch (item['status']) {
-      case 'Selesai':
+    final status = item['status']?.toString().toLowerCase() ?? '';
+    switch (status) {
+      case 'selesai':
         statusColor = Colors.green;
         break;
-      case 'Dikonfirmasi':
+      case 'dikonfirmasi':
         statusColor = Colors.blue;
         break;
-      case 'Menunggu':
-        statusColor = Colors.orange;
-        break;
-      case 'Batal':
+      case 'batal':
         statusColor = Colors.red;
+        break;
+      case 'menunggu':
+        statusColor = Colors.orange;
         break;
       default:
         statusColor = Colors.grey;
@@ -386,7 +387,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item['title'],
+                            item['title']?.toString() ?? 'Tidak ada judul',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -397,7 +398,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            item['date'],
+                            item['date']?.toString() ?? '-',
                             style: TextStyle(
                               color:
                                   Theme.of(context).textTheme.bodyMedium?.color
@@ -434,7 +435,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          item['price'],
+                          item['price']?.toString() ?? '-',
                           style: TextStyle(
                             color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.bold,
@@ -465,7 +466,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            item['status'],
+                            item['status']?.toString() ?? 'Menunggu',
                             style: TextStyle(
                               color: statusColor,
                               fontWeight: FontWeight.bold,

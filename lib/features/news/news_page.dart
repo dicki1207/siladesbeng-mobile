@@ -325,7 +325,7 @@ class _NewsPageState extends State<NewsPage> {
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   child: Image.network(
-                    news['image'],
+                    news['image']?.toString() ?? '',
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -357,7 +357,7 @@ class _NewsPageState extends State<NewsPage> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            news['category'],
+                            news['category']?.toString() ?? 'Pengumuman',
                             style: TextStyle(
                               color: isBerita ? Colors.blue[800] : Colors.teal[800],
                               fontSize: 12,
@@ -370,7 +370,7 @@ class _NewsPageState extends State<NewsPage> {
                             Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
                             const SizedBox(width: 4),
                             Text(
-                              news['date'],
+                              news['date']?.toString() ?? '-',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 12,
@@ -384,7 +384,7 @@ class _NewsPageState extends State<NewsPage> {
                     
                     // Title
                     Text(
-                      news['title'],
+                      news['title']?.toString() ?? 'Tidak ada judul',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -397,7 +397,7 @@ class _NewsPageState extends State<NewsPage> {
                     
                     // Description snippet
                     Text(
-                      news['desc'],
+                      news['desc']?.toString() ?? '',
                       style: TextStyle(
                         color: Colors.grey[600],
                         height: 1.5,

@@ -339,7 +339,7 @@ class _ReportPageState extends State<ReportPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 120, // Lebih pendek
+            expandedHeight: 60,
             floating: false,
             pinned: true,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -359,16 +359,6 @@ class _ReportPageState extends State<ReportPage> {
                 ),
               ),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                'Laporan Warga',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
-              ),
-              centerTitle: true,
-            ),
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -376,39 +366,88 @@ class _ReportPageState extends State<ReportPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Kop Surat Resmi Pemerintahan
                   Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).primaryColor.withAlpha(20),
-                          Theme.of(context).primaryColor.withAlpha(5),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Theme.of(context).primaryColor.withAlpha(50),
-                      ),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: Column(
                       children: [
-                        Icon(
-                          Icons.lightbulb_outline,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Sampaikan keluhan atau saran Anda dengan sopan dan jujur untuk kemajuan desa bersama.',
-                            style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyMedium?.color,
-                              fontSize: 13,
-                              height: 1.5,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Logo Kabupaten (Kiri)
+                            SizedBox(
+                              width: 70,
+                              height: 70,
+                              child: Image.network(
+                                'http://10.250.3.148:8000/Admin/img/illustrations/logokab.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
+                              ),
                             ),
-                          ),
+                            
+                            // Judul Tengah
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'FORM PELAPORAN',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w900,
+                                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                                        letterSpacing: 0.5,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Sampaikan keluhan atau saran Anda secara jujur dan beretika',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Sistem Sinergi Layanan dan Aspirasi Desa di Kabupaten Bengkalis',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        color: Colors.grey[400],
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            
+                            // Logo SiladesBeng (Kanan)
+                            SizedBox(
+                              width: 80,
+                              height: 80,
+                              child: Image.network(
+                                'http://10.250.3.148:8000/Admin/img/illustrations/logodomain.webp',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Garis pemisah kop surat
+                        Container(
+                          height: 3,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
+                        ),
+                        const SizedBox(height: 2),
+                        Container(
+                          height: 1,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black54,
                         ),
                       ],
                     ),

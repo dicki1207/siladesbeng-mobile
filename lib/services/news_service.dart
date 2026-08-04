@@ -22,6 +22,26 @@ class NewsService {
     return headers;
   }
 
+  String _replaceLocalhost(String? url) {
+    if (url == null || url.isEmpty) return '';
+    String fixedUrl = url;
+    // Replace all localhost variants with the actual server IP
+    fixedUrl = fixedUrl.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
+    fixedUrl = fixedUrl.replaceAll('http://localhost', 'http://10.250.3.148:8000');
+    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
+    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
+    return fixedUrl;
+  }
+
+  List<dynamic> _fixImageUrls(List<dynamic> items) {
+    return items.map((item) {
+      if (item is Map<String, dynamic> && item.containsKey('image') && item['image'] != null) {
+        item['image'] = _replaceLocalhost(item['image'] as String?);
+      }
+      return item;
+    }).toList();
+  }
+
   /// Get all news/announcements with optional filters
   Future<List<dynamic>> getNews({String? type, String? search, String? postCategory}) async {
     try {
@@ -48,7 +68,8 @@ class NewsService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['data'] ?? [];
+        final items = data['data'] ?? [];
+        return _fixImageUrls(items as List<dynamic>);
       }
       return [];
     } catch (e) {
@@ -68,7 +89,11 @@ class NewsService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['data'];
+        final item = data['data'];
+        if (item is Map<String, dynamic> && item.containsKey('image') && item['image'] != null) {
+          item['image'] = _replaceLocalhost(item['image'] as String?);
+        }
+        return item;
       }
       return null;
     } catch (e) {

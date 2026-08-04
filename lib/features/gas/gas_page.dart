@@ -15,8 +15,17 @@ class GasPage extends StatefulWidget {
 }
 
 class _GasPageState extends State<GasPage> {
-  List<dynamic> _gasItems = [];
+  List<dynamic> _allGasItems = [];
+  List<String> _categories = ['Semua'];
+  String _selectedCategory = 'Semua';
   bool _isLoading = true;
+
+  List<dynamic> get _filteredGasItems {
+    if (_selectedCategory == 'Semua') {
+      return _allGasItems;
+    }
+    return _allGasItems.where((item) => (item['kategori'] ?? 'Lainnya').toString() == _selectedCategory).toList();
+  }
 
   @override
   void initState() {
@@ -34,7 +43,8 @@ class _GasPageState extends State<GasPage> {
       if (token == null) {
         if (mounted) {
           setState(() {
-            _gasItems = [];
+            _allGasItems = [];
+            _categories = ['Semua'];
             _isLoading = false;
           });
         }
@@ -55,13 +65,20 @@ class _GasPageState extends State<GasPage> {
           if (!mounted) return;
           setState(() {
             final rawItems = data['data'] as List? ?? [];
-            _gasItems = rawItems.map((item) {
+            _allGasItems = rawItems.map((item) {
               item['name'] = item['jenis_gas'] ?? item['name'];
               item['price'] = item['harga_satuan'] ?? item['price'];
               item['image'] = item['image_url'] ?? item['image'] ?? 'assets/images/F2.png';
               item['description'] = item['deskripsi'] ?? item['description'] ?? '';
               return item;
             }).toList();
+            
+            final uniqueCategories = _allGasItems
+                .map((e) => e['kategori']?.toString() ?? '')
+                .where((e) => e.isNotEmpty)
+                .toSet()
+                .toList();
+            _categories = ['Semua', ...uniqueCategories];
             _isLoading = false;
           });
           return;
@@ -73,7 +90,8 @@ class _GasPageState extends State<GasPage> {
 
     if (!mounted) return;
     setState(() {
-      _gasItems = [];
+      _allGasItems = [];
+      _categories = ['Semua'];
       _isLoading = false;
     });
   }
@@ -116,6 +134,49 @@ class _GasPageState extends State<GasPage> {
                     color: (Theme.of(context).textTheme.bodyLarge?.color),
                   ),
                 ),
+                if (!_isLoading && _categories.length > 1)
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 50,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _categories[index];
+                          final isSelected = _selectedCategory == category;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: ChoiceChip(
+                              label: Text(
+                                category,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : Colors.grey[700],
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                              selected: isSelected,
+                              selectedColor: const Color(0xFF0EA5E9),
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: isSelected ? const Color(0xFF0EA5E9) : Colors.grey[300]!,
+                                ),
+                              ),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    _selectedCategory = category;
+                                  });
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
@@ -132,7 +193,7 @@ class _GasPageState extends State<GasPage> {
                             ),
                           ),
                         )
-                      : _gasItems.isEmpty
+                      : _filteredGasItems.isEmpty
                           ? SliverToBoxAdapter(
                               child: Center(
                                 child: Column(
@@ -151,7 +212,7 @@ class _GasPageState extends State<GasPage> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Saat ini BUMDes belum menyediakan stok gas\ndi wilayah Anda.',
+                                      'Saat ini BUMDes belum menyediakan stok gas\ndi kategori ini.',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(color: Colors.grey[500]),
                                     ),
@@ -171,8 +232,8 @@ class _GasPageState extends State<GasPage> {
                                 BuildContext context,
                                 int index,
                               ) {
-                                return _buildPremiumGasCard(_gasItems[index]);
-                              }, childCount: _gasItems.length),
+                                return _buildPremiumGasCard(_filteredGasItems[index]);
+                              }, childCount: _filteredGasItems.length),
                             ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),

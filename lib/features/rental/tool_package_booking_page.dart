@@ -20,127 +20,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   // State for Tab 1: Paket Admin Desa
   int? _selectedPackageIndex;
-  final List<Map<String, dynamic>> _adminPackages = [
-    {
-      'name': 'Paket Hajatan Mini',
-      'items': '10 Kursi Lipat + 5 Meja Panjang + 1 Tenda 4x4m',
-      'originalPrice': 200000,
-      'discountedPrice': 150000,
-      'hemat': '25%',
-      'color': Colors.blue,
-      'description':
-          'Sangat cocok untuk acara syakuran, doa bersama, atau pertemuan keluarga di rumah. Sudah didiskon khusus oleh Admin BUMDes.',
-      'details': [
-        '10 unit Kursi Lipat besi dengan bantalan spons merta kuat dan terawat.',
-        '5 unit Meja Lipat Panjang berbahan kayu solid berlapis tahan air.',
-        '1 set Tenda Pesta ukuran 4x4 meter siap pasang kedap hujan & panas.',
-        'Gratis antar jemput & bongkar pasang oleh petugas gudang BUMDes.',
-      ],
-    },
-    {
-      'name': 'Paket Rapat RT / Kumpulan',
-      'items': '20 Kursi Lipat + 2 Meja Panjang + Sound System',
-      'originalPrice': 350000,
-      'discountedPrice': 250000,
-      'hemat': '28%',
-      'color': Colors.blue,
-      'description':
-          'Dirancang khusus untuk pertemuan pengurus RT/RW, musyawarah warga, atau seminar kecil di balai/lingkungan.',
-      'details': [
-        '20 unit Kursi Lipat ergonomis bersih dan siap pakai.',
-        '2 unit Meja Lipat Panjang untuk pimpinan rapat & notulensi.',
-        '1 set Sound System Portable 1000W lengkap dengan 2 Mic Wireless jernih.',
-        'Teknisi bantuan penyelarasan suara & pemasangan.',
-      ],
-    },
-    {
-      'name': 'Paket Pernikahan Desa Komplit',
-      'items': '100 Kursi Lipat + 15 Meja + 4 Tenda + Sound Besar',
-      'originalPrice': 1500000,
-      'discountedPrice': 1100000,
-      'hemat': '26%',
-      'color': Colors.blue,
-      'description':
-          'Paket terlengkap untuk pesta hajatan besar atau pernikahan desa dengan potongan diskon terbesar hingga Rp 400.000!',
-      'details': [
-        '100 unit Kursi Lipat bersarung putih rapi & elegan.',
-        '15 unit Meja Lipat Panjang untuk tamu & prasmanan.',
-        '4 set Tenda Pesta gabungan (8x8m atau terpisah sesuai lahan).',
-        '1 set Sound System Panggung kapasitas besar dengan 4 speaker & mixer.',
-        'Layanan antar jemput prioritas 1 hari sebelum acara H-1.',
-      ],
-    },
-  ];
+  List<Map<String, dynamic>> _adminPackages = [];
 
   // State for Tab 2: Rangkai Paket Sendiri (Harga Satuan)
-  final List<Map<String, dynamic>> _customItems = [
-    {
-      'name': 'Kursi Lipat Chitose',
-      'price': 5000,
-      'qty': 1,
-      'unit': 'kursi',
-      'selected': false,
-      'image': 'http://10.250.3.148:8000/User/img/elemen/F2.png',
-      'icon': Icons.chair_alt_rounded,
-      'description':
-          'Kursi lipat kerangka besi berlapis krom dengan bantalan jok busa tebal hitam yang nyaman untuk duduk durasi panjang.',
-    },
-    {
-      'name': 'Meja Lipat Panjang',
-      'price': 10000,
-      'qty': 1,
-      'unit': 'meja',
-      'selected': false,
-      'image': 'http://10.250.3.148:8000/User/img/elemen/fasilitas.png',
-      'icon': Icons.table_restaurant_rounded,
-      'description':
-          'Meja lipat kokoh berukuran 180x60 cm dengan alas finishing tahan air, mudah disusun untuk prasmanan maupun meja registrasi.',
-    },
-    {
-      'name': 'Tenda Pesta 4x4m',
-      'price': 100000,
-      'qty': 1,
-      'unit': 'tenda',
-      'selected': false,
-      'image': 'http://10.250.3.148:8000/User/img/elemen/F1.png',
-      'icon': Icons.holiday_village_rounded,
-      'description':
-          'Tenda kerangka pipa baja tebal berlapis kain terpal tahan air & panas matahari. Sudah termasuk jasa pemasangan standar.',
-    },
-    {
-      'name': 'Sound System 1000W + 2 Mic',
-      'price': 200000,
-      'qty': 1,
-      'unit': 'set',
-      'selected': false,
-      'image': 'http://10.250.3.148:8000/User/img/elemen/fasilitas.png',
-      'icon': Icons.speaker_rounded,
-      'description':
-          'Speaker aktif portable bertenaga tinggi dilengkapi bluetooth/USB music player dan 2 mic wireless nirkabel berfrekuensi stabil.',
-    },
-    {
-      'name': 'Panggung Lesehan / Muka',
-      'price': 150000,
-      'qty': 1,
-      'unit': 'unit',
-      'selected': false,
-      'image': 'http://10.250.3.148:8000/User/img/elemen/F1.png',
-      'icon': Icons.domain_rounded,
-      'description':
-          'Panggung bongkar pasang kokoh bertingkat untuk pembicara, musik, atau pelaminan desa berukuran modul 2x2m.',
-    },
-    {
-      'name': 'Genset Desa 5000 Watt',
-      'price': 250000,
-      'qty': 1,
-      'unit': 'unit',
-      'selected': false,
-      'image': 'http://10.250.3.148:8000/User/img/elemen/F2.png',
-      'icon': Icons.bolt_rounded,
-      'description':
-          'Genset cadangan daya listrik kapasitas besar 5000W tangguh anti-padam untuk mengcover seluruh kebutuhan hajatan & acara.',
-    },
-  ];
+  List<Map<String, dynamic>> _customItems = [];
+  bool _isLoading = true;
 
   void _showDetailModal(
     BuildContext context,
@@ -333,6 +217,45 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadUserProfile();
+    _fetchItems();
+  }
+
+  Future<void> _fetchItems() async {
+    final items = await _rentalService.getRentalItems();
+    if (mounted) {
+      setState(() {
+        _adminPackages = items.where((item) => item['unit'] == 'Paket' || item['unit'] == 'paket').map((item) {
+          return {
+            'id': item['id'],
+            'name': item['name'] ?? 'Paket',
+            'items': item['description'] ?? '',
+            'originalPrice': (item['price'] ?? 0) + 50000, // Example markup for visual
+            'discountedPrice': item['price'] ?? 0,
+            'hemat': 'Spesial',
+            'color': Colors.blue,
+            'description': item['description'] ?? '',
+            'image': item['image'],
+            'details': [item['description'] ?? ''],
+          };
+        }).toList();
+
+        _customItems = items.where((item) => item['unit'] != 'Paket' && item['unit'] != 'paket').map((item) {
+          return {
+            'id': item['id'],
+            'name': item['name'] ?? 'Alat',
+            'price': item['price'] ?? 0,
+            'qty': 1,
+            'unit': item['unit'] ?? 'unit',
+            'selected': false,
+            'image': item['image'],
+            'icon': Icons.build,
+            'description': item['description'] ?? '',
+          };
+        }).toList();
+        
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -502,6 +425,17 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
   }
 
   Widget _buildAdminPackagesTab() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_adminPackages.isEmpty) {
+      return const Center(
+        child: Text(
+          'Tidak ada paket tersedia saat ini.',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -699,6 +633,17 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
   }
 
   Widget _buildCustomPackageTab() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_customItems.isEmpty) {
+      return const Center(
+        child: Text(
+          'Tidak ada alat/satuan tersedia saat ini.',
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.all(16),

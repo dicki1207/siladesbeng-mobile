@@ -23,7 +23,7 @@ class TransactionDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(transaction['status']);
+    final statusColor = _getStatusColor(transaction['status']?.toString() ?? '');
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -89,7 +89,7 @@ class TransactionDetailPage extends StatelessWidget {
                       ),
                     ),
                     child: Image.network(
-                      transaction['image'],
+                      transaction['image']?.toString() ?? '',
                       height: 60,
                       width: 60,
                       fit: BoxFit.contain,
@@ -102,7 +102,7 @@ class TransactionDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    transaction['title'],
+                    transaction['title']?.toString() ?? 'Tidak ada judul',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -111,7 +111,7 @@ class TransactionDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    transaction['price'],
+                    transaction['price']?.toString() ?? '-',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -145,7 +145,7 @@ class TransactionDetailPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          transaction['status'],
+                          transaction['status']?.toString() ?? 'Menunggu',
                           style: TextStyle(
                             color: statusColor,
                             fontWeight: FontWeight.bold,

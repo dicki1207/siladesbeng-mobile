@@ -21,6 +21,32 @@ class RentalService {
     return headers;
   }
 
+  String _replaceLocalhost(String? url) {
+    if (url == null) return '';
+    if (url.contains('localhost')) {
+      final ip = baseUrl.replaceAll('http://', '').split(':').first;
+      return url.replaceAll('localhost', '$ip:8000');
+    }
+    return url;
+  }
+
+  List<dynamic> _fixImageUrls(List<dynamic> items) {
+    return items.map((item) {
+      if (item is Map<String, dynamic>) {
+        if (item.containsKey('image') && item['image'] != null) {
+          item['image'] = _replaceLocalhost(item['image'] as String?);
+        }
+        if (item.containsKey('image_2') && item['image_2'] != null) {
+          item['image_2'] = _replaceLocalhost(item['image_2'] as String?);
+        }
+        if (item.containsKey('image_3') && item['image_3'] != null) {
+          item['image_3'] = _replaceLocalhost(item['image_3'] as String?);
+        }
+      }
+      return item;
+    }).toList();
+  }
+
   // ─── SEWA ALAT ───
 
   /// List semua alat sewa
@@ -34,7 +60,8 @@ class RentalService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['data'] ?? [];
+        final items = data['data'] ?? [];
+        return _fixImageUrls(items as List<dynamic>);
       }
       return [];
     } catch (e) {
@@ -193,7 +220,8 @@ class RentalService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['data'] ?? [];
+        final items = data['data'] ?? [];
+        return _fixImageUrls(items as List<dynamic>);
       }
       return [];
     } catch (e) {
@@ -305,7 +333,8 @@ class RentalService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['data'] ?? [];
+        final items = data['data'] ?? [];
+        return _fixImageUrls(items as List<dynamic>);
       }
       return [];
     } catch (e) {
