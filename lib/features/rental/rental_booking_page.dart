@@ -6,7 +6,8 @@ import 'package:siladesbeng_mobile/services/rental_service.dart';
 class RentalBookingPage extends StatefulWidget {
   final dynamic item;
   final String? category;
-  const RentalBookingPage({super.key, required this.item, this.category});
+  final int? initialDuration;
+  const RentalBookingPage({super.key, required this.item, this.category, this.initialDuration});
 
   @override
   State<RentalBookingPage> createState() => _RentalBookingPageState();
@@ -30,6 +31,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
   @override
   void initState() {
     super.initState();
+    _durationDays = widget.initialDuration ?? 1;
     _loadUserData();
   }
 
@@ -271,6 +273,17 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         jenisAcara: _eventCategory,
         butuhGudang: _needsAdditionalFacilities,
         rentalPurpose: _notesController.text,
+      );
+    } else if (itemType == 'paket' || cat.contains('paket')) {
+      result = await _rentalService.bookPackage(
+        packageName: widget.item['name'] ?? 'Paket',
+        itemsDescription: widget.item['description'] ?? 'Penyewaan Paket Alat',
+        totalAmount: total.toDouble(),
+        durationDays: _durationDays,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        recipientName: _nameController.text,
+        paymentMethod: paymentMethod,
       );
     } else {
       result = await _rentalService.bookRentalItem(
@@ -781,14 +794,16 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     labelText: 'Nama Lengkap (Otomatis)',
                     prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: Colors.grey.withAlpha(20),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 TextField(
                   controller: _waController,
                   keyboardType: TextInputType.phone,
@@ -796,14 +811,16 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     labelText: 'Nomor WhatsApp / HP',
                     prefixIcon: const Icon(Icons.phone_android),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: Colors.grey.withAlpha(20),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 TextField(
                   controller: _addressController,
                   maxLines: 2,
@@ -811,14 +828,16 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     labelText: 'Alamat Pengiriman / Penggunaan',
                     prefixIcon: const Icon(Icons.location_on_outlined),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: Colors.grey.withAlpha(20),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 TextField(
                   controller: _notesController,
                   maxLines: 2,
@@ -826,11 +845,13 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     labelText: 'Catatan Tambahan (Opsional)',
                     prefixIcon: const Icon(Icons.notes),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
                     fillColor: Colors.grey.withAlpha(20),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
                 ),
               ],

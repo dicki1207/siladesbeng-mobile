@@ -54,75 +54,75 @@ class TransactionDetailPage extends StatelessWidget {
             // Status Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
                 borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(40),
-                  bottomRight: Radius.circular(40),
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
+                    color: Colors.black.withAlpha(10),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: Theme.of(context).scaffoldBackgroundColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: statusColor.withAlpha(40),
-                          blurRadius: 25,
-                          spreadRadius: 5,
+                          color: statusColor.withAlpha(20),
+                          blurRadius: 10,
+                          spreadRadius: 2,
                         ),
                       ],
                       border: Border.all(
                         color: statusColor.withAlpha(30),
-                        width: 2,
+                        width: 1,
                       ),
                     ),
                     child: Image.network(
                       transaction['image']?.toString() ?? '',
-                      height: 60,
-                      width: 60,
+                      height: 32,
+                      width: 32,
                       fit: BoxFit.contain,
                       errorBuilder: (ctx, err, stack) => const Icon(
                         Icons.shopping_bag,
-                        size: 60,
+                        size: 32,
                         color: Colors.grey,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Text(
                     transaction['title']?.toString() ?? 'Tidak ada judul',
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Text(
                     transaction['price']?.toString() ?? '-',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 8,
+                      horizontal: 16,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
                       color: statusColor.withAlpha(20),

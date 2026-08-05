@@ -153,7 +153,16 @@ class _HomePageState extends State<HomePage> {
         // Parse Banner tanpa mencetak error HTML mentah Laravel ke layar
         if (bannerRes.statusCode == 200 && bannerRes.body.trim().startsWith('{')) {
           try {
-            _banners = json.decode(bannerRes.body)['data'] ?? [];
+            final List rawBanners = json.decode(bannerRes.body)['data'] ?? [];
+            _banners = rawBanners.map((item) {
+              if (item is Map<String, dynamic> && item['image_url'] != null) {
+                String imgUrl = item['image_url'].toString();
+                imgUrl = imgUrl.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
+                imgUrl = imgUrl.replaceAll('http://localhost', 'http://10.250.3.148:8000');
+                item['image_url'] = imgUrl;
+              }
+              return item;
+            }).toList();
           } catch (_) {}
         }
 
@@ -856,9 +865,11 @@ class _HomePageState extends State<HomePage> {
                     : _buildFallbackBanner(),
               ]
             : _banners.map((banner) {
-                final imageUrl = banner['image_path'] != null
-                    ? 'http://10.250.3.148:8000/storage/${banner['image_path']}'
-                    : banner['image_url'] ?? '';
+                final imageUrl = banner['image_url'] != null
+                    ? banner['image_url'].toString()
+                    : banner['image'] != null 
+                        ? 'http://10.250.3.148:8000/storage/${banner['image']}' 
+                        : '';
 
                 return Builder(
                   builder: (BuildContext context) {
@@ -1181,14 +1192,18 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
+                        SizedBox(
                           height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                          width: double.infinity,
+                          child: ClipRRect(
                             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.handyman, size: 40, color: Colors.grey),
+                            child: Image.network(
+                              product['image'].toString(),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => const Center(
+                                child: Icon(Icons.handyman, size: 40, color: Colors.grey),
+                              ),
+                            ),
                           ),
                         ),
                         Padding(
@@ -1502,7 +1517,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 120,
+            height: 220,
             child: _announcements.isEmpty
                 ? const Center(child: Text("Tidak ada data terbaru"))
                 : ListView.builder(
@@ -1539,7 +1554,6 @@ class _HomePageState extends State<HomePage> {
     return Container(
       width: 280,
       margin: const EdgeInsets.only(right: 16, bottom: 8),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
@@ -1551,63 +1565,69 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildElementImage(imageUrl, width: 60, height: 60, fit: BoxFit.contain),
-          const SizedBox(width: 12),
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            child: _buildElementImage(imageUrl, width: double.infinity, height: 120, fit: BoxFit.cover),
+          ),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Hari ini',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium!.copyWith(fontSize: 10),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Hari ini',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium!.copyWith(fontSize: 10),
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: const Text(
-                        'Baru',
-                        style: TextStyle(
-                          fontSize: 8,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: const Text(
+                          'Baru',
+                          style: TextStyle(
+                            fontSize: 8,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium!.copyWith(fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  desc,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium!.copyWith(fontSize: 10),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    title,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium!.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium!.copyWith(fontSize: 11),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         ],

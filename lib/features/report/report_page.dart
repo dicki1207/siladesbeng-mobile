@@ -242,19 +242,19 @@ class _ReportPageState extends State<ReportPage> {
 
   Widget _buildLabel(String text, {IconData? icon}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0, top: 16.0),
+      padding: const EdgeInsets.only(bottom: 4.0, top: 12.0),
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 18, color: Theme.of(context).primaryColor),
-            const SizedBox(width: 8),
+            Icon(icon, size: 16, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 6),
           ],
           Expanded(
             child: RichText(
               text: TextSpan(
                 text: text.replaceAll('*', ''),
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color:
                       Theme.of(context).textTheme.bodyLarge?.color ??
@@ -362,97 +362,118 @@ class _ReportPageState extends State<ReportPage> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Kop Surat Resmi Pemerintahan
+                  // Modern Header Card
                   Container(
                     margin: const EdgeInsets.only(bottom: 24),
-                    child: Column(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withAlpha(15),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Theme.of(context).primaryColor.withAlpha(20),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Logo Kabupaten (Kiri)
-                            SizedBox(
-                              width: 70,
-                              height: 70,
-                              child: Image.network(
-                                'http://10.250.3.148:8000/Admin/img/illustrations/logokab.png',
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
+                        // Logo Kabupaten (Kiri)
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(5),
+                                blurRadius: 10,
+                                spreadRadius: 2,
                               ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Image.network(
+                              'http://10.250.3.148:8000/Admin/img/illustrations/logokab.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
                             ),
-                            
-                            // Judul Tengah
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      'FORM PELAPORAN',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w900,
-                                        color: Theme.of(context).textTheme.bodyLarge?.color,
-                                        letterSpacing: 0.5,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Sampaikan keluhan atau saran Anda secara jujur dan beretika',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Sistem Sinergi Layanan dan Aspirasi Desa di Kabupaten Bengkalis',
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        color: Colors.grey[400],
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
+                          ),
+                        ),
+                        
+                        // Judul Tengah
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'FORM PELAPORAN',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: Theme.of(context).primaryColor,
+                                    letterSpacing: 0.5,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Sampaikan keluhan atau saran Anda secara jujur dan beretika',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.3,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
-                            
-                            // Logo SiladesBeng (Kanan)
-                            SizedBox(
-                              width: 80,
-                              height: 80,
-                              child: Image.network(
-                                'http://10.250.3.148:8000/Admin/img/illustrations/logodomain.webp',
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
+                          ),
+                        ),
+                        
+                        // Logo SiladesBeng (Kanan)
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(5),
+                                blurRadius: 10,
+                                spreadRadius: 2,
                               ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Image.network(
+                              'http://10.250.3.148:8000/Admin/img/illustrations/logodomain.webp',
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Garis pemisah kop surat
-                        Container(
-                          height: 3,
-                          color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
-                        ),
-                        const SizedBox(height: 2),
-                        Container(
-                          height: 1,
-                          color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black54,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,7 +520,7 @@ class _ReportPageState extends State<ReportPage> {
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
-                                    vertical: 14,
+                                    vertical: 10,
                                   ),
                                 ),
                               ),
@@ -698,7 +719,7 @@ class _ReportPageState extends State<ReportPage> {
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 14,
+                          vertical: 10,
                         ),
                       ),
                     ),

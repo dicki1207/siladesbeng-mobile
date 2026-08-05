@@ -43,84 +43,94 @@ class TransactionReceiptPage extends StatelessWidget {
     required this.type,
   });
 
-  String _getUnitName() {
-    if (type == 'Gas') return 'Unit Pembelian Gas';
-    if (type == 'Sewa Mobil') return 'Unit Penyewaan Kendaraan';
-    if (type == 'Sewa Alat') return 'Unit Penyewaan Alat';
-    if (type == 'Fasilitas') return 'Unit Penyewaan Fasilitas';
-    return 'Unit Pelayanan Terpadu';
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey[100],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Bukti Transaksi'),
-        centerTitle: true,
-        backgroundColor: isDark ? Theme.of(context).cardColor : Colors.white,
-        foregroundColor: isDark ? Colors.white : Colors.black,
+        backgroundColor: Colors.white,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        title: const Text(
+          'Unduh Bukti Transaksi',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: Colors.black),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Membagikan PDF Bukti Transaksi...')),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.download, color: Colors.black),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Menyimpan PDF ke perangkat...')),
+              );
+            },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: TicketCard(
-          color: isDark ? Theme.of(context).cardColor : Colors.white,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // HEADER
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Stack(
+        children: [
+          // Background Kopsurat (Watermark)
+          Positioned.fill(
+            child: Image.network(
+              'http://10.250.3.148:8000/User/img/buktilapor/Halaman1buktipelaporan(kopsurat).png',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(child: Text('Watermark tidak dapat dimuat'));
+              },
+            ),
+          ),
+          
+          // Content
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 40),
+              child: Container(
+                color: Colors.white.withAlpha(220),
+                padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo
+                  // HEADER INFO
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.network(
-                        'http://10.250.3.148:8000/assets/img/logo.png', // Fallback
-                        height: 40,
-                        errorBuilder: (c, e, s) => const Icon(Icons.description, color: Colors.blue, size: 40),
+                      Expanded(
+                        child: Text(
+                          'Bukti Transaksi\n$type',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'SiladesBeng',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                      Expanded(
+                        child: Text(
+                          'Nomor Ref: $orderNumber',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text(
-                          'Bukti Transaksi',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                        Text(
-                          _getUnitName(),
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: isDark ? Colors.grey[400] : Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                  const SizedBox(height: 30),
 
               // INFO PESANAN
               _buildInfoRow('No. Pesanan', orderNumber),
@@ -228,9 +238,9 @@ class TransactionReceiptPage extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Expanded(flex: 5, child: SizedBox()),
+                  const Expanded(flex: 3, child: SizedBox()),
                   Expanded(
-                    flex: 4,
+                    flex: 5,
                     child: Column(
                       children: [
                         Row(
@@ -260,42 +270,33 @@ class TransactionReceiptPage extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      'Bengkalis, ${orderTime.split(' ').first}',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Hormat Kami',
-                      style: TextStyle(fontSize: 12, color: isDark ? Colors.white : Colors.black87),
-                    ),
-                    const SizedBox(height: 16),
                     Container(
-                      color: Colors.white, // QR code background should always be white for scanability
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(8),
+                      color: Colors.white,
                       child: QrImageView(
                         data: orderNumber,
                         version: QrVersions.auto,
                         size: 100.0,
-                        backgroundColor: Colors.white,
-                        eyeStyle: const QrEyeStyle(
-                          eyeShape: QrEyeShape.square,
-                          color: Colors.black,
-                        ),
-                        dataModuleStyle: const QrDataModuleStyle(
-                          dataModuleShape: QrDataModuleShape.square,
-                          color: Colors.black,
-                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     Text(
+                      'Bengkalis, ${orderTime.split(' ').first}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Hormat Kami',
+                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
                       'SiladesBeng',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
                     Text(
                       'Platform E-Government Kab. Bengkalis',
-                      style: TextStyle(fontSize: 10, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -358,6 +359,9 @@ class TransactionReceiptPage extends StatelessWidget {
           ),
         ),
       ),
+    ),
+  ],
+),
     );
   }
 

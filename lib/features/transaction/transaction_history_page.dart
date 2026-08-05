@@ -18,6 +18,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
   bool _isLoggedIn = false;
   bool _isLoadingAuth = true;
   bool _isLoadingData = false;
+  String _searchQuery = '';
   List<Map<String, dynamic>> _transactions = [];
 
   @override
@@ -119,7 +120,9 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
           _selectedCategory == 'Semua' || item['category'] == _selectedCategory;
       bool statMatch =
           _selectedStatus == 'Semua' || item['status'] == _selectedStatus;
-      return catMatch && statMatch;
+      bool searchMatch = _searchQuery.isEmpty || 
+          (item['title']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+      return catMatch && statMatch && searchMatch;
     }).toList();
 
     return Scaffold(
@@ -137,11 +140,38 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
+                child: Column(
                   children: [
-                    Expanded(child: _buildCategoryDropdown()),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildStatusDropdown()),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Cari nama layanan...',
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(child: _buildCategoryDropdown()),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildStatusDropdown()),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -302,7 +332,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
@@ -327,179 +357,113 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withAlpha(15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: item['image'] != null
-                            ? (item['image'].toString().startsWith('http')
-                                ? Image.network(
-                                    item['image'],
-                                    errorBuilder: (_, _, _) {
-                                      String fb = 'assets/images/F2.png';
-                                      final img = item['image'].toString();
-                                      if (img.contains('F1')) {
-                                        fb = 'assets/images/F1.png';
-                                      } else if (img.contains('mobil')) {
-                                        fb = 'assets/images/mobil.png';
-                                      } else if (img.contains('fasilitas')) {
-                                        fb = 'assets/images/fasilitas.png';
-                                      } else if (img.contains('lapor')) {
-                                        fb = 'assets/images/lapor.png';
-                                      }
-                                      return Image.asset(
-                                        fb,
-                                        errorBuilder: (_, _, _) => Icon(
-                                          Icons.apps,
-                                          color: Theme.of(context).primaryColor,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Image.asset(
-                                    item['image'],
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withAlpha(15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: item['image'] != null
+                        ? (item['image'].toString().startsWith('http')
+                            ? Image.network(
+                                item['image'],
+                                errorBuilder: (_, _, _) {
+                                  String fb = 'assets/images/F2.png';
+                                  final img = item['image'].toString();
+                                  if (img.contains('F1')) {
+                                    fb = 'assets/images/F1.png';
+                                  } else if (img.contains('mobil')) {
+                                    fb = 'assets/images/mobil.png';
+                                  } else if (img.contains('fasilitas')) {
+                                    fb = 'assets/images/fasilitas.png';
+                                  } else if (img.contains('lapor')) {
+                                    fb = 'assets/images/lapor.png';
+                                  }
+                                  return Image.asset(
+                                    fb,
                                     errorBuilder: (_, _, _) => Icon(
                                       Icons.apps,
                                       color: Theme.of(context).primaryColor,
                                     ),
-                                  ))
-                            : Icon(
-                                Icons.apps,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item['title']?.toString() ?? 'Tidak ada judul',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge?.color,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            item['date']?.toString() ?? '-',
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).textTheme.bodyMedium?.color
-                                      ?.withAlpha(150) ??
-                                  Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Divider(height: 1, thickness: 1),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Total Belanja',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                Theme.of(
-                                  context,
-                                ).textTheme.bodyMedium?.color?.withAlpha(150) ??
-                                Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item['price']?.toString() ?? '-',
-                          style: TextStyle(
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                item['image'],
+                                errorBuilder: (_, _, _) => Icon(
+                                  Icons.apps,
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              ))
+                        : Icon(
+                            Icons.apps,
                             color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
                           ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['title']?.toString() ?? 'Tidak ada judul',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      decoration: BoxDecoration(
-                        color: statusColor.withAlpha(20),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: statusColor.withAlpha(50)),
+                      const SizedBox(height: 4),
+                      Text(
+                        item['date']?.toString() ?? '-',
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withAlpha(150) ?? Colors.grey[600],
+                          fontSize: 11,
+                        ),
                       ),
-                      child: Row(
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: statusColor,
-                              shape: BoxShape.circle,
+                          Text(
+                            item['price']?.toString() ?? '-',
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            item['status']?.toString() ?? 'Menunggu',
-                            style: TextStyle(
-                              color: statusColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withAlpha(20),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: statusColor.withAlpha(50)),
+                            ),
+                            child: Text(
+                              item['status']?.toString() ?? 'Menunggu',
+                              style: TextStyle(
+                                color: statusColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.account_balance_wallet,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      item['payment'],
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            Theme.of(
-                              context,
-                            ).textTheme.bodyMedium?.color?.withAlpha(150) ??
-                            Colors.grey,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

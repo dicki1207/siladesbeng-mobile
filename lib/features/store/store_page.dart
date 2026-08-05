@@ -168,7 +168,7 @@ class _StorePageState extends State<StorePage> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.65,
+                childAspectRatio: 0.55,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
