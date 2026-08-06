@@ -25,7 +25,7 @@ class _NewsPageState extends State<NewsPage> {
     'Gotong Royong',
   ];
 
-  List<Map<String, dynamic>> _mockNews = [];
+  List<Map<String, dynamic>> _newsList = [];
   bool _isLoading = true;
   final NewsService _newsService = NewsService();
 
@@ -50,12 +50,12 @@ class _NewsPageState extends State<NewsPage> {
     
     if (data.isNotEmpty) {
       setState(() {
-        _mockNews = List<Map<String, dynamic>>.from(data);
+        _newsList = List<Map<String, dynamic>>.from(data);
         _isLoading = false;
       });
     } else {
       setState(() {
-        _mockNews = [];
+        _newsList = [];
         _isLoading = false;
       });
     }
@@ -69,7 +69,7 @@ class _NewsPageState extends State<NewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredNews = _mockNews;
+    List<Map<String, dynamic>> filteredNews = _newsList;
     bool isBerita = widget.postCategory == 'Berita';
 
     return Scaffold(

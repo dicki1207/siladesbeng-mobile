@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _announcements = [];
   List<dynamic> _unitPelayanan = [];
   List<dynamic> _availableServices = [];
+  List<Map<String, dynamic>> _pasarDaerahProducts = [];
   bool _isLoading = true;
   double _assistantX = -1;
   double _assistantY = -1;
@@ -51,9 +52,9 @@ class _HomePageState extends State<HomePage> {
     return [
       {
         'action': 'Toko BUMDes',
-        'imageUrl': 'assets/images/F1.png',
+        'imageUrl': 'assets/images/PasarDaerah.png',
         'color': 'teal',
-        'title': 'Toko Material',
+        'title': 'Pasar Daerah',
       },
       {
         'action': 'Beli Gas',
@@ -140,12 +141,14 @@ class _HomePageState extends State<HomePage> {
         http.get(Uri.parse('http://10.250.3.148:8000/api/announcements')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
         http.get(Uri.parse('http://10.250.3.148:8000/api/services')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
         http.get(Uri.parse('http://10.250.3.148:8000/api/unit-pelayanan'), headers: headers).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('http://10.250.3.148:8000/api/pasar-daerah/products')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
       ]);
 
       final bannerRes = results[0];
       final annRes = results[1];
       final servicesRes = results[2];
       final unitRes = results[3];
+      final pasarDaerahRes = results[4];
 
       if (!mounted) return;
 
@@ -232,6 +235,18 @@ class _HomePageState extends State<HomePage> {
           }
         } else {
           _unitPelayanan = _getDefaultUnitPelayanan();
+        }
+
+        // Parse Pasar Daerah
+        if (pasarDaerahRes.statusCode == 200 && pasarDaerahRes.body.trim().startsWith('{')) {
+          try {
+            final Map<String, dynamic> data = json.decode(pasarDaerahRes.body);
+            if (data['status'] == 'success') {
+              _pasarDaerahProducts = List<Map<String, dynamic>>.from(data['data']);
+            }
+          } catch (e) {
+            debugPrint('Error parsing Pasar Daerah API: $e');
+          }
         }
 
         _isLoading = false;
@@ -1107,18 +1122,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBumdesStoreMini() {
-    final formatCurrency = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
 
-    // Mock products for the mini showcase
-    final mockProducts = [
-      {'name': 'Semen Padang 50 Kg', 'price': 70000, 'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6sJ_jZ5UqU9q_0U9r7V_r_8_l_0_1_2_3_4&s'},
-      {'name': 'Pipa PVC Wavin 1 Inch', 'price': 25000, 'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s'},
-      {'name': 'Cangkul Baja', 'price': 85000, 'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s'},
-    ];
+    // We no longer use mock products here, we use _pasarDaerahProducts.
+    // If it's empty, we won't show the horizontal list.
+    if (_pasarDaerahProducts.isEmpty) return const SizedBox.shrink();
 
     return Container(
       margin: const EdgeInsets.only(top: 24),
@@ -1139,7 +1146,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Toko BUMDes',
+                      'Pasar Daerah',
                       style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.bold,
@@ -1170,9 +1177,15 @@ class _HomePageState extends State<HomePage> {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: mockProducts.length,
+              itemCount: _pasarDaerahProducts.length > 5 ? 5 : _pasarDaerahProducts.length,
               itemBuilder: (context, index) {
-                final product = mockProducts[index];
+                final product = _pasarDaerahProducts[index];
+                
+                String name = product['nama_produk'] ?? 'Tanpa Nama';
+                dynamic rawPrice = product['harga'] ?? 0;
+                double price = (rawPrice is String) ? (double.tryParse(rawPrice) ?? 0) : (rawPrice as num).toDouble();
+                String imageUrl = product['image_url'] ?? '';
+
                 return GestureDetector(
                   onTap: () => _checkLoginAndProceed('Toko BUMDes'),
                   child: Container(
@@ -1192,41 +1205,48 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: 100,
-                          width: double.infinity,
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                            child: Image.network(
-                              product['image'].toString(),
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Center(
-                                child: Icon(Icons.handyman, size: 40, color: Colors.grey),
-                              ),
+
+                        Expanded(
+                          flex: 5,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                             ),
+                            child: imageUrl.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.handyman, color: Colors.grey),
+                                    ),
+                                  )
+                                : const Icon(Icons.handyman, color: Colors.grey),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product['name'].toString(),
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                formatCurrency.format(product['price']),
-                                style: const TextStyle(
-                                  color: Color(0xFF0EA5E9),
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12,
+                        Expanded(
+                          flex: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  name,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  NumberFormat.currency(locale: 'id', symbol: 'Rp', decimalDigits: 0).format(price),
+                                  style: const TextStyle(color: Color(0xFF0EA5E9), fontWeight: FontWeight.bold, fontSize: 12),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

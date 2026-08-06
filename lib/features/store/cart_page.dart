@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
+import 'pasar_checkout_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -9,24 +11,34 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  // Mock Cart Items
-  final List<Map<String, dynamic>> _cartItems = [
-    {
-      'id': '1',
-      'name': 'Semen Padang 50 Kg',
-      'price': 70000,
-      'quantity': 5,
-    },
-    {
-      'id': '2',
-      'name': 'Pipa PVC Wavin 1 Inch',
-      'price': 25000,
-      'quantity': 10,
+  final PasarCartService _pasarCartService = PasarCartService();
+  List<Map<String, dynamic>> _cartItems = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCart();
+  }
+
+  Future<void> _fetchCart() async {
+    setState(() => _isLoading = true);
+    final items = await _pasarCartService.getCart();
+    if (mounted) {
+      setState(() {
+        _cartItems = items;
+        _isLoading = false;
+      });
     }
-  ];
+  }
 
   double get _totalPrice {
-    return _cartItems.fold(0, (sum, item) => sum + (item['price'] * item['quantity']));
+    return _cartItems.fold(0, (sum, item) {
+      dynamic price = item['price'] ?? 0;
+      int quantity = item['quantity'] ?? 0;
+      double parsedPrice = (price is String) ? (double.tryParse(price) ?? 0) : (price as num).toDouble();
+      return sum + (parsedPrice * quantity);
+    });
   }
 
   final formatCurrency = NumberFormat.currency(
@@ -54,9 +66,11 @@ class _CartPageState extends State<CartPage> {
         ),
         centerTitle: true,
       ),
-      body: _cartItems.isEmpty
-          ? const Center(child: Text('Keranjang Anda kosong'))
-          : ListView.builder(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _cartItems.isEmpty
+              ? const Center(child: Text('Keranjang Anda kosong'))
+              : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _cartItems.length,
               itemBuilder: (context, index) {
@@ -75,7 +89,16 @@ class _CartPageState extends State<CartPage> {
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.handyman, color: Colors.grey),
+                          child: (item['image_url'] != null)
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    item['image_url'],
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.handyman, color: Colors.grey),
+                                  ),
+                                )
+                              : const Icon(Icons.handyman, color: Colors.grey),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -85,10 +108,12 @@ class _CartPageState extends State<CartPage> {
                               Text(
                                 item['name'],
                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                formatCurrency.format(item['price']),
+                                formatCurrency.format((item['price'] is String) ? double.tryParse(item['price']) ?? 0 : item['price']),
                                 style: const TextStyle(color: Color(0xFF0EA5E9), fontWeight: FontWeight.w900),
                               ),
                             ],
@@ -98,23 +123,42 @@ class _CartPageState extends State<CartPage> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline),
-                              onPressed: () {
-                                setState(() {
-                                  if (item['quantity'] > 1) {
-                                    item['quantity']--;
-                                  } else {
-                                    _cartItems.removeAt(index);
+                              onPressed: () async {
+                                final currentQty = item['quantity'];
+                                if (currentQty > 1) {
+                                  setState(() => item['quantity']--);
+                                  bool success = await _pasarCartService.updateCart(item['id'], item['quantity']);
+                                  if (!success) {
+                                    setState(() => item['quantity']++); // revert
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengubah kuantitas')));
+                                    }
                                   }
-                                });
+                                } else {
+                                  bool success = await _pasarCartService.removeFromCart(item['id']);
+                                  if (success && mounted) {
+                                    setState(() => _cartItems.removeAt(index));
+                                  }
+                                }
                               },
                             ),
                             Text('${item['quantity']}', style: const TextStyle(fontWeight: FontWeight.bold)),
                             IconButton(
                               icon: const Icon(Icons.add_circle_outline),
-                              onPressed: () {
-                                setState(() {
-                                  item['quantity']++;
-                                });
+                              onPressed: () async {
+                                final stock = item['stock'] ?? 0;
+                                if (item['quantity'] >= stock) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Stok tidak mencukupi')));
+                                  return;
+                                }
+                                setState(() => item['quantity']++);
+                                bool success = await _pasarCartService.updateCart(item['id'], item['quantity']);
+                                if (!success) {
+                                  setState(() => item['quantity']--); // revert
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengubah kuantitas')));
+                                  }
+                                }
                               },
                             ),
                           ],
@@ -153,10 +197,16 @@ class _CartPageState extends State<CartPage> {
                 ],
               ),
               ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Fitur Checkout belum tersedia di versi demo')),
-                  );
+                onPressed: _cartItems.isEmpty ? null : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PasarCheckoutPage(totalAmount: _totalPrice),
+                    ),
+                  ).then((_) {
+                    // Refresh cart when returning from checkout
+                    _fetchCart();
+                  });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0EA5E9),

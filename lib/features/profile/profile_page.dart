@@ -24,8 +24,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool _isLoggedIn = false;
-  String _name = 'Mushlihul Arif';
-  String _email = 'mushlihul@example.com';
+  String _name = 'Warga Desa';
+  String _email = 'warga@desa.id';
   String? _imagePath;
   String? _imageUrl;
   bool _isVerified = false;
@@ -51,8 +51,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
     setState(() {
       _isLoggedIn = true;
-      _name = prefs.getString('profile_name') ?? 'Mushlihul Arif';
-      _email = prefs.getString('profile_email') ?? 'mushlihul@example.com';
+      _name = prefs.getString('profile_name') ?? 'Warga Desa';
+      _email = prefs.getString('profile_email') ?? 'warga@desa.id';
       _imagePath = prefs.getString('profile_image');
       _imageUrl = prefs.getString('profile_image_url');
       _isVerified = prefs.getBool('is_verified') ?? false;

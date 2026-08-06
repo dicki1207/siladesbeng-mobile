@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'cart_page.dart';
+import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
+import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 
 class StorePage extends StatefulWidget {
   const StorePage({super.key});
@@ -10,56 +12,49 @@ class StorePage extends StatefulWidget {
 }
 
 class _StorePageState extends State<StorePage> {
+  final PasarProductService _pasarProductService = PasarProductService();
+  final PasarCartService _pasarCartService = PasarCartService();
   String _selectedCategory = 'Semua';
-  final List<String> _categories = ['Semua', 'Bangunan', 'Listrik', 'Pertanian', 'Pupuk'];
+  List<String> _categories = ['Semua', 'Bangunan', 'Listrik', 'Pertanian', 'Pupuk'];
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _apiProducts = [];
 
-  // Mock Data
-  final List<Map<String, dynamic>> _mockProducts = [
-    {
-      'id': '1',
-      'name': 'Semen Padang 50 Kg',
-      'category': 'Bangunan',
-      'price': 70000,
-      'stock': 45,
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6sJ_jZ5UqU9q_0U9r7V_r_8_l_0_1_2_3_4&s',
-    },
-    {
-      'id': '2',
-      'name': 'Pipa PVC Wavin 1 Inch',
-      'category': 'Bangunan',
-      'price': 25000,
-      'stock': 120,
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s',
-    },
-    {
-      'id': '3',
-      'name': 'Kabel Broco NYM 2x1.5',
-      'category': 'Listrik',
-      'price': 350000,
-      'stock': 12,
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s',
-    },
-    {
-      'id': '4',
-      'name': 'Cangkul Baja',
-      'category': 'Pertanian',
-      'price': 85000,
-      'stock': 30,
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s',
-    },
-    {
-      'id': '5',
-      'name': 'Pupuk Urea 50 Kg',
-      'category': 'Pupuk',
-      'price': 120000,
-      'stock': 50,
-      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x_x&s',
-    },
-  ];
+
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final categories = await _pasarProductService.getCategories();
+      final products = await _pasarProductService.getProducts(category: _selectedCategory);
+      
+      if (mounted) {
+        setState(() {
+          if (categories.isNotEmpty) _categories = categories;
+          _apiProducts = products;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   List<Map<String, dynamic>> get _filteredProducts {
-    if (_selectedCategory == 'Semua') return _mockProducts;
-    return _mockProducts.where((p) => p['category'] == _selectedCategory).toList();
+    if (_selectedCategory == 'Semua') return _apiProducts;
+    
+    return _apiProducts.where((p) {
+      final cat = p['kategori'] ?? p['category'];
+      return cat == _selectedCategory;
+    }).toList();
   }
 
   @override
@@ -68,7 +63,7 @@ class _StorePageState extends State<StorePage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Toko BUMDes',
+          'Pasar Daerah',
           style: TextStyle(
             color: Theme.of(context).textTheme.bodyLarge?.color,
             fontWeight: FontWeight.w800,
@@ -149,6 +144,7 @@ class _StorePageState extends State<StorePage> {
                           setState(() {
                             _selectedCategory = category;
                           });
+                          _fetchData();
                         }
                       },
                     ),
@@ -161,23 +157,32 @@ class _StorePageState extends State<StorePage> {
           const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
           // Products Grid
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.55,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  return _buildProductCard(_filteredProducts[index]);
-                },
-                childCount: _filteredProducts.length,
+          if (_isLoading)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_filteredProducts.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: Text('Belum ada produk di kategori ini')),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.55,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return _buildProductCard(_filteredProducts[index]);
+                  },
+                  childCount: _filteredProducts.length,
+                ),
               ),
             ),
-          ),
           
           const SliverToBoxAdapter(child: SizedBox(height: 30)),
         ],
@@ -191,6 +196,19 @@ class _StorePageState extends State<StorePage> {
       symbol: 'Rp ',
       decimalDigits: 0,
     );
+
+    String name = product['nama_produk'] ?? product['name'] ?? 'Tanpa Nama';
+    int stock = product['stok'] ?? product['stock'] ?? 0;
+    
+    dynamic rawPrice = product['harga'] ?? product['price'] ?? 0;
+    double price = 0;
+    if (rawPrice is String) {
+      price = double.tryParse(rawPrice) ?? 0;
+    } else {
+      price = (rawPrice as num).toDouble();
+    }
+    
+    String imageUrl = product['image_url'] ?? product['image'] ?? '';
 
     return Container(
       decoration: BoxDecoration(
@@ -215,7 +233,16 @@ class _StorePageState extends State<StorePage> {
                 color: Colors.grey[200],
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               ),
-              child: const Icon(Icons.handyman, size: 50, color: Colors.grey),
+              child: imageUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.handyman, size: 50, color: Colors.grey),
+                      ),
+                    )
+                  : const Icon(Icons.handyman, size: 50, color: Colors.grey),
             ),
           ),
           // Details
@@ -231,7 +258,7 @@ class _StorePageState extends State<StorePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        product['name'],
+                        name,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
@@ -241,7 +268,7 @@ class _StorePageState extends State<StorePage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Stok: ${product['stock']}',
+                        'Stok: $stock',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 11,
@@ -249,12 +276,14 @@ class _StorePageState extends State<StorePage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        formatCurrency.format(product['price']),
+                        formatCurrency.format(price),
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF0EA5E9),
                           fontSize: 14,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -262,13 +291,39 @@ class _StorePageState extends State<StorePage> {
                     width: double.infinity,
                     height: 36,
                     child: ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (stock <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Stok habis!')),
+                          );
+                          return;
+                        }
+                        
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${product['name']} ditambahkan ke keranjang'),
-                            duration: const Duration(seconds: 1),
-                          ),
+                          SnackBar(content: Text('Menambahkan $name...')),
                         );
+                        
+                        bool success = await _pasarCartService.addToCart(product['id'], 1);
+                        
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('$name ditambahkan ke keranjang'),
+                                duration: const Duration(seconds: 1),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Gagal menambahkan ke keranjang'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       },
                       icon: const Icon(Icons.add_shopping_cart, size: 16, color: Colors.white),
                       label: const Text('Tambah', style: TextStyle(color: Colors.white, fontSize: 12)),
