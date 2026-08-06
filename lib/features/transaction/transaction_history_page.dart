@@ -20,11 +20,47 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
   bool _isLoadingData = false;
   String _searchQuery = '';
   List<Map<String, dynamic>> _transactions = [];
+  
+  final ScrollController _scrollController = ScrollController();
+  int _displayLimit = 10;
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     checkLoginStatus();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingMore) {
+        _loadMoreData();
+      }
+    }
+  }
+
+  Future<void> _loadMoreData() async {
+    if (_displayLimit >= _transactions.length) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500)); // Simulate loading delay for UX
+
+    if (mounted) {
+      setState(() {
+        _displayLimit += 10;
+        _isLoadingMore = false;
+      });
+    }
   }
 
   Future<void> checkLoginStatus() async {
@@ -115,7 +151,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       );
     }
 
-    List<Map<String, dynamic>> filteredList = _transactions.where((item) {
+    List<Map<String, dynamic>> allFilteredList = _transactions.where((item) {
       bool catMatch =
           _selectedCategory == 'Semua' || item['category'] == _selectedCategory;
       bool statMatch =
@@ -125,15 +161,21 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       return catMatch && statMatch && searchMatch;
     }).toList();
 
+    List<Map<String, dynamic>> filteredList = allFilteredList.take(_displayLimit).toList();
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: RefreshIndicator(
         onRefresh: () async {
           if (_isLoggedIn) {
+            setState(() {
+              _displayLimit = 10;
+            });
             await _fetchHistory();
           }
         },
         child: CustomScrollView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildSliverAppBar(),
@@ -161,6 +203,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       onChanged: (value) {
                         setState(() {
                           _searchQuery = value;
+                          _displayLimit = 10;
                         });
                       },
                     ),
@@ -197,6 +240,15 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                     }, childCount: filteredList.length),
                   ),
                 ),
+          if (_isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
           const SliverToBoxAdapter(child: SizedBox(height: 30)),
         ],
       ),
@@ -266,7 +318,10 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       }).toList(),
       onChanged: (value) {
         if (value != null) {
-          setState(() => _selectedCategory = value);
+          setState(() {
+            _selectedCategory = value;
+            _displayLimit = 10;
+          });
         }
       },
     );
@@ -305,7 +360,10 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       }).toList(),
       onChanged: (value) {
         if (value != null) {
-          setState(() => _selectedStatus = value);
+          setState(() {
+            _selectedStatus = value;
+            _displayLimit = 10;
+          });
         }
       },
     );

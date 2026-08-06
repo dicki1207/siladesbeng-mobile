@@ -69,10 +69,76 @@ class TransactionDetailPage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Left side (Text content)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          transaction['title']?.toString() ?? 'Tidak ada judul',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          transaction['price']?.toString() ?? '-',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor.withAlpha(20),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: statusColor.withAlpha(50)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: statusColor,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(color: statusColor, blurRadius: 5),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                transaction['status']?.toString() ?? 'Menunggu',
+                                style: TextStyle(
+                                  color: statusColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 16),
+                  
+                  // Right side (Image)
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Theme.of(context).scaffoldBackgroundColor,
                       shape: BoxShape.circle,
@@ -90,69 +156,14 @@ class TransactionDetailPage extends StatelessWidget {
                     ),
                     child: Image.network(
                       transaction['image']?.toString() ?? '',
-                      height: 32,
-                      width: 32,
+                      height: 72,
+                      width: 72,
                       fit: BoxFit.contain,
                       errorBuilder: (ctx, err, stack) => const Icon(
                         Icons.shopping_bag,
-                        size: 32,
+                        size: 72,
                         color: Colors.grey,
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    transaction['title']?.toString() ?? 'Tidak ada judul',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    transaction['price']?.toString() ?? '-',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusColor.withAlpha(20),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: statusColor.withAlpha(50)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(color: statusColor, blurRadius: 5),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          transaction['status']?.toString() ?? 'Menunggu',
-                          style: TextStyle(
-                            color: statusColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ],
@@ -226,86 +237,76 @@ class TransactionDetailPage extends StatelessWidget {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (transaction['category'] == 'Laporan Warga') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReportReceiptPage(
+                                reportId: transaction['id']?.toString() ?? 'RPT-12345',
+                                category: transaction['category'] ?? 'Laporan Warga',
+                                date: transaction['date'] ?? '12 Juli 2026',
+                                description: transaction['title'] ?? 'Judul Laporan',
+                                status: transaction['status'] ?? 'Menunggu',
+                                statusColor: statusColor,
+                              ),
+                            ),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TransactionReceiptPage(
+                                orderNumber: transaction['id']?.toString() ?? 'TRX-12345',
+                                orderTime: transaction['date'] ?? '12 Juli 2026',
+                                accountName: 'Andi Desa',
+                                accountEmail: 'andi@example.com',
+                                recipientName: 'Andi Desa',
+                                address: 'Jl. Pemuda No. 4, Bengkalis',
+                                deliveryMethod: 'Diantar',
+                                paymentTime: transaction['date'] ?? '12 Juli 2026',
+                                paymentMethod: transaction['payment'] ?? 'Transfer Bank',
+                                totalPayment: transaction['price'] ?? 'Rp 0',
+                                status: transaction['status'] ?? 'Selesai',
+                                statusColor: statusColor,
+                                itemName: transaction['title'] ?? 'Layanan',
+                                qty: 1,
+                                pricePerItem: transaction['price'] ?? 'Rp 0',
+                                type: transaction['category'] ?? 'Layanan',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        transaction['category'] == 'Laporan Warga'
+                            ? 'Lihat Bukti Laporan'
+                            : 'Unduh Struk Digital',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(20),
-                blurRadius: 20,
-                offset: const Offset(0, -5),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: () {
-              if (transaction['category'] == 'Laporan Warga') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ReportReceiptPage(
-                      reportId: transaction['id']?.toString() ?? 'RPT-12345',
-                      category: transaction['category'] ?? 'Laporan Warga',
-                      date: transaction['date'] ?? '12 Juli 2026',
-                      description: transaction['title'] ?? 'Judul Laporan',
-                      status: transaction['status'] ?? 'Menunggu',
-                      statusColor: statusColor,
-                    ),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TransactionReceiptPage(
-                      orderNumber: transaction['id']?.toString() ?? 'TRX-12345',
-                      orderTime: transaction['date'] ?? '12 Juli 2026',
-                      accountName: 'Andi Desa',
-                      accountEmail: 'andi@example.com',
-                      recipientName: 'Andi Desa',
-                      address: 'Jl. Pemuda No. 4, Bengkalis',
-                      deliveryMethod: 'Diantar',
-                      paymentTime: transaction['date'] ?? '12 Juli 2026',
-                      paymentMethod: transaction['payment'] ?? 'Transfer Bank',
-                      totalPayment: transaction['price'] ?? 'Rp 0',
-                      status: transaction['status'] ?? 'Selesai',
-                      statusColor: statusColor,
-                      itemName: transaction['title'] ?? 'Layanan',
-                      qty: 1,
-                      pricePerItem: transaction['price'] ?? 'Rp 0',
-                      type: transaction['category'] ?? 'Layanan',
-                    ),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              transaction['category'] == 'Laporan Warga'
-                  ? 'Lihat Bukti Laporan'
-                  : 'Unduh Struk Digital',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
         ),
       ),
     );

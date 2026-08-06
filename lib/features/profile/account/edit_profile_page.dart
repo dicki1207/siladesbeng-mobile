@@ -343,6 +343,43 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  void _showFullScreenImage(ImageProvider imageProvider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.black.withValues(alpha: 0.9),
+          insetPadding: EdgeInsets.zero,
+          child: Stack(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: Center(
+                    child: Image(
+                      image: imageProvider,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 40,
+                right: 20,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildField({required String label, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,43 +483,52 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         Center(
                           child: Stack(
                             children: [
-                              ClipOval(
-                                child: Container(
-                                  width: 120,
-                                  height: 120,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Theme.of(context).primaryColor,
-                                      width: 3,
+                              GestureDetector(
+                                onTap: () {
+                                  if (_imageFile != null) {
+                                    _showFullScreenImage(FileImage(_imageFile!));
+                                  } else if (_avatarUrl != null) {
+                                    _showFullScreenImage(NetworkImage(_avatarUrl!));
+                                  }
+                                },
+                                child: ClipOval(
+                                  child: Container(
+                                    width: 120,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Theme.of(context).primaryColor,
+                                        width: 3,
+                                      ),
                                     ),
-                                  ),
-                                  child: _imageFile != null
-                                      ? Image.file(
-                                          _imageFile!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, _, _) => Icon(
-                                            Icons.person,
-                                            size: 60,
-                                            color: Colors.grey[400],
-                                          ),
-                                        )
-                                      : (_avatarUrl != null
-                                          ? Image.network(
-                                              _avatarUrl!,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (_, _, _) => Icon(
-                                                Icons.person,
-                                                size: 60,
-                                                color: Colors.grey[400],
-                                              ),
-                                            )
-                                          : Icon(
+                                    child: _imageFile != null
+                                        ? Image.file(
+                                            _imageFile!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, _, _) => Icon(
                                               Icons.person,
                                               size: 60,
                                               color: Colors.grey[400],
-                                            )),
+                                            ),
+                                          )
+                                        : (_avatarUrl != null
+                                            ? Image.network(
+                                                _avatarUrl!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, _, _) => Icon(
+                                                  Icons.person,
+                                                  size: 60,
+                                                  color: Colors.grey[400],
+                                                ),
+                                              )
+                                            : Icon(
+                                                Icons.person,
+                                                size: 60,
+                                                color: Colors.grey[400],
+                                              )),
+                                  ),
                                 ),
                               ),
                             ],

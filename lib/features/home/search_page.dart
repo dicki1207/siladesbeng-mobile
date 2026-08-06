@@ -7,12 +7,14 @@ import 'package:siladesbeng_mobile/features/rental/facility_rental_page.dart';
 import 'package:siladesbeng_mobile/features/rental/tool_package_booking_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
+import 'package:intl/intl.dart';
 
 class SearchPage extends StatefulWidget {
   final String initialQuery;
   final List unitPelayanan;
   final List announcements;
   final List banners;
+  final List services;
 
   const SearchPage({
     super.key,
@@ -20,6 +22,7 @@ class SearchPage extends StatefulWidget {
     required this.unitPelayanan,
     required this.announcements,
     required this.banners,
+    required this.services,
   });
 
   @override
@@ -33,6 +36,7 @@ class _SearchPageState extends State<SearchPage> {
   List _filteredUnits = [];
   List _filteredAnnouncements = [];
   List _filteredBanners = [];
+  List _filteredServices = [];
 
   @override
   void initState() {
@@ -69,7 +73,24 @@ class _SearchPageState extends State<SearchPage> {
         final subtitle = (item['subtitle'] ?? '').toString().toLowerCase();
         return title.contains(_query) || subtitle.contains(_query);
       }).toList();
+
+      _filteredServices = widget.services.where((item) {
+        final title = (item['name'] ?? '').toString().toLowerCase();
+        return title.contains(_query);
+      }).toList();
     });
+  }
+
+  String _formatCurrency(dynamic price) {
+    if (price == null) return 'Gratis';
+    double priceVal = 0;
+    if (price is String) {
+      priceVal = double.tryParse(price) ?? 0;
+    } else if (price is num) {
+      priceVal = price.toDouble();
+    }
+    if (priceVal == 0) return 'Gratis';
+    return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(priceVal);
   }
 
   Future<void> _handleUnitTap(String actionName) async {
@@ -190,7 +211,8 @@ class _SearchPageState extends State<SearchPage> {
     final hasResults =
         _filteredUnits.isNotEmpty ||
         _filteredAnnouncements.isNotEmpty ||
-        _filteredBanners.isNotEmpty;
+        _filteredBanners.isNotEmpty ||
+        _filteredServices.isNotEmpty;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -319,6 +341,91 @@ class _SearchPageState extends State<SearchPage> {
                               Icons.arrow_forward_ios,
                               size: 14,
                               color: Colors.grey[400],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildResultSection(
+                    'Layanan Tersedia',
+                    Icons.shopping_bag_rounded,
+                    _filteredServices,
+                    (item) => InkWell(
+                      onTap: () {
+                        String actionName = 'Sewa Alat';
+                        if (item['type'] == 'gas') {
+                          actionName = 'Beli Gas';
+                        } else if (item['type'] == 'mobil') {
+                          actionName = 'Sewa Mobil';
+                        } else if (item['type'] == 'fasilitas') {
+                          actionName = 'Sewa Fasilitas';
+                        }
+                        _handleUnitTap(actionName);
+                      },
+                      borderRadius: BorderRadius.circular(15),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: Colors.grey.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: item['image'] != null
+                                  ? Image.network(
+                                      item['image'],
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (c, e, s) => Container(
+                                        width: 60,
+                                        height: 60,
+                                        color: Colors.grey[300],
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 60,
+                                      height: 60,
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.image,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item['name'] ?? 'Layanan',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _formatCurrency(item['price']),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Theme.of(context).primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

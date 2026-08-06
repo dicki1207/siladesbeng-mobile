@@ -972,6 +972,7 @@ class _HomePageState extends State<HomePage> {
           unitPelayanan: _unitPelayanan,
           announcements: _announcements,
           banners: _banners,
+          services: _availableServices,
         ),
       ),
     );
@@ -1558,7 +1559,6 @@ class _HomePageState extends State<HomePage> {
                         },
                         child: _buildTerbaruCard(
                           ann['title']?.toString() ?? 'Tidak ada judul',
-                          ann['content']?.toString() ?? ann['desc']?.toString() ?? 'Lihat detail lebih lanjut...',
                           ann['image']?.toString() ?? 'https://cdn-icons-png.flaticon.com/512/3176/3176298.png',
                         ),
                       );
@@ -1570,7 +1570,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildTerbaruCard(String title, String desc, String imageUrl) {
+  Widget _buildTerbaruCard(String title, String imageUrl) {
     return Container(
       width: 280,
       margin: const EdgeInsets.only(right: 16, bottom: 8),
@@ -1634,15 +1634,6 @@ class _HomePageState extends State<HomePage> {
                     style: Theme.of(
                       context,
                     ).textTheme.titleMedium!.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    desc,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium!.copyWith(fontSize: 11),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

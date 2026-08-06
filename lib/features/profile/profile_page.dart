@@ -625,7 +625,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         icon: Icons.receipt_long_rounded,
                         title: 'Riwayat Aktivitas',
-                        subtitle: 'Lacak pesanan gas, sewa & laporan warga',
                         targetPage: const TransactionHistoryPage(),
                         iconColor: Colors.blue[600],
                         isFirst: true,
@@ -636,7 +635,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           context,
                           icon: Icons.handshake_rounded,
                           title: 'Gabung Kemitraan',
-                          subtitle: 'Daftarkan desa Anda ke Sila-DesBeng',
                           targetPage: const PartnershipPage(),
                           iconColor: Colors.teal[600],
                           isFirst: false,
@@ -659,7 +657,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           context,
                           icon: Icons.manage_accounts_rounded,
                           title: 'Edit Profil & PIN Keamanan',
-                          subtitle: 'Ubah data diri, kata sandi, dan keamanan akun',
                           targetPage: const EditProfilePage(),
                           iconColor: Colors.green,
                           isFirst: true,
@@ -669,7 +666,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         icon: Icons.help_outline_rounded,
                         title: 'Pusat Bantuan & FAQ',
-                        subtitle: 'Panduan penggunaan dan pertanyaan umum',
                         targetPage: const HelpFaqPage(),
                         iconColor: Colors.amber[800],
                         isFirst: !_isLoggedIn,
@@ -679,7 +675,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         icon: Icons.info_outline_rounded,
                         title: 'Tentang Sila-DesBeng',
-                        subtitle: 'Versi aplikasi & informasi pengembang desa',
                         targetPage: const AboutPage(),
                         iconColor: Colors.indigo[600],
                         isFirst: false,
@@ -785,7 +780,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.grey.withAlpha(30),
           width: 1.2,
@@ -808,7 +803,7 @@ class _ProfilePageState extends State<ProfilePage> {
     BuildContext context, {
     required IconData icon,
     required String title,
-    required String subtitle,
+    String? subtitle,
     Widget? targetPage,
     Color? iconColor,
     required bool isFirst,
@@ -821,8 +816,8 @@ class _ProfilePageState extends State<ProfilePage> {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.vertical(
-              top: Radius.circular(isFirst ? 18 : 0),
-              bottom: Radius.circular(isLast ? 18 : 0),
+              top: Radius.circular(isFirst ? 16 : 0),
+              bottom: Radius.circular(isLast ? 16 : 0),
             ),
             onTap: () async {
               if (targetPage != null) {
@@ -840,7 +835,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   Container(
@@ -863,14 +858,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                        ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

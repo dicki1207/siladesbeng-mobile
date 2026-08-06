@@ -4,6 +4,10 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
+import 'package:siladesbeng_mobile/features/rental/tool_package_booking_page.dart';
+import 'package:siladesbeng_mobile/features/gas/gas_page.dart';
+import 'package:siladesbeng_mobile/features/rental/facility_rental_page.dart';
+import 'package:siladesbeng_mobile/features/rental/car_rental_page.dart';
 
 class AllServicesPage extends StatefulWidget {
   final List<dynamic> initialServices;
@@ -50,14 +54,70 @@ class _AllServicesPageState extends State<AllServicesPage> {
     }
   }
 
-  Future<void> _checkLoginAndProceed(String routeName) async {
+  Future<void> _checkLoginAndProceed(String actionName) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
+    final isBlocked = prefs.getBool('is_blocked') ?? false;
 
     if (!mounted) return;
 
     if (token != null && token.isNotEmpty) {
-      Navigator.pop(context, routeName);
+      if (isBlocked) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.block, color: Colors.red, size: 30),
+                SizedBox(width: 10),
+                Text(
+                  'Akses Dibatasi!',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            content: const Text(
+              'Anda terdeteksi telah pindah domisili, silakan ajukan mutasi terlebih dahulu.',
+              style: TextStyle(fontSize: 15),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Tutup'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      if (actionName == 'Sewa Alat') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ToolPackageBookingPage()),
+        );
+      } else if (actionName == 'Beli Gas') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const GasPage()),
+        );
+      } else if (actionName == 'Sewa Mobil') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const CarRentalPage()),
+        );
+      } else if (actionName == 'Sewa Fasilitas') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const FacilityRentalPage(initialTabIndex: 0)),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Anda harus login terlebih dahulu!')),
