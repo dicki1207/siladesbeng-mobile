@@ -188,6 +188,11 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                       decoration: InputDecoration(
                         hintText: 'Cari nama layanan...',
                         prefixIcon: const Icon(Icons.search),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.tune),
+                          color: Theme.of(context).primaryColor,
+                          onPressed: _showFilterBottomSheet,
+                        ),
                         filled: true,
                         fillColor: Theme.of(context).cardColor,
                         contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
@@ -206,14 +211,6 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           _displayLimit = 10;
                         });
                       },
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(child: _buildCategoryDropdown()),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildStatusDropdown()),
-                      ],
                     ),
                   ],
                 ),
@@ -285,86 +282,152 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
     );
   }
 
-  Widget _buildCategoryDropdown() {
-    return DropdownButtonFormField<String>(
-      initialValue: _selectedCategory,
-      isExpanded: true,
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 12,
-        ),
-        labelText: 'Kategori',
-        filled: true,
-        fillColor: Theme.of(context).cardColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
-        ),
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      items: _categories.map((cat) {
-        return DropdownMenuItem<String>(
-          value: cat['name'],
-          child: Text(
-            cat['name']!,
-            style: const TextStyle(fontSize: 13),
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }).toList(),
-      onChanged: (value) {
-        if (value != null) {
-          setState(() {
-            _selectedCategory = value;
-            _displayLimit = 10;
-          });
-        }
-      },
-    );
-  }
+      builder: (context) {
+        String tempCategory = _selectedCategory;
+        String tempStatus = _selectedStatus;
 
-  Widget _buildStatusDropdown() {
-    return DropdownButtonFormField<String>(
-      initialValue: _selectedStatus,
-      isExpanded: true,
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 12,
-        ),
-        labelText: 'Status',
-        filled: true,
-        fillColor: Theme.of(context).cardColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.withAlpha(50)),
-        ),
-      ),
-      items: _statuses.map((status) {
-        return DropdownMenuItem<String>(
-          value: status,
-          child: Text(
-            status,
-            style: const TextStyle(fontSize: 13),
-            overflow: TextOverflow.ellipsis,
-          ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 20,
+                right: 20,
+                top: 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filter Aktivitas',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Kategori',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _categories.map((cat) {
+                      final name = cat['name'] as String;
+                      final isSelected = tempCategory == name;
+                      return ChoiceChip(
+                        label: Text(name),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setModalState(() {
+                              tempCategory = name;
+                            });
+                          }
+                        },
+                        selectedColor: Theme.of(context).primaryColor.withAlpha(50),
+                        backgroundColor: Theme.of(context).cardColor,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).textTheme.bodyMedium?.color,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Status',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _statuses.map((status) {
+                      final isSelected = tempStatus == status;
+                      return ChoiceChip(
+                        label: Text(status),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setModalState(() {
+                              tempStatus = status;
+                            });
+                          }
+                        },
+                        selectedColor: Theme.of(context).primaryColor.withAlpha(50),
+                        backgroundColor: Theme.of(context).cardColor,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).textTheme.bodyMedium?.color,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedCategory = tempCategory;
+                          _selectedStatus = tempStatus;
+                          _displayLimit = 10;
+                        });
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Terapkan Filter',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          },
         );
-      }).toList(),
-      onChanged: (value) {
-        if (value != null) {
-          setState(() {
-            _selectedStatus = value;
-            _displayLimit = 10;
-          });
-        }
       },
     );
   }
