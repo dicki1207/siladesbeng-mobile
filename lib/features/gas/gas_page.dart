@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:siladesbeng_mobile/core/theme.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -24,7 +23,12 @@ class _GasPageState extends State<GasPage> {
     if (_selectedCategory == 'Semua') {
       return _allGasItems;
     }
-    return _allGasItems.where((item) => (item['kategori'] ?? 'Lainnya').toString() == _selectedCategory).toList();
+    return _allGasItems
+        .where(
+          (item) =>
+              (item['kategori'] ?? 'Lainnya').toString() == _selectedCategory,
+        )
+        .toList();
   }
 
   @override
@@ -32,8 +36,6 @@ class _GasPageState extends State<GasPage> {
     super.initState();
     _fetchGas();
   }
-
-
 
   Future<void> _fetchGas() async {
     try {
@@ -68,11 +70,13 @@ class _GasPageState extends State<GasPage> {
             _allGasItems = rawItems.map((item) {
               item['name'] = item['jenis_gas'] ?? item['name'];
               item['price'] = item['harga_satuan'] ?? item['price'];
-              item['image'] = item['image_url'] ?? item['image'] ?? 'assets/images/F2.png';
-              item['description'] = item['deskripsi'] ?? item['description'] ?? '';
+              item['image'] =
+                  item['image_url'] ?? item['image'] ?? 'assets/images/F2.png';
+              item['description'] =
+                  item['deskripsi'] ?? item['description'] ?? '';
               return item;
             }).toList();
-            
+
             final uniqueCategories = _allGasItems
                 .map((e) => e['kategori']?.toString() ?? '')
                 .where((e) => e.isNotEmpty)
@@ -96,151 +100,178 @@ class _GasPageState extends State<GasPage> {
     });
   }
 
+  void _showFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Filter Kategori',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _categories.map((category) {
+                  final isSelected = _selectedCategory == category;
+                  return ChoiceChip(
+                    label: Text(
+                      category,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.grey[700],
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: const Color(0xFF0EA5E9),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: isSelected
+                            ? const Color(0xFF0EA5E9)
+                            : Colors.grey[300]!,
+                      ),
+                    ),
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _selectedCategory = category;
+                        });
+                        Navigator.pop(ctx);
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          Container(
-            height: 400,
-            decoration: BoxDecoration(gradient: AppTheme.getGradient(context)),
+      appBar: AppBar(
+        title: const Text(
+          'Layanan Gas LPG',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          RefreshIndicator(
-            onRefresh: () async {
-              setState(() {
-                _isLoading = true;
-              });
-              await _fetchGas();
-            },
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverAppBar(
-                  floating: true,
-                  pinned: false,
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                  title: Text(
-                    'Layanan Gas LPG',
-                    style: TextStyle(
-                      color: (Theme.of(context).textTheme.bodyLarge?.color),
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  centerTitle: true,
-                  iconTheme: IconThemeData(
-                    color: (Theme.of(context).textTheme.bodyLarge?.color),
-                  ),
-                ),
-                if (!_isLoading && _categories.length > 1)
-                  SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: 50,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        itemCount: _categories.length,
-                        itemBuilder: (context, index) {
-                          final category = _categories[index];
-                          final isSelected = _selectedCategory == category;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: ChoiceChip(
-                              label: Text(
-                                category,
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : Colors.grey[700],
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                ),
-                              ),
-                              selected: isSelected,
-                              selectedColor: const Color(0xFF0EA5E9),
-                              backgroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(
-                                  color: isSelected ? const Color(0xFF0EA5E9) : Colors.grey[300]!,
-                                ),
-                              ),
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() {
-                                    _selectedCategory = category;
-                                  });
-                                }
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 24.0,
-                  ),
-                  sliver: _isLoading
-                      ? const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 50),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: Color(0xFF0EA5E9),
-                              ),
-                            ),
-                          ),
-                        )
-                      : _filteredGasItems.isEmpty
-                          ? SliverToBoxAdapter(
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.inventory_2_outlined,
-                                        size: 80, color: Colors.grey[400]),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Belum Ada Gas',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Saat ini BUMDes belum menyediakan stok gas\ndi kategori ini.',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.grey[500]),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          : SliverGrid(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 16.0,
-                                mainAxisSpacing: 16.0,
-                                childAspectRatio: 0.55,
-                              ),
-                              delegate: SliverChildBuilderDelegate((
-                                BuildContext context,
-                                int index,
-                              ) {
-                                return _buildPremiumGasCard(_filteredGasItems[index]);
-                              }, childCount: _filteredGasItems.length),
-                            ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
-              ],
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          if (_categories.length > 1)
+            IconButton(
+              icon: const Icon(Icons.tune),
+              onPressed: _showFilterModal,
             ),
-          ),
         ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            _isLoading = true;
+          });
+          await _fetchGas();
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 24.0,
+              ),
+              sliver: _isLoading
+                  ? const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 50),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF0EA5E9),
+                          ),
+                        ),
+                      ),
+                    )
+                  : _filteredGasItems.isEmpty
+                  ? SliverToBoxAdapter(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.inventory_2_outlined,
+                              size: 80,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Belum Ada Gas',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Saat ini BUMDes belum menyediakan stok gas\ndi kategori ini.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.grey[500]),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16.0,
+                            mainAxisSpacing: 16.0,
+                            childAspectRatio: 0.55,
+                          ),
+                      delegate: SliverChildBuilderDelegate((
+                        BuildContext context,
+                        int index,
+                      ) {
+                        return _buildPremiumGasCard(_filteredGasItems[index]);
+                      }, childCount: _filteredGasItems.length),
+                    ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
@@ -303,7 +334,9 @@ class _GasPageState extends State<GasPage> {
                 ),
                 child: Hero(
                   tag: 'gas_img_${item['name']}',
-                  child: (item['image'].toString().startsWith('assets/') || item['image'].toString().contains('F2.png'))
+                  child:
+                      (item['image'].toString().startsWith('assets/') ||
+                          item['image'].toString().contains('F2.png'))
                       ? Image.asset(
                           'assets/images/F2.png',
                           fit: BoxFit.contain,

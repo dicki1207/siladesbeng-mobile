@@ -37,293 +37,253 @@ class _ServiceListPageState extends State<ServiceListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: _fetchRentals,
-          color: Theme.of(context).primaryColor,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                expandedHeight: 130.0,
-                floating: false,
-                pinned: true,
-                backgroundColor: const Color(0xFF1E88E5),
-                iconTheme: const IconThemeData(color: Colors.white),
-                title: const Text(
-                  'Penyewaan Alat',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                centerTitle: true,
-                shape: const ContinuousRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(60),
-                    bottomRight: Radius.circular(60),
-                  ),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(30),
-                        bottomRight: Radius.circular(30),
+      appBar: AppBar(
+        title: const Text(
+          'Penyewaan Alat',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _fetchRentals,
+        color: Theme.of(context).primaryColor,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        transitionDuration: const Duration(milliseconds: 450),
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const ToolPackageBookingPage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                              final curve = CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutQuart,
+                              );
+                              return FadeTransition(
+                                opacity: curve,
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0.0, 0.05),
+                                    end: Offset.zero,
+                                  ).animate(curve),
+                                  child: child,
+                                ),
+                              );
+                            },
                       ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                        colors: [Colors.blue[600]!, Colors.blue[900]!],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withAlpha(50),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          top: 50.0,
-                          left: 24,
-                          right: 24,
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Temukan berbagai peralatan untuk kebutuhan Anda',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(40),
+                            shape: BoxShape.circle,
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          transitionDuration: const Duration(milliseconds: 450),
-                          pageBuilder: (context, animation, secondaryAnimation) => const ToolPackageBookingPage(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
-                            return FadeTransition(
-                              opacity: curve,
-                              child: SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(0.0, 0.05),
-                                  end: Offset.zero,
-                                ).animate(curve),
-                                child: child,
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.blue[600]!, Colors.blue[900]!],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.withAlpha(50),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(40),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.handyman_outlined,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'FITUR BARU & HEMAT!',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Pilih Paket Desa atau Rangkai Paket Alat Anda Sendiri',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.arrow_forward_ios,
+                          child: const Icon(
+                            Icons.handyman_outlined,
                             color: Colors.white,
-                            size: 18,
+                            size: 32,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'FITUR BARU & HEMAT!',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Pilih Paket Desa atau Rangkai Paket Alat Anda Sendiri',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              _isLoading
-                  ? SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          child: Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                        );
-                      }, childCount: 5),
-                    )
-                  : _rentals.isEmpty
-                  ? SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Center(
+            ),
+            _isLoading
+                ? SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 40,
-                            ),
+                            height: 120,
                             decoration: BoxDecoration(
                               color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withAlpha(20),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Image.network(
-                                  'http://10.250.3.148:8000/User/img/elemen/F1.png',
-                                  width: 150,
-                                  height: 150,
-                                  errorBuilder: (ctx, err, stack) => Icon(
-                                    Icons.inventory_2,
-                                    size: 100,
-                                    color: Colors.blue[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  "Belum Ada Alat",
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge?.color,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  "Peralatan untuk disewakan sedang tidak tersedia saat ini atau gagal memuat data dari server.",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color:
-                                        Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color
-                                            ?.withAlpha(150) ??
-                                        Colors.grey,
-                                    height: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 30),
-                                ElevatedButton.icon(
-                                  onPressed: _fetchRentals,
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text('Muat Ulang'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue[700],
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
-                      ),
-                    )
-                  : SliverPadding(
-                      padding: const EdgeInsets.all(16),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16.0,
-                              crossAxisSpacing: 16.0,
-                              childAspectRatio: 0.65,
-                            ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) =>
-                              _buildPremiumRentalCard(_rentals[index], index),
-                          childCount: _rentals.length,
+                      );
+                    }, childCount: 5),
+                  )
+                : _rentals.isEmpty
+                ? SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 40,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withAlpha(20),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.network(
+                                'http://10.250.3.148:8000/User/img/elemen/F1.png',
+                                width: 150,
+                                height: 150,
+                                errorBuilder: (ctx, err, stack) => Icon(
+                                  Icons.inventory_2,
+                                  size: 100,
+                                  color: Colors.blue[600],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                "Belum Ada Alat",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                "Peralatan untuk disewakan sedang tidak tersedia saat ini atau gagal memuat data dari server.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color:
+                                      Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                          ?.withAlpha(150) ??
+                                      Colors.grey,
+                                  height: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                              ElevatedButton.icon(
+                                onPressed: _fetchRentals,
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('Muat Ulang'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue[700],
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100), // Bottom navigation spacing
-              ),
-            ],
-          ),
+                  )
+                : SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 16.0,
+                            crossAxisSpacing: 16.0,
+                            childAspectRatio: 0.65,
+                          ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) =>
+                            _buildPremiumRentalCard(_rentals[index], index),
+                        childCount: _rentals.length,
+                      ),
+                    ),
+                  ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 100), // Bottom navigation spacing
+            ),
+          ],
         ),
       ),
     );

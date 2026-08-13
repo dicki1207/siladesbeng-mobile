@@ -12,26 +12,29 @@ class PremiumHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+    final secondaryColor = primaryColor.withAlpha(200);
+
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFF1E88E5), // Original Blue
-            Color(0xFF4FC3F7), // Light Blue
+            primaryColor,
+            secondaryColor,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x331E88E5), // 20% opacity shadow matching theme
+            color: primaryColor.withAlpha(50), // 20% opacity shadow matching theme
             blurRadius: 15,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),

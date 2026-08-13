@@ -100,7 +100,10 @@ class _StorePageState extends State<StorePage> {
                     children: [
                       const Text(
                         'Filter & Urutkan',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
@@ -123,12 +126,19 @@ class _StorePageState extends State<StorePage> {
                       _buildSortChip('Terbaru', 'latest', tempSort, (val) {
                         setModalState(() => tempSort = val);
                       }),
-                      _buildSortChip('Harga Terendah', 'price_asc', tempSort, (val) {
+                      _buildSortChip('Harga Terendah', 'price_asc', tempSort, (
+                        val,
+                      ) {
                         setModalState(() => tempSort = val);
                       }),
-                      _buildSortChip('Harga Tertinggi', 'price_desc', tempSort, (val) {
-                        setModalState(() => tempSort = val);
-                      }),
+                      _buildSortChip(
+                        'Harga Tertinggi',
+                        'price_desc',
+                        tempSort,
+                        (val) {
+                          setModalState(() => tempSort = val);
+                        },
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -155,11 +165,17 @@ class _StorePageState extends State<StorePage> {
                         selectedColor: const Color(0xFF0EA5E9).withAlpha(40),
                         backgroundColor: Theme.of(context).cardColor,
                         labelStyle: TextStyle(
-                          color: isSelected ? const Color(0xFF0EA5E9) : Theme.of(context).textTheme.bodyMedium?.color,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected
+                              ? const Color(0xFF0EA5E9)
+                              : Theme.of(context).textTheme.bodyMedium?.color,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                         side: BorderSide(
-                          color: isSelected ? const Color(0xFF0EA5E9) : Colors.grey.shade300,
+                          color: isSelected
+                              ? const Color(0xFF0EA5E9)
+                              : Colors.grey.shade300,
                         ),
                       );
                     }).toList(),
@@ -188,7 +204,10 @@ class _StorePageState extends State<StorePage> {
                       ),
                       child: const Text(
                         'Terapkan',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -202,7 +221,12 @@ class _StorePageState extends State<StorePage> {
     );
   }
 
-  Widget _buildSortChip(String label, String value, String current, Function(String) onSelected) {
+  Widget _buildSortChip(
+    String label,
+    String value,
+    String current,
+    Function(String) onSelected,
+  ) {
     final isSelected = current == value;
     return ChoiceChip(
       label: Text(label),
@@ -213,7 +237,9 @@ class _StorePageState extends State<StorePage> {
       selectedColor: const Color(0xFF0EA5E9).withAlpha(40),
       backgroundColor: Theme.of(context).cardColor,
       labelStyle: TextStyle(
-        color: isSelected ? const Color(0xFF0EA5E9) : Theme.of(context).textTheme.bodyMedium?.color,
+        color: isSelected
+            ? const Color(0xFF0EA5E9)
+            : Theme.of(context).textTheme.bodyMedium?.color,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       side: BorderSide(
@@ -225,23 +251,23 @@ class _StorePageState extends State<StorePage> {
   @override
   Widget build(BuildContext context) {
     // Chip info untuk filter aktif
-    final bool hasActiveFilter = _selectedCategory != 'Semua' || _selectedSort != 'latest';
+    final bool hasActiveFilter =
+        _selectedCategory != 'Semua' || _selectedSort != 'latest';
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Pasar Daerah',
           style: TextStyle(
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
-        iconTheme: IconThemeData(
-          color: Theme.of(context).textTheme.bodyLarge?.color,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         actions: [
           Stack(
@@ -267,7 +293,10 @@ class _StorePageState extends State<StorePage> {
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
                     child: Text(
                       _cartCount > 99 ? '99+' : '$_cartCount',
                       style: const TextStyle(
@@ -334,13 +363,18 @@ class _StorePageState extends State<StorePage> {
                     children: [
                       if (_selectedCategory != 'Semua')
                         Chip(
-                          label: Text(_selectedCategory, style: const TextStyle(fontSize: 12)),
+                          label: Text(
+                            _selectedCategory,
+                            style: const TextStyle(fontSize: 12),
+                          ),
                           deleteIcon: const Icon(Icons.close, size: 16),
                           onDeleted: () {
                             setState(() => _selectedCategory = 'Semua');
                             _fetchData();
                           },
-                          backgroundColor: const Color(0xFF0EA5E9).withAlpha(20),
+                          backgroundColor: const Color(
+                            0xFF0EA5E9,
+                          ).withAlpha(20),
                           side: const BorderSide(color: Color(0xFF0EA5E9)),
                           labelStyle: const TextStyle(color: Color(0xFF0EA5E9)),
                           deleteIconColor: const Color(0xFF0EA5E9),
@@ -349,7 +383,9 @@ class _StorePageState extends State<StorePage> {
                       if (_selectedSort != 'latest')
                         Chip(
                           label: Text(
-                            _selectedSort == 'price_asc' ? 'Harga Terendah' : 'Harga Tertinggi',
+                            _selectedSort == 'price_asc'
+                                ? 'Harga Terendah'
+                                : 'Harga Tertinggi',
                             style: const TextStyle(fontSize: 12),
                           ),
                           deleteIcon: const Icon(Icons.close, size: 16),
@@ -357,7 +393,9 @@ class _StorePageState extends State<StorePage> {
                             setState(() => _selectedSort = 'latest');
                             _fetchData();
                           },
-                          backgroundColor: const Color(0xFF0EA5E9).withAlpha(20),
+                          backgroundColor: const Color(
+                            0xFF0EA5E9,
+                          ).withAlpha(20),
                           side: const BorderSide(color: Color(0xFF0EA5E9)),
                           labelStyle: const TextStyle(color: Color(0xFF0EA5E9)),
                           deleteIconColor: const Color(0xFF0EA5E9),
@@ -381,7 +419,11 @@ class _StorePageState extends State<StorePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.storefront_outlined, size: 80, color: Colors.grey[300]),
+                      Icon(
+                        Icons.storefront_outlined,
+                        size: 80,
+                        color: Colors.grey[300],
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Belum ada produk',
@@ -410,12 +452,9 @@ class _StorePageState extends State<StorePage> {
                     mainAxisSpacing: 12,
                     childAspectRatio: 0.58,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return _buildProductCard(_apiProducts[index]);
-                    },
-                    childCount: _apiProducts.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return _buildProductCard(_apiProducts[index]);
+                  }, childCount: _apiProducts.length),
                 ),
               ),
 
@@ -433,11 +472,14 @@ class _StorePageState extends State<StorePage> {
       decimalDigits: 0,
     );
 
-    final String name = product['nama_produk'] ?? product['name'] ?? 'Tanpa Nama';
+    final String name =
+        product['nama_produk'] ?? product['name'] ?? 'Tanpa Nama';
     final int stock = product['stok'] ?? product['stock'] ?? 0;
     final String? kategori = product['kategori'] ?? product['category'];
     final String? satuan = product['satuan'];
-    final String? regionName = product['region'] != null ? product['region']['name'] : null;
+    final String? regionName = product['region'] != null
+        ? product['region']['name']
+        : null;
     final String imageUrl = product['image_url'] ?? product['image'] ?? '';
 
     dynamic rawPrice = product['harga'] ?? product['price'] ?? 0;
@@ -495,22 +537,37 @@ class _StorePageState extends State<StorePage> {
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
                     ),
                     child: imageUrl.isNotEmpty
                         ? ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
                             child: Image.network(
                               imageUrl,
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
-                              errorBuilder: (context, error, stackTrace) => Center(
-                                child: Icon(Icons.storefront, size: 40, color: Colors.grey[400]),
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(
+                                    child: Icon(
+                                      Icons.storefront,
+                                      size: 40,
+                                      color: Colors.grey[400],
+                                    ),
+                                  ),
                             ),
                           )
-                        : Center(child: Icon(Icons.storefront, size: 40, color: Colors.grey[400])),
+                        : Center(
+                            child: Icon(
+                              Icons.storefront,
+                              size: 40,
+                              color: Colors.grey[400],
+                            ),
+                          ),
                   ),
                   // Badge Kategori
                   if (kategori != null && kategori != 'Semua')
@@ -518,7 +575,10 @@ class _StorePageState extends State<StorePage> {
                       top: 8,
                       left: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0EA5E9).withAlpha(200),
                           borderRadius: BorderRadius.circular(8),
@@ -539,7 +599,10 @@ class _StorePageState extends State<StorePage> {
                       top: 8,
                       right: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red.withAlpha(200),
                           borderRadius: BorderRadius.circular(8),
@@ -560,7 +623,9 @@ class _StorePageState extends State<StorePage> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(100),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
                         ),
                         child: const Center(
                           child: Text(
@@ -645,7 +710,11 @@ class _StorePageState extends State<StorePage> {
                     if (regionName != null)
                       Row(
                         children: [
-                          Icon(Icons.location_on, size: 12, color: Colors.grey[400]),
+                          Icon(
+                            Icons.location_on,
+                            size: 12,
+                            color: Colors.grey[400],
+                          ),
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
@@ -669,18 +738,25 @@ class _StorePageState extends State<StorePage> {
                             ? null
                             : () async {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Menambahkan $name...')),
+                                  SnackBar(
+                                    content: Text('Menambahkan $name...'),
+                                  ),
                                 );
 
-                                bool success = await _pasarCartService.addToCart(product['id'], 1);
+                                bool success = await _pasarCartService
+                                    .addToCart(product['id'], 1);
 
                                 if (mounted) {
-                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).hideCurrentSnackBar();
                                   if (success) {
                                     _fetchCartCount();
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('$name ditambahkan ke keranjang'),
+                                        content: Text(
+                                          '$name ditambahkan ke keranjang',
+                                        ),
                                         duration: const Duration(seconds: 1),
                                         backgroundColor: Colors.green,
                                       ),
@@ -688,20 +764,31 @@ class _StorePageState extends State<StorePage> {
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Gagal menambahkan ke keranjang'),
+                                        content: Text(
+                                          'Gagal menambahkan ke keranjang',
+                                        ),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
                                   }
                                 }
                               },
-                        icon: const Icon(Icons.add_shopping_cart, size: 14, color: Colors.white),
+                        icon: const Icon(
+                          Icons.add_shopping_cart,
+                          size: 14,
+                          color: Colors.white,
+                        ),
                         label: Text(
                           stock <= 0 ? 'Habis' : 'Tambah',
-                          style: const TextStyle(color: Colors.white, fontSize: 11),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: stock <= 0 ? Colors.grey : const Color(0xFF0EA5E9),
+                          backgroundColor: stock <= 0
+                              ? Colors.grey
+                              : const Color(0xFF0EA5E9),
                           disabledBackgroundColor: Colors.grey[300],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),

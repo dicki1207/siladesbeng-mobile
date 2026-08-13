@@ -342,10 +342,8 @@ class _ReportPageState extends State<ReportPage> {
             expandedHeight: 60,
             floating: false,
             pinned: true,
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            iconTheme: IconThemeData(
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
+            backgroundColor: Theme.of(context).primaryColor,
+            iconTheme: const IconThemeData(color: Colors.white),
             elevation: 0,
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(4),
@@ -369,7 +367,10 @@ class _ReportPageState extends State<ReportPage> {
                   // Modern Header Card
                   Container(
                     margin: const EdgeInsets.only(bottom: 24),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
@@ -409,15 +410,21 @@ class _ReportPageState extends State<ReportPage> {
                             child: Image.network(
                               'http://10.250.3.148:8000/Admin/img/illustrations/logokab.png',
                               fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.grey,
+                                  ),
                             ),
                           ),
                         ),
-                        
+
                         // Judul Tengah
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0,
+                            ),
                             child: Column(
                               children: [
                                 Text(
@@ -445,7 +452,7 @@ class _ReportPageState extends State<ReportPage> {
                             ),
                           ),
                         ),
-                        
+
                         // Logo SiladesBeng (Kanan)
                         Container(
                           width: 50,
@@ -466,7 +473,11 @@ class _ReportPageState extends State<ReportPage> {
                             child: Image.network(
                               'http://10.250.3.148:8000/Admin/img/illustrations/logodomain.webp',
                               fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.grey,
+                                  ),
                             ),
                           ),
                         ),

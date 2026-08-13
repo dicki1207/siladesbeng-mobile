@@ -14,6 +14,7 @@ class PartnershipPage extends StatelessWidget {
             expandedHeight: 260.0,
             floating: false,
             pinned: true,
+            backgroundColor: Theme.of(context).primaryColor,
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               title: const Text(

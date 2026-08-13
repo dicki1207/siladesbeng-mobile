@@ -14,6 +14,7 @@ class FacilityRentalPage extends StatefulWidget {
 
 class _FacilityRentalPageState extends State<FacilityRentalPage>
     with SingleTickerProviderStateMixin {
+  static bool _hasShownSnackbar = false;
   late TabController _tabController;
   List<dynamic> _vehicles = [];
   List<dynamic> _buildings = [];
@@ -29,6 +30,39 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
       initialIndex: widget.initialTabIndex,
     );
     _fetchFacilities();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showTabInfo(widget.initialTabIndex);
+    });
+  }
+
+  void _showTabInfo(int index) {
+    if (!mounted || _hasShownSnackbar) return;
+    _hasShownSnackbar = true;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    String message = index == 0
+        ? 'Fasilitas ambulans untuk medis darurat & siaga event, serta bus operasional desa.'
+        : 'Peminjaman gedung pertemuan balai desa, aula kecamatan, dan lapangan olahraga.';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              index == 0 ? Icons.airport_shuttle : Icons.account_balance,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        backgroundColor: Theme.of(context).primaryColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
@@ -39,15 +73,19 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
 
   Future<void> _fetchFacilities() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final data = await _rentalService.getFasilitasItems();
       if (!mounted) return;
 
       if (data.isNotEmpty) {
         // Safe access in case API doesn't return map or misses fields
-        final vehicles = data.where((i) => (i is Map && i['is_vehicle'] == true)).toList();
-        final buildings = data.where((i) => (i is Map && i['is_vehicle'] != true)).toList();
+        final vehicles = data
+            .where((i) => (i is Map && i['is_vehicle'] == true))
+            .toList();
+        final buildings = data
+            .where((i) => (i is Map && i['is_vehicle'] != true))
+            .toList();
 
         setState(() {
           _vehicles = vehicles;
@@ -463,20 +501,22 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF4F6F9),
+      backgroundColor: isDark
+          ? const Color(0xFF0F172A)
+          : Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'Layanan Fasilitas Umum Desa',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
             color: Colors.white,
             fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: isDark ? const Color(0xFF1E3A8A) : const Color(0xFF1565C0),
-        foregroundColor: Colors.white,
-        centerTitle: true,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -487,6 +527,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
             fontWeight: FontWeight.bold,
             fontSize: 13,
           ),
+          dividerColor: Colors.transparent,
           tabs: const [
             Tab(
               icon: Icon(Icons.emergency_share_outlined),
@@ -530,80 +571,6 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          // Banner Penjelasan Khas Desa (Sesuai Konsep User POV)
-          SliverToBoxAdapter(
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isVehicleTab
-                      ? [const Color(0xFF1E88E5), const Color(0xFF1565C0)]
-                      : [const Color(0xFF0284C7), const Color(0xFF1E40AF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(20),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isVehicleTab
-                          ? Icons.airport_shuttle_rounded
-                          : Icons.account_balance_rounded,
-                      color: isVehicleTab
-                          ? Colors.blue[900]
-                          : Colors.blue[900],
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isVehicleTab
-                              ? 'Armada & Kendaraan Operasional'
-                              : 'Gedung, Aula & Ruang Publik',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          isVehicleTab
-                              ? 'Fasilitas ambulans untuk medis darurat & siaga event, serta bus/kendaraan operasional desa untuk warga.'
-                              : 'Peminjaman gedung pertemuan balai desa, aula kecamatan, dan lapangan olahraga untuk kegiatan masyarakat.',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 11.5,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           // Daftar Item
           SliverPadding(
             padding: const EdgeInsets.all(16),
@@ -804,8 +771,12 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                                       fontWeight: FontWeight.w700,
                                       fontSize: 13,
                                       color: isAmbulance
-                                          ? (isDark ? Colors.red[300] : Colors.red[800])
-                                          : (isDark ? Colors.blue[300] : Colors.blue[800]),
+                                          ? (isDark
+                                                ? Colors.red[300]
+                                                : Colors.red[800])
+                                          : (isDark
+                                                ? Colors.blue[300]
+                                                : Colors.blue[800]),
                                     ),
                                   ),
                                 ),
@@ -818,12 +789,19 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12.5,
-                                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[700],
                                 height: 1.4,
                               ),
                             ),
                             const SizedBox(height: 16),
-                            Divider(color: isDark ? Colors.grey[800] : Colors.grey[200], height: 1),
+                            Divider(
+                              color: isDark
+                                  ? Colors.grey[800]
+                                  : Colors.grey[200],
+                              height: 1,
+                            ),
                             const SizedBox(height: 14),
 
                             // Tombol Interaktif Khusus
