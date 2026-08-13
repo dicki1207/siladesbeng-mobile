@@ -83,24 +83,8 @@ class _AdminReportPageState extends State<AdminReportPage> {
       }
     }
 
-    // Mock data for fallback / if api fails
-    List<Map<String, dynamic>> mockData = [
-      {
-        'id': '1001',
-        'title': 'Lampu Jalan Mati (Fallback)',
-        'kategori': 'Infrastruktur',
-        'reporter': 'Budi Santoso',
-        'date': '22 Jul 2026',
-        'status': 'Menunggu',
-        'description':
-            'Lampu jalan di RT 02 RW 01 mati.',
-      },
-    ];
-
     if (mounted) {
       setState(() {
-        _allReports = mockData;
-        _filteredReports = mockData;
         _isLoading = false;
       });
     }

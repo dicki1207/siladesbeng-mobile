@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:siladesbeng_mobile/services/auth_service.dart';
 import 'package:siladesbeng_mobile/features/auth/reset_password_page.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+import 'package:pinput/pinput.dart';
 
 class ForgotPasswordOtpPage extends StatefulWidget {
   final String emailOrPhone;
   final String otpMethod;
+  final String? demoOtp;
 
   const ForgotPasswordOtpPage({
     super.key,
     required this.emailOrPhone,
     required this.otpMethod,
+    this.demoOtp,
   });
 
   @override
@@ -131,32 +134,67 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 40),
-              
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.bold),
-                  decoration: const InputDecoration(
-                    counterText: '',
-                    hintText: '0000',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 20),
+              if (widget.demoOtp != null) ...[
+                const SizedBox(height: 15),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.shade300),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.amber.shade700, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Kode OTP: ${widget.demoOtp}',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                      ),
+                    ],
                   ),
                 ),
+              ],
+              const SizedBox(height: 40),
+              
+              Pinput(
+                controller: _otpController,
+                length: 4,
+                defaultPinTheme: PinTheme(
+                  width: 50,
+                  height: 50,
+                  textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    border: Border.all(color: Colors.blueGrey),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                ),
+                focusedPinTheme: PinTheme(
+                  width: 50,
+                  height: 50,
+                  textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    border: Border.all(color: Theme.of(context).primaryColor, width: 2),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                ),
+                mainAxisAlignment: MainAxisAlignment.center,
               ),
               const SizedBox(height: 32),
               

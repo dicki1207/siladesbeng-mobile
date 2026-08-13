@@ -11,16 +11,15 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _emailOrPhoneController = TextEditingController();
-  String _selectedMethod = 'email'; // email or whatsapp
   bool _isLoading = false;
   final AuthService _authService = AuthService();
 
   Future<void> _submit() async {
     final input = _emailOrPhoneController.text.trim();
     if (input.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Email/No. HP tidak boleh kosong')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email / Nomor Telepon tidak boleh kosong')),
+      );
       return;
     }
 
@@ -28,10 +27,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       _isLoading = true;
     });
 
-    final result = await _authService.forgotPassword(input, _selectedMethod);
+    // Deteksi otomatis: jika input berisi '@' => email, selain itu => whatsapp
+    final method = input.contains('@') ? 'email' : 'whatsapp';
+
+    final result = await _authService.forgotPassword(input, method);
 
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = false;
     });
@@ -48,13 +50,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
         );
       }
-      
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ForgotPasswordOtpPage(
             emailOrPhone: input,
-            otpMethod: _selectedMethod,
+            otpMethod: method,
+            demoOtp: demoOtp,
           ),
         ),
       );
@@ -89,6 +92,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         title: const Text('Lupa Password'),
         centerTitle: true,
         elevation: 0,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -97,6 +102,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Logo / Ikon
               Center(
                 child: Container(
                   padding: const EdgeInsets.all(20),
@@ -120,7 +126,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(height: 40),
               const Text(
-                'Reset Kata Sandi',
+                'Lupa Kata Sandi',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 26,
@@ -130,7 +136,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Masukkan alamat email atau nomor WhatsApp yang terdaftar untuk menerima OTP.',
+                'Masukkan Email terkait untuk perbarui Password',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.grey[500],
@@ -140,18 +146,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(height: 40),
 
+              // Input Email / Nomor Telepon
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.05),
-                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -159,7 +163,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   controller: _emailOrPhoneController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
-                    labelText: 'Email / Nomor WhatsApp',
+                    labelText: 'Email / Nomor Telepon',
                     labelStyle: TextStyle(color: Colors.blueGrey, fontSize: 14),
                     border: InputBorder.none,
                     prefixIcon: Icon(
@@ -173,48 +177,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              
-              // Pilihan Metode OTP
-              Row(
-                children: [
-                  Expanded(
-                    child: RadioListTile<String>(
-                      title: const Text('Kirim ke Email', style: TextStyle(fontSize: 14)),
-                      value: 'email',
-                      // ignore: deprecated_member_use
-                      groupValue: _selectedMethod,
-                      activeColor: Colors.blueAccent,
-                      contentPadding: EdgeInsets.zero,
-                      // ignore: deprecated_member_use
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedMethod = value!;
-                        });
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: RadioListTile<String>(
-                      title: const Text('Kirim ke WhatsApp', style: TextStyle(fontSize: 14)),
-                      value: 'whatsapp',
-                      // ignore: deprecated_member_use
-                      groupValue: _selectedMethod,
-                      activeColor: Colors.green,
-                      contentPadding: EdgeInsets.zero,
-                      // ignore: deprecated_member_use
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedMethod = value!;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              
               const SizedBox(height: 32),
 
+              // Tombol Kirim OTP
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
@@ -225,9 +190,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   elevation: 5,
-                  shadowColor: Theme.of(
-                    context,
-                  ).primaryColor.withValues(alpha: 0.5),
+                  shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.5),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -239,7 +202,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         ),
                       )
                     : const Text(
-                        'Kirim Kode OTP',
+                        'Kirim OTP',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

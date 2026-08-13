@@ -88,9 +88,7 @@ class _NewsPageState extends State<NewsPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: isBerita
-                  ? Theme.of(context).primaryColor
-                  : Colors.teal[600],
+              backgroundColor: Theme.of(context).primaryColor,
               elevation: 0,
               centerTitle: true,
               iconTheme: const IconThemeData(color: Colors.white),
@@ -114,7 +112,7 @@ class _NewsPageState extends State<NewsPage> {
                   color: Colors.white,
                 ),
               ),
-              backgroundColor: Colors.teal[800],
+              backgroundColor: Colors.blue[800],
               elevation: 4,
             ),
       body: CustomScrollView(
@@ -147,10 +145,7 @@ class _NewsPageState extends State<NewsPage> {
                         hintText: isBerita
                             ? 'Cari berita...'
                             : 'Cari pengumuman...',
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: isBerita ? Colors.blue[700] : Colors.teal[700],
-                        ),
+                        prefixIcon: Icon(Icons.search, color: Colors.blue[700]),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -190,7 +185,7 @@ class _NewsPageState extends State<NewsPage> {
                               ),
                             ),
                             selected: isSelected,
-                            selectedColor: Colors.teal[700],
+                            selectedColor: Colors.blue[700],
                             backgroundColor: Colors.grey[200],
                             onSelected: (selected) {
                               if (selected) {
@@ -347,17 +342,13 @@ class _NewsPageState extends State<NewsPage> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: isBerita
-                                  ? Colors.blue[100]
-                                  : Colors.teal[100],
+                              color: Colors.blue[100],
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               news['category']?.toString() ?? 'Pengumuman',
                               style: TextStyle(
-                                color: isBerita
-                                    ? Colors.blue[800]
-                                    : Colors.teal[800],
+                                color: Colors.blue[800],
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),

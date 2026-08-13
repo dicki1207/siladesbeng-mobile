@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+import 'package:pinput/pinput.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,12 +14,48 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
 
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscurePasswordConfirm = true;
+
+  List<dynamic> _kecamatanList = [];
+  String? _selectedKecamatanId;
+  List<dynamic> _desaList = [];
+  String? _selectedDesaId;
+  bool _isLoadingRegions = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRegions();
+  }
+
+  Future<void> _fetchRegions() async {
+    setState(() => _isLoadingRegions = true);
+    try {
+      final res = await http.get(
+        Uri.parse('http://10.250.3.148:8000/api/kemitraan/regions'),
+      );
+      final data = json.decode(res.body);
+      if (data['status'] == 'success') {
+        if (mounted) {
+          setState(() {
+            _kecamatanList = data['data'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Gagal mengambil data wilayah: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingRegions = false);
+    }
+  }
 
   Future<void> _submit() async {
     setState(() => _isLoading = true);
@@ -29,27 +66,36 @@ class _RegisterPageState extends State<RegisterPage> {
         'email': _emailController.text,
         'password': _passwordController.text,
         'nik': '-',
-        'username': _emailController.text,
+        'username': _usernameController.text,
         'name': _nameController.text,
         'phone': _phoneController.text,
         'address': '-',
         'gender': 'laki-laki',
-        'region_id': '1',
+        'region_id': _selectedDesaId ?? '1',
         'password_confirmation': _passwordConfirmController.text,
       };
 
-      final response = await http.post(url, body: body);
+      final response = await http.post(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body,
+      );
       final data = json.decode(response.body);
 
       if (!mounted) return;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Tampilkan modal OTP jika register tahap 1 sukses
-        _showOtpDialog(_emailController.text);
+        final demoOtp = data['demo_otp'];
+        _showOtpDialog(_emailController.text, demoOtp: demoOtp);
       } else {
         String errorMsg = data['message'] ?? 'Gagal';
         if (data['errors'] != null) {
-          errorMsg = (data['errors'] as Map<String, dynamic>).values.first[0].toString();
+          errorMsg = (data['errors'] as Map<String, dynamic>).values.first[0]
+              .toString();
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -61,8 +107,8 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal terhubung ke Server!'),
+        SnackBar(
+          content: Text('Gagal: $e'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -71,7 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void _showOtpDialog(String email) {
+  void _showOtpDialog(String email, {String? demoOtp}) {
     final otpController = TextEditingController();
     bool isVerifying = false;
 
@@ -82,7 +128,9 @@ class _RegisterPageState extends State<RegisterPage> {
         return StatefulBuilder(
           builder: (stContext, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: const Text('Verifikasi OTP', textAlign: TextAlign.center),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -92,69 +140,122 @@ class _RegisterPageState extends State<RegisterPage> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.blueGrey),
                   ),
+                  if (demoOtp != null) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.amber.shade300),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.info_outline, color: Colors.amber.shade700, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Kode OTP: $demoOtp',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade900),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 20),
-                  TextField(
+                  Pinput(
                     controller: otpController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 4,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      hintText: '0000',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                    length: 4,
+                    defaultPinTheme: PinTheme(
+                      width: 50,
+                      height: 50,
+                      textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blueGrey),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    focusedPinTheme: PinTheme(
+                      width: 50,
+                      height: 50,
+                      textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).primaryColor, width: 2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
-                  onPressed: isVerifying ? null : () => Navigator.pop(dialogContext),
-                  child: const Text('Batal', style: TextStyle(color: Colors.red)),
+                  onPressed: isVerifying
+                      ? null
+                      : () => Navigator.pop(dialogContext),
+                  child: const Text(
+                    'Batal',
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: isVerifying
                       ? null
                       : () async {
                           if (otpController.text.length != 4) return;
-                          
+
                           setDialogState(() => isVerifying = true);
-                          
+
                           try {
                             final res = await http.post(
-                              Uri.parse('http://10.250.3.148:8000/api/register/verify-otp'),
+                              Uri.parse(
+                                'http://10.250.3.148:8000/api/register/verify-otp',
+                              ),
                               body: {
                                 'email': email,
                                 'otp_code': otpController.text,
                               },
                             );
-                            
+
                             final data = json.decode(res.body);
-                            
-                            if (res.statusCode == 200 || res.statusCode == 201) {
+
+                            if (res.statusCode == 200 ||
+                                res.statusCode == 201) {
                               // OTP Benar, simpan token
-                              final prefs = await SharedPreferences.getInstance();
-                              if (data['data'] != null && data['data']['token'] != null) {
-                                await prefs.setString('auth_token', data['data']['token']);
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              if (data['data'] != null &&
+                                  data['data']['token'] != null) {
+                                await prefs.setString(
+                                  'auth_token',
+                                  data['data']['token'],
+                                );
 
                                 final user = data['data']['user'];
                                 if (user != null) {
-                                  await prefs.setString('profile_name', user['name'] ?? '');
-                                  await prefs.setString('profile_email', user['email'] ?? '');
+                                  await prefs.setString(
+                                    'profile_name',
+                                    user['name'] ?? '',
+                                  );
+                                  await prefs.setString(
+                                    'profile_email',
+                                    user['email'] ?? '',
+                                  );
                                 }
                               }
 
                               if (!dialogContext.mounted) return;
                               Navigator.pop(dialogContext); // Tutup dialog OTP
-                              
+
                               if (!mounted) return;
                               // ignore: use_build_context_synchronously
                               showDialog(
                                 context: context,
                                 barrierDismissible: false,
-                                builder: (successContext) => const AnimatedSuccessDialog(
-                                  message: 'Berhasil Daftar!',
-                                  isLogout: false,
-                                ),
+                                builder: (successContext) =>
+                                    const AnimatedSuccessDialog(
+                                      message: 'Berhasil Daftar!',
+                                      isLogout: false,
+                                    ),
                               );
 
                               await Future.delayed(const Duration(seconds: 2));
@@ -186,19 +287,27 @@ class _RegisterPageState extends State<RegisterPage> {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   child: isVerifying
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
-                      : const Text('Verifikasi', style: TextStyle(color: Colors.white)),
+                      : const Text(
+                          'Verifikasi',
+                          style: TextStyle(color: Colors.white),
+                        ),
                 ),
               ],
             );
-          }
+          },
         );
       },
     );
@@ -210,6 +319,7 @@ class _RegisterPageState extends State<RegisterPage> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
+    Widget? suffixIcon,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -232,10 +342,53 @@ class _RegisterPageState extends State<RegisterPage> {
           labelText: labelText,
           border: InputBorder.none,
           prefixIcon: Icon(icon, color: Colors.blueGrey),
+          suffixIcon: suffixIcon,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 15,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required String labelText,
+    required IconData icon,
+    required String? value,
+    required List<DropdownMenuItem<String>> items,
+    required void Function(String?) onChanged,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        items: items,
+        onChanged: onChanged,
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: labelText,
+          border: InputBorder.none,
+          prefixIcon: Icon(icon, color: Colors.blueGrey),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 15,
+          ),
+        ),
+        icon: const Padding(
+          padding: EdgeInsets.only(right: 16.0),
+          child: Icon(Icons.arrow_drop_down),
         ),
       ),
     );
@@ -249,6 +402,8 @@ class _RegisterPageState extends State<RegisterPage> {
         title: const Text('Daftar Akun Baru'),
         centerTitle: true,
         elevation: 0,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -272,6 +427,11 @@ class _RegisterPageState extends State<RegisterPage> {
               icon: Icons.person_outline,
             ),
             _buildTextField(
+              controller: _usernameController,
+              labelText: 'Nama Pengguna (Username)',
+              icon: Icons.alternate_email,
+            ),
+            _buildTextField(
               controller: _emailController,
               labelText: 'Email',
               icon: Icons.email_outlined,
@@ -283,17 +443,93 @@ class _RegisterPageState extends State<RegisterPage> {
               icon: Icons.phone_android_outlined,
               keyboardType: TextInputType.phone,
             ),
+
+            if (_isLoadingRegions)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else ...[
+              _buildDropdown(
+                labelText: 'Kecamatan',
+                icon: Icons.map_outlined,
+                value: _selectedKecamatanId,
+                items: _kecamatanList.map((kec) {
+                  return DropdownMenuItem<String>(
+                    value: kec['id'].toString(),
+                    child: Text(kec['name'] ?? ''),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedKecamatanId = val;
+                    _selectedDesaId = null;
+                    _desaList = [];
+                    if (val != null) {
+                      final selectedKec = _kecamatanList.firstWhere(
+                        (k) => k['id'].toString() == val,
+                        orElse: () => null,
+                      );
+                      if (selectedKec != null &&
+                          selectedKec['children'] != null) {
+                        _desaList = selectedKec['children'];
+                      }
+                    }
+                  });
+                },
+              ),
+              if (_selectedKecamatanId != null)
+                _buildDropdown(
+                  labelText: 'Desa / Kelurahan',
+                  icon: Icons.location_city_outlined,
+                  value: _selectedDesaId,
+                  items: _desaList.map((desa) {
+                    return DropdownMenuItem<String>(
+                      value: desa['id'].toString(),
+                      child: Text(desa['name'] ?? ''),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedDesaId = val;
+                    });
+                  },
+                ),
+            ],
+
             _buildTextField(
               controller: _passwordController,
               labelText: 'Kata Sandi',
               icon: Icons.lock_outline,
-              obscureText: true,
+              obscureText: _obscurePassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.blueGrey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
             ),
             _buildTextField(
               controller: _passwordConfirmController,
               labelText: 'Konfirmasi Kata Sandi',
               icon: Icons.lock_reset_outlined,
-              obscureText: true,
+              obscureText: _obscurePasswordConfirm,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePasswordConfirm ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.blueGrey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePasswordConfirm = !_obscurePasswordConfirm;
+                  });
+                },
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
