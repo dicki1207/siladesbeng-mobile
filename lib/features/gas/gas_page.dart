@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
 import 'gas_booking_page.dart';
 import '../rental/item_detail_page.dart';
+import '../../widgets/product_card_widget.dart';
 
 class GasPage extends StatefulWidget {
   const GasPage({super.key});
@@ -259,7 +259,7 @@ class _GasPageState extends State<GasPage> {
                             crossAxisCount: 2,
                             crossAxisSpacing: 16.0,
                             mainAxisSpacing: 16.0,
-                            childAspectRatio: 0.55,
+                            childAspectRatio: 0.7,
                           ),
                       delegate: SliverChildBuilderDelegate((
                         BuildContext context,
@@ -277,11 +277,6 @@ class _GasPageState extends State<GasPage> {
   }
 
   Widget _buildPremiumGasCard(dynamic item) {
-    final formatCurrency = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
     double priceVal = 0;
     if (item['price'] != null) {
       if (item['price'] is String) {
@@ -291,179 +286,44 @@ class _GasPageState extends State<GasPage> {
       }
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0EA5E9).withAlpha(15),
-            blurRadius: 20,
-            spreadRadius: 2,
-            offset: const Offset(0, 8),
+    String imageUrl = item['image'] ?? 'assets/images/F2.png';
+    bool isAsset = imageUrl.startsWith('assets/') || imageUrl.contains('F2.png');
+    if (isAsset) imageUrl = 'assets/images/F2.png';
+
+    // Ambil stok dan status
+    int stock = 0;
+    if (item['stok'] != null) {
+      stock = int.tryParse(item['stok'].toString()) ?? 0;
+    } else if (item['stock'] != null) {
+      stock = int.tryParse(item['stock'].toString()) ?? 0;
+    }
+
+    String status = item['status'] ?? (stock > 0 ? 'Tersedia' : 'Habis');
+    bool isAvailable = status.toLowerCase() == 'tersedia' || stock > 0;
+
+    return ProductCardWidget(
+      title: item['name'] ?? 'Gas LPG',
+      category: item['kategori'] ?? 'Subsidi / Non-Subsidi',
+      imageUrl: imageUrl,
+      isAssetImage: isAsset,
+      price: priceVal,
+      priceUnit: '/Tabung',
+      stockLabel: 'Sisa Stok',
+      stockValue: stock.toString(),
+      statusText: isAvailable ? 'Tersedia' : 'Habis',
+      statusColor: isAvailable ? const Color(0xFF10B981) : Colors.red,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ItemDetailPage(
+              item: item,
+              category: 'Beli Gas',
+              bookingPage: GasBookingPage(item: item),
+            ),
           ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ItemDetailPage(
-                item: item,
-                category: 'Beli Gas',
-                bookingPage: GasBookingPage(item: item),
-              ),
-            ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Gambar Section dengan Background Lembut
-            Expanded(
-              flex: 5,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
-                  ),
-                ),
-                child: Hero(
-                  tag: 'gas_img_${item['name']}',
-                  child:
-                      (item['image'].toString().startsWith('assets/') ||
-                          item['image'].toString().contains('F2.png'))
-                      ? Image.asset(
-                          'assets/images/F2.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (ctx, err, stack) => const Icon(
-                            Icons.propane_tank,
-                            color: Colors.grey,
-                            size: 50,
-                          ),
-                        )
-                      : Image.network(
-                          item['image'],
-                          fit: BoxFit.contain, // Mencegah terpotong
-                          errorBuilder: (ctx, err, stack) => const Icon(
-                            Icons.propane_tank,
-                            color: Colors.grey,
-                            size: 50,
-                          ),
-                        ),
-                ),
-              ),
-            ),
-            // Detail Section
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(14.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item['name'],
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color:
-                                Theme.of(context).textTheme.bodyLarge?.color ??
-                                const Color(0xFF1E293B),
-                            height: 1.2,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withAlpha(20),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: const Color(0xFF10B981).withAlpha(50),
-                            ),
-                          ),
-                          child: Text(
-                            formatCurrency.format(priceVal),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF059669),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Tombol Beli Premium
-                    Container(
-                      width: double.infinity,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF0284C7).withAlpha(60),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ItemDetailPage(
-                                item: item,
-                                category: 'Beli Gas',
-                                bookingPage: GasBookingPage(item: item),
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Pesan',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 14,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

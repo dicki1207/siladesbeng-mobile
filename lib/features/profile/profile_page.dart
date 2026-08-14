@@ -145,245 +145,179 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildKtpRow(String label, String value, {bool isNik = false, bool isStatus = false, bool isVerified = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 55,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.black.withAlpha(200),
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            ': ',
+            style: TextStyle(
+              color: Colors.black.withAlpha(200),
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: isStatus 
+                    ? (isVerified ? Colors.green[800] : Colors.red[800]) 
+                    : Colors.black87,
+                fontSize: isNik ? 13 : 11,
+                fontWeight: isNik || isStatus ? FontWeight.w900 : FontWeight.w800,
+                fontFamily: isNik ? 'monospace' : null,
+                fontStyle: isStatus && !isVerified ? FontStyle.italic : FontStyle.normal,
+                letterSpacing: isNik ? 1.5 : 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDigitalKTP() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
-            Color(0xFF0D253F),
-            Color(0xFF19406B),
-            Color(0xFF1E528D),
+            Color(0xFFE0F7FA), // Cyan muda khas KTP
+            Color(0xFFB2EBF2),
+            Color(0xFF80DEEA),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withAlpha(45), width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white, width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0D253F).withAlpha(120),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            color: Colors.black.withAlpha(25),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          // Watermark Logo
+          Positioned(
+            right: 10,
+            bottom: 0,
+            child: Opacity(
+              opacity: 0.08,
+              child: Icon(Icons.account_balance_rounded, size: 120, color: Colors.blue[900]),
+            ),
+          ),
+          
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(25),
-                      borderRadius: BorderRadius.circular(10),
+              // Header KTP
+              const Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'PROVINSI RIAU',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.account_balance_rounded,
-                      color: Colors.white,
-                      size: 20,
+                    Text(
+                      'KABUPATEN BENGKALIS',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Kiri: Data
+                  Expanded(
+                    flex: 7,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildKtpRow('NIK', 'SLD-2026-8891', isNik: true),
+                        _buildKtpRow('Nama', _name.toUpperCase()),
+                        _buildKtpRow('Alamat', 'RT 02 / RW 01'),
+                        _buildKtpRow('Status', _isVerified ? 'Tervalidasi AI' : 'Belum Lengkap', isStatus: true, isVerified: _isVerified),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'PROVINSI JAWA BARAT',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 12,
-                          letterSpacing: 0.5,
+                  // Kanan: Foto
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 3 / 4,
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(30),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: (_imagePath != null)
+                                ? Image.file(
+                                    File(_imagePath!),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Icon(Icons.person, size: 40, color: Colors.blue[200]),
+                                  )
+                                : (_imageUrl != null)
+                                ? Image.network(
+                                    _imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Icon(Icons.person, size: 40, color: Colors.blue[200]),
+                                  )
+                                : Icon(Icons.person, size: 40, color: Colors.blue[200]),
+                          ),
                         ),
-                      ),
-                      Text(
-                        'KABUPATEN BANDUNG',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.greenAccent.withAlpha(35),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.greenAccent.withAlpha(120),
-                    width: 1,
-                  ),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.verified_rounded,
-                      color: Colors.greenAccent,
-                      size: 14,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      'TERVALIDASI AI',
-                      style: TextStyle(
-                        color: Colors.greenAccent,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 10,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Divider(
-              color: Colors.white.withAlpha(25),
-              height: 1,
-              thickness: 1,
-            ),
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'ID WARGA TERDAFTAR',
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    const Text(
-                      'SLD-2026-8891',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18,
-                        letterSpacing: 2.2,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'NAMA LENGKAP WARGA',
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      _name.toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                width: 75,
-                height: 95,
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(20),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withAlpha(180),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(50),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: (_imagePath != null)
-                      ? Image.file(
-                          File(_imagePath!),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const Icon(
-                            Icons.person_rounded,
-                            size: 45,
-                            color: Colors.white70,
-                          ),
-                        )
-                      : (_imageUrl != null)
-                      ? Image.network(
-                          _imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const Icon(
-                            Icons.person_rounded,
-                            size: 45,
-                            color: Colors.white70,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.person_rounded,
-                          size: 45,
-                          color: Colors.white70,
-                        ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(18),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'WILAYAH DOMISILI RESMI',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                Text(
-                  'RT 02 / RW 01',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

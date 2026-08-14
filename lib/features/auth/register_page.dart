@@ -89,8 +89,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Tampilkan modal OTP jika register tahap 1 sukses
-        final demoOtp = data['demo_otp'];
-        _showOtpDialog(_emailController.text, demoOtp: demoOtp);
+        _showOtpDialog(_emailController.text);
       } else {
         String errorMsg = data['message'] ?? 'Gagal';
         if (data['errors'] != null) {
@@ -117,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void _showOtpDialog(String email, {String? demoOtp}) {
+  void _showOtpDialog(String email) {
     final otpController = TextEditingController();
     bool isVerifying = false;
 
@@ -140,28 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.blueGrey),
                   ),
-                  if (demoOtp != null) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.amber.shade300),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.amber.shade700, size: 18),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Kode OTP: $demoOtp',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade900),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+
                   const SizedBox(height: 20),
                   Pinput(
                     controller: otpController,
@@ -373,7 +351,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ],
       ),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         items: items,
         onChanged: onChanged,
         isExpanded: true,

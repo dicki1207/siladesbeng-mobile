@@ -7,13 +7,10 @@ import 'package:pinput/pinput.dart';
 class ForgotPasswordOtpPage extends StatefulWidget {
   final String emailOrPhone;
   final String otpMethod;
-  final String? demoOtp;
-
   const ForgotPasswordOtpPage({
     super.key,
     required this.emailOrPhone,
     required this.otpMethod,
-    this.demoOtp,
   });
 
   @override
@@ -134,29 +131,6 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
                   height: 1.4,
                 ),
               ),
-              if (widget.demoOtp != null) ...[
-                const SizedBox(height: 15),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.shade300),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.amber.shade700, size: 18),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Kode OTP: ${widget.demoOtp}',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade900),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
               const SizedBox(height: 40),
               
               Pinput(

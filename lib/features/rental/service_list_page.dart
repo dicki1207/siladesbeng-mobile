@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:intl/intl.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
 import 'tool_package_booking_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
+import '../../widgets/product_card_widget.dart';
 
 class ServiceListPage extends StatefulWidget {
   const ServiceListPage({super.key});
@@ -271,7 +271,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                             crossAxisCount: 2,
                             mainAxisSpacing: 16.0,
                             crossAxisSpacing: 16.0,
-                            childAspectRatio: 0.65,
+                            childAspectRatio: 0.7,
                           ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) =>
@@ -290,12 +290,6 @@ class _ServiceListPageState extends State<ServiceListPage> {
   }
 
   Widget _buildPremiumRentalCard(dynamic item, int index) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final formatCurrency = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
     double priceVal = 0;
     if (item['price'] != null) {
       if (item['price'] is String) {
@@ -303,6 +297,22 @@ class _ServiceListPageState extends State<ServiceListPage> {
       } else if (item['price'] is num) {
         priceVal = (item['price'] as num).toDouble();
       }
+    }
+
+    String imageUrl = item['image'] ?? 'assets/images/F1.png';
+    bool isAsset = imageUrl.startsWith('assets/') || imageUrl.contains('F1.png');
+    if (isAsset) imageUrl = 'assets/images/F1.png';
+    
+    // Asumsikan status selalu tersedia untuk alat sementara
+    String status = item['status'] ?? 'Tersedia';
+    bool isAvailable = status.toLowerCase() == 'tersedia';
+    
+    // Alat biasanya ada stok, kita coba ambil stok jika ada
+    int stock = 0;
+    if (item['stok'] != null) {
+      stock = int.tryParse(item['stok'].toString()) ?? 0;
+    } else if (item['stock'] != null) {
+      stock = int.tryParse(item['stock'].toString()) ?? 0;
     }
 
     return TweenAnimationBuilder(
@@ -314,169 +324,32 @@ class _ServiceListPageState extends State<ServiceListPage> {
           offset: Offset(0, 50 * (1 - value)),
           child: Opacity(
             opacity: value,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(10),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 4),
+            child: ProductCardWidget(
+              title: item['name'] ?? 'Alat / Perlengkapan',
+              category: item['kategori'] ?? 'Penyewaan Alat',
+              imageUrl: imageUrl,
+              isAssetImage: isAsset,
+              price: priceVal,
+              priceUnit: '/Hari',
+              stockLabel: stock > 0 ? 'Sisa Stok' : '',
+              stockValue: stock > 0 ? stock.toString() : '',
+              statusText: isAvailable ? 'Tersedia' : 'Kosong',
+              statusColor: isAvailable ? const Color(0xFF10B981) : Colors.red,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ItemDetailPage(
+                      item: item,
+                      category: 'Sewa Alat',
+                      bookingPage: RentalBookingPage(
+                        item: item,
+                        category: 'Sewa Alat',
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ItemDetailPage(
-                          item: item,
-                          category: 'Sewa Alat',
-                          bookingPage: RentalBookingPage(
-                            item: item,
-                            category: 'Sewa Alat',
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Stack(
-                        children: [
-                          Container(
-                            height: 120,
-                            width: double.infinity,
-                            color: isDark ? Colors.grey[850] : Colors.white,
-                            padding: const EdgeInsets.all(12),
-                            child: Image.network(
-                              item['image'],
-                              fit: BoxFit.contain,
-                              errorBuilder: (ctx, err, stack) => const Icon(
-                                Icons.handyman,
-                                size: 50,
-                                color: Colors.blueGrey,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade700,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: const Text(
-                                'Tersedia',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                item['name'] ?? 'Tanpa Nama',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color,
-                                  height: 1.2,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Harga Sewa',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey.shade500,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    priceVal == 0
-                                        ? 'Gratis'
-                                        : formatCurrency.format(priceVal),
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Theme.of(context).primaryColor,
-                                          Theme.of(
-                                            context,
-                                          ).primaryColor.withAlpha(200),
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: const Text(
-                                      'Detail',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                );
+              },
             ),
           ),
         );

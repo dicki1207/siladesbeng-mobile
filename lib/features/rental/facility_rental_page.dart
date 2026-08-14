@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
+import '../../widgets/product_card_widget.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 
 class FacilityRentalPage extends StatefulWidget {
@@ -574,7 +574,13 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
           // Daftar Item
           SliverPadding(
             padding: const EdgeInsets.all(16),
-            sliver: SliverList(
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+                childAspectRatio: 0.7,
+              ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) => _buildFacilityCard(items[index], index),
                 childCount: items.length,
@@ -587,273 +593,62 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
     );
   }
 
-  Widget _renderImage(String? path, {required bool isAmbulance}) {
-    String clean = path ?? '';
-    if (clean.contains('mobil.png')) {
-      clean = 'assets/images/mobil.png';
-    } else if (clean.contains('F1.png') || clean.contains('alat.png')) {
-      clean = 'assets/images/F1.png';
-    } else if (clean.contains('fasilitas.png')) {
-      clean = 'assets/images/fasilitas.png';
-    } else if (clean.contains('F2.png')) {
-      clean = 'assets/images/F2.png';
-    }
-    if (clean.startsWith('assets/')) {
-      return Image.asset(
-        clean,
-        fit: BoxFit.contain,
-        errorBuilder: (_, _, _) => Icon(
-          isAmbulance ? Icons.local_hospital : Icons.domain,
-          size: 65,
-          color: isAmbulance ? Colors.red[300] : Colors.blue[300],
-        ),
-      );
-    }
-    return Image.network(
-      clean,
-      fit: BoxFit.contain,
-      errorBuilder: (_, _, _) => Icon(
-        isAmbulance ? Icons.local_hospital : Icons.domain,
-        size: 65,
-        color: isAmbulance ? Colors.red[300] : Colors.blue[300],
-      ),
-    );
-  }
 
   Widget _buildFacilityCard(dynamic item, int index) {
     final bool isAmbulance =
         item['is_ambulance'] == true ||
         (item['name'] ?? '').toString().toLowerCase().contains('ambulan');
-    final String priceDisplay = item['price_display'] != null
-        ? item['price_display'].toString()
-        : item['price'] != null && item['price'] == 0
-        ? 'Gratis (Fasilitas Desa)'
-        : 'Rp ${NumberFormat('#,###', 'id_ID').format(item['price'] ?? 0)}';
+    
+    double priceVal = 0;
+    if (item['price'] != null) {
+      if (item['price'] is String) {
+        priceVal = double.tryParse(item['price'].toString()) ?? 0;
+      } else if (item['price'] is num) {
+        priceVal = (item['price'] as num).toDouble();
+      }
+    }
+
+    String imageUrl = item['image']?.toString() ?? '';
+    bool isAsset = false;
+    if (imageUrl.isEmpty || imageUrl.contains('mobil.png') || imageUrl.contains('F1.png') || imageUrl.contains('fasilitas.png') || imageUrl.contains('F2.png') || imageUrl.startsWith('assets/')) {
+        isAsset = true;
+        if (isAmbulance || imageUrl.contains('mobil')) {
+            imageUrl = 'assets/images/mobil.png';
+        } else {
+            imageUrl = 'assets/images/fasilitas.png';
+        }
+    }
+
+    String status = isAmbulance ? 'Darurat / Siaga' : 'Tersedia';
+    Color statusColor = isAmbulance ? Colors.red : const Color(0xFF10B981);
 
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
       duration: Duration(milliseconds: 350 + (index * 100)),
       curve: Curves.easeOutQuart,
       builder: (context, double value, child) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Transform.translate(
           offset: Offset(0, 30 * (1 - value)),
           child: Opacity(
             opacity: value,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: isDark ? Theme.of(context).cardColor : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: isAmbulance
-                    ? Border.all(color: Colors.red[300]!, width: 1.5)
-                    : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: isAmbulance
-                        ? Colors.red.withAlpha(20)
-                        : Colors.black.withAlpha(12),
-                    blurRadius: 12,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: InkWell(
-                  onTap: () {
-                    if (isAmbulance) {
-                      _showAmbulanceEmergencyModal(
-                        item as Map<String, dynamic>,
-                      );
-                    } else {
-                      _showStandardBookingModal(item as Map<String, dynamic>);
-                    }
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Badge Header & Gambar
-                      Stack(
-                        children: [
-                          Container(
-                            height: 150,
-                            width: double.infinity,
-                            color: isDark ? Colors.grey[850] : Colors.grey[100],
-                            padding: const EdgeInsets.all(12),
-                            child: _renderImage(
-                              item['image']?.toString() ?? '',
-                              isAmbulance: isAmbulance,
-                            ),
-                          ),
-                          if (item['type_badge'] != null)
-                            Positioned(
-                              top: 12,
-                              left: 12,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      (item['badge_color'] as Color?) ??
-                                      Colors.blue,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  item['type_badge'].toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (isAmbulance)
-                            Positioned(
-                              top: 12,
-                              right: 12,
-                              child: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.red[700],
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.red.withAlpha(80),
-                                      blurRadius: 8,
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.warning_amber_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-
-                      // Deskripsi & Tombol Aksi
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['name'] ?? 'Fasilitas Desa',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                Icon(
-                                  isAmbulance
-                                      ? Icons.verified_user
-                                      : Icons.price_check_rounded,
-                                  size: 18,
-                                  color: isAmbulance
-                                      ? Colors.red[700]
-                                      : Colors.blue[700],
-                                ),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    priceDisplay,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                      color: isAmbulance
-                                          ? (isDark
-                                                ? Colors.red[300]
-                                                : Colors.red[800])
-                                          : (isDark
-                                                ? Colors.blue[300]
-                                                : Colors.blue[800]),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              item['description'] ?? '',
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                color: isDark
-                                    ? Colors.grey[400]
-                                    : Colors.grey[700],
-                                height: 1.4,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Divider(
-                              color: isDark
-                                  ? Colors.grey[800]
-                                  : Colors.grey[200],
-                              height: 1,
-                            ),
-                            const SizedBox(height: 14),
-
-                            // Tombol Interaktif Khusus
-                            SizedBox(
-                              width: double.infinity,
-                              height: 44,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  if (isAmbulance) {
-                                    _showAmbulanceEmergencyModal(
-                                      item as Map<String, dynamic>,
-                                    );
-                                  } else {
-                                    _showStandardBookingModal(
-                                      item as Map<String, dynamic>,
-                                    );
-                                  }
-                                },
-                                icon: Icon(
-                                  isAmbulance
-                                      ? Icons.touch_app_rounded
-                                      : Icons.calendar_month_rounded,
-                                  size: 18,
-                                ),
-                                label: Text(
-                                  isAmbulance
-                                      ? 'PANGGIL AMBULANS / SIAGA EVENT'
-                                      : 'AJUKAN JADWAL PEMAKAIAN',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isAmbulance
-                                      ? Colors.red[700]
-                                      : const Color(0xFF1D4ED8),
-                                  foregroundColor: Colors.white,
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            child: ProductCardWidget(
+              title: item['name'] ?? 'Fasilitas Desa',
+              category: item['type_badge']?.toString() ?? (isAmbulance ? 'Kendaraan' : 'Fasilitas'),
+              imageUrl: imageUrl,
+              isAssetImage: isAsset,
+              price: priceVal,
+              priceUnit: priceVal == 0 ? '' : '/Hari',
+              stockLabel: '',
+              stockValue: '',
+              statusText: status,
+              statusColor: statusColor,
+              onTap: () {
+                if (isAmbulance) {
+                  _showAmbulanceEmergencyModal(item as Map<String, dynamic>);
+                } else {
+                  _showStandardBookingModal(item as Map<String, dynamic>);
+                }
+              },
             ),
           ),
         );

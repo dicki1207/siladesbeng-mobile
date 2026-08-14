@@ -39,17 +39,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     if (result['status'] == 'success') {
-      // Demo OTP jika ada (mode debug)
-      String? demoOtp = result['demo_otp'];
-      if (demoOtp != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Demo OTP: $demoOtp'),
-            duration: const Duration(seconds: 10),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+
 
       Navigator.push(
         context,
@@ -57,7 +47,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           builder: (context) => ForgotPasswordOtpPage(
             emailOrPhone: input,
             otpMethod: method,
-            demoOtp: demoOtp,
           ),
         ),
       );

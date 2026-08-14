@@ -285,8 +285,9 @@ class _NewsPageState extends State<NewsPage> {
           onTap: () {
             if (news['title'] == 'Tidak ada pengumuman' ||
                 news['title'] == 'Belum Ada Berita' ||
-                news['title'] == 'Belum Ada Pengumuman')
+                news['title'] == 'Belum Ada Pengumuman') {
               return;
+            }
             Navigator.push(
               context,
               MaterialPageRoute(

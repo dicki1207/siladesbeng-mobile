@@ -162,6 +162,8 @@ class _HomePageState extends State<HomePage> {
                 String imgUrl = item['image_url'].toString();
                 imgUrl = imgUrl.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
                 imgUrl = imgUrl.replaceAll('http://localhost', 'http://10.250.3.148:8000');
+                imgUrl = imgUrl.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
+                imgUrl = imgUrl.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
                 item['image_url'] = imgUrl;
               }
               return item;

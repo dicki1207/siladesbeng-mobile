@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'delivery_tracking_page.dart';
 
 class TransactionReceiptPage extends StatelessWidget {
   final String orderNumber;
@@ -124,7 +125,10 @@ class TransactionReceiptPage extends StatelessWidget {
               // Content
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
                   decoration: BoxDecoration(
                     color: cardColor.withAlpha(isDark ? 230 : 245),
                     borderRadius: BorderRadius.circular(12),
@@ -366,11 +370,43 @@ class TransactionReceiptPage extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-            ],
+                // Lacak Pengiriman Button (hanya muncul jika Diantar, Sewa Mobil, atau Ambulans)
+                if (deliveryMethod.toLowerCase().contains('diantar') || type == 'Sewa Mobil' || type == 'Ambulans')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DeliveryTrackingPage(
+                              orderNumber: orderNumber,
+                              type: type,
+                              deliveryAddress: address,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.location_on),
+                      label: Text(type == 'Ambulans' ? 'Lacak Posisi Ambulans' : 'Lacak Pengantaran'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[800],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
+    ),
+  ),
     );
   }
 
