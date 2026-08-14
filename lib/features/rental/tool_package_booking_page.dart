@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_booking_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 
@@ -12,7 +12,6 @@ class ToolPackageBookingPage extends StatefulWidget {
 
 class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     with SingleTickerProviderStateMixin {
-  static bool _hasShownSnackbar = false;
   late TabController _tabController;
   int _durationDays = 1;
   final RentalService _rentalService = RentalService();
@@ -25,6 +24,92 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
   List<Map<String, dynamic>> _customItems = [];
   bool _isLoading = true;
 
+  final NumberFormat _currencyFormat = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
+
+  int _parseInt(dynamic val, [int defaultValue = 0]) {
+    if (val == null) return defaultValue;
+    if (val is int) return val;
+    if (val is double) return val.toInt();
+    if (val is num) return val.toInt();
+    if (val is String) {
+      return int.tryParse(val) ?? (double.tryParse(val)?.toInt() ?? defaultValue);
+    }
+    return defaultValue;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+    _fetchItems();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchItems() async {
+    try {
+      final items = await _rentalService.getRentalItems();
+      if (mounted) {
+        setState(() {
+          _adminPackages = items
+              .where((item) => item['unit'] == 'Paket' || item['unit'] == 'paket')
+              .map((item) {
+                final int itemPrice = _parseInt(item['price'] ?? item['harga'] ?? item['harga_satuan']);
+                return {
+                  'id': _parseInt(item['id']),
+                  'name': item['name'] ?? item['nama'] ?? 'Paket Alat',
+                  'items': item['description'] ?? item['deskripsi'] ?? 'Perlengkapan alat terpadu dari BUMDes',
+                  'price': itemPrice,
+                  'description': item['description'] ?? item['deskripsi'] ?? 'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
+                  'image': item['image'] ?? item['foto'],
+                  'details': (item['description'] != null && item['description'].toString().isNotEmpty)
+                      ? [item['description'].toString()]
+                      : ['Peralatan lengkap dan siap pakai', 'Layanan pengantaran tersedia'],
+                };
+              })
+              .toList();
+
+          _customItems = items
+              .where((item) => item['unit'] != 'Paket' && item['unit'] != 'paket')
+              .map((item) {
+                final int itemPrice = _parseInt(item['price'] ?? item['harga'] ?? item['harga_satuan']);
+                return {
+                  'id': _parseInt(item['id']),
+                  'name': item['name'] ?? item['nama'] ?? 'Alat',
+                  'price': itemPrice,
+                  'qty': 1,
+                  'unit': item['unit'] ?? 'unit',
+                  'selected': false,
+                  'image': item['image'] ?? item['foto'],
+                  'icon': Icons.handyman_outlined,
+                  'description': item['description'] ?? item['deskripsi'] ?? '',
+                };
+              })
+              .toList();
+
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   void _showDetailModal(
     BuildContext context,
     Map<String, dynamic> item, {
@@ -32,19 +117,22 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     int? customIndex,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final int itemPrice = _parseInt(item['price']);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
-          color: isDark ? Theme.of(ctx).cardColor : Colors.white,
+          color: Theme.of(ctx).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.only(
-          top: 24,
-          left: 24,
-          right: 24,
+          top: 16,
+          left: 20,
+          right: 20,
           bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
         ),
         child: SingleChildScrollView(
@@ -54,54 +142,50 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
             children: [
               Center(
                 child: Container(
-                  width: 50,
-                  height: 5,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[700] : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.blue.withAlpha(40)
-                          : Colors.blue[50],
+                      color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
-                      adminIndex != null ? Icons.stars : Icons.handyman,
-                      color: isDark ? Colors.blue[400] : Colors.blue[800],
-                      size: 32,
+                      adminIndex != null ? Icons.inventory_2_outlined : Icons.handyman_outlined,
+                      color: primaryColor,
+                      size: 26,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item['name'],
+                          item['name'] ?? 'Detail Paket',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black87,
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 3),
                         Text(
-                          adminIndex != null
-                              ? 'Rp ${item['discountedPrice']} /hari (HEMAT ${item['hemat']})'
-                              : 'Rp ${item['price']} /hari',
+                          '${_currencyFormat.format(itemPrice)} / Hari',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.blue[400] : Colors.blue[800],
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w900,
+                            color: primaryColor,
                           ),
                         ),
                       ],
@@ -113,57 +197,51 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
               Text(
                 'Deskripsi Layanan',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
-                item['description'] ??
-                    'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
+                item['description'] ?? 'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.grey[300] : Colors.grey[800],
+                  fontSize: 13,
+                  color: isDark ? Colors.white60 : Colors.grey[700],
                   height: 1.5,
                 ),
               ),
-              if (item['details'] != null &&
-                  (item['details'] as List).isNotEmpty) ...[
-                const SizedBox(height: 18),
+              if (item['details'] != null && (item['details'] as List).isNotEmpty) ...[
+                const SizedBox(height: 16),
                 Text(
-                  'Rincian & Fasilitas Paket:',
+                  'Fasilitas & Kelengkapan:',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 ...((item['details'] as List<dynamic>?) ?? [])
                     .map((e) => e.toString())
                     .map(
                       (detail) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.only(bottom: 6),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
-                              Icons.check_circle,
-                              color: isDark
-                                  ? Colors.blue[400]
-                                  : Colors.blue[600],
-                              size: 20,
+                              Icons.check_circle_rounded,
+                              color: primaryColor,
+                              size: 16,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 detail,
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark
-                                      ? Colors.grey[300]
-                                      : Colors.grey[800],
+                                  fontSize: 12.5,
+                                  color: isDark ? Colors.white70 : Colors.grey[800],
                                 ),
                               ),
                             ),
@@ -172,7 +250,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       ),
                     ),
               ],
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -188,27 +266,26 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       setState(() {
                         _tabController.index = 1;
                         _customItems[customIndex]['selected'] = true;
-                        if (_customItems[customIndex]['qty'] == 0) {
+                        if (_parseInt(_customItems[customIndex]['qty']) == 0) {
                           _customItems[customIndex]['qty'] = 1;
                         }
                       });
                       _handleBooking();
                     }
                   },
-                  icon: const Icon(Icons.bolt, size: 20),
+                  icon: const Icon(Icons.shopping_bag_outlined, size: 18),
                   label: const Text(
-                    'Langsung Sewa Sekarang / Checkout',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    'Pilih & Sewa Paket Ini',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark
-                        ? Colors.blue[600]
-                        : Colors.blue[800],
+                    backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    elevation: 0,
                   ),
                 ),
               ),
@@ -219,103 +296,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _fetchItems();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showTabInfo(0);
-    });
-  }
-
-  void _showTabInfo(int index) {
-    if (!mounted || _hasShownSnackbar) return;
-    _hasShownSnackbar = true;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    if (index == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.info_outline, color: Colors.white),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Paket peminjaman yang sudah ditetapkan Admin Desa jauh lebih murah dibanding harga satuan!',
-                ),
-              ),
-            ],
-          ),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          backgroundColor: Theme.of(context).primaryColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchItems() async {
-    final items = await _rentalService.getRentalItems();
-    if (mounted) {
-      setState(() {
-        _adminPackages = items
-            .where((item) => item['unit'] == 'Paket' || item['unit'] == 'paket')
-            .map((item) {
-              return {
-                'id': item['id'],
-                'name': item['name'] ?? 'Paket',
-                'items': item['description'] ?? '',
-                'originalPrice':
-                    (item['price'] ?? 0) + 50000, // Example markup for visual
-                'discountedPrice': item['price'] ?? 0,
-                'hemat': 'Spesial',
-                'color': Colors.blue,
-                'description': item['description'] ?? '',
-                'image': item['image'],
-                'details': [item['description'] ?? ''],
-              };
-            })
-            .toList();
-
-        _customItems = items
-            .where((item) => item['unit'] != 'Paket' && item['unit'] != 'paket')
-            .map((item) {
-              return {
-                'id': item['id'],
-                'name': item['name'] ?? 'Alat',
-                'price': item['price'] ?? 0,
-                'qty': 1,
-                'unit': item['unit'] ?? 'unit',
-                'selected': false,
-                'image': item['image'],
-                'icon': Icons.build,
-                'description': item['description'] ?? '',
-              };
-            })
-            .toList();
-
-        _isLoading = false;
-      });
-    }
-  }
-
   int _calculateCustomDailyPrice() {
     int total = 0;
     for (var item in _customItems) {
       if (item['selected'] == true) {
-        total += (item['price'] as int) * (item['qty'] as int);
+        total += _parseInt(item['price']) * _parseInt(item['qty'], 1);
       }
     }
     return total;
@@ -323,21 +308,26 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   int _getTotalPrice() {
     if (_tabController.index == 0) {
-      if (_selectedPackageIndex == null) return 0;
-      return _adminPackages[_selectedPackageIndex!]['discountedPrice'] *
-          _durationDays;
+      if (_selectedPackageIndex == null ||
+          _adminPackages.isEmpty ||
+          _selectedPackageIndex! >= _adminPackages.length) {
+        return 0;
+      }
+      return _parseInt(_adminPackages[_selectedPackageIndex!]['price']) * _durationDays;
     } else {
       return _calculateCustomDailyPrice() * _durationDays;
     }
   }
 
   String _getSummaryTitle() {
-    if (_tabController.index == 0 && _selectedPackageIndex != null) {
+    if (_tabController.index == 0 &&
+        _selectedPackageIndex != null &&
+        _selectedPackageIndex! < _adminPackages.length) {
       return _adminPackages[_selectedPackageIndex!]['name'];
     } else {
       List<String> items = [];
       for (var item in _customItems) {
-        if (item['selected'] == true && (item['qty'] as int) > 0) {
+        if (item['selected'] == true && _parseInt(item['qty']) > 0) {
           items.add('${item['qty']} ${item['unit']} (${item['name']})');
         }
       }
@@ -353,7 +343,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pilih paket atau item alat terlebih dahulu!'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -363,15 +353,16 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         ? _getSummaryTitle()
         : 'Paket Custom Bebas';
 
-    final String itemsDesc =
-        _tabController.index == 0 && _selectedPackageIndex != null
+    final String itemsDesc = _tabController.index == 0 &&
+            _selectedPackageIndex != null &&
+            _selectedPackageIndex! < _adminPackages.length
         ? _adminPackages[_selectedPackageIndex!]['items']
         : _getSummaryTitle();
 
     final int pricePerDay = _tabController.index == 0
-        ? (_selectedPackageIndex != null
-              ? _adminPackages[_selectedPackageIndex!]['discountedPrice']
-              : 0)
+        ? (_selectedPackageIndex != null && _selectedPackageIndex! < _adminPackages.length
+            ? _parseInt(_adminPackages[_selectedPackageIndex!]['price'])
+            : 0)
         : _calculateCustomDailyPrice();
 
     Navigator.push(
@@ -384,8 +375,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
             'price': pricePerDay,
             'type': 'paket',
             'description': itemsDesc,
-            'image':
-                'http://10.250.3.148:8000/assets/img/package_placeholder.png', // Or handle appropriately
+            'image': 'http://10.250.3.148:8000/assets/img/package_placeholder.png',
           },
           category: 'Paket Sewa Alat',
           initialDuration: _durationDays,
@@ -397,29 +387,89 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
-      backgroundColor: isDark
-          ? Theme.of(context).scaffoldBackgroundColor
-          : Colors.grey[100],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
-          'Penyewaan & Peminjaman Alat',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          'Penyewaan Alat',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 18,
+            letterSpacing: 0.3,
+          ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white60,
-          indicatorColor: Colors.white,
-          indicatorWeight: 4,
-          onTap: (_) => setState(() {}),
-          tabs: const [
-            Tab(icon: Icon(Icons.stars), text: 'Paket Hemat Desa'),
-            Tab(icon: Icon(Icons.handyman), text: 'Buat Paket Sendiri'),
-          ],
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+              indicator: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              labelColor: isDark ? Colors.white : primaryColor,
+              unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12.5,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12.5,
+              ),
+              tabs: const [
+                Tab(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.inventory_2_rounded, size: 15),
+                        SizedBox(width: 5),
+                        Text('Paket Alat Desa'),
+                      ],
+                    ),
+                  ),
+                ),
+                Tab(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.handyman_rounded, size: 15),
+                        SizedBox(width: 5),
+                        Text('Buat Paket Sendiri'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: Column(
@@ -427,8 +477,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              physics:
-                  const NeverScrollableScrollPhysics(), // handle manual switches
+              physics: const BouncingScrollPhysics(),
               children: [_buildAdminPackagesTab(), _buildCustomPackageTab()],
             ),
           ),
@@ -440,251 +489,242 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   Widget _buildAdminPackagesTab() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor));
     }
     if (_adminPackages.isEmpty) {
-      return const Center(
-        child: Text(
-          'Tidak ada paket tersedia saat ini.',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inventory_2_outlined, size: 60, color: Colors.grey[400]),
+            const SizedBox(height: 12),
+            const Text(
+              'Belum ada paket alat tersedia.',
+              style: TextStyle(fontSize: 15, color: Colors.grey),
+            ),
+          ],
         ),
       );
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        ..._adminPackages.asMap().entries.map((entry) {
-          final idx = entry.key;
-          final item = entry.value;
-          final isSelected = _selectedPackageIndex == idx;
+    final primaryColor = Theme.of(context).primaryColor;
 
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedPackageIndex = idx);
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
+    return ListView.builder(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      itemCount: _adminPackages.length,
+      itemBuilder: (context, idx) {
+        final item = _adminPackages[idx];
+        final isSelected = _selectedPackageIndex == idx;
+        final int itemPrice = _parseInt(item['price']);
+
+        return GestureDetector(
+          onTap: () {
+            setState(() => _selectedPackageIndex = idx);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? primaryColor.withValues(alpha: 0.08)
+                  : Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
                 color: isSelected
-                    ? (isDark
-                          ? Colors.blue[900]!.withAlpha(80)
-                          : Colors.blue[50])
-                    : (isDark ? Theme.of(context).cardColor : Colors.white),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected
-                      ? (isDark ? Colors.blue[400]! : Colors.blue[800]!)
-                      : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
-                  width: isSelected ? 2.5 : 1,
+                    ? primaryColor
+                    : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                width: isSelected ? 1.5 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(10),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item['name'],
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: item['color'] as Color,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          'HEMAT ${item['hemat']}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    item['items'],
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[700],
-                      fontSize: 14,
-                    ),
-                  ),
-                  const Divider(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Rp ${item['originalPrice']} /hari',
-                            style: const TextStyle(
-                              decoration: TextDecoration.lineThrough,
-                              color: Colors.grey,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Rp ${item['discountedPrice']} /hari',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: isDark
-                                  ? Colors.blue[400]
-                                  : Colors.blue[800],
-                              fontSize: 17,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Icon(
-                        isSelected ? Icons.check_circle : Icons.circle_outlined,
-                        color: isSelected
-                            ? (isDark ? Colors.blue[400] : Colors.blue[800])
-                            : Colors.grey,
-                        size: 28,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () =>
-                              _showDetailModal(context, item, adminIndex: idx),
-                          icon: const Icon(Icons.info_outline, size: 17),
-                          label: const Text(
-                            'Lihat Detail',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: isDark
-                                ? Colors.blue[400]
-                                : Colors.blue[800],
-                            side: BorderSide(
-                              color: isDark
-                                  ? Colors.blue[400]!
-                                  : Colors.blue[800]!,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() => _selectedPackageIndex = idx);
-                            _handleBooking();
-                          },
-                          icon: const Icon(Icons.bolt, size: 17),
-                          label: const Text(
-                            'Langsung Sewa',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? Colors.blue[600]
-                                : Colors.blue[800],
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
             ),
-          );
-        }),
-      ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item['name']?.toString() ?? 'Paket Alat',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15.5,
+                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Paket Resmi',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  item['items']?.toString() ?? '',
+                  style: TextStyle(
+                    color: isDark ? Colors.white54 : Colors.grey[600],
+                    fontSize: 12.5,
+                    height: 1.35,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tarif Sewa',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${_currencyFormat.format(itemPrice)} / Hari',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: primaryColor,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Icon(
+                      isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                      color: isSelected ? primaryColor : Colors.grey[400],
+                      size: 22,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _showDetailModal(context, item, adminIndex: idx),
+                        icon: const Icon(Icons.info_outline_rounded, size: 16),
+                        label: const Text(
+                          'Lihat Detail',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: primaryColor,
+                          side: BorderSide(color: primaryColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() => _selectedPackageIndex = idx);
+                          _handleBooking();
+                        },
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                        label: const Text(
+                          'Langsung Sewa',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildCustomPackageTab() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor));
     }
     if (_customItems.isEmpty) {
-      return const Center(
-        child: Text(
-          'Tidak ada alat/satuan tersedia saat ini.',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.handyman_outlined, size: 60, color: Colors.grey[400]),
+            const SizedBox(height: 12),
+            const Text(
+              'Tidak ada alat satuan tersedia saat ini.',
+              style: TextStyle(fontSize: 15, color: Colors.grey),
+            ),
+          ],
         ),
       );
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.only(bottom: 16),
+              margin: const EdgeInsets.only(bottom: 14),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.blue.withAlpha(40) : Colors.blue[50],
-                border: Border.all(
-                  color: isDark ? Colors.blue[700]! : Colors.blue[200]!,
-                ),
-                borderRadius: BorderRadius.circular(12),
+                color: primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: primaryColor.withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.checklist_rtl_rounded,
-                    color: isDark ? Colors.blue[300] : Colors.blue[800],
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
+                  Icon(Icons.touch_app_rounded, color: primaryColor, size: 20),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Centang kotak pada foto untuk memilih alat yang dibutuhkan, lalu sesuaikan jumlahnya!',
+                      'Pilih alat yang Anda butuhkan dan sesuaikan jumlahnya untuk membuat paket sendiri.',
                       style: TextStyle(
-                        color: isDark ? Colors.blue[200] : Colors.blue[900],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : const Color(0xFF334155),
+                        fontSize: 12,
+                        height: 1.35,
                       ),
                     ),
                   ),
@@ -695,16 +735,16 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
           SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.52,
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 14,
+              childAspectRatio: 0.65,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, idx) => _buildCustomItemCard(idx),
               childCount: _customItems.length,
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          const SliverToBoxAdapter(child: SizedBox(height: 20)),
         ],
       ),
     );
@@ -712,10 +752,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   Widget _buildCustomItemCard(int idx) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
     final item = _customItems[idx];
     final bool isSelected = item['selected'] == true;
-    final int qty = item['qty'] as int;
-    final int price = item['price'] as int;
+    final int qty = _parseInt(item['qty'], 1);
+    final int price = _parseInt(item['price']);
 
     return GestureDetector(
       onTap: () {
@@ -730,141 +771,70 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark
-                    ? Colors.blue[900]!.withAlpha(80)
-                    : Colors.blue[50]!.withAlpha(120))
-              : (isDark ? Theme.of(context).cardColor : Colors.white),
+              ? primaryColor.withValues(alpha: 0.08)
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? (isDark ? Colors.blue[400]! : Colors.blue[800]!)
-                : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
-            width: isSelected ? 2.2 : 1,
+                ? primaryColor
+                : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+            width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected
-                  ? Colors.blue.withAlpha(25)
-                  : Colors.black.withAlpha(10),
-              blurRadius: isSelected ? 12 : 6,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(15),
-                  ),
-                  child: Container(
-                    height: 105,
-                    width: double.infinity,
-                    color: isDark ? Colors.grey[850] : Colors.grey[100],
-                    child: item['image'] != null
-                        ? Image.network(
-                            item['image'] as String,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) => Container(
-                              color: isSelected
-                                  ? (isDark
-                                        ? Colors.blue[900]
-                                        : Colors.blue[100])
-                                  : (isDark
-                                        ? Colors.grey[800]
-                                        : Colors.grey[200]),
-                              child: Icon(
-                                item['icon'] as IconData? ?? Icons.handyman,
-                                size: 45,
-                                color: isSelected
-                                    ? (isDark
-                                          ? Colors.blue[300]
-                                          : Colors.blue[800])
-                                    : (isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600]),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: isSelected
-                                ? (isDark ? Colors.blue[900] : Colors.blue[100])
-                                : (isDark
-                                      ? Colors.grey[800]
-                                      : Colors.grey[200]),
-                            child: Icon(
-                              item['icon'] as IconData? ?? Icons.handyman,
-                              size: 45,
-                              color: isSelected
-                                  ? (isDark
-                                        ? Colors.blue[300]
-                                        : Colors.blue[800])
-                                  : (isDark
-                                        ? Colors.grey[400]
-                                        : Colors.grey[600]),
-                            ),
-                          ),
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
+            // Top Thumbnail Box
+            Expanded(
+              flex: 50,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? (isDark ? Colors.blue[600] : Colors.blue[800])
-                          : (isDark
-                                ? Colors.grey[800]!.withAlpha(220)
-                                : Colors.white.withAlpha(220)),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(35),
-                          blurRadius: 4,
-                        ),
-                      ],
+                      color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Icon(
-                        isSelected ? Icons.check : Icons.add,
-                        size: 16,
-                        color: isSelected
-                            ? Colors.white
-                            : (isDark ? Colors.white : Colors.grey[800]),
-                      ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                      child: item['image'] != null
+                          ? Image.network(
+                              item['image'].toString(),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Icon(Icons.handyman_outlined, size: 36, color: Colors.grey[400]),
+                            )
+                          : Icon(Icons.handyman_outlined, size: 36, color: Colors.grey[400]),
                     ),
                   ),
-                ),
-                if (isSelected)
                   Positioned(
                     top: 8,
-                    left: 8,
+                    right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.blue[600],
-                        borderRadius: BorderRadius.circular(6),
+                        color: isSelected ? primaryColor : Colors.white.withValues(alpha: 0.8),
+                        shape: BoxShape.circle,
                       ),
-                      child: const Text(
-                        'DIPILIH',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Icon(
+                        isSelected ? Icons.check_rounded : Icons.add_rounded,
+                        size: 14,
+                        color: isSelected ? Colors.white : Colors.grey[700],
                       ),
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
+            // Bottom Info Box
             Expanded(
+              flex: 50,
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Column(
@@ -875,140 +845,71 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item['name'],
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                          item['name']?.toString() ?? 'Alat',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
-                            color: isSelected
-                                ? (isDark ? Colors.blue[200] : Colors.blue[900])
-                                : (isDark ? Colors.white : Colors.black87),
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 2),
                         Text(
-                          'Rp $price /hari',
+                          '${_currencyFormat.format(price)} / Hari',
                           style: TextStyle(
-                            fontWeight: FontWeight.w600,
                             fontSize: 12,
-                            color: isSelected
-                                ? (isDark ? Colors.blue[400] : Colors.blue[800])
-                                : (isDark
-                                      ? Colors.grey[400]
-                                      : Colors.grey[700]),
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
                           ),
                         ),
                       ],
                     ),
-                    if (isSelected)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.grey[800] : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.blue[500]!
-                                : Colors.blue[300]!,
+                    // Quantity Control
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            if (qty > 1) {
+                              setState(() => _customItems[idx]['qty'] = qty - 1);
+                            } else if (qty == 1) {
+                              setState(() {
+                                _customItems[idx]['selected'] = false;
+                                _customItems[idx]['qty'] = 0;
+                              });
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white12 : Colors.grey.shade200,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.remove, size: 14),
                           ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  if (qty > 1) {
-                                    _customItems[idx]['qty'] = qty - 1;
-                                  } else {
-                                    _customItems[idx]['selected'] = false;
-                                  }
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Icon(
-                                  Icons.remove_circle_outline,
-                                  size: 18,
-                                  color: Colors.red[600],
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '$qty',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: isDark ? Colors.white : Colors.black,
-                              ),
-                            ),
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _customItems[idx]['qty'] = qty + 1;
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Icon(
-                                  Icons.add_circle_outline,
-                                  size: 18,
-                                  color: isDark
-                                      ? Colors.blue[400]
-                                      : Colors.blue[800],
-                                ),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          '$qty',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                         ),
-                      )
-                    else
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.grey[800] : Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.grey[700]!
-                                : Colors.grey[300]!,
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _customItems[idx]['selected'] = true;
+                              _customItems[idx]['qty'] = qty + 1;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.add, size: 14, color: Colors.white),
                           ),
                         ),
-                        child: Center(
-                          child: Text(
-                            '+ Pilih & Atur Jumlah',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.grey[300] : Colors.black54,
-                            ),
-                          ),
-                        ),
-                      ),
-                    Center(
-                      child: InkWell(
-                        onTap: () =>
-                            _showDetailModal(context, item, customIndex: idx),
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            'Lihat Detail',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: isDark
-                                  ? Colors.blue[400]
-                                  : Colors.blue[700],
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -1022,123 +923,153 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   Widget _buildBottomBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
     final int total = _getTotalPrice();
-    final String summary = _getSummaryTitle();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? Theme.of(context).cardColor : Colors.white,
+        color: Theme.of(context).cardColor,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(15),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -4),
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  _tabController.index == 0
-                      ? 'Pilihan: $summary'
-                      : 'Rincian: $summary',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Lama: ', style: TextStyle(color: Colors.grey)),
-                  GestureDetector(
-                    onTap: () {
-                      if (_durationDays > 1) setState(() => _durationDays--);
-                    },
-                    child: const Icon(
-                      Icons.remove_circle,
-                      size: 20,
-                      color: Colors.grey,
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    _getSummaryTitle(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : const Color(0xFF334155),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      '$_durationDays Hari',
+                ),
+                Row(
+                  children: [
+                    Text(
+                      'Durasi:',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 11.5,
+                        color: isDark ? Colors.white38 : Colors.grey[500],
                       ),
                     ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark ? Colors.white12 : Colors.grey.shade300,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              if (_durationDays > 1) {
+                                setState(() => _durationDays--);
+                              }
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(Icons.remove, size: 14),
+                            ),
+                          ),
+                          Text(
+                            '$_durationDays Hari',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              setState(() => _durationDays++);
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(Icons.add, size: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  flex: 45,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Biaya',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? Colors.white38 : Colors.grey[500],
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _currencyFormat.format(total),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  GestureDetector(
-                    onTap: () => setState(() => _durationDays++),
-                    child: Icon(
-                      Icons.add_circle,
-                      size: 20,
-                      color: isDark ? Colors.blue[400] : Colors.blue[800],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 55,
+                  child: ElevatedButton.icon(
+                    onPressed: _handleBooking,
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                    label: const Text(
+                      'Lanjutkan Sewa',
+                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-          const Divider(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Total Pembayaran',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  Text(
-                    total == 0 ? 'Rp 0' : 'Rp $total',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: isDark ? Colors.blue[300] : Colors.blue[900],
-                    ),
-                  ),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: _handleBooking,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? Colors.blue[600] : Colors.blue[800],
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 8,
-                  shadowColor: Colors.blue.withAlpha(100),
                 ),
-                child: const Text(
-                  'Pesan Paket',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

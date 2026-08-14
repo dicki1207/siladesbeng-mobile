@@ -27,7 +27,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Harap isi semua kolom sandi'),
+          content: Text('Harap isi semua kolom kata sandi'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -37,7 +37,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (_newPasswordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Sandi baru dan konfirmasi tidak cocok'),
+          content: Text('Kata sandi baru dan konfirmasi tidak cocok'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -80,7 +80,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         Navigator.pop(context); // close dialog
         Navigator.pop(context); // close page
       } else {
-        String errorMsg = data['message'] ?? 'Gagal mengubah sandi';
+        String errorMsg = data['message'] ?? 'Gagal mengubah kata sandi';
         if (data['errors'] != null) {
           errorMsg = (data['errors'] as Map<String, dynamic>).values.first[0]
               .toString();
@@ -105,27 +105,83 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Ubah Kata Sandi'),
+        title: const Text(
+          'Ubah Kata Sandi',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            letterSpacing: 0.3,
+          ),
+        ),
+        backgroundColor: primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         elevation: 0,
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Perbarui Keamanan Anda',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: primaryColor.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.shield_outlined,
+                      color: primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Perbarui Keamanan Akun',
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Gunakan kombinasi huruf, angka, dan karakter unik agar kata sandi kuat.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.white54 : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Pastikan kata sandi baru Anda kuat dan belum pernah digunakan sebelumnya.',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             _buildPasswordField(
               label: 'Kata Sandi Saat Ini',
@@ -134,7 +190,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               onToggleVisibility: () =>
                   setState(() => _obscureCurrent = !_obscureCurrent),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
             _buildPasswordField(
               label: 'Kata Sandi Baru',
@@ -143,7 +199,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               onToggleVisibility: () =>
                   setState(() => _obscureNew = !_obscureNew),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
             _buildPasswordField(
               label: 'Konfirmasi Kata Sandi Baru',
@@ -155,32 +211,33 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               onSubmitted: (_) => _submitChangePassword(),
             ),
 
-            const SizedBox(height: 48),
+            const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitChangePassword,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  elevation: 0,
                 ),
                 child: _isSubmitting
                     ? const SizedBox(
-                        width: 24,
-                        height: 24,
+                        width: 22,
+                        height: 22,
                         child: CircularProgressIndicator(
                           color: Colors.white,
-                          strokeWidth: 3,
+                          strokeWidth: 2.5,
                         ),
                       )
                     : const Text(
                         'Simpan Kata Sandi',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -200,40 +257,59 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     TextInputAction textInputAction = TextInputAction.next,
     Function(String)? onSubmitted,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
+            fontSize: 13.5,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+            color: isDark ? Colors.white70 : const Color(0xFF1E293B),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark ? Colors.white12 : Colors.grey.shade300,
+            ),
           ),
           child: TextField(
             controller: controller,
             obscureText: obscureText,
             textInputAction: textInputAction,
             onSubmitted: onSubmitted,
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
             decoration: InputDecoration(
+              prefixIcon: Icon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: primaryColor,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscureText
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+                onPressed: onToggleVisibility,
+              ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 14,
-              ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
-                ),
-                onPressed: onToggleVisibility,
               ),
             ),
           ),

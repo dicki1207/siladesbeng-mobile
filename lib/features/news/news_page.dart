@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/services/news_service.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
@@ -70,10 +71,35 @@ class _NewsPageState extends State<NewsPage> {
     super.dispose();
   }
 
+  String _formatDate(String? rawDate) {
+    if (rawDate == null || rawDate.isEmpty || rawDate == '-') return '-';
+    try {
+      final parsed = DateTime.parse(rawDate);
+      return DateFormat('d MMM yyyy').format(parsed);
+    } catch (_) {
+      return rawDate;
+    }
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Pengumuman':
+        return Icons.campaign_rounded;
+      case 'Event':
+        return Icons.event_rounded;
+      case 'Gotong Royong':
+        return Icons.volunteer_activism_rounded;
+      default:
+        return Icons.grid_view_rounded;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> filteredNews = _newsList;
     bool isBerita = widget.postCategory == 'Berita';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -88,7 +114,7 @@ class _NewsPageState extends State<NewsPage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: Theme.of(context).primaryColor,
+              backgroundColor: primaryColor,
               elevation: 0,
               centerTitle: true,
               iconTheme: const IconThemeData(color: Colors.white),
@@ -104,7 +130,7 @@ class _NewsPageState extends State<NewsPage> {
                   ),
                 );
               },
-              icon: const Icon(Icons.campaign, color: Colors.white),
+              icon: const Icon(Icons.campaign_rounded, color: Colors.white),
               label: const Text(
                 'Buat Pengumuman (RT/RW)',
                 style: TextStyle(
@@ -112,166 +138,281 @@ class _NewsPageState extends State<NewsPage> {
                   color: Colors.white,
                 ),
               ),
-              backgroundColor: Colors.blue[800],
+              backgroundColor: primaryColor,
               elevation: 4,
             ),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
+      body: RefreshIndicator(
+        onRefresh: _fetchNews,
+        color: primaryColor,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
 
-                // Search bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
+                  // Search bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white12
+                              : Colors.grey.withValues(alpha: 0.15),
                         ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: isBerita
-                            ? 'Cari berita...'
-                            : 'Cari pengumuman...',
-                        prefixIcon: Icon(Icons.search, color: Colors.blue[700]),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      onSubmitted: (value) => _fetchNews(),
+                      child: TextField(
+                        controller: _searchController,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: isBerita
+                              ? 'Cari berita daerah...'
+                              : 'Cari pengumuman desa...',
+                          hintStyle: TextStyle(
+                            color: isDark ? Colors.white38 : Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: primaryColor,
+                            size: 22,
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                    size: 18,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _fetchNews();
+                                  },
+                                )
+                              : null,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                        ),
+                        onSubmitted: (value) => _fetchNews(),
+                        onChanged: (value) {
+                          setState(() {});
+                        },
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 14),
 
-                // Categories (Only for Pengumuman)
-                if (!isBerita)
-                  SizedBox(
-                    height: 40,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _categories.length,
-                      itemBuilder: (context, index) {
-                        final category = _categories[index];
-                        final isSelected = category == _selectedCategory;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: ChoiceChip(
-                            label: Text(
-                              category,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : Colors.grey[700],
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                  // Categories (Only for Pengumuman)
+                  if (!isBerita)
+                    SizedBox(
+                      height: 38,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _categories[index];
+                          final isSelected = category == _selectedCategory;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedCategory = category;
+                                  });
+                                  _fetchNews();
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? primaryColor
+                                        : (isDark
+                                            ? Colors.white.withValues(alpha: 0.05)
+                                            : Colors.grey[100]),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? primaryColor
+                                          : (isDark
+                                              ? Colors.white12
+                                              : Colors.grey.withValues(alpha: 0.2)),
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color: primaryColor.withValues(alpha: 0.3),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _getCategoryIcon(category),
+                                        size: 14,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : (isDark
+                                                ? Colors.white70
+                                                : Colors.grey[700]),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        category,
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : (isDark
+                                                  ? Colors.white70
+                                                  : Colors.grey[700]),
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.w500,
+                                          fontSize: 12.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
-                            selected: isSelected,
-                            selectedColor: Colors.blue[700],
-                            backgroundColor: Colors.grey[200],
-                            onSelected: (selected) {
-                              if (selected) {
-                                setState(() {
-                                  _selectedCategory = category;
-                                });
-                                _fetchNews();
-                              }
-                            },
-                            elevation: isSelected ? 2 : 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
 
-                if (!isBerita) const SizedBox(height: 20),
-              ],
+                  if (!isBerita) const SizedBox(height: 14),
+                ],
+              ),
             ),
-          ),
 
-          // News List
-          _isLoading
-              ? const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              : filteredNews.isEmpty
-              ? SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inbox_outlined,
-                          size: 64,
-                          color: Colors.grey[400],
+            // News List
+            _isLoading
+                ? SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(color: primaryColor),
+                    ),
+                  )
+                : filteredNews.isEmpty
+                ? SliverFillRemaining(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.08),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isBerita
+                                    ? Icons.newspaper_rounded
+                                    : Icons.campaign_outlined,
+                                size: 54,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              isBerita
+                                  ? 'Belum Ada Berita'
+                                  : 'Belum Ada Pengumuman',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white70 : Colors.grey[800],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              isBerita
+                                  ? 'Belum ada berita daerah yang dipublikasikan.'
+                                  : 'Belum ada pengumuman yang sesuai dengan filter.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isDark ? Colors.white38 : Colors.grey[500],
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          isBerita
-                              ? 'Belum Ada Berita'
-                              : 'Belum Ada Pengumuman',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          isBerita
-                              ? 'Belum ada berita daerah yang dipublikasikan saat ini.'
-                              : 'Belum ada pengumuman yang sesuai.',
-                          style: TextStyle(color: Colors.grey[500]),
-                        ),
-                      ],
+                      ),
+                    ),
+                  )
+                : SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final news = filteredNews[index];
+                        return _buildNewsCard(news, isBerita);
+                      }, childCount: filteredNews.length),
                     ),
                   ),
-                )
-              : SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final news = filteredNews[index];
-                      return _buildNewsCard(news, isBerita);
-                    }, childCount: filteredNews.length),
-                  ),
-                ),
 
-          // Bottom padding
-          const SliverToBoxAdapter(child: SizedBox(height: 80)),
-        ],
+            // Bottom padding
+            const SliverToBoxAdapter(child: SizedBox(height: 90)),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildNewsCard(Map<String, dynamic> news, bool isBerita) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final String categoryName =
+        news['category']?.toString() ?? (isBerita ? 'Berita' : 'Pengumuman');
+    final String formattedDate = _formatDate(news['date']?.toString());
+    final String? description = news['desc']?.toString() ??
+        news['content']?.toString() ??
+        news['description']?.toString();
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -295,62 +436,73 @@ class _NewsPageState extends State<NewsPage> {
               ),
             );
           },
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image Thumbnail (Left)
-              Hero(
-                tag: 'news_img_${news['id'] ?? news['title']}',
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(
-                    left: Radius.circular(16),
-                  ),
-                  child: Image.network(
-                    news['image']?.toString() ?? '',
-                    height: 110,
-                    width: 110,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 110,
-                        width: 110,
-                        color: Colors.grey[300],
-                        child: const Icon(
-                          Icons.broken_image,
-                          color: Colors.grey,
-                          size: 30,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image Thumbnail (Framed with inner padding)
+                Hero(
+                  tag: 'news_img_${news['id'] ?? news['title']}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      children: [
+                        Image.network(
+                          news['image']?.toString() ?? '',
+                          height: 100,
+                          width: 105,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 100,
+                              width: 105,
+                              color: isDark
+                                  ? Colors.grey[800]
+                                  : primaryColor.withValues(alpha: 0.08),
+                              child: Icon(
+                                isBerita
+                                    ? Icons.newspaper_rounded
+                                    : Icons.campaign_rounded,
+                                color: primaryColor.withValues(alpha: 0.5),
+                                size: 32,
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              // Content (Right)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
+                const SizedBox(width: 12),
+
+                // Content (Right)
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Category & Date
+                      // Category Badge & Date Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
-                              vertical: 4,
+                              vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.blue[100],
+                              color: primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: primaryColor.withValues(alpha: 0.2),
+                              ),
                             ),
                             child: Text(
-                              news['category']?.toString() ?? 'Pengumuman',
+                              categoryName,
                               style: TextStyle(
-                                color: Colors.blue[800],
-                                fontSize: 10,
+                                color: primaryColor,
+                                fontSize: 10.5,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -358,40 +510,80 @@ class _NewsPageState extends State<NewsPage> {
                           Row(
                             children: [
                               Icon(
-                                Icons.calendar_today,
-                                size: 12,
-                                color: Colors.grey[600],
+                                Icons.calendar_today_outlined,
+                                size: 11,
+                                color: isDark ? Colors.white38 : Colors.grey[500],
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                news['date']?.toString() ?? '-',
+                                formattedDate,
                                 style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 10,
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.grey[600],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
 
                       // Title
                       Text(
                         news['title']?.toString() ?? 'Tidak ada judul',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           height: 1.3,
+                          color: isDark ? Colors.white : const Color(0xFF1E293B),
                         ),
-                        maxLines: 3,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 6),
+
+                      // Snippet or Author info
+                      if (description != null &&
+                          description.trim().isNotEmpty &&
+                          description != 'Tidak ada konten.') ...[
+                        Text(
+                          description.replaceAll('\n', ' ').trim(),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? Colors.white54 : Colors.grey[600],
+                            height: 1.25,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ] else ...[
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.account_balance_outlined,
+                              size: 12,
+                              color: primaryColor.withValues(alpha: 0.8),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              news['author']?.toString() ?? 'Pemerintah Desa',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: primaryColor.withValues(alpha: 0.8),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

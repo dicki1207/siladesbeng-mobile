@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_ticket_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
@@ -7,7 +8,12 @@ class RentalBookingPage extends StatefulWidget {
   final dynamic item;
   final String? category;
   final int? initialDuration;
-  const RentalBookingPage({super.key, required this.item, this.category, this.initialDuration});
+  const RentalBookingPage({
+    super.key,
+    required this.item,
+    this.category,
+    this.initialDuration,
+  });
 
   @override
   State<RentalBookingPage> createState() => _RentalBookingPageState();
@@ -18,15 +24,32 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
   String _paymentCategory = 'tunai';
   String? _selectedBank;
   String? _selectedEWallet;
+
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _waController = TextEditingController();
   final _notesController = TextEditingController();
+
   String _driverOption = 'sendiri';
   String _eventCategory = 'sosial';
-  bool _needsAdditionalFacilities = false;
+  final bool _needsAdditionalFacilities = false;
   bool _isSubmitting = false;
   final RentalService _rentalService = RentalService();
+
+  final List<String> _bankOptions = [
+    'bank_transfer_bca',
+    'bank_transfer_bri',
+    'bank_transfer_bni',
+    'bank_transfer_mandiri',
+  ];
+
+  final List<String> _eWalletOptions = ['qris', 'gopay'];
+
+  final NumberFormat _currencyFormat = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
@@ -40,18 +63,13 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     if (mounted) {
       setState(() {
         _nameController.text = prefs.getString('profile_name') ?? '';
+        final phone = prefs.getString('profile_phone') ?? '';
+        if (phone.isNotEmpty) {
+          _waController.text = phone;
+        }
       });
     }
   }
-
-  final List<String> _bankOptions = [
-    'bank_transfer_bca',
-    'bank_transfer_bri',
-    'bank_transfer_bni',
-    'bank_transfer_mandiri',
-  ];
-
-  final List<String> _eWalletOptions = ['qris', 'gopay'];
 
   String _formatBankName(String val) {
     switch (val) {
@@ -79,120 +97,384 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     }
   }
 
-  Widget _getLogo(String val) {
-    String url = '';
-
-    if (val.contains('bca')) {
-      url = 'http://10.250.3.148:8000/assets/img/payment_logos/bca.jpg';
-    } else if (val.contains('bri')) {
-      url = 'http://10.250.3.148:8000/assets/img/payment_logos/bri.png';
-    } else if (val.contains('bni')) {
-      url = 'http://10.250.3.148:8000/assets/img/payment_logos/bni.png';
-    } else if (val.contains('mandiri')) {
-      url = 'http://10.250.3.148:8000/assets/img/payment_logos/mandiri.png';
-    } else if (val.contains('qris')) {
-      url = 'https://qris.id/homepage/images/logo.png';
-    } else if (val.contains('gopay')) {
-      url = 'http://10.250.3.148:8000/assets/img/payment_logos/gopay.png';
+  Widget _buildPaymentLogo(String key, {double width = 46, double height = 26}) {
+    String? assetPath;
+    switch (key.toLowerCase()) {
+      case 'bank_transfer_bca':
+      case 'bca':
+        assetPath = 'assets/images/banks/bca.png';
+        break;
+      case 'bank_transfer_bri':
+      case 'bri':
+        assetPath = 'assets/images/banks/bri.png';
+        break;
+      case 'bank_transfer_bni':
+      case 'bni':
+        assetPath = 'assets/images/banks/bni.png';
+        break;
+      case 'bank_transfer_mandiri':
+      case 'mandiri':
+        assetPath = 'assets/images/banks/mandiri.png';
+        break;
+      case 'gopay':
+        assetPath = 'assets/images/banks/gopay.png';
+        break;
     }
 
-    if (url.isEmpty) return const SizedBox(width: 50);
+    if (assetPath != null) {
+      return Container(
+        width: width,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.grey.shade300, width: 0.8),
+        ),
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) => const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+        ),
+      );
+    }
 
+    // Default icon badge for QRIS or generic
     return Container(
-      width: 50,
-      height: 30,
-      padding: const EdgeInsets.all(2),
+      width: width,
+      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey.shade300, width: 0.8),
       ),
-      child: Image.network(
-        url,
-        fit: BoxFit.contain,
-        headers: const {
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-        errorBuilder: (context, error, stackTrace) =>
-            const Icon(Icons.account_balance, size: 20, color: Colors.grey),
+      child: Center(
+        child: key.contains('qris')
+            ? const Text(
+                'QRIS',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10.5,
+                  letterSpacing: 0.5,
+                  color: Color(0xFFE11D48),
+                ),
+              )
+            : const Icon(Icons.account_balance, size: 16, color: Colors.blue),
       ),
     );
   }
 
-  Widget _buildPaymentOption(
-    String value,
-    String title,
-    String subtitle,
-    IconData icon, {
-    Widget? child,
-  }) {
-    bool isSelected = _paymentCategory == value;
+  void _showPaymentPicker() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: () => setState(() => _paymentCategory = value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
+    final primaryColor = Theme.of(context).primaryColor;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Sheet Handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Pilih Metode Pembayaran',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Option 1: Bayar Tunai (COD / Di Kantor)
+                    _buildModalPaymentItem(
+                      iconWidget: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.payments_outlined, color: primaryColor, size: 20),
+                      ),
+                      title: 'Bayar Tunai',
+                      subtitle: 'Bayar saat serah terima alat / di kantor BUMDes',
+                      isSelected: _paymentCategory == 'tunai',
+                      onTap: () {
+                        setState(() {
+                          _paymentCategory = 'tunai';
+                          _selectedBank = null;
+                          _selectedEWallet = null;
+                        });
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Option 2: Bank Transfer (Virtual Account)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _paymentCategory == 'bank'
+                              ? primaryColor
+                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                          width: _paymentCategory == 'bank' ? 1.5 : 1,
+                        ),
+                      ),
+                      child: ExpansionTile(
+                        initiallyExpanded: _paymentCategory == 'bank',
+                        leading: _paymentCategory == 'bank' && _selectedBank != null
+                            ? _buildPaymentLogo(_selectedBank!)
+                            : Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.account_balance_outlined, color: primaryColor, size: 20),
+                              ),
+                        title: Text(
+                          _paymentCategory == 'bank' && _selectedBank != null
+                              ? _formatBankName(_selectedBank!)
+                              : 'Transfer Bank (Virtual Account)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: _paymentCategory == 'bank' ? primaryColor : null,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'BCA, BRI, BNI, Mandiri',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                        children: _bankOptions.map((bank) {
+                          final isBankActive = _paymentCategory == 'bank' && _selectedBank == bank;
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            leading: _buildPaymentLogo(bank),
+                            title: Text(
+                              _formatBankName(bank),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isBankActive ? FontWeight.bold : FontWeight.w600,
+                                color: isBankActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                              ),
+                            ),
+                            trailing: isBankActive
+                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                _paymentCategory = 'bank';
+                                _selectedBank = bank;
+                                _selectedEWallet = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Option 3: E-Wallet / QRIS
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _paymentCategory == 'ewallet'
+                              ? primaryColor
+                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                          width: _paymentCategory == 'ewallet' ? 1.5 : 1,
+                        ),
+                      ),
+                      child: ExpansionTile(
+                        initiallyExpanded: _paymentCategory == 'ewallet',
+                        leading: _paymentCategory == 'ewallet' && _selectedEWallet != null
+                            ? _buildPaymentLogo(_selectedEWallet!)
+                            : Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
+                              ),
+                        title: Text(
+                          _paymentCategory == 'ewallet' && _selectedEWallet != null
+                              ? _formatEWalletName(_selectedEWallet!)
+                              : 'E-Wallet / QRIS',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: _paymentCategory == 'ewallet' ? primaryColor : null,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'QRIS Instant, GoPay',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                        children: _eWalletOptions.map((wallet) {
+                          final isWalletActive = _paymentCategory == 'ewallet' && _selectedEWallet == wallet;
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            leading: _buildPaymentLogo(wallet),
+                            title: Text(
+                              _formatEWalletName(wallet),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isWalletActive ? FontWeight.bold : FontWeight.w600,
+                                color: isWalletActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                              ),
+                            ),
+                            trailing: isWalletActive
+                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                _paymentCategory = 'ewallet';
+                                _selectedEWallet = wallet;
+                                _selectedBank = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildModalPaymentItem({
+    required Widget iconWidget,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
           color: isSelected
-              ? Colors.blue.withAlpha(20)
-              : (isDark ? Theme.of(context).cardColor : Colors.white),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey.withAlpha(50),
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.blue : Colors.grey.withAlpha(20),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected ? Colors.white : Colors.grey,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: isSelected ? Colors.blue : null,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  const Icon(Icons.check_circle, color: Colors.blue),
-              ],
-            ),
-            if (isSelected && child != null)
-              Padding(padding: const EdgeInsets.only(top: 16), child: child),
-          ],
+              ? primaryColor
+              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+          width: isSelected ? 1.5 : 1,
         ),
       ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: iconWidget,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? primaryColor : null,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 11.5,
+            color: isDark ? Colors.white38 : Colors.grey[500],
+          ),
+        ),
+        trailing: isSelected
+            ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+            : null,
+      ),
+    );
+  }
+
+  String _getSelectedPaymentLabel() {
+    if (_paymentCategory == 'tunai') {
+      return 'Bayar Tunai';
+    } else if (_paymentCategory == 'bank') {
+      return _selectedBank != null ? _formatBankName(_selectedBank!) : 'Pilih Bank Virtual Account';
+    } else if (_paymentCategory == 'ewallet') {
+      return _selectedEWallet != null ? _formatEWalletName(_selectedEWallet!) : 'Pilih QRIS / E-Wallet';
+    }
+    return 'Pilih Metode Pembayaran';
+  }
+
+  Widget _getSelectedPaymentLeadingWidget() {
+    final primaryColor = Theme.of(context).primaryColor;
+
+    if (_paymentCategory == 'tunai') {
+      return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(Icons.payments_outlined, color: primaryColor, size: 20),
+      );
+    } else if (_paymentCategory == 'bank' && _selectedBank != null) {
+      return _buildPaymentLogo(_selectedBank!, width: 44, height: 26);
+    } else if (_paymentCategory == 'ewallet' && _selectedEWallet != null) {
+      return _buildPaymentLogo(_selectedEWallet!, width: 44, height: 26);
+    }
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: primaryColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(Icons.payment_rounded, color: primaryColor, size: 20),
     );
   }
 
@@ -203,7 +485,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Mohon lengkapi Data Penyewa (Nama, WA, dan Alamat)'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -212,8 +494,8 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     if (_paymentCategory == 'bank' && _selectedBank == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Silakan pilih Bank'),
-          backgroundColor: Colors.red,
+          content: Text('Silakan pilih Bank tujuan transfer'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -222,8 +504,8 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     if (_paymentCategory == 'ewallet' && _selectedEWallet == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Silakan pilih E-Wallet'),
-          backgroundColor: Colors.red,
+          content: Text('Silakan pilih opsi E-Wallet / QRIS'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -248,49 +530,48 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     if (_paymentCategory == 'bank') paymentMethod = _selectedBank ?? 'bank_transfer_bca';
     if (_paymentCategory == 'ewallet') paymentMethod = _selectedEWallet ?? 'qris';
 
-    final now = DateTime.now();
-    final startDateStr = now.toIso8601String().substring(0, 10);
-    final endDateStr = now.add(Duration(days: _durationDays)).toIso8601String().substring(0, 10);
+    final String startDate = DateTime.now().toIso8601String().substring(0, 10);
+    final String endDate = DateTime.now().add(Duration(days: _durationDays)).toIso8601String().substring(0, 10);
 
     Map<String, dynamic> result;
 
-    if (itemType == 'mobil' || cat.contains('mobil')) {
+    if (itemType == 'paket' || cat.contains('paket')) {
+      result = await _rentalService.bookPackage(
+        packageName: widget.item['name'] ?? 'Paket Sewa',
+        itemsDescription: widget.item['description'] ?? '',
+        totalAmount: total.toDouble(),
+        durationDays: _durationDays,
+        startDate: startDate,
+        endDate: endDate,
+        recipientName: _nameController.text,
+        paymentMethod: paymentMethod,
+      );
+    } else if (itemType == 'mobil' || cat.contains('mobil')) {
       result = await _rentalService.bookMobil(
         mobilId: itemId,
-        startDate: startDateStr,
-        endDate: endDateStr,
+        startDate: startDate,
+        endDate: endDate,
         recipientName: _nameController.text,
         deliveryAddress: _addressController.text,
         paymentMethod: paymentMethod,
-        denganSupir: _driverOption == 'supir',
         rentalPurpose: _notesController.text,
+        denganSupir: _driverOption != 'sendiri',
       );
     } else if (itemType == 'fasilitas' || cat.contains('fasilitas')) {
       result = await _rentalService.bookFasilitas(
         fasilitasId: itemId,
-        startDate: startDateStr,
-        endDate: endDateStr,
+        startDate: startDate,
+        endDate: endDate,
+        rentalPurpose: _notesController.text,
         jenisAcara: _eventCategory,
         butuhGudang: _needsAdditionalFacilities,
-        rentalPurpose: _notesController.text,
-      );
-    } else if (itemType == 'paket' || cat.contains('paket')) {
-      result = await _rentalService.bookPackage(
-        packageName: widget.item['name'] ?? 'Paket',
-        itemsDescription: widget.item['description'] ?? 'Penyewaan Paket Alat',
-        totalAmount: total.toDouble(),
-        durationDays: _durationDays,
-        startDate: startDateStr,
-        endDate: endDateStr,
-        recipientName: _nameController.text,
-        paymentMethod: paymentMethod,
       );
     } else {
       result = await _rentalService.bookRentalItem(
         barangId: itemId,
-        quantity: 1, // Default 1 for now
-        startDate: startDateStr,
-        endDate: endDateStr,
+        quantity: 1,
+        startDate: startDate,
+        endDate: endDate,
         recipientName: _nameController.text,
         deliveryAddress: _addressController.text,
         paymentMethod: paymentMethod,
@@ -305,7 +586,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 500),
+          transitionDuration: const Duration(milliseconds: 400),
           pageBuilder: (context, animation, secondaryAnimation) => RentalTicketPage(
             itemName: widget.item['name'] ?? 'Penyewaan',
             renterName: _nameController.text,
@@ -344,6 +625,8 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     final int pricePerDay =
         int.tryParse(widget.item['price']?.toString() ?? '0') ?? 0;
     final String itemType =
@@ -356,155 +639,151 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
       total = 0;
     }
 
-    String pageTitle = 'Pemesanan Alat';
-    String tunaiSubtitle = 'Bayar saat ambil alat';
-
+    String pageTitle = 'Penyewaan Alat';
     if (itemType == 'mobil' || cat.contains('mobil')) {
       pageTitle = 'Penyewaan Kendaraan';
-      tunaiSubtitle = 'Bayar saat serah terima kendaraan';
     }
     if (itemType == 'fasilitas' || cat.contains('fasilitas')) {
       pageTitle = 'Penyewaan Fasilitas';
-      tunaiSubtitle = 'Bayar di kantor pengelola desa';
     }
 
     return Scaffold(
-      backgroundColor: isDark
-          ? Theme.of(context).scaffoldBackgroundColor
-          : const Color(0xFFF5F7FA), // Light greyish blue for premium feel
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           pageTitle,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            fontSize: 18,
+            letterSpacing: 0.3,
           ),
         ),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         children: [
-          // Section: Detail Produk
-          const Text(
-            'Detail Produk',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          // 1. Detail Produk Card
+          _buildSectionHeader('Detail Produk'),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isDark ? Theme.of(context).cardColor : Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(10),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                   blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
-                    color: Colors.grey.withAlpha(20),
+                    color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      widget.item['image'] ?? 'https://via.placeholder.com/150',
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => const Icon(
-                        Icons.inventory_2,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
-                    ),
+                    child: widget.item['image'] != null
+                        ? Image.network(
+                            widget.item['image'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
+                          )
+                        : Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.item['name'] ?? 'Item',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 14.5,
+                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${_currencyFormat.format(pricePerDay)} / Hari',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                          color: primaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Rp $pricePerDay/hari',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Colors.blue,
+                        'Tarif Resmi BUMDes',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? Colors.white38 : Colors.grey[500],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Lama Sewa',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ],
+                  ),
+                ),
+                // Duration Stepper
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      InkWell(
+                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+                        onTap: () {
+                          if (_durationDays > 1) {
+                            setState(() => _durationDays--);
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          child: Icon(Icons.remove_rounded, size: 16),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          '$_durationDays Hr',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey.withAlpha(80),
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    if (_durationDays > 1) {
-                                      setState(() => _durationDays--);
-                                    }
-                                  },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    child: Icon(Icons.remove, size: 16),
-                                  ),
-                                ),
-                                Text(
-                                  '$_durationDays',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    setState(() => _durationDays++);
-                                  },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    child: Icon(Icons.add, size: 16),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        ),
+                      ),
+                      InkWell(
+                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(20)),
+                        onTap: () {
+                          setState(() => _durationDays++);
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          child: Icon(Icons.add_rounded, size: 16),
+                        ),
                       ),
                     ],
                   ),
@@ -512,530 +791,463 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
 
-          if (pageTitle == 'Penyewaan Fasilitas') ...[
-            const Text(
-              'Kategori Acara',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _eventCategory = 'sosial'),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _eventCategory == 'sosial'
-                            ? Colors.blue.withAlpha(20)
-                            : (isDark ? Theme.of(context).cardColor : Colors.white),
-                        border: Border.all(
-                          color: _eventCategory == 'sosial'
-                              ? Colors.blue
-                              : Colors.grey.withAlpha(50),
-                          width: _eventCategory == 'sosial' ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.people,
-                            color: _eventCategory == 'sosial'
-                                ? Colors.blue
-                                : Colors.grey,
-                            size: 28,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Acara Sosial',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _eventCategory == 'sosial'
-                                  ? Colors.blue
-                                  : (isDark ? Colors.white : Colors.black87),
-                              fontSize: 13,
-                            ),
-                          ),
-                          const Text(
-                            '(Gratis)',
-                            style: TextStyle(color: Colors.grey, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _eventCategory = 'pribadi'),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _eventCategory == 'pribadi'
-                            ? Colors.blue.withAlpha(20)
-                            : (isDark ? Theme.of(context).cardColor : Colors.white),
-                        border: Border.all(
-                          color: _eventCategory == 'pribadi'
-                              ? Colors.blue
-                              : Colors.grey.withAlpha(50),
-                          width: _eventCategory == 'pribadi' ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.person,
-                            color: _eventCategory == 'pribadi'
-                                ? Colors.blue
-                                : Colors.grey,
-                            size: 28,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Acara Pribadi',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _eventCategory == 'pribadi'
-                                  ? Colors.blue
-                                  : (isDark ? Colors.white : Colors.black87),
-                              fontSize: 13,
-                            ),
-                          ),
-                          const Text(
-                            '(Berbayar)',
-                            style: TextStyle(color: Colors.grey, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.blue.withAlpha(40) : Colors.blue[50],
-                border: Border.all(color: isDark ? Colors.blue[700]! : Colors.blue[200]!),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                activeColor: isDark ? Colors.blue[400] : Colors.blue[800],
-                title: Text(
-                  'Ya, saya butuh fasilitas tambahan di dalam gudang aula (kursi/speaker)',
-                  style: TextStyle(fontSize: 13, color: isDark ? Colors.blue[200] : Colors.blue[900]),
-                ),
-                value: _needsAdditionalFacilities,
-                onChanged: (val) {
-                  setState(() {
-                    _needsAdditionalFacilities = val ?? false;
-                  });
-                },
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
+          const SizedBox(height: 18),
 
-          if (pageTitle == 'Penyewaan Kendaraan') ...[
-            const Text(
-              'Opsi Pengemudi',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _driverOption = 'sendiri'),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _driverOption == 'sendiri'
-                            ? Colors.blue.withAlpha(20)
-                            : (isDark ? Theme.of(context).cardColor : Colors.white),
-                        border: Border.all(
-                          color: _driverOption == 'sendiri'
-                              ? Colors.blue
-                              : Colors.grey.withAlpha(50),
-                          width: _driverOption == 'sendiri' ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.person,
-                            color: _driverOption == 'sendiri'
-                                ? Colors.blue
-                                : Colors.grey,
-                            size: 28,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Supir Sendiri',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _driverOption == 'sendiri'
-                                  ? Colors.blue
-                                  : (isDark ? Colors.white : Colors.black87),
-                              fontSize: 13,
-                            ),
-                          ),
-                          const Text(
-                            '(Lepas Kunci)',
-                            style: TextStyle(color: Colors.grey, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _driverOption = 'disediakan'),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _driverOption == 'disediakan'
-                            ? Colors.blue.withAlpha(20)
-                            : (isDark ? Theme.of(context).cardColor : Colors.white),
-                        border: Border.all(
-                          color: _driverOption == 'disediakan'
-                              ? Colors.blue
-                              : Colors.grey.withAlpha(50),
-                          width: _driverOption == 'disediakan' ? 2 : 1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.badge,
-                            color: _driverOption == 'disediakan'
-                                ? Colors.blue
-                                : Colors.grey,
-                            size: 28,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Disediakan Supir',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _driverOption == 'disediakan'
-                                  ? Colors.blue
-                                  : (isDark ? Colors.white : Colors.black87),
-                              fontSize: 13,
-                            ),
-                          ),
-                          const Text(
-                            '(Dari Desa)',
-                            style: TextStyle(color: Colors.grey, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // Section: Data Penyewa
-          const Text(
-            'Data Penyewa',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          // 2. Data Penyewa Section
+          _buildSectionHeader('Data Penyewa'),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? Theme.of(context).cardColor : Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(10),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                   blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildCleanTextField(
+                  controller: _nameController,
+                  label: 'Nama Lengkap Penyewa',
+                  prefixIcon: Icons.person_outline_rounded,
+                ),
+                const SizedBox(height: 12),
+                _buildCleanTextField(
+                  controller: _waController,
+                  label: 'Nomor WhatsApp / HP',
+                  hint: '08123456789',
+                  prefixIcon: Icons.phone_android_rounded,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 12),
+                _buildCleanTextField(
+                  controller: _addressController,
+                  label: 'Alamat Pengantaran / Lokasi Acara',
+                  hint: 'Alamat lengkap RT/RW atau nama lokasi',
+                  prefixIcon: Icons.location_on_outlined,
+                  maxLines: 2,
+                ),
+                if (itemType == 'mobil' || cat.contains('mobil')) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Pilihan Pengemudi',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white60 : Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Center(child: Text('Setir Sendiri', style: TextStyle(fontSize: 12))),
+                          selected: _driverOption == 'sendiri',
+                          onSelected: (val) => setState(() => _driverOption = 'sendiri'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Center(child: Text('Dengan Supir', style: TextStyle(fontSize: 12))),
+                          selected: _driverOption != 'sendiri',
+                          onSelected: (val) => setState(() => _driverOption = 'supir'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (itemType == 'fasilitas' || cat.contains('fasilitas')) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Kategori Acara',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white60 : Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Center(child: Text('Sosial (Gratis)', style: TextStyle(fontSize: 12))),
+                          selected: _eventCategory == 'sosial',
+                          onSelected: (val) => setState(() => _eventCategory = 'sosial'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Center(child: Text('Pribadi / Komersil', style: TextStyle(fontSize: 12))),
+                          selected: _eventCategory != 'sosial',
+                          onSelected: (val) => setState(() => _eventCategory = 'pribadi'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 12),
+                _buildCleanTextField(
+                  controller: _notesController,
+                  label: 'Catatan Tambahan (Opsional)',
+                  hint: 'Contoh: Pasang tenda H-1 sebelum acara',
+                  prefixIcon: Icons.edit_note_rounded,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // 3. Metode Pembayaran Card (Compact Tile)
+          _buildSectionHeader('Metode Pembayaran'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: _showPaymentPicker,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      _getSelectedPaymentLeadingWidget(),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getSelectedPaymentLabel(),
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Ketuk untuk memilih metode pembayaran lain',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? Colors.white38 : Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Ubah',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: primaryColor),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // 4. Rincian Pembayaran (Order Summary)
+          _buildSectionHeader('Rincian Pembayaran'),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Column(
               children: [
-                TextField(
-                  controller: _nameController,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: 'Nama Lengkap (Otomatis)',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.withAlpha(20),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
+                _buildSummaryRow(
+                  label: 'Biaya Sewa ($_durationDays Hari)',
+                  value: _currencyFormat.format(total),
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _waController,
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    labelText: 'Nomor WhatsApp / HP',
-                    prefixIcon: const Icon(Icons.phone_android),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.withAlpha(20),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
+                const SizedBox(height: 10),
+                _buildSummaryRow(
+                  label: 'Biaya Layanan & Pemeliharaan',
+                  value: 'Gratis',
+                  isFree: true,
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _addressController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: 'Alamat Pengiriman / Penggunaan',
-                    prefixIcon: const Icon(Icons.location_on_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.withAlpha(20),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(height: 1),
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _notesController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: 'Catatan Tambahan (Opsional)',
-                    prefixIcon: const Icon(Icons.notes),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Pembayaran',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
                     ),
-                    filled: true,
-                    fillColor: Colors.grey.withAlpha(20),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
+                    Text(
+                      _currencyFormat.format(total),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
-
-          // Section: Metode Pembayaran
-          const Text(
-            'Metode Pembayaran',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-
-          _buildPaymentOption(
-            'tunai',
-            'Bayar Tunai',
-            tunaiSubtitle,
-            Icons.money,
-          ),
-          _buildPaymentOption(
-            'bank',
-            'Bank Transfer',
-            'Pembayaran via Virtual Account',
-            Icons.account_balance,
-              child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue.withAlpha(100)),
-                borderRadius: BorderRadius.circular(12),
-                color: isDark ? Theme.of(context).cardColor : Colors.white,
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  hint: const Text(
-                    'Pilih Bank',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  value: _selectedBank,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.blue,
-                  ),
-                  items: _bankOptions
-                      .map(
-                        (String val) => DropdownMenuItem(
-                          value: val,
-                          child: Row(
-                            children: [
-                              _getLogo(val),
-                              const SizedBox(width: 12),
-                              Text(
-                                _formatBankName(val),
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedBank = val),
-                ),
-              ),
-            ),
-          ),
-
-          _buildPaymentOption(
-            'ewallet',
-            'E-Wallet / QRIS',
-            'GoPay, OVO, Dana, LinkAja',
-            Icons.qr_code_scanner,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue.withAlpha(100)),
-                borderRadius: BorderRadius.circular(12),
-                color: isDark ? Theme.of(context).cardColor : Colors.white,
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  hint: const Text(
-                    'Pilih E-Wallet',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  value: _selectedEWallet,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.blue,
-                  ),
-                  items: _eWalletOptions
-                      .map(
-                        (String val) => DropdownMenuItem(
-                          value: val,
-                          child: Row(
-                            children: [
-                              _getLogo(val),
-                              const SizedBox(width: 12),
-                              Text(
-                                _formatEWalletName(val),
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedEWallet = val),
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
         ],
       ),
 
-      // STICKY BOTTOM BAR
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
+      // Bottom Sticky Action Bar
+      bottomSheet: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: isDark ? Theme.of(context).cardColor : Colors.white,
+          color: Theme.of(context).cardColor,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+            ),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(15),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
-              offset: const Offset(0, -5),
+              offset: const Offset(0, -4),
             ),
           ],
         ),
         child: SafeArea(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Total Pembayaran',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Rp $total',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.blue,
+              Expanded(
+                flex: 45,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Total Tagihan',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.white38 : Colors.grey[500],
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitBooking,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _isSubmitting ? Colors.grey : const Color(0xFF1E88E5),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: _isSubmitting ? 0 : 8,
-                  shadowColor: const Color(0xFF1E88E5).withAlpha(100),
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                      )
-                    : const Text(
-                        'Pesan Sekarang',
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _currencyFormat.format(total),
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: primaryColor,
                         ),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                flex: 55,
+                child: ElevatedButton.icon(
+                  onPressed: _isSubmitting ? null : _submitBooking,
+                  icon: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Icon(Icons.arrow_forward_rounded, size: 18),
+                  label: Text(
+                    _isSubmitting ? 'Memproses...' : 'Pesan Sekarang',
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: isDark ? Colors.white70 : const Color(0xFF1E293B),
+      ),
+    );
+  }
+
+  Widget _buildCleanTextField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white60 : Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.grey.shade300,
+            ),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.white24 : Colors.grey[400],
+              ),
+              prefixIcon: Icon(prefixIcon, size: 18, color: primaryColor),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryRow({
+    required String label,
+    required String value,
+    bool isFree = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            color: isDark ? Colors.white54 : Colors.grey[600],
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.bold,
+            color: isFree ? Colors.green : (isDark ? Colors.white : const Color(0xFF1E293B)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _waController.dispose();
+    _notesController.dispose();
+    super.dispose();
   }
 }

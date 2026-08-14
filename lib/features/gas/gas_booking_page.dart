@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
@@ -16,17 +17,19 @@ class GasBookingPage extends StatefulWidget {
 
 class _GasBookingPageState extends State<GasBookingPage> {
   int _quantity = 1;
-  String _deliveryMethod = 'antar';
+  String _deliveryMethod = 'antar'; // 'antar' or 'jemput'
 
-  // Payment Method logic
+  // Payment Method State
   String _paymentCategory = 'tunai'; // 'tunai', 'bank', 'ewallet'
   String? _selectedBank;
   String? _selectedEWallet;
 
   final _addressController = TextEditingController();
   final _nameController = TextEditingController();
+  final _noteController = TextEditingController();
 
   bool _isLoading = false;
+
   final List<String> _bankOptions = [
     'bank_transfer_bca',
     'bank_transfer_bri',
@@ -35,6 +38,12 @@ class _GasBookingPageState extends State<GasBookingPage> {
   ];
 
   final List<String> _eWalletOptions = ['qris', 'gopay'];
+
+  final NumberFormat _currencyFormat = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
@@ -65,8 +74,14 @@ class _GasBookingPageState extends State<GasBookingPage> {
           if (mounted) {
             setState(() {
               _nameController.text = user['name'] ?? '';
-              _addressController.text =
-                  "RT ${user['rt'] ?? '-'} / RW ${user['rw'] ?? '-'}";
+              final address = user['address'] ?? '';
+              final rt = user['rt'] ?? '';
+              final rw = user['rw'] ?? '';
+              if (address.isNotEmpty) {
+                _addressController.text = address;
+              } else if (rt.isNotEmpty || rw.isNotEmpty) {
+                _addressController.text = "RT $rt / RW $rw";
+              }
             });
           }
         }
@@ -127,22 +142,23 @@ class _GasBookingPageState extends State<GasBookingPage> {
       return;
     }
 
-    if (_nameController.text.isEmpty || _addressController.text.isEmpty) {
-      _showError('Mohon lengkapi Nama dan Alamat Anda');
+    if (_nameController.text.isEmpty ||
+        (_deliveryMethod == 'antar' && _addressController.text.isEmpty)) {
+      _showError('Mohon lengkapi Nama dan Alamat Pengantaran');
       return;
     }
 
     if (_paymentCategory == 'bank' && _selectedBank == null) {
-      _showError('Silakan pilih Bank');
+      _showError('Silakan pilih Bank tujuan transfer');
       return;
     }
 
     if (_paymentCategory == 'ewallet' && _selectedEWallet == null) {
-      _showError('Silakan pilih E-Wallet');
+      _showError('Silakan pilih opsi E-Wallet / QRIS');
       return;
     }
 
-    // SIMULASI MASA KRISIS: Cegat pesanan jika belum verifikasi KK
+    // SIMULASI MASA KRISIS: Verifikasi KK
     bool isCrisisMode = true;
     final hasUploadedKK = prefs.getBool('has_uploaded_kk_gas') ?? false;
 
@@ -155,9 +171,8 @@ class _GasBookingPageState extends State<GasBookingPage> {
 
       if (isKkValid == true) {
         await prefs.setBool('has_uploaded_kk_gas', true);
-        // Continue with booking
       } else {
-        return; // Blocked or cancelled
+        return;
       }
     }
 
@@ -169,7 +184,6 @@ class _GasBookingPageState extends State<GasBookingPage> {
         return;
       }
 
-      // Show loading indicator in a dialog to block UI
       if (!mounted) return;
       showDialog(
         context: context,
@@ -184,11 +198,18 @@ class _GasBookingPageState extends State<GasBookingPage> {
         paymentMethodStr = _selectedEWallet ?? '';
       }
 
+      String finalAddress = _addressController.text;
+      if (_deliveryMethod == 'jemput') {
+        finalAddress = 'Ambil Mandiri di Kantor BUMDes';
+      } else if (_noteController.text.isNotEmpty) {
+        finalAddress = "$finalAddress (Catatan: ${_noteController.text})";
+      }
+
       final body = {
         'gas_id': widget.item['id'].toString(),
         'delivery_method': _deliveryMethod,
         'buyer_name': _nameController.text,
-        'buyer_address': _addressController.text,
+        'buyer_address': finalAddress,
         'quantity': _quantity.toString(),
         'payment_method': paymentMethodStr,
       };
@@ -226,36 +247,40 @@ class _GasBookingPageState extends State<GasBookingPage> {
             barrierDismissible: false,
             builder: (ctx) => AlertDialog(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
               ),
               title: const Icon(
-                Icons.check_circle,
+                Icons.check_circle_rounded,
                 color: Colors.green,
-                size: 80,
+                size: 70,
               ),
               content: const Text(
-                'Pesanan Gas Berhasil!\n\nMohon siapkan pembayaran Anda (Tunai).',
+                'Pesanan Gas Berhasil Dibuat!\n\nMohon siapkan pembayaran tunai saat pesanan diterima/diambil.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 14.5, height: 1.4),
               ),
               actions: [
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
-                      Navigator.pop(context); // Pop booking page
+                      Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
+                        horizontal: 36,
                         vertical: 12,
                       ),
                     ),
-                    child: const Text('OK', style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      'Selesai',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],
@@ -266,7 +291,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
         _showError(data['message'] ?? 'Gagal membuat pesanan');
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context); // Close loading dialog if error
+      if (mounted) Navigator.pop(context);
       _showError('Terjadi kesalahan jaringan.');
     }
   }
@@ -276,7 +301,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -308,89 +333,391 @@ class _GasBookingPageState extends State<GasBookingPage> {
     }
   }
 
-  Widget _buildPaymentOption(
-    String value,
-    String title,
-    String subtitle,
-    IconData icon, {
-    Widget? child,
-  }) {
-    bool isSelected = _paymentCategory == value;
-    return GestureDetector(
-      onTap: () => setState(() => _paymentCategory = value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+  Widget _buildPaymentLogo(String key, {double width = 46, double height = 26}) {
+    String? assetPath;
+    switch (key.toLowerCase()) {
+      case 'bank_transfer_bca':
+      case 'bca':
+        assetPath = 'assets/images/banks/bca.png';
+        break;
+      case 'bank_transfer_bri':
+      case 'bri':
+        assetPath = 'assets/images/banks/bri.png';
+        break;
+      case 'bank_transfer_bni':
+      case 'bni':
+        assetPath = 'assets/images/banks/bni.png';
+        break;
+      case 'bank_transfer_mandiri':
+      case 'mandiri':
+        assetPath = 'assets/images/banks/mandiri.png';
+        break;
+      case 'gopay':
+        assetPath = 'assets/images/banks/gopay.png';
+        break;
+    }
+
+    if (assetPath != null) {
+      return Container(
+        width: width,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.blue.withAlpha(20)
-              : Theme.of(context).cardColor,
-          border: Border.all(
-            color: isSelected ? Colors.blue : Theme.of(context).dividerColor,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.grey.shade300, width: 0.8),
         ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.blue : Colors.grey.withAlpha(20),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected ? Colors.white : Colors.grey,
-                    size: 24,
-                  ),
+        child: Image.asset(
+          assetPath,
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) => const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+        ),
+      );
+    }
+
+    // Default icon badge for QRIS or generic
+    return Container(
+      width: width,
+      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey.shade300, width: 0.8),
+      ),
+      child: Center(
+        child: key.contains('qris')
+            ? const Text(
+                'QRIS',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10.5,
+                  letterSpacing: 0.5,
+                  color: Color(0xFFE11D48),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: isSelected ? Colors.blue : null,
+              )
+            : const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+      ),
+    );
+  }
+
+  void _showPaymentPicker() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Sheet Handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Pilih Metode Pembayaran',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Option 1: Bayar Tunai (COD)
+                    _buildModalPaymentItem(
+                      iconWidget: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.payments_outlined, color: primaryColor, size: 20),
+                      ),
+                      title: 'Bayar Tunai (COD)',
+                      subtitle: 'Bayar uang pas saat tabung gas diterima',
+                      isSelected: _paymentCategory == 'tunai',
+                      onTap: () {
+                        setState(() {
+                          _paymentCategory = 'tunai';
+                          _selectedBank = null;
+                          _selectedEWallet = null;
+                        });
+                        Navigator.pop(context);
+                      },
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Option 2: Bank Transfer
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _paymentCategory == 'bank'
+                              ? primaryColor
+                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                          width: _paymentCategory == 'bank' ? 1.5 : 1,
                         ),
                       ),
-                    ],
-                  ),
+                      child: ExpansionTile(
+                        initiallyExpanded: _paymentCategory == 'bank',
+                        leading: _paymentCategory == 'bank' && _selectedBank != null
+                            ? _buildPaymentLogo(_selectedBank!)
+                            : Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.account_balance_outlined, color: primaryColor, size: 20),
+                              ),
+                        title: Text(
+                          _paymentCategory == 'bank' && _selectedBank != null
+                              ? _formatBankName(_selectedBank!)
+                              : 'Transfer Bank (Virtual Account)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: _paymentCategory == 'bank' ? primaryColor : null,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'BCA, BRI, BNI, Mandiri',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                        children: _bankOptions.map((bank) {
+                          final isBankActive = _paymentCategory == 'bank' && _selectedBank == bank;
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            leading: _buildPaymentLogo(bank),
+                            title: Text(
+                              _formatBankName(bank),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isBankActive ? FontWeight.bold : FontWeight.w600,
+                                color: isBankActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                              ),
+                            ),
+                            trailing: isBankActive
+                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                _paymentCategory = 'bank';
+                                _selectedBank = bank;
+                                _selectedEWallet = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Option 3: E-Wallet / QRIS
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _paymentCategory == 'ewallet'
+                              ? primaryColor
+                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                          width: _paymentCategory == 'ewallet' ? 1.5 : 1,
+                        ),
+                      ),
+                      child: ExpansionTile(
+                        initiallyExpanded: _paymentCategory == 'ewallet',
+                        leading: _paymentCategory == 'ewallet' && _selectedEWallet != null
+                            ? _buildPaymentLogo(_selectedEWallet!)
+                            : Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
+                              ),
+                        title: Text(
+                          _paymentCategory == 'ewallet' && _selectedEWallet != null
+                              ? _formatEWalletName(_selectedEWallet!)
+                              : 'E-Wallet / QRIS',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: _paymentCategory == 'ewallet' ? primaryColor : null,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'QRIS Instant, GoPay',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                        children: _eWalletOptions.map((wallet) {
+                          final isWalletActive = _paymentCategory == 'ewallet' && _selectedEWallet == wallet;
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            leading: _buildPaymentLogo(wallet),
+                            title: Text(
+                              _formatEWalletName(wallet),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isWalletActive ? FontWeight.bold : FontWeight.w600,
+                                color: isWalletActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                              ),
+                            ),
+                            trailing: isWalletActive
+                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                _paymentCategory = 'ewallet';
+                                _selectedEWallet = wallet;
+                                _selectedBank = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
                 ),
-                if (isSelected)
-                  const Icon(Icons.check_circle, color: Colors.blue),
-              ],
-            ),
-            if (isSelected && child != null)
-              Padding(padding: const EdgeInsets.only(top: 16), child: child),
-          ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildModalPaymentItem({
+    required Widget iconWidget,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isSelected
+              ? primaryColor
+              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+          width: isSelected ? 1.5 : 1,
         ),
       ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: iconWidget,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? primaryColor : null,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 11.5,
+            color: isDark ? Colors.white38 : Colors.grey[500],
+          ),
+        ),
+        trailing: isSelected
+            ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+            : null,
+      ),
+    );
+  }
+
+  String _getSelectedPaymentLabel() {
+    if (_paymentCategory == 'tunai') {
+      return 'Bayar Tunai (COD)';
+    } else if (_paymentCategory == 'bank') {
+      return _selectedBank != null ? _formatBankName(_selectedBank!) : 'Pilih Bank Virtual Account';
+    } else if (_paymentCategory == 'ewallet') {
+      return _selectedEWallet != null ? _formatEWalletName(_selectedEWallet!) : 'Pilih QRIS / E-Wallet';
+    }
+    return 'Pilih Metode Pembayaran';
+  }
+
+  Widget _getSelectedPaymentLeadingWidget() {
+    final primaryColor = Theme.of(context).primaryColor;
+
+    if (_paymentCategory == 'tunai') {
+      return Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(Icons.payments_outlined, color: primaryColor, size: 20),
+      );
+    } else if (_paymentCategory == 'bank' && _selectedBank != null) {
+      return _buildPaymentLogo(_selectedBank!, width: 44, height: 26);
+    } else if (_paymentCategory == 'ewallet' && _selectedEWallet != null) {
+      return _buildPaymentLogo(_selectedEWallet!, width: 44, height: 26);
+    }
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: primaryColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(Icons.payment_rounded, color: primaryColor, size: 20),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF121212) : const Color(0xFFF5F7FA);
-    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    final textColor = isDark ? Colors.white : Colors.black87;
-    final fieldColor = isDark ? const Color(0xFF2A2A2A) : Colors.grey.withAlpha(20);
+    final primaryColor = Theme.of(context).primaryColor;
 
     final int price = double.tryParse(
       widget.item['harga_satuan']?.toString() ??
@@ -398,271 +725,304 @@ class _GasBookingPageState extends State<GasBookingPage> {
           '0',
     )?.toInt() ?? 0;
     final int total = price * _quantity;
-    final int stock =
-        int.tryParse(widget.item['stok']?.toString() ?? '10') ?? 10;
+    final int stock = int.tryParse(widget.item['stok']?.toString() ?? '10') ?? 10;
 
-    final String imageUrl =
-        widget.item['image_url'] ??
+    final String imageUrl = widget.item['image_url'] ??
         widget.item['image'] ??
-        'https://via.placeholder.com/150';
-    final String itemName =
-        widget.item['jenis_gas'] ?? widget.item['name'] ?? 'Gas LPG';
+        widget.item['foto'] ??
+        'assets/images/F2.png';
+    final String itemName = widget.item['jenis_gas'] ?? widget.item['name'] ?? 'Gas LPG';
 
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: primaryColor)),
+      );
     }
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'Pembelian Gas',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 18,
+            letterSpacing: 0.3,
+          ),
         ),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         children: [
-          // Section: Lokasi BUMDes
-          const Text(
-            'Alamat BUMDes',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
+          // 1. Compact BUMDes Info Strip
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(10),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: primaryColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: primaryColor.withValues(alpha: 0.15),
+              ),
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withAlpha(30),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.storefront, color: Colors.blue),
-                ),
-                const SizedBox(width: 12),
+                Icon(Icons.storefront_rounded, color: primaryColor, size: 18),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Text(
+                    widget.item['region']?['bumdes_name'] ?? 'Pangkalan Gas BUMDes Desa',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12.5,
+                      color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      Icon(Icons.check_circle_rounded, size: 10, color: Colors.green),
+                      SizedBox(width: 4),
                       Text(
-                        widget.item['region']?['bumdes_name'] ??
-                            'BUMDes Desa Anda',
-                        style: const TextStyle(
+                        'Resmi Desa',
+                        style: TextStyle(
+                          color: Colors.green,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 10,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Pusat Distribusi Gas',
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.location_on, color: Colors.red),
               ],
             ),
           ),
-          const SizedBox(height: 24),
 
-          // Section: Pengiriman
-          const Text(
-            'Metode Pengiriman',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _deliveryMethod = 'antar'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: _deliveryMethod == 'antar'
-                          ? Colors.blue.withAlpha(20)
-                          : cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
+          const SizedBox(height: 14),
+
+          // 2. Compact Capsule Delivery Switcher
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _deliveryMethod = 'antar'),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 9),
+                      decoration: BoxDecoration(
                         color: _deliveryMethod == 'antar'
-                            ? Colors.blue
-                            : (isDark ? Colors.grey[800]! : Colors.grey.withAlpha(50)),
-                        width: _deliveryMethod == 'antar' ? 2 : 1,
+                            ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: _deliveryMethod == 'antar'
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : [],
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.local_shipping,
-                          size: 28,
-                          color: _deliveryMethod == 'antar'
-                              ? Colors.blue
-                              : Colors.grey,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Diantar',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.local_shipping_rounded,
+                            size: 16,
                             color: _deliveryMethod == 'antar'
-                                ? Colors.blue
-                                : Colors.grey,
+                                ? primaryColor
+                                : (isDark ? Colors.white54 : Colors.grey[600]),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _deliveryMethod = 'jemput'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: _deliveryMethod == 'jemput'
-                          ? Colors.blue.withAlpha(20)
-                          : cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: _deliveryMethod == 'jemput'
-                            ? Colors.blue
-                            : (isDark ? Colors.grey[800]! : Colors.grey.withAlpha(50)),
-                        width: _deliveryMethod == 'jemput' ? 2 : 1,
+                          const SizedBox(width: 6),
+                          Text(
+                            'Diantar ke Rumah',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: _deliveryMethod == 'antar' ? FontWeight.bold : FontWeight.w600,
+                              color: _deliveryMethod == 'antar'
+                                  ? primaryColor
+                                  : (isDark ? Colors.white54 : Colors.grey[600]),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.store,
-                          size: 28,
-                          color: _deliveryMethod == 'jemput'
-                              ? Colors.blue
-                              : Colors.grey,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Ambil Sendiri',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _deliveryMethod = 'jemput'),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 9),
+                      decoration: BoxDecoration(
+                        color: _deliveryMethod == 'jemput'
+                            ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: _deliveryMethod == 'jemput'
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.storefront_rounded,
+                            size: 16,
                             color: _deliveryMethod == 'jemput'
-                                ? Colors.blue
-                                : Colors.grey,
+                                ? primaryColor
+                                : (isDark ? Colors.white54 : Colors.grey[600]),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          Text(
+                            'Ambil Mandiri',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: _deliveryMethod == 'jemput' ? FontWeight.bold : FontWeight.w600,
+                              color: _deliveryMethod == 'jemput'
+                                  ? primaryColor
+                                  : (isDark ? Colors.white54 : Colors.grey[600]),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
 
-          // Section: Data Pemesan
-          const Text(
-            'Detail Pemesan',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          const SizedBox(height: 18),
+
+          // 3. Detail Pemesan / Alamat Section
+          _buildSectionHeader(_deliveryMethod == 'antar' ? 'Alamat Pengantaran' : 'Data Pemesan'),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cardColor,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(10),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                   blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
+                _buildCleanTextField(
                   controller: _nameController,
-                  style: TextStyle(color: textColor),
-                  decoration: InputDecoration(
-                    labelText: 'Nama Lengkap',
-                    labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: fieldColor,
-                  ),
+                  label: 'Nama Lengkap Pemesan',
+                  prefixIcon: Icons.person_outline_rounded,
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _addressController,
-                  maxLines: 2,
-                  style: TextStyle(color: textColor),
-                  decoration: InputDecoration(
-                    labelText: 'Alamat Lengkap',
-                    labelStyle: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
-                    prefixIcon: const Icon(Icons.location_on_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: fieldColor,
+                if (_deliveryMethod == 'antar') ...[
+                  const SizedBox(height: 12),
+                  _buildCleanTextField(
+                    controller: _addressController,
+                    label: 'Alamat Pengantaran (RT / RW / Jalan)',
+                    prefixIcon: Icons.location_on_outlined,
+                    maxLines: 2,
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  _buildCleanTextField(
+                    controller: _noteController,
+                    label: 'Catatan Pengantaran (Opsional)',
+                    hint: 'Contoh: Rumah pagar hitam samping masjid',
+                    prefixIcon: Icons.edit_note_rounded,
+                  ),
+                ] else ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded, size: 18, color: primaryColor),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Silakan ambil tabung gas di kantor BUMDes pada jam operasional kerja (08.00 - 16.00 WIB).',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? Colors.white70 : const Color(0xFF334155),
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          const SizedBox(height: 24),
 
-          // Section: Detail Produk
-          const Text(
-            'Detail Produk',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          const SizedBox(height: 18),
+
+          // 4. Detail Produk Card
+          _buildSectionHeader('Produk Dipesan'),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: cardColor,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(10),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
                   blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
-                    color: Colors.grey.withAlpha(20),
+                    color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
@@ -670,115 +1030,93 @@ class _GasBookingPageState extends State<GasBookingPage> {
                     child: (imageUrl.startsWith('assets/') || imageUrl.contains('F2.png'))
                         ? Image.asset(
                             'assets/images/F2.png',
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => const Icon(
-                              Icons.propane_tank,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
                           )
                         : Image.network(
                             imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (c, e, s) => const Icon(
-                              Icons.propane_tank,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
                           ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         itemName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 14.5,
+                          color: isDark ? Colors.white : const Color(0xFF1E293B),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
-                        'Rp. $price',
-                        style: const TextStyle(
+                        _currencyFormat.format(price),
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: Colors.blue,
+                          fontSize: 13.5,
+                          color: primaryColor,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withAlpha(30),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'Tersedia',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Stok Tersedia: $stock',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? Colors.white38 : Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Stepper Counter
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      InkWell(
+                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+                        onTap: () {
+                          if (_quantity > 1) {
+                            setState(() => _quantity--);
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          child: Icon(Icons.remove_rounded, size: 16),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text(
+                          '$_quantity',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey.withAlpha(80),
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    if (_quantity > 1) {
-                                      setState(() => _quantity--);
-                                    }
-                                  },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    child: Icon(Icons.remove, size: 16),
-                                  ),
-                                ),
-                                Text(
-                                  '$_quantity',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    if (_quantity < stock) {
-                                      setState(() => _quantity++);
-                                    }
-                                  },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    child: Icon(Icons.add, size: 16),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        ),
+                      ),
+                      InkWell(
+                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(20)),
+                        onTap: () {
+                          if (_quantity < stock) {
+                            setState(() => _quantity++);
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          child: Icon(Icons.add_rounded, size: 16),
+                        ),
                       ),
                     ],
                   ),
@@ -786,160 +1124,228 @@ class _GasBookingPageState extends State<GasBookingPage> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
 
-          // Section: Metode Pembayaran
-          const Text(
-            'Metode Pembayaran',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+          const SizedBox(height: 18),
+
+          // 5. Metode Pembayaran Dropdown / Selector Card
+          _buildSectionHeader('Metode Pembayaran'),
           const SizedBox(height: 8),
-
-          _buildPaymentOption(
-            'tunai',
-            'Bayar Tunai',
-            'Bayar langsung di tempat',
-            Icons.money,
-          ),
-          _buildPaymentOption(
-            'bank',
-            'Bank Transfer',
-            'Pembayaran via Virtual Account',
-            Icons.account_balance,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue.withAlpha(100)),
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white,
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  hint: const Text(
-                    'Pilih Bank',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  value: _selectedBank,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.blue,
-                  ),
-                  items: _bankOptions
-                      .map(
-                        (String val) => DropdownMenuItem(
-                          value: val,
-                          child: Text(
-                            _formatBankName(val),
-                            style: const TextStyle(fontSize: 14),
-                          ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: _showPaymentPicker,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      _getSelectedPaymentLeadingWidget(),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getSelectedPaymentLabel(),
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Ketuk untuk memilih metode lain',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? Colors.white38 : Colors.grey[500],
+                              ),
+                            ),
+                          ],
                         ),
-                      )
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedBank = val),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Ubah',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: primaryColor),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
 
-          _buildPaymentOption(
-            'ewallet',
-            'E-Wallet / QRIS',
-            'GoPay, OVO, Dana, LinkAja',
-            Icons.qr_code_scanner,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue.withAlpha(100)),
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white,
+          const SizedBox(height: 18),
+
+          // 6. Rincian Pembayaran (Order Summary)
+          _buildSectionHeader('Rincian Pembayaran'),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
               ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  hint: const Text(
-                    'Pilih E-Wallet',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  value: _selectedEWallet,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.blue,
-                  ),
-                  items: _eWalletOptions
-                      .map(
-                        (String val) => DropdownMenuItem(
-                          value: val,
-                          child: Text(
-                            _formatEWalletName(val),
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedEWallet = val),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-              ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _buildSummaryRow(
+                  label: 'Harga Gas ($_quantity Tabung)',
+                  value: _currencyFormat.format(total),
+                ),
+                const SizedBox(height: 10),
+                _buildSummaryRow(
+                  label: 'Biaya Pengantaran',
+                  value: 'Gratis',
+                  isFree: true,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(height: 1),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Pembayaran',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    Text(
+                      _currencyFormat.format(total),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-
-          const SizedBox(height: 20),
         ],
       ),
 
-      // STICKY BOTTOM BAR
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
+      // Bottom Sticky Action Bar
+      bottomSheet: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: cardColor,
+          color: Theme.of(context).cardColor,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+            ),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(10),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
-              offset: const Offset(0, -5),
+              offset: const Offset(0, -4),
             ),
           ],
         ),
         child: SafeArea(
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Total Pembayaran',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Rp. $total',
-                    style: const TextStyle(
+              Expanded(
+                flex: 45,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Total Tagihan',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.white38 : Colors.grey[500],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _currencyFormat.format(total),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                flex: 55,
+                child: ElevatedButton.icon(
+                  onPressed: _submitBooking,
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                  label: const Text(
+                    'Konfirmasi Pesanan',
+                    style: TextStyle(
+                      fontSize: 13.5,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.blue,
                     ),
                   ),
-                ],
-              ),
-              ElevatedButton(
-                onPressed: _submitBooking,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 14,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Pesan Sekarang',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],
@@ -947,5 +1353,107 @@ class _GasBookingPageState extends State<GasBookingPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: isDark ? Colors.white70 : const Color(0xFF1E293B),
+      ),
+    );
+  }
+
+  Widget _buildCleanTextField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    required IconData prefixIcon,
+    int maxLines = 1,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white60 : Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.grey.shade300,
+            ),
+          ),
+          child: TextField(
+            controller: controller,
+            maxLines: maxLines,
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.white24 : Colors.grey[400],
+              ),
+              prefixIcon: Icon(prefixIcon, size: 18, color: primaryColor),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryRow({
+    required String label,
+    required String value,
+    bool isFree = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            color: isDark ? Colors.white54 : Colors.grey[600],
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.bold,
+            color: isFree ? Colors.green : (isDark ? Colors.white : const Color(0xFF1E293B)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    _nameController.dispose();
+    _noteController.dispose();
+    super.dispose();
   }
 }

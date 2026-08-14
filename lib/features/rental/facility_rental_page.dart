@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
-import '../../widgets/product_card_widget.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 
 class FacilityRentalPage extends StatefulWidget {
@@ -14,12 +14,17 @@ class FacilityRentalPage extends StatefulWidget {
 
 class _FacilityRentalPageState extends State<FacilityRentalPage>
     with SingleTickerProviderStateMixin {
-  static bool _hasShownSnackbar = false;
   late TabController _tabController;
   List<dynamic> _vehicles = [];
   List<dynamic> _buildings = [];
   bool _isLoading = true;
   final RentalService _rentalService = RentalService();
+
+  final NumberFormat _currencyFormat = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   void initState() {
@@ -29,40 +34,12 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
       vsync: this,
       initialIndex: widget.initialTabIndex,
     );
-    _fetchFacilities();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showTabInfo(widget.initialTabIndex);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
     });
-  }
-
-  void _showTabInfo(int index) {
-    if (!mounted || _hasShownSnackbar) return;
-    _hasShownSnackbar = true;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    String message = index == 0
-        ? 'Fasilitas ambulans untuk medis darurat & siaga event, serta bus operasional desa.'
-        : 'Peminjaman gedung pertemuan balai desa, aula kecamatan, dan lapangan olahraga.';
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              index == 0 ? Icons.airport_shuttle : Icons.account_balance,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-        backgroundColor: Theme.of(context).primaryColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+    _fetchFacilities();
   }
 
   @override
@@ -79,12 +56,11 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
       if (!mounted) return;
 
       if (data.isNotEmpty) {
-        // Safe access in case API doesn't return map or misses fields
         final vehicles = data
-            .where((i) => (i is Map && i['is_vehicle'] == true))
+            .where((i) => (i is Map && (i['is_vehicle'] == true || (i['name'] ?? '').toString().toLowerCase().contains('ambulan') || (i['name'] ?? '').toString().toLowerCase().contains('mobil') || (i['name'] ?? '').toString().toLowerCase().contains('bus'))))
             .toList();
         final buildings = data
-            .where((i) => (i is Map && i['is_vehicle'] != true))
+            .where((i) => !vehicles.contains(i))
             .toList();
 
         setState(() {
@@ -124,6 +100,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Padding(
@@ -142,15 +119,15 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.red[50],
-                            shape: BoxShape.circle,
+                            color: Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
-                            Icons.medical_services_outlined,
+                            Icons.medical_services_rounded,
                             color: Colors.red,
-                            size: 28,
+                            size: 24,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -158,26 +135,27 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Pengajuan Ambulans Desa',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
                                 ),
                               ),
+                              const SizedBox(height: 2),
                               Text(
-                                'Layanan Cepat Siaga 24 Jam & Pengamankan Event',
+                                'Layanan Siaga 24 Jam & Pendampingan Kegiatan',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
+                                  fontSize: 11.5,
+                                  color: isDark ? Colors.white54 : Colors.grey[600],
                                 ),
                               ),
                             ],
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close),
+                          icon: const Icon(Icons.close_rounded, size: 20),
                           onPressed: () => Navigator.pop(ctx),
                         ),
                       ],
@@ -188,39 +166,42 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue[200]!),
+                        border: Border.all(
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                        ),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            Icons.info_outline,
-                            color: Colors.blue[800],
-                            size: 20,
+                            Icons.info_outline_rounded,
+                            color: Theme.of(context).primaryColor,
+                            size: 18,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Ambulans disediakan gratis oleh desa untuk keadaan darurat ke Rumah Sakit atau disiagakan di event/kegiatan desa agar kejadian tidak diinginkan dapat segera ditangani.',
+                              'Ambulans disediakan gratis oleh desa untuk keadaan darurat medis menuju Rumah Sakit atau disiagakan dalam kegiatan resmi desa.',
                               style: TextStyle(
                                 fontSize: 11.5,
-                                color: Colors.blue[950],
-                                height: 1.3,
+                                color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                height: 1.35,
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 16),
 
                     // Pilihan Tujuan Penggunaan
-                    const Text(
-                      'Pilih Jenis Keperluan Ambulans:',
+                    Text(
+                      'Pilih Jenis Keperluan Ambulans',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13,
+                        color: isDark ? Colors.white70 : const Color(0xFF1E293B),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -231,20 +212,19 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                             onTap: () => setModalState(
                               () => selectedPurpose = 'darurat_medis',
                             ),
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: selectedPurpose == 'darurat_medis'
-                                    ? Colors.red[50]
-                                    : Colors.grey[100],
+                                    ? Colors.red.withValues(alpha: 0.08)
+                                    : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: selectedPurpose == 'darurat_medis'
                                       ? Colors.red
-                                      : Colors.grey[300]!,
-                                  width: selectedPurpose == 'darurat_medis'
-                                      ? 2
-                                      : 1,
+                                      : (isDark ? Colors.white12 : Colors.grey.shade300),
+                                  width: selectedPurpose == 'darurat_medis' ? 1.5 : 1,
                                 ),
                               ),
                               child: Column(
@@ -253,8 +233,8 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                                     Icons.local_hospital_rounded,
                                     color: selectedPurpose == 'darurat_medis'
                                         ? Colors.red
-                                        : Colors.grey[600],
-                                    size: 26,
+                                        : Colors.grey[500],
+                                    size: 24,
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
@@ -262,10 +242,10 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12.5,
+                                      fontSize: 12,
                                       color: selectedPurpose == 'darurat_medis'
-                                          ? Colors.red[900]
-                                          : Colors.black87,
+                                          ? Colors.red
+                                          : (isDark ? Colors.white70 : Colors.black87),
                                     ),
                                   ),
                                 ],
@@ -273,26 +253,25 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: GestureDetector(
                             onTap: () => setModalState(
                               () => selectedPurpose = 'siaga_event',
                             ),
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: selectedPurpose == 'siaga_event'
-                                    ? Colors.blue[50]
-                                    : Colors.grey[100],
+                                    ? Theme.of(context).primaryColor.withValues(alpha: 0.08)
+                                    : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: selectedPurpose == 'siaga_event'
-                                      ? Colors.blue
-                                      : Colors.grey[300]!,
-                                  width: selectedPurpose == 'siaga_event'
-                                      ? 2
-                                      : 1,
+                                      ? Theme.of(context).primaryColor
+                                      : (isDark ? Colors.white12 : Colors.grey.shade300),
+                                  width: selectedPurpose == 'siaga_event' ? 1.5 : 1,
                                 ),
                               ),
                               child: Column(
@@ -300,9 +279,9 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                                   Icon(
                                     Icons.health_and_safety_rounded,
                                     color: selectedPurpose == 'siaga_event'
-                                        ? Colors.blue[800]
-                                        : Colors.grey[600],
-                                    size: 26,
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.grey[500],
+                                    size: 24,
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
@@ -310,10 +289,10 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12.5,
+                                      fontSize: 12,
                                       color: selectedPurpose == 'siaga_event'
-                                          ? Colors.blue[900]
-                                          : Colors.black87,
+                                          ? Theme.of(context).primaryColor
+                                          : (isDark ? Colors.white70 : Colors.black87),
                                     ),
                                   ),
                                 ],
@@ -323,86 +302,55 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
                     // Inputs
-                    TextField(
+                    _buildModalTextField(
                       controller: nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Nama Pemohon / Warga',
-                        prefixIcon: const Icon(Icons.person_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
+                      label: 'Nama Pemohon / Warga',
+                      prefixIcon: Icons.person_outline_rounded,
+                      isDark: isDark,
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
+                    const SizedBox(height: 10),
+                    _buildModalTextField(
                       controller: phoneController,
+                      label: 'Nomor Telepon Darurat / WhatsApp',
+                      prefixIcon: Icons.phone_android_rounded,
                       keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: 'Nomor Telepon Darurat / WhatsApp',
-                        prefixIcon: const Icon(Icons.phone_in_talk_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
+                      isDark: isDark,
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
+                    const SizedBox(height: 10),
+                    _buildModalTextField(
                       controller: locationController,
-                      decoration: InputDecoration(
-                        labelText: selectedPurpose == 'darurat_medis'
-                            ? 'Lokasi Jemput & Tujuan Rujukan RS'
-                            : 'Lokasi & Jadwal Pelaksanaan Event',
-                        prefixIcon: const Icon(Icons.add_location_alt_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
+                      label: selectedPurpose == 'darurat_medis'
+                          ? 'Lokasi Penjemputan & Tujuan Rujukan RS'
+                          : 'Lokasi & Jadwal Acara Desa',
+                      prefixIcon: Icons.location_on_outlined,
+                      isDark: isDark,
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
+                    const SizedBox(height: 10),
+                    _buildModalTextField(
                       controller: noteController,
+                      label: selectedPurpose == 'darurat_medis'
+                          ? 'Keterangan Kondisi Pasien (Opsional)'
+                          : 'Keterangan Acara & Estimasi Peserta',
+                      prefixIcon: Icons.edit_note_rounded,
                       maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: selectedPurpose == 'darurat_medis'
-                            ? 'Keterangan Kondisi Pasien (Opsional)'
-                            : 'Jenis Kegiatan & Jumlah Perkiraan Massa',
-                        prefixIcon: const Icon(Icons.notes_rounded),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      isDark: isDark,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     // Action Button
                     SizedBox(
                       width: double.infinity,
-                      height: 52,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          if (nameController.text.isEmpty ||
-                              phoneController.text.isEmpty) {
+                          if (nameController.text.isEmpty || phoneController.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text(
-                                  '⚠️ Nama dan Nomor Telepon wajib diisi!',
-                                ),
-                                backgroundColor: Colors.red,
+                                content: Text('Nama dan Nomor Telepon wajib diisi!'),
+                                backgroundColor: Colors.redAccent,
+                                behavior: SnackBarBehavior.floating,
                               ),
                             );
                             return;
@@ -414,27 +362,24 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                                 children: [
                                   Icon(
                                     selectedPurpose == 'darurat_medis'
-                                        ? Icons.add_alert_rounded
-                                        : Icons.check_circle,
+                                        ? Icons.emergency_rounded
+                                        : Icons.check_circle_rounded,
                                     color: Colors.white,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       selectedPurpose == 'darurat_medis'
-                                          ? '🚨 Permintaan Ambulans Darurat disiarkan ke Supir & Desa! Mohon tunggu telepon balasan.'
-                                          : '📅 Pengajuan Ambulans untuk Siaga Event Desa berhasil diajukan dan dijadwalkan!',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                          ? 'Permintaan Ambulans Darurat telah diteruskan ke petugas desa. Mohon tunggu panggilan balasan.'
+                                          : 'Pengajuan Ambulans Siaga Event berhasil dikirimkan.',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
                                     ),
                                   ),
                                 ],
                               ),
-                              backgroundColor:
-                                  selectedPurpose == 'darurat_medis'
+                              backgroundColor: selectedPurpose == 'darurat_medis'
                                   ? Colors.red[800]
-                                  : Colors.blue[800],
+                                  : Theme.of(context).primaryColor,
                               duration: const Duration(seconds: 4),
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(
@@ -445,27 +390,29 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                         },
                         icon: Icon(
                           selectedPurpose == 'darurat_medis'
-                              ? Icons.campaign
+                              ? Icons.emergency_share_rounded
                               : Icons.send_rounded,
-                          color: Colors.white,
+                          size: 18,
                         ),
                         label: Text(
                           selectedPurpose == 'darurat_medis'
-                              ? 'PANGGIL AMBULANS DARURAT (GRATIS)'
-                              : 'KIRIM PENGAJUAN SIAGA EVENT',
+                              ? 'Panggil Ambulans Darurat (Bebas Biaya)'
+                              : 'Kirim Pengajuan Siaga Event',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 13.5,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: selectedPurpose == 'darurat_medis'
                               ? Colors.red[700]
-                              : Colors.blue[800],
+                              : Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
+                          elevation: 0,
                         ),
                       ),
                     ),
@@ -480,8 +427,45 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
     );
   }
 
+  Widget _buildModalTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+    required bool isDark,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.grey.shade300,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        style: TextStyle(
+          fontSize: 13,
+          color: isDark ? Colors.white : Colors.black87,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            fontSize: 12,
+            color: isDark ? Colors.white38 : Colors.grey[600],
+          ),
+          prefixIcon: Icon(prefixIcon, size: 18, color: Theme.of(context).primaryColor),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        ),
+      ),
+    );
+  }
+
   void _showStandardBookingModal(Map<String, dynamic> item) {
-    // Navigasi ke halaman detail atau buka modal booking cepat
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -500,62 +484,98 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF0F172A)
-          : Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
-          'Layanan Fasilitas Umum Desa',
+          'Fasilitas Umum Desa',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.3,
           ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: primaryColor,
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3.5,
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
-          dividerColor: Colors.transparent,
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.emergency_share_outlined),
-              text: 'Kendaraan (Ambulans & Bus)',
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(25),
             ),
-            Tab(icon: Icon(Icons.domain), text: 'Bangunan & Lapangan'),
-          ],
+            child: TabBar(
+              controller: _tabController,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+              indicator: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              labelColor: isDark ? Colors.white : primaryColor,
+              unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12.5,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12.5,
+              ),
+              tabs: const [
+                Tab(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.airport_shuttle_rounded, size: 15),
+                        SizedBox(width: 5),
+                        Text('Kendaraan & Ambulans'),
+                      ],
+                    ),
+                  ),
+                ),
+                Tab(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.domain_rounded, size: 15),
+                        SizedBox(width: 5),
+                        Text('Gedung & Lapangan'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: _isLoading
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(color: Color(0xFF2563EB)),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Memuat daftar fasilitas umum desa...',
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+              child: CircularProgressIndicator(color: primaryColor),
             )
           : TabBarView(
               controller: _tabController,
+              physics: const BouncingScrollPhysics(),
               children: [
                 _buildFacilityList(_vehicles, isVehicleTab: true),
                 _buildFacilityList(_buildings, isVehicleTab: false),
@@ -565,21 +585,92 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
   }
 
   Widget _buildFacilityList(List<dynamic> items, {required bool isVehicleTab}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    if (items.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _fetchFacilities,
+        color: primaryColor,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          children: [
+            SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    isVehicleTab ? Icons.airport_shuttle_outlined : Icons.domain_disabled_rounded,
+                    size: 60,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    isVehicleTab
+                        ? 'Belum ada kendaraan operasional terdaftar.'
+                        : 'Belum ada fasilitas gedung atau lapangan terdaftar.',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _fetchFacilities,
-      color: const Color(0xFF2563EB),
+      color: primaryColor,
       child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         slivers: [
-          // Daftar Item
+          // 1. Info Banner
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: primaryColor.withValues(alpha: 0.15)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isVehicleTab ? Icons.health_and_safety_rounded : Icons.info_outline_rounded,
+                      color: primaryColor,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        isVehicleTab
+                            ? 'Layanan ambulans darurat medis 24 jam dan kendaraan operasional desa.'
+                            : 'Peminjaman balai pertemuan warga, aula serbaguna, dan sarana olahraga desa.',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : const Color(0xFF334155),
+                          fontSize: 11.5,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 2. Daftar Grid Item
           SliverPadding(
             padding: const EdgeInsets.all(16),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 16.0,
-                mainAxisSpacing: 16.0,
-                childAspectRatio: 0.7,
+                crossAxisSpacing: 12.0,
+                mainAxisSpacing: 12.0,
+                childAspectRatio: 0.65,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) => _buildFacilityCard(items[index], index),
@@ -593,11 +684,13 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
     );
   }
 
-
   Widget _buildFacilityCard(dynamic item, int index) {
-    final bool isAmbulance =
-        item['is_ambulance'] == true ||
-        (item['name'] ?? '').toString().toLowerCase().contains('ambulan');
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    final String itemName = item['name']?.toString() ?? 'Fasilitas Desa';
+    final bool isAmbulance = item['is_ambulance'] == true ||
+        itemName.toLowerCase().contains('ambulan');
     
     double priceVal = 0;
     if (item['price'] != null) {
@@ -608,51 +701,213 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
       }
     }
 
-    String imageUrl = item['image']?.toString() ?? '';
-    bool isAsset = false;
-    if (imageUrl.isEmpty || imageUrl.contains('mobil.png') || imageUrl.contains('F1.png') || imageUrl.contains('fasilitas.png') || imageUrl.contains('F2.png') || imageUrl.startsWith('assets/')) {
-        isAsset = true;
-        if (isAmbulance || imageUrl.contains('mobil')) {
-            imageUrl = 'assets/images/mobil.png';
+    final String rawImageUrl = item['image']?.toString() ?? '';
+    final bool hasValidNetworkImage = rawImageUrl.isNotEmpty &&
+        rawImageUrl.startsWith('http') &&
+        !rawImageUrl.contains('placeholder') &&
+        !rawImageUrl.contains('fasilitas.png');
+
+    final String status = isAmbulance ? 'Siaga 24 Jam' : 'Tersedia';
+    final Color statusColor = isAmbulance ? Colors.red : const Color(0xFF10B981);
+
+    return GestureDetector(
+      onTap: () {
+        if (isAmbulance) {
+          _showAmbulanceEmergencyModal(item as Map<String, dynamic>);
         } else {
-            imageUrl = 'assets/images/fasilitas.png';
+          _showStandardBookingModal(item as Map<String, dynamic>);
         }
-    }
-
-    String status = isAmbulance ? 'Darurat / Siaga' : 'Tersedia';
-    Color statusColor = isAmbulance ? Colors.red : const Color(0xFF10B981);
-
-    return TweenAnimationBuilder(
-      tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 350 + (index * 100)),
-      curve: Curves.easeOutQuart,
-      builder: (context, double value, child) {
-        return Transform.translate(
-          offset: Offset(0, 30 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: ProductCardWidget(
-              title: item['name'] ?? 'Fasilitas Desa',
-              category: item['type_badge']?.toString() ?? (isAmbulance ? 'Kendaraan' : 'Fasilitas'),
-              imageUrl: imageUrl,
-              isAssetImage: isAsset,
-              price: priceVal,
-              priceUnit: priceVal == 0 ? '' : '/Hari',
-              stockLabel: '',
-              stockValue: '',
-              statusText: status,
-              statusColor: statusColor,
-              onTap: () {
-                if (isAmbulance) {
-                  _showAmbulanceEmergencyModal(item as Map<String, dynamic>);
-                } else {
-                  _showStandardBookingModal(item as Map<String, dynamic>);
-                }
-              },
-            ),
-          ),
-        );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Thumbnail Box
+            Expanded(
+              flex: 50,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : (isAmbulance ? Colors.red.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                      child: hasValidNetworkImage
+                          ? Image.network(
+                              rawImageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => _buildFallbackIcon(isAmbulance, primaryColor),
+                            )
+                          : _buildFallbackIcon(isAmbulance, primaryColor),
+                    ),
+                  ),
+                  // Status Badge
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isAmbulance ? Icons.emergency_rounded : Icons.check_rounded,
+                            color: Colors.white,
+                            size: 10,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            status.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Bottom Content Box
+            Expanded(
+              flex: 50,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Category Tag
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: (isAmbulance ? Colors.red : primaryColor).withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            isAmbulance ? 'Kesehatan' : (item['type_badge']?.toString() ?? 'Fasilitas'),
+                            style: TextStyle(
+                              color: isAmbulance ? Colors.red : primaryColor,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          itemName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          priceVal == 0 ? 'Gratis (Layanan Warga)' : '${_currencyFormat.format(priceVal.toInt())} / Hari',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: priceVal == 0 ? const Color(0xFF10B981) : primaryColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+
+                    // Action Pill Button
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      decoration: BoxDecoration(
+                        color: (isAmbulance ? Colors.red : primaryColor).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            isAmbulance ? 'Panggil Ambulans' : 'Ajukan Pinjam',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: isAmbulance ? Colors.red : primaryColor,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            isAmbulance ? Icons.phone_in_talk_rounded : Icons.arrow_forward_rounded,
+                            size: 13,
+                            color: isAmbulance ? Colors.red : primaryColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackIcon(bool isAmbulance, Color primaryColor) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: (isAmbulance ? Colors.red : primaryColor).withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          isAmbulance ? Icons.airport_shuttle_rounded : Icons.domain_rounded,
+          size: 32,
+          color: isAmbulance ? Colors.red : primaryColor,
+        ),
+      ),
     );
   }
 }
