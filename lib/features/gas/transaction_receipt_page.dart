@@ -162,34 +162,28 @@ class GasReceiptPage extends StatelessWidget {
                   Expanded(flex: 2, child: Text(_formatCurrency(total), style: const TextStyle(fontSize: 12))),
                 ],
               ),
-              const Divider(thickness: 1),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Expanded(flex: 5, child: SizedBox()),
-                  Expanded(
-                    flex: 4,
-                    child: Column(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total Pemesanan', style: TextStyle(fontSize: 12)),
-                            Text(_formatCurrency(total), style: const TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                            Text(_formatCurrency(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          ],
-                        ),
+                        const Text('Total Pemesanan', style: TextStyle(fontSize: 12)),
+                        Text(_formatCurrency(total), style: const TextStyle(fontSize: 12)),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                        Text(_formatCurrency(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                      ],
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 32),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AssistantPage extends StatefulWidget {
   const AssistantPage({super.key});
@@ -12,12 +14,32 @@ class AssistantPage extends StatefulWidget {
 
 class _AssistantPageState extends State<AssistantPage> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _messages = [];
 
   bool _isTyping = false;
 
-  Future<void> _sendMessage() async {
-    final text = _messageController.text.trim();
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _sendMessage([String? customText]) async {
+    final text = (customText ?? _messageController.text).trim();
     if (text.isEmpty) return;
 
     setState(() {
@@ -27,18 +49,22 @@ class _AssistantPageState extends State<AssistantPage> {
         'time':
             '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
       });
-      _messageController.clear();
+      if (customText == null) {
+        _messageController.clear();
+      }
       _isTyping = true;
     });
+
+    _scrollToBottom();
 
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
-      // Siapkan history untuk context
+      // Siapkan history untuk context percakapan
       List<Map<String, String>> history = _messages
           .map((m) => {
-                'role': m['isUser'] ? 'user' : 'model',
+                'role': (m['isUser'] as bool) ? 'user' : 'model',
                 'text': m['text'].toString(),
               })
           .toList();
@@ -100,75 +126,228 @@ class _AssistantPageState extends State<AssistantPage> {
         });
       });
     }
+
+    _scrollToBottom();
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Latar belakang abu terang
+      backgroundColor: isDark ? AppTheme.bgDark : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Asisten Cerdas'),
+        title: Text(
+          'Asisten Cerdas',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: isDark ? AppTheme.textLight : AppTheme.textDark,
+          ),
+        ),
         centerTitle: true,
-        elevation: 1,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        elevation: 0,
+        backgroundColor: isDark ? AppTheme.cardDark : Colors.white,
+        foregroundColor: isDark ? AppTheme.textLight : AppTheme.textDark,
+        iconTheme: IconThemeData(
+          color: isDark ? AppTheme.textLight : AppTheme.textDark,
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.05),
+            height: 1,
+          ),
+        ),
       ),
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                return _buildMessageBubble(msg);
-              },
-            ),
+            child: _messages.isEmpty
+                ? _buildEmptyState(isDark)
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      return _buildMessageBubble(msg, isDark);
+                    },
+                  ),
           ),
-          if (_isTyping)
-            Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 8),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 12,
-                    backgroundImage: AssetImage('logodomain.png'),
-                    backgroundColor: Colors.transparent,
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 5,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Text('Mengetik...', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
-                  ),
-                ],
-              ),
-            ),
-          _buildMessageInput(),
+          if (_isTyping) _buildTypingIndicator(isDark),
+          _buildMessageInput(isDark),
         ],
       ),
     );
   }
 
-  Widget _buildMessageBubble(Map<String, dynamic> msg) {
+  Widget _buildEmptyState(bool isDark) {
+    final List<String> suggestions = [
+      'Bagaimana cara sewa tenda atau alat berat?',
+      'Cara pembelian gas LPG subsidi?',
+      'Bagaimana cara membuat laporan warga?',
+      'Siapa Bupati Bengkalis saat ini?',
+    ];
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: (isDark ? AppTheme.primaryDark : AppTheme.primaryLight)
+                    .withValues(alpha: 0.12),
+              ),
+              child: const CircleAvatar(
+                radius: 36,
+                backgroundImage: AssetImage('logodomain.png'),
+                backgroundColor: Colors.transparent,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'SiladesBeng Assistant',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppTheme.textLight : AppTheme.textDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tanyakan informasi seputar layanan desa, sewa alat, gas LPG, atau laporan keluhan di Bengkalis.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                height: 1.4,
+                color: isDark ? AppTheme.textGrayDark : AppTheme.textGrayLight,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Saran Pertanyaan:',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppTheme.textGrayDark : AppTheme.textGrayLight,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Column(
+              children: suggestions.map((text) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: InkWell(
+                    onTap: () => _sendMessage(text),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.cardDark : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.06),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: 16,
+                            color: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              text,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: isDark ? AppTheme.textLight : AppTheme.textDark,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 12,
+                            color: isDark ? AppTheme.textGrayDark : Colors.black26,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 8),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 12,
+            backgroundImage: AssetImage('logodomain.png'),
+            backgroundColor: Colors.transparent,
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? AppTheme.cardDark : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.05),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              'Mengetik...',
+              style: GoogleFonts.inter(
+                color: isDark ? AppTheme.textGrayDark : Colors.grey,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(Map<String, dynamic> msg, bool isDark) {
     final isUser = msg['isUser'] as bool;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment: isUser
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
@@ -183,39 +362,51 @@ class _AssistantPageState extends State<AssistantPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isUser ? Theme.of(context).primaryColor : Colors.white,
+                color: isUser
+                    ? (isDark ? AppTheme.primaryDark : AppTheme.primaryLight)
+                    : (isDark ? AppTheme.cardDark : Colors.white),
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20),
-                  bottomLeft: Radius.circular(isUser ? 20 : 0),
-                  bottomRight: Radius.circular(isUser ? 0 : 20),
+                  topLeft: const Radius.circular(18),
+                  topRight: const Radius.circular(18),
+                  bottomLeft: Radius.circular(isUser ? 18 : 2),
+                  bottomRight: Radius.circular(isUser ? 2 : 18),
                 ),
+                border: isUser
+                    ? null
+                    : Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : Colors.black.withValues(alpha: 0.05),
+                      ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(10),
-                    blurRadius: 5,
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Column(
-                crossAxisAlignment: isUser
-                    ? CrossAxisAlignment.end
-                    : CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   Text(
                     msg['text'],
-                    style: TextStyle(
-                      color: isUser ? Colors.white : Colors.black87,
+                    style: GoogleFonts.inter(
+                      color: isUser
+                          ? Colors.white
+                          : (isDark ? AppTheme.textLight : AppTheme.textDark),
                       fontSize: 14,
-                      height: 1.4,
+                      height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
                   Text(
                     msg['time'],
-                    style: TextStyle(
-                      color: isUser ? Colors.white70 : Colors.black45,
+                    style: GoogleFonts.inter(
+                      color: isUser
+                          ? Colors.white70
+                          : (isDark ? AppTheme.textGrayDark : AppTheme.textGrayLight),
                       fontSize: 10,
                     ),
                   ),
@@ -223,23 +414,30 @@ class _AssistantPageState extends State<AssistantPage> {
               ),
             ),
           ),
-          if (isUser) const SizedBox(width: 32),
-          if (!isUser) const SizedBox(width: 32),
+          if (isUser) const SizedBox(width: 24),
+          if (!isUser) const SizedBox(width: 24),
         ],
       ),
     );
   }
 
-  Widget _buildMessageInput() {
+  Widget _buildMessageInput(bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppTheme.cardDark : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.05),
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
-            offset: const Offset(0, -5),
+            offset: const Offset(0, -3),
           ),
         ],
       ),
@@ -249,34 +447,51 @@ class _AssistantPageState extends State<AssistantPage> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(25),
+                  color: isDark ? AppTheme.bgDark : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                  ),
                 ),
                 child: TextField(
                   controller: _messageController,
-                  decoration: const InputDecoration(
+                  style: GoogleFonts.inter(
+                    color: isDark ? AppTheme.textLight : AppTheme.textDark,
+                    fontSize: 14,
+                  ),
+                  cursorColor: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
+                  decoration: InputDecoration(
                     hintText: 'Ketik pesan Anda...',
-                    hintStyle: TextStyle(color: Colors.black45),
+                    hintStyle: GoogleFonts.inter(
+                      color: isDark ? AppTheme.textGrayDark : Colors.black45,
+                      fontSize: 14,
+                    ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 14,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
                     ),
                   ),
                   onSubmitted: (_) => _sendMessage(),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             GestureDetector(
-              onTap: _sendMessage,
+              onTap: () => _sendMessage(),
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
+                  color: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.send, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.send_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ],

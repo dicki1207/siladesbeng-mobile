@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/services/mutasi_service.dart';
 
@@ -18,22 +19,16 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
   // Form State
   final _formKey = GlobalKey<FormState>();
-  String _tipePermohonan =
-      'Pindah Keluar (Akun Saya)'; // or 'Tarik Warga / Lansia'
-  final _nameController = TextEditingController(
-    text: 'Bagus Prakoso (Akun Saya)',
-  );
-  final _nikController = TextEditingController(text: '1403010101900001');
-  final _kkController = TextEditingController(text: '1403010101900055');
+  String _tipePermohonan = 'Pindah Keluar (Akun Saya)';
+  final _nameController = TextEditingController();
+  final _nikController = TextEditingController();
+  final _kkController = TextEditingController();
   final _reasonController = TextEditingController();
-  final _addressController = TextEditingController(
-    text: 'Lingkungan RT 02 / RW 01',
-  );
+  final _addressController = TextEditingController();
 
   String _selectedDesaAsal = 'Desa Sila-DesBeng (Desa Kita)';
   String _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Mandau)';
   String _selectedPemohonStatus = 'Mandiri (Diri Sendiri)';
-  bool _hasAttachedDoc = false;
 
   final List<String> _desaList = [
     'Desa Sila-DesBeng (Desa Kita)',
@@ -54,12 +49,14 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     'Admin RT/RW (Mewakili Warga)',
   ];
 
+  String _selectedReasonCategory = 'Pindah Rumah / Tempat Tinggal';
   final List<String> _reasonSuggestions = [
-    'Pindah Rumah / Kontrakan Baru',
-    'Mengikuti Suami/Istri & Keluarga',
-    'Perawatan Orang Tua / Lansia di Sini',
-    'Penugasan Kerja / Dinas Luar Daerah',
-    'Pendidikan / Sekolah / Usaha',
+    'Pindah Rumah / Tempat Tinggal',
+    'Mengikuti Keluarga / Pasangan',
+    'Pekerjaan / Dinas Luar Daerah',
+    'Pendidikan / Sekolah',
+    'Perawatan Keluarga / Lansia',
+    'Lainnya (Tulis Manual)',
   ];
 
   List<Map<String, dynamic>> _mutationList = [];
@@ -68,7 +65,27 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadUserData();
     _loadMutations();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('profile_name') ?? 'Warga Sila-DesBeng';
+    final nik = prefs.getString('profile_nik') ?? '1403010101900001';
+    final address = prefs.getString('profile_address') ??
+        'Lingkungan RT 01 / RW 02, Desa Bengkalis';
+
+    if (mounted) {
+      setState(() {
+        if (_tipePermohonan == 'Pindah Keluar (Akun Saya)') {
+          _nameController.text = name;
+          _nikController.text = nik;
+          _kkController.text = '1403010101900055';
+          _addressController.text = address;
+        }
+      });
+    }
   }
 
   Future<void> _loadMutations() async {
@@ -87,25 +104,25 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
         if (status == 'completed') {
           tabType = 'Riwayat';
-          statusTitle = 'Mutasi Selesai (Handshake Sukses!)';
-          badgeCol = Colors.green[700]!;
-          bgCol = Colors.green.withAlpha(25);
+          statusTitle = 'Mutasi Selesai (Handshake Sukses)';
+          badgeCol = const Color(0xFF10B981);
+          bgCol = const Color(0xFF10B981).withAlpha(25);
           isLocked = false;
-          lockStatus = 'Gembok Terbuka • NIK Resmi Aktif';
+          lockStatus = 'Gembok Terbuka • NIK Resmi Aktif di Desa Tujuan';
         } else if (tipe == 'keluar') {
           tabType = 'Keluar';
           statusTitle = 'Menunggu Pelepasan (Keluar)';
-          badgeCol = Colors.amber[800]!;
-          bgCol = Colors.amber.withAlpha(25);
+          badgeCol = const Color(0xFF2FA2F1);
+          bgCol = const Color(0xFF2FA2F1).withAlpha(25);
           isLocked = true;
-          lockStatus = 'Gembok NIK Terkunci • Menunggu persetujuan';
+          lockStatus = 'Gembok NIK Terkunci • Menunggu persetujuan Admin Desa Asal';
         } else {
           tabType = 'Masuk';
           statusTitle = 'Menunggu Persetujuan Desa Lama';
-          badgeCol = Colors.blue[700]!;
-          bgCol = Colors.blue.withAlpha(25);
+          badgeCol = const Color(0xFF6366F1);
+          bgCol = const Color(0xFF6366F1).withAlpha(25);
           isLocked = true;
-          lockStatus = 'Menunggu Admin Desa Asal membuka Kunci Gembok NIK';
+          lockStatus = 'Menunggu Admin Desa Asal membuka kunci pelepasan NIK';
         }
 
         return {
@@ -143,9 +160,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     setState(() {
       _tipePermohonan = val;
       if (_tipePermohonan == 'Pindah Keluar (Akun Saya)') {
-        _nameController.text = 'Bagus Prakoso (Akun Saya)';
-        _nikController.text = '1403010101900001';
-        _kkController.text = '1403010101900055';
+        _loadUserData();
         _selectedDesaAsal = 'Desa Sila-DesBeng (Desa Kita)';
         _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Mandau)';
         _selectedPemohonStatus = 'Mandiri (Diri Sendiri)';
@@ -153,6 +168,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
         _nameController.text = '';
         _nikController.text = '';
         _kkController.text = '';
+        _addressController.text = '';
         _selectedDesaAsal = 'Desa Makmur Jaya (Kec. Bantan)';
         _selectedDesaTujuan = 'Desa Sila-DesBeng (Desa Kita)';
         _selectedPemohonStatus = 'Tarik Data Orang Tua / Lansia';
@@ -165,8 +181,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     if (_reasonController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Alasan pemindahan domisili wajib diisi!'),
-          backgroundColor: Colors.red,
+          content: Text('Alasan pemindahan domisili wajib diisi'),
+          backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -194,8 +210,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     if (response['status'] == 'success') {
       _reasonController.clear();
-      _hasAttachedDoc = false;
-      _tabController.index = 0;
+      _tabController.index = 1; // Pindah ke tab status
       await _loadMutations();
 
       if (!mounted) return;
@@ -204,13 +219,13 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
         barrierDismissible: false,
         builder: (context) => AnimatedSuccessDialog(
           message: isKeluar
-              ? 'Pengajuan Pindah Keluar berhasil dikirim!'
-              : 'Permohonan Tarik Warga (Handshake) berhasil diposting!',
+              ? 'Pengajuan Pindah Keluar berhasil dikirim'
+              : 'Permohonan Tarik Warga (Handshake) berhasil dikirim',
           isLogout: false,
         ),
       );
 
-      await Future.delayed(const Duration(seconds: 4));
+      await Future.delayed(const Duration(seconds: 2));
       if (mounted && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
@@ -218,7 +233,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(response['message'] ?? 'Gagal mengirim pengajuan'),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.redAccent,
         ),
       );
     }
@@ -235,13 +250,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange),
-              SizedBox(width: 8),
-              Text('Batalkan Mutasi?'),
-            ],
-          ),
+          title: const Text('Batalkan Pengajuan?'),
           content: Text(
             'Apakah Anda ingin membatalkan permohonan pindah domisili untuk NIK: ${item['nik']}?',
           ),
@@ -252,7 +261,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
               ),
               onPressed: () async {
@@ -267,8 +276,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('❌ Permohonan pindah berhasil dibatalkan.'),
-                    backgroundColor: Colors.red,
+                    content: Text('Permohonan pindah berhasil dibatalkan'),
+                    backgroundColor: Colors.redAccent,
                   ),
                 );
               },
@@ -280,18 +289,10 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     } else if (type == 'Masuk') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.notifications_active, color: Colors.amber),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '🔔 Pengingat Handshake dikirim ke Admin ${item['desaAsal']} untuk memuat persetujuan!',
-                ),
-              ),
-            ],
+          content: Text(
+            'Pengingat Handshake telah dikirim ke Admin ${item['desaAsal']}',
           ),
-          backgroundColor: Colors.blue[900],
+          backgroundColor: Theme.of(context).primaryColor,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -299,9 +300,9 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            '📄 Mengunduh Surat Bukti Mutasi Domisili & KK Sementara...',
+            'Mengunduh Surat Bukti Mutasi Domisili & Berkas...',
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: Color(0xFF10B981),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -310,38 +311,49 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
-      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : Colors.grey[100],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
-          'Mutasi Penduduk (Handshake)',
+          'Mutasi Domisili (Handshake)',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
             fontSize: 18,
           ),
         ),
-        backgroundColor: Colors.blue[900],
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         centerTitle: true,
-        elevation: 2,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.amber,
-          indicatorWeight: 4,
-          tabs: const [
-            Tab(
-              icon: Icon(Icons.swap_horizontal_circle),
-              text: 'Status & Riwayat Mutasi',
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            color: primaryColor,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13.5,
+              ),
+              tabs: const [
+                Tab(
+                  icon: Icon(Icons.edit_note_rounded, size: 20),
+                  text: 'Ajukan Mutasi',
+                ),
+                Tab(
+                  icon: Icon(Icons.sync_alt_rounded, size: 20),
+                  text: 'Status & Riwayat',
+                ),
+              ],
             ),
-            Tab(
-              icon: Icon(Icons.person_add_alt_1),
-              text: '+ Tarik / Ajukan Pindah',
-            ),
-          ],
+          ),
         ),
       ),
       body: _isLoading
@@ -349,13 +361,13 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(color: Colors.blue),
+                  CircularProgressIndicator(color: primaryColor),
                   const SizedBox(height: 16),
                   Text(
-                    'Menyiapkan koneksi Handshake antar Desa...',
+                    'Memproses data mutasi kependudukan...',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: Colors.blue[900],
+                      color: primaryColor,
                     ),
                   ),
                 ],
@@ -363,12 +375,596 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
             )
           : TabBarView(
               controller: _tabController,
-              children: [_buildStatusListTab(), _buildCreationFormTab()],
+              children: [
+                _buildCreationFormTab(),
+                _buildStatusListTab(),
+              ],
             ),
     );
   }
 
+  Widget _buildCreationFormTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final bool isAkunSaya = _tipePermohonan == 'Pindah Keluar (Akun Saya)';
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Jenis Permohonan Selector
+            _buildSectionTitle('1. Pilih Jenis Permohonan'),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSegmentedTypeCard(
+                    title: 'Pindah Keluar',
+                    subtitle: 'Akun Saya',
+                    icon: Icons.logout_rounded,
+                    isSelected: isAkunSaya,
+                    onTap: () => _onTipeChanged('Pindah Keluar (Akun Saya)'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSegmentedTypeCard(
+                    title: 'Tarik Warga',
+                    subtitle: 'Lansia / Keluarga',
+                    icon: Icons.group_add_rounded,
+                    isSelected: !isAkunSaya,
+                    onTap: () => _onTipeChanged('Tarik Warga / Lansia'),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // 2. Data Pemohon Section
+            _buildSectionTitle('2. Identitas Warga yang Dimutasi'),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white12
+                      : Colors.grey.withAlpha(35),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(isDark ? 30 : 6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isAkunSaya) ...[
+                    // Tampilan Data Terkunci Resmi untuk Akun Sendiri
+                    Row(
+                      children: [
+                        Icon(Icons.verified_user_rounded,
+                            color: primaryColor, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Data Terverifikasi dari Akun Anda',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _buildReadOnlyField(
+                      label: 'Nama Lengkap',
+                      value: _nameController.text,
+                      icon: Icons.person_outline_rounded,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildReadOnlyField(
+                      label: 'Nomor Induk Kependudukan (NIK)',
+                      value: _nikController.text,
+                      icon: Icons.badge_outlined,
+                      isMonospace: true,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildReadOnlyField(
+                      label: 'Alamat Saat Ini',
+                      value: _addressController.text,
+                      icon: Icons.home_outlined,
+                    ),
+                  ] else ...[
+                    // Form Isian untuk Tarik Warga / Lansia
+                    _buildFormTextField(
+                      controller: _nameController,
+                      label: 'Nama Lengkap Warga yang Ditarik',
+                      hint: 'Contoh: Ahmad Fadilah',
+                      icon: Icons.person_outline_rounded,
+                      validator: (val) => (val == null || val.trim().isEmpty)
+                          ? 'Nama wajib diisi'
+                          : null,
+                    ),
+                    const SizedBox(height: 14),
+                    _buildFormTextField(
+                      controller: _nikController,
+                      label: 'NIK Warga (16 Digit)',
+                      hint: '1403xxxxxxxxxxxx',
+                      icon: Icons.badge_outlined,
+                      keyboardType: TextInputType.number,
+                      validator: (val) => (val == null || val.trim().length < 16)
+                          ? 'NIK harus 16 digit angka'
+                          : null,
+                    ),
+                    const SizedBox(height: 14),
+                    _buildDropdownField(
+                      label: 'Status / Hubungan dengan Pemohon',
+                      value: _selectedPemohonStatus,
+                      items: _statusPemohonList,
+                      icon: Icons.family_restroom_rounded,
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _selectedPemohonStatus = val);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    _buildFormTextField(
+                      controller: _addressController,
+                      label: 'Alamat Domisili Asal',
+                      hint: 'RT/RW, Dusun, atau Jalan',
+                      icon: Icons.home_outlined,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 3. Arah Perpindahan Section
+            _buildSectionTitle('3. Arah Perpindahan Domisili'),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white12
+                      : Colors.grey.withAlpha(35),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(isDark ? 30 : 6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildDropdownField(
+                    label: 'Desa Asal (Lama)',
+                    value: _selectedDesaAsal,
+                    items: _desaList,
+                    icon: Icons.outbox_rounded,
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedDesaAsal = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withAlpha(20),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.arrow_downward_rounded,
+                          color: primaryColor,
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildDropdownField(
+                    label: 'Desa Tujuan (Baru)',
+                    value: _selectedDesaTujuan,
+                    items: _desaList,
+                    icon: Icons.inbox_rounded,
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedDesaTujuan = val);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 4. Alasan Mutasi Section
+            _buildSectionTitle('4. Alasan Pemindahan Domisili'),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white12
+                      : Colors.grey.withAlpha(35),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(isDark ? 30 : 6),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDropdownField(
+                    label: 'Pilih Kategori Alasan',
+                    value: _selectedReasonCategory,
+                    items: _reasonSuggestions,
+                    icon: Icons.category_outlined,
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedReasonCategory = val;
+                          if (val != 'Lainnya (Tulis Manual)') {
+                            _reasonController.text = val;
+                          } else {
+                            _reasonController.clear();
+                          }
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildFormTextField(
+                    controller: _reasonController,
+                    label: 'Keterangan Alasan Lengkap',
+                    hint: 'Tuliskan rincian atau keterangan alasan pemindahan...',
+                    icon: Icons.edit_note_rounded,
+                    maxLines: 2,
+                    validator: (val) => (val == null || val.trim().isEmpty)
+                        ? 'Alasan mutasi wajib diisi'
+                        : null,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: _handleSubmitMutation,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                ),
+                icon: const Icon(Icons.send_rounded, size: 20),
+                label: const Text(
+                  'Kirim Pengajuan Mutasi',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            letterSpacing: 0.2,
+          ),
+    );
+  }
+
+  Widget _buildSegmentedTypeCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? primaryColor.withAlpha(isDark ? 40 : 20)
+                : Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? primaryColor
+                  : (isDark ? Colors.white12 : Colors.grey.withAlpha(40)),
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: [
+              if (isSelected)
+                BoxShadow(
+                  color: primaryColor.withAlpha(25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? primaryColor
+                      : (isDark ? Colors.white10 : Colors.grey[200]),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? Colors.white70 : Colors.grey[700]),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13.5,
+                  color: isSelected
+                      ? primaryColor
+                      : (isDark ? Colors.white : Colors.black87),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? Colors.white60 : Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyField({
+    required String label,
+    required String value,
+    required IconData icon,
+    bool isMonospace = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withAlpha(8) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey[200]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[500]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? Colors.white54 : Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value.isNotEmpty ? value : '-',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: isMonospace ? 'monospace' : null,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.lock_outline_rounded, size: 16, color: Colors.grey[400]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: TextStyle(
+        fontSize: 13,
+        color: isDark ? Colors.white : Colors.black87,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, size: 20),
+        filled: true,
+        fillColor:
+            isDark ? Colors.white.withAlpha(8) : const Color(0xFFF8FAFC),
+        labelStyle: TextStyle(
+          fontSize: 12,
+          color: isDark ? Colors.white60 : Colors.grey[600],
+        ),
+        hintStyle: TextStyle(
+          fontSize: 12,
+          color: isDark ? Colors.white30 : Colors.grey[400],
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? Colors.white10 : Colors.grey[300]!,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? Colors.white10 : Colors.grey[300]!,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required IconData icon,
+    required void Function(String?) onChanged,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return DropdownButtonFormField<String>(
+      initialValue: items.contains(value) ? value : items.first,
+      items: items.map((e) {
+        return DropdownMenuItem<String>(
+          value: e,
+          child: Text(
+            e,
+            style: TextStyle(
+              fontSize: 12.5,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: onChanged,
+      isExpanded: true,
+      icon: Icon(Icons.arrow_drop_down_rounded, color: Colors.grey[600]),
+      dropdownColor: Theme.of(context).cardColor,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        filled: true,
+        fillColor:
+            isDark ? Colors.white.withAlpha(8) : const Color(0xFFF8FAFC),
+        labelStyle: TextStyle(
+          fontSize: 12,
+          color: isDark ? Colors.white60 : Colors.grey[600],
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? Colors.white10 : Colors.grey[300]!,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? Colors.white10 : Colors.grey[300]!,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatusListTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     List<Map<String, dynamic>> filteredList = _mutationList;
     if (_selectedFilter != 'Semua') {
       filteredList = _mutationList
@@ -376,69 +972,37 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
           .toList();
     }
 
-    final int cKeluar = _mutationList
-        .where((e) => e['tabType'] == 'Keluar')
-        .length;
-    final int cMasuk = _mutationList
-        .where((e) => e['tabType'] == 'Masuk')
-        .length;
-    final int cRiwayat = _mutationList
-        .where((e) => e['tabType'] == 'Riwayat')
-        .length;
+    final int cKeluar =
+        _mutationList.where((e) => e['tabType'] == 'Keluar').length;
+    final int cMasuk =
+        _mutationList.where((e) => e['tabType'] == 'Masuk').length;
+    final int cRiwayat =
+        _mutationList.where((e) => e['tabType'] == 'Riwayat').length;
 
     return Column(
       children: [
-        // Blue Info Header & Filter Chips
+        // Filter Chips Bar
         Container(
-          color: Colors.blue[900],
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(25),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withAlpha(50)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: Colors.amber,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Ini adalah daftar pengajuan mutasi domisili Anda atau warga yang ditarik antar Desa. Kepala Desa asal memegang "Kunci Gembok" NIK.',
-                        style: TextStyle(
-                          color: Colors.white.withAlpha(240),
-                          fontSize: 11.5,
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            border: Border(
+              bottom: BorderSide(
+                color: isDark ? Colors.white10 : Colors.grey.withAlpha(30),
               ),
-              const SizedBox(height: 14),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildFilterChip(
-                      'Semua (${_mutationList.length})',
-                      'Semua',
-                    ),
-                    _buildFilterChip('Menunggu Pelepasan ($cKeluar)', 'Keluar'),
-                    _buildFilterChip('Menunggu Persetujuan ($cMasuk)', 'Masuk'),
-                    _buildFilterChip('Riwayat Mutasi ($cRiwayat)', 'Riwayat'),
-                  ],
-                ),
-              ),
-            ],
+            ),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _buildFilterChip('Semua (${_mutationList.length})', 'Semua'),
+                _buildFilterChip('Pelepasan ($cKeluar)', 'Keluar'),
+                _buildFilterChip('Persetujuan ($cMasuk)', 'Masuk'),
+                _buildFilterChip('Selesai ($cRiwayat)', 'Riwayat'),
+              ],
+            ),
           ),
         ),
 
@@ -446,55 +1010,103 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
         Expanded(
           child: filteredList.isEmpty
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.folder_off_outlined,
-                        size: 70,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Tidak ada data pengajuan pada tab ini.',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withAlpha(20),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.history_toggle_off_rounded,
+                            size: 48,
+                            color: primaryColor,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'Belum Ada Pengajuan Mutasi',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Riwayat pemindahan domisili dan tarik warga Anda akan tercatat secara resmi di sini.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.white60 : Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            _tabController.animateTo(0);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: primaryColor,
+                            side: BorderSide(color: primaryColor),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: const Text('Buat Pengajuan Baru'),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : ListView.builder(
+                  physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   itemCount: filteredList.length,
-                  itemBuilder: (context, idx) {
-                    final item = filteredList[idx];
-                    final realIdx = _mutationList.indexOf(item);
-                    final bool isLocked = item['isLocked'] as bool;
-                    final Color badgeCol = item['color'] as Color;
-                    final Color bgCol = item['bgColor'] as Color;
+                  itemBuilder: (context, index) {
+                    final item = filteredList[index];
+                    final int realIdx = _mutationList.indexOf(item);
+                    final Color badgeCol = item['color'];
+                    final bool isLocked = item['isLocked'];
 
-                    final isDark = Theme.of(context).brightness == Brightness.dark;
-                    return Card(
-                      color: isDark ? Theme.of(context).cardColor : Colors.white,
-                      elevation: 3,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      shape: RoundedRectangleBorder(
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white10
+                              : Colors.grey.withAlpha(35),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(isDark ? 30 : 6),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      clipBehavior: Clip.antiAlias,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Card Header Badge
+                          // Card Header Status
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
-                              vertical: 12,
+                              vertical: 10,
                             ),
-                            color: bgCol,
+                            decoration: BoxDecoration(
+                              color: item['bgColor'],
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -502,20 +1114,20 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                   children: [
                                     Icon(
                                       item['tabType'] == 'Keluar'
-                                          ? Icons.outbox
+                                          ? Icons.logout_rounded
                                           : item['tabType'] == 'Masuk'
-                                          ? Icons.inbox
-                                          : Icons.check_circle,
-                                      size: 18,
+                                              ? Icons.login_rounded
+                                              : Icons.check_circle_rounded,
+                                      size: 16,
                                       color: badgeCol,
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
                                     Text(
                                       item['statusTitle'],
                                       style: TextStyle(
                                         color: badgeCol,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                        fontSize: 12,
                                       ),
                                     ),
                                   ],
@@ -523,7 +1135,9 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                 Text(
                                   item['date'],
                                   style: TextStyle(
-                                    color: Colors.grey[700],
+                                    color: isDark
+                                        ? Colors.white60
+                                        : Colors.grey[600],
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -541,7 +1155,6 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       child: Column(
@@ -551,58 +1164,48 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                           Text(
                                             item['name'],
                                             style: TextStyle(
-                                              fontSize: 17,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
-                                              color: isDark ? Colors.white : Colors.black87,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black87,
                                             ),
                                           ),
                                           const SizedBox(height: 3),
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 2,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: isDark ? Colors.grey[800] : Colors.grey[200],
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
-                                                ),
-                                                child: Text(
-                                                  'NIK: ${item['nik']}',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontFamily: 'monospace',
-                                                    fontWeight: FontWeight.w600,
-                                                    color: isDark ? Colors.grey[200] : Colors.black87,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
+                                          Text(
+                                            'NIK: ${item['nik']}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'monospace',
+                                              color: isDark
+                                                  ? Colors.white70
+                                                  : Colors.grey[700],
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Icon(
                                       isLocked
-                                          ? Icons.lock
+                                          ? Icons.lock_outline_rounded
                                           : Icons.lock_open_rounded,
                                       color: isLocked
-                                          ? Colors.red[700]
-                                          : Colors.green[700],
-                                      size: 28,
+                                          ? primaryColor
+                                          : const Color(0xFF10B981),
+                                      size: 24,
                                     ),
                                   ],
                                 ),
+
                                 const SizedBox(height: 14),
 
-                                // Route Desa
+                                // Route Info
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: isDark ? Colors.blueGrey[900] : Colors.blueGrey[50],
+                                    color: isDark
+                                        ? Colors.white.withAlpha(8)
+                                        : const Color(0xFFF8FAFC),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Row(
@@ -612,47 +1215,53 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            const Text(
-                                              'Desa Asal (Lama):',
+                                            Text(
+                                              'Desa Asal',
                                               style: TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.grey,
+                                                fontSize: 10.5,
+                                                color: Colors.grey[500],
                                               ),
                                             ),
+                                            const SizedBox(height: 2),
                                             Text(
                                               item['desaAsal'],
                                               style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w700,
-                                                color: isDark ? Colors.white : Colors.black87,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: isDark
+                                                    ? Colors.white
+                                                    : Colors.black87,
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      const Icon(
+                                      Icon(
                                         Icons.arrow_forward_rounded,
-                                        color: Colors.blue,
+                                        color: primaryColor,
+                                        size: 18,
                                       ),
+                                      const SizedBox(width: 8),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.end,
                                           children: [
-                                            const Text(
-                                              'Desa Tujuan (Baru):',
+                                            Text(
+                                              'Desa Tujuan',
                                               style: TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.grey,
+                                                fontSize: 10.5,
+                                                color: Colors.grey[500],
                                               ),
                                             ),
+                                            const SizedBox(height: 2),
                                             Text(
                                               item['desaTujuan'],
                                               textAlign: TextAlign.end,
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w700,
-                                                color: Colors.blue,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: primaryColor,
                                               ),
                                             ),
                                           ],
@@ -661,69 +1270,51 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                     ],
                                   ),
                                 ),
+
                                 const SizedBox(height: 12),
 
-                                // Pemohon & Alasan
-                                Text(
-                                  'Pemohon: ${item['pemohon']}',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    color: isDark ? Colors.grey[300] : Colors.grey[800],
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Alasan: "${item['alasan']}"',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    color: isDark ? Colors.grey[400] : Colors.grey[700],
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-
-                                // Kunci Gembok Status
+                                // Status Gembok Banner
                                 Container(
-                                  padding: const EdgeInsets.all(10),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isDark
-                                        ? (isLocked ? Colors.amber[900]!.withAlpha(40) : Colors.green[900]!.withAlpha(40))
-                                        : (isLocked ? Colors.amber[50] : Colors.green[50]),
+                                    color: isLocked
+                                        ? primaryColor.withAlpha(15)
+                                        : const Color(0xFF10B981).withAlpha(15),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: isLocked
-                                          ? Colors.amber[300]!
-                                          : Colors.green[300]!,
-                                    ),
                                   ),
                                   child: Row(
                                     children: [
                                       Icon(
                                         isLocked
-                                            ? Icons.key
-                                            : Icons.check_circle_outline,
-                                        size: 18,
+                                            ? Icons.vpn_key_rounded
+                                            : Icons.verified_rounded,
+                                        size: 16,
                                         color: isLocked
-                                            ? Colors.amber[900]
-                                            : Colors.green[800],
+                                            ? primaryColor
+                                            : const Color(0xFF10B981),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           item['lockStatus'],
                                           style: TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.bold,
-                                            color: isDark
-                                                ? (isLocked ? Colors.amber[200] : Colors.green[200])
-                                                : (isLocked ? Colors.amber[950] : Colors.green[900]),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: isLocked
+                                                ? (isDark
+                                                    ? primaryColor
+                                                    : const Color(0xFF1E40AF))
+                                                : const Color(0xFF10B981),
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
+
                                 const SizedBox(height: 14),
 
                                 // Action Button
@@ -734,38 +1325,40 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                         _handleActionClick(realIdx),
                                     icon: Icon(
                                       item['tabType'] == 'Keluar'
-                                          ? Icons.cancel_outlined
+                                          ? Icons.close_rounded
                                           : item['tabType'] == 'Masuk'
-                                          ? Icons.add_alert_outlined
-                                          : Icons.download_rounded,
-                                      size: 18,
+                                              ? Icons.notifications_none_rounded
+                                              : Icons.download_rounded,
+                                      size: 16,
                                     ),
                                     label: Text(
                                       item['tabType'] == 'Keluar'
                                           ? 'Batalkan Pengajuan'
                                           : item['tabType'] == 'Masuk'
-                                          ? 'Ingatkan Admin Desa Lama'
-                                          : 'Unduh Bukti Mutasi',
+                                              ? 'Kirim Pengingat'
+                                              : 'Unduh Bukti Mutasi',
                                       style: const TextStyle(
+                                        fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     style: TextButton.styleFrom(
                                       foregroundColor:
                                           item['tabType'] == 'Keluar'
-                                          ? Colors.red[700]
-                                          : item['tabType'] == 'Masuk'
-                                          ? Colors.blue[900]
-                                          : Colors.green[800],
+                                              ? Colors.redAccent
+                                              : item['tabType'] == 'Masuk'
+                                                  ? primaryColor
+                                                  : const Color(0xFF10B981),
                                       backgroundColor:
                                           item['tabType'] == 'Keluar'
-                                          ? Colors.red[50]
-                                          : item['tabType'] == 'Masuk'
-                                          ? Colors.blue[50]
-                                          : Colors.green[50],
+                                              ? Colors.redAccent.withAlpha(20)
+                                              : item['tabType'] == 'Masuk'
+                                                  ? primaryColor.withAlpha(20)
+                                                  : const Color(0xFF10B981)
+                                                      .withAlpha(20),
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 14,
-                                        vertical: 8,
+                                        vertical: 6,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
@@ -788,575 +1381,37 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
   Widget _buildFilterChip(String label, String filterValue) {
     final bool active = _selectedFilter == filterValue;
+    final primaryColor = Theme.of(context).primaryColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
+      child: ChoiceChip(
         label: Text(
           label,
           style: TextStyle(
-            color: active ? Colors.blue[900] : Colors.white,
-            fontWeight: active ? FontWeight.bold : FontWeight.w500,
+            color: active
+                ? Colors.white
+                : (isDark ? Colors.white70 : Colors.grey[700]),
+            fontWeight: active ? FontWeight.bold : FontWeight.normal,
             fontSize: 12,
           ),
         ),
         selected: active,
-        selectedColor: Colors.amber,
-        backgroundColor: Colors.blue[800],
-        checkmarkColor: Colors.blue[900],
+        selectedColor: primaryColor,
+        backgroundColor:
+            isDark ? Colors.white.withAlpha(12) : const Color(0xFFF1F5F9),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: active ? Colors.amber : Colors.blue[600]!),
+          side: BorderSide(
+            color: active
+                ? primaryColor
+                : (isDark ? Colors.white10 : Colors.grey[300]!),
+          ),
         ),
         onSelected: (_) {
           setState(() => _selectedFilter = filterValue);
         },
-      ),
-    );
-  }
-
-  Widget _buildCreationFormTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Guide Box
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue[800]!, Colors.indigo[900]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: Colors.amber,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.handshake_rounded,
-                      color: Colors.black87,
-                      size: 30,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Form Handshake & Tarik Warga',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Ajukan kepindahan Anda atau Tarik Warga (Lansia/Keluarga/Pindahan) dari Desa lain secara online via Kunci Gembok NIK.',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 1. Tipe Permohonan
-            const Text(
-              '1. Pilih Tipe Permohonan Mutasi:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildTipeRadioCard(
-                    'Pindah Keluar (Akun Saya)',
-                    Icons.directions_walk_rounded,
-                    Colors.orange[800]!,
-                    'Ajukan keluar ke Desa Baru',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTipeRadioCard(
-                    'Tarik Warga / Lansia',
-                    Icons.person_add_alt_1_rounded,
-                    Colors.blue[800]!,
-                    'Tarik NIK dari Desa Lama',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // 2. Identitas Warga
-            const Text(
-              '2. Identitas Warga yang Dimutasi:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _nameController,
-              validator: (v) => v == null || v.trim().isEmpty
-                  ? 'Nama Warga wajib diisi!'
-                  : null,
-              decoration: InputDecoration(
-                labelText: 'Nama Lengkap Warga',
-                prefixIcon: const Icon(Icons.person),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _nikController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 16,
-                    validator: (v) => (v == null || v.length != 16)
-                        ? 'NIK harus 16 digit!'
-                        : null,
-                    decoration: InputDecoration(
-                      labelText: 'NIK Warga (16 Digit)',
-                      prefixIcon: const Icon(Icons.badge, color: Colors.blue),
-                      suffixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Colors.amber,
-                        size: 20,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      counterText: '',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _kkController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 16,
-                    validator: (v) => (v == null || v.length != 16)
-                        ? 'KK harus 16 digit!'
-                        : null,
-                    decoration: InputDecoration(
-                      labelText: 'Nomor Kartu Keluarga (KK)',
-                      prefixIcon: const Icon(Icons.credit_card),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      counterText: '',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            const Text(
-              'Status / Hubungan Pemohon:',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-            ),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[400]!),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedPemohonStatus,
-                  isExpanded: true,
-                  icon: const Icon(
-                    Icons.arrow_drop_down_circle,
-                    color: Colors.blue,
-                  ),
-                  items: _statusPemohonList.map((s) {
-                    return DropdownMenuItem(
-                      value: s,
-                      child: Text(
-                        s,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13.5,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() => _selectedPemohonStatus = val);
-                    }
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 22),
-
-            // 3. Wilayah Domisili
-            const Text(
-              '3. Handshake Rute Wilayah Domisili:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.withAlpha(15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.blue.withAlpha(60)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Dari Desa / Kelurahan Asal (Lama):',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey[350]!),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedDesaAsal,
-                        isExpanded: true,
-                        items: _desaList
-                            .map(
-                              (d) => DropdownMenuItem(
-                                value: d,
-                                child: Text(
-                                  d,
-                                  style: const TextStyle(fontSize: 13.5),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() => _selectedDesaAsal = val);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Center(
-                      child: Icon(
-                        Icons.swap_vert_circle,
-                        color: Colors.amber,
-                        size: 28,
-                      ),
-                    ),
-                  ),
-
-                  const Text(
-                    'Menuju Desa / Kelurahan Tujuan (Baru):',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.blue, width: 1.5),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedDesaTujuan,
-                        isExpanded: true,
-                        items: _desaList
-                            .map(
-                              (d) => DropdownMenuItem(
-                                value: d,
-                                child: Text(
-                                  d,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
-                                    fontSize: 13.5,
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() => _selectedDesaTujuan = val);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  TextFormField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      labelText: 'Lingkungan RT & RW / Dusun Tujuan',
-                      hintText: 'Contoh: RT 02 / RW 01 Dusun Mawar',
-                      prefixIcon: const Icon(Icons.domain_add),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 22),
-
-            // 4. Alasan Pindah
-            const Text(
-              '4. Alasan Pindah Domisili / Tarik Warga:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: _reasonSuggestions.map((suggestion) {
-                final bool selected = _reasonController.text == suggestion;
-                return ActionChip(
-                  label: Text(
-                    suggestion,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: selected ? Colors.white : Colors.black87,
-                      fontWeight: selected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                  backgroundColor: selected ? Colors.blue[800] : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: selected ? Colors.blue[900]! : Colors.grey[300]!,
-                    ),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _reasonController.text = suggestion;
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _reasonController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText:
-                    'Tuliskan alasan lengkap pemindahan domisili untuk verifikasi Kepala Desa...',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 22),
-
-            // 5. Unggah Dokumen
-            const Text(
-              '5. Lampirkan Dokumen Pendukung (KTP/KK/Surat RT):',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () {
-                setState(() => _hasAttachedDoc = !_hasAttachedDoc);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      _hasAttachedDoc
-                          ? '✅ Foto dokumen KTP/KK berhasil dilampirkan!'
-                          : '🗑️ Lampiran dibatalkan.',
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 22,
-                  horizontal: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: _hasAttachedDoc ? Colors.green[50] : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: _hasAttachedDoc ? Colors.green : Colors.grey[400]!,
-                    width: _hasAttachedDoc ? 2 : 1,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      _hasAttachedDoc
-                          ? Icons.task_alt
-                          : Icons.upload_file_rounded,
-                      size: 44,
-                      color: _hasAttachedDoc
-                          ? Colors.green[700]
-                          : Colors.grey[600],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _hasAttachedDoc
-                          ? 'Dokumen Terlampir: scan_ktp_kk_pindah.png (Ketuk ubah)'
-                          : 'Ketuk untuk pilih foto Dokumen / KTP / Surat RT (Maks 2MB)',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: _hasAttachedDoc
-                            ? Colors.green[900]
-                            : Colors.grey[700],
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Submit Button
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton.icon(
-                onPressed: _handleSubmitMutation,
-                icon: const Icon(Icons.security, size: 22),
-                label: const Text(
-                  'Kirim Pengajuan Handshake Mutasi',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[900],
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 4,
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTipeRadioCard(
-    String title,
-    IconData icon,
-    Color color,
-    String subtitle,
-  ) {
-    final bool active = _tipePermohonan == title;
-    return GestureDetector(
-      onTap: () => _onTipeChanged(title),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: active ? color.withAlpha(20) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: active ? color : Colors.grey[300]!,
-            width: active ? 2 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: active ? color : Colors.grey[200],
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: active ? Colors.white : Colors.grey[600],
-                size: 24,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: active ? color : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 6),
-            Icon(
-              active
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_unchecked,
-              color: active ? color : Colors.grey[400],
-              size: 20,
-            ),
-          ],
-        ),
       ),
     );
   }

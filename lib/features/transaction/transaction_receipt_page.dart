@@ -262,33 +262,30 @@ class TransactionReceiptPage extends StatelessWidget {
                           Expanded(flex: 3, child: Text(totalPayment, style: TextStyle(fontSize: 11, color: valueColor), overflow: TextOverflow.ellipsis, maxLines: 1)),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Spacer(flex: 4),
-                          Expanded(
-                            flex: 4,
-                            child: Column(
+                      const SizedBox(height: 8),
+                      Divider(thickness: 1, color: isDark ? Colors.grey[700] : Colors.grey[300]),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Total Pemesanan', style: TextStyle(fontSize: 12, color: labelColor)),
-                                    Text(totalPayment, style: TextStyle(fontSize: 12, color: valueColor)),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: valueColor)),
-                                    Text(totalPayment, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: valueColor)),
-                                  ],
-                                ),
+                                Text('Total Pemesanan', style: TextStyle(fontSize: 12, color: labelColor)),
+                                Text(totalPayment, style: TextStyle(fontSize: 12, color: valueColor)),
                               ],
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: valueColor)),
+                                Text(totalPayment, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: valueColor)),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: 40),

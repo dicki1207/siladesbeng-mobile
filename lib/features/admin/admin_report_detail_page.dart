@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class AdminReportDetailPage extends StatefulWidget {
   final Map<String, dynamic> report;
@@ -184,7 +185,7 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage>
       
       if (token != null) {
         await http.post(
-          Uri.parse('http://10.250.3.148:8000/api/admin-reports/${widget.report['id']}/forward'),
+          Uri.parse('${ApiConfig.baseUrl}/api/admin-reports/${widget.report['id']}/forward'),
           headers: {
             'Authorization': 'Bearer $token',
             'Accept': 'application/json',

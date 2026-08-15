@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class EventService {
-  static const String baseUrl = 'http://10.250.3.148:8000/api';
+  static String get baseUrl => '${ApiConfig.baseUrl}/api';
 
   Future<Map<String, String>> _getHeaders({bool isJson = true}) async {
     final prefs = await SharedPreferences.getInstance();

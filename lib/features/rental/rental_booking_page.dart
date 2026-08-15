@@ -479,12 +479,20 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
   }
 
   Future<void> _submitBooking() async {
-    if (_nameController.text.isEmpty ||
-        _addressController.text.isEmpty ||
-        _waController.text.isEmpty) {
+    final String itemType =
+        widget.item['type']?.toString().toLowerCase() ?? 'alat';
+    final String cat = widget.category?.toLowerCase() ?? '';
+    final bool isFasilitas =
+        itemType == 'fasilitas' || cat.contains('fasilitas');
+
+    if (_nameController.text.trim().isEmpty ||
+        _waController.text.trim().isEmpty ||
+        (!isFasilitas && _addressController.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mohon lengkapi Data Penyewa (Nama, WA, dan Alamat)'),
+        SnackBar(
+          content: Text(isFasilitas
+              ? 'Mohon lengkapi Data Penyewa (Nama dan Nomor WhatsApp)'
+              : 'Mohon lengkapi Data Penyewa (Nama, WA, dan Alamat)'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -515,9 +523,6 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
 
     final int pricePerDay =
         int.tryParse(widget.item['price']?.toString() ?? '0') ?? 0;
-    final String itemType =
-        widget.item['type']?.toString().toLowerCase() ?? 'alat';
-    final String cat = widget.category?.toLowerCase() ?? '';
     final int itemId = widget.item['id'] ?? 1;
 
     int total = pricePerDay * _durationDays;
@@ -830,13 +835,68 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 12),
-                _buildCleanTextField(
-                  controller: _addressController,
-                  label: 'Alamat Pengantaran / Lokasi Acara',
-                  hint: 'Alamat lengkap RT/RW atau nama lokasi',
-                  prefixIcon: Icons.location_on_outlined,
-                  maxLines: 2,
-                ),
+                if (itemType == 'fasilitas' || cat.contains('fasilitas')) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color:
+                          Colors.blue.withValues(alpha: isDark ? 0.15 : 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.blue.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.location_city_rounded,
+                          color: primaryColor,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Lokasi Fasilitas',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white60
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                widget.item['location'] ??
+                                    'Gedung / Area Fasilitas Desa SiladesBeng',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1E293B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ] else ...[
+                  _buildCleanTextField(
+                    controller: _addressController,
+                    label: itemType == 'mobil' || cat.contains('mobil')
+                        ? 'Alamat Penjemputan / Pengantaran Mobil'
+                        : 'Alamat Pengantaran / Lokasi Pemasangan',
+                    hint: 'Alamat lengkap RT/RW atau nama jalan',
+                    prefixIcon: Icons.location_on_outlined,
+                    maxLines: 2,
+                  ),
+                ],
                 if (itemType == 'mobil' || cat.contains('mobil')) ...[
                   const SizedBox(height: 12),
                   Text(
@@ -852,17 +912,29 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     children: [
                       Expanded(
                         child: ChoiceChip(
-                          label: const Center(child: Text('Setir Sendiri', style: TextStyle(fontSize: 12))),
+                          label: const Center(
+                            child: Text(
+                              'Setir Sendiri',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
                           selected: _driverOption == 'sendiri',
-                          onSelected: (val) => setState(() => _driverOption = 'sendiri'),
+                          onSelected: (val) =>
+                              setState(() => _driverOption = 'sendiri'),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ChoiceChip(
-                          label: const Center(child: Text('Dengan Supir', style: TextStyle(fontSize: 12))),
+                          label: const Center(
+                            child: Text(
+                              'Dengan Supir',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
                           selected: _driverOption != 'sendiri',
-                          onSelected: (val) => setState(() => _driverOption = 'supir'),
+                          onSelected: (val) =>
+                              setState(() => _driverOption = 'supir'),
                         ),
                       ),
                     ],
@@ -883,17 +955,29 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     children: [
                       Expanded(
                         child: ChoiceChip(
-                          label: const Center(child: Text('Sosial (Gratis)', style: TextStyle(fontSize: 12))),
+                          label: const Center(
+                            child: Text(
+                              'Sosial (Gratis)',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
                           selected: _eventCategory == 'sosial',
-                          onSelected: (val) => setState(() => _eventCategory = 'sosial'),
+                          onSelected: (val) =>
+                              setState(() => _eventCategory = 'sosial'),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ChoiceChip(
-                          label: const Center(child: Text('Pribadi / Komersil', style: TextStyle(fontSize: 12))),
+                          label: const Center(
+                            child: Text(
+                              'Pribadi / Komersil',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
                           selected: _eventCategory != 'sosial',
-                          onSelected: (val) => setState(() => _eventCategory = 'pribadi'),
+                          onSelected: (val) =>
+                              setState(() => _eventCategory = 'pribadi'),
                         ),
                       ),
                     ],
@@ -902,8 +986,12 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                 const SizedBox(height: 12),
                 _buildCleanTextField(
                   controller: _notesController,
-                  label: 'Catatan Tambahan (Opsional)',
-                  hint: 'Contoh: Pasang tenda H-1 sebelum acara',
+                  label: (itemType == 'fasilitas' || cat.contains('fasilitas'))
+                      ? 'Tujuan Penggunaan Acara (Opsional)'
+                      : 'Catatan Tambahan (Opsional)',
+                  hint: (itemType == 'fasilitas' || cat.contains('fasilitas'))
+                      ? 'Contoh: Rapat warga, pernikahan, atau turnamen olahraga'
+                      : 'Contoh: Pasang tenda H-1 sebelum acara',
                   prefixIcon: Icons.edit_note_rounded,
                 ),
               ],

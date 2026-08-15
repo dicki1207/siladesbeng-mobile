@@ -13,7 +13,7 @@ import 'package:siladesbeng_mobile/features/profile/info/help_faq_page.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 import 'package:siladesbeng_mobile/features/profile/mutation/domicile_transfer_page.dart';
-import 'package:siladesbeng_mobile/widgets/premium_header.dart';
+import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -26,6 +26,8 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoggedIn = false;
   String _name = 'Warga Desa';
   String _email = 'warga@desa.id';
+  String _nik = '';
+  String _address = '';
   String? _imagePath;
   String? _imageUrl;
   bool _isVerified = false;
@@ -53,6 +55,8 @@ class _ProfilePageState extends State<ProfilePage> {
       _isLoggedIn = true;
       _name = prefs.getString('profile_name') ?? 'Warga Desa';
       _email = prefs.getString('profile_email') ?? 'warga@desa.id';
+      _nik = prefs.getString('profile_nik') ?? '';
+      _address = prefs.getString('profile_address') ?? '';
       _imagePath = prefs.getString('profile_image');
       _imageUrl = prefs.getString('profile_image_url');
       _isVerified = prefs.getBool('is_verified') ?? false;
@@ -83,25 +87,42 @@ class _ProfilePageState extends State<ProfilePage> {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
           final user = data['data']['user'];
+          final region = data['data']['region_info'] ?? {};
+
+          final isVerified = (user['verification_status'] == 'verified') ||
+              (user['nik'] != null && user['nik'].toString().isNotEmpty) ||
+              (user['is_verified'] == true);
+
+          final userNik = user['nik']?.toString() ??
+              (isVerified ? '1403010101900001' : '');
+          final userAddress = (user['address'] != null &&
+                  user['address'] != '-' &&
+                  user['address'].toString().isNotEmpty)
+              ? user['address']
+              : (region['desa'] != null && region['desa'] != 'Belum ditentukan'
+                  ? 'RT ${user['rt'] ?? '01'} / RW ${user['rw'] ?? '02'}, ${region['desa']}'
+                  : 'RT ${user['rt'] ?? '01'} / RW ${user['rw'] ?? '02'}');
+
           await prefs.setString('profile_name', user['name'] ?? '');
           await prefs.setString('profile_email', user['email'] ?? '');
+          await prefs.setString('profile_nik', userNik);
+          await prefs.setString('profile_address', userAddress);
+          await prefs.setBool('is_verified', isVerified);
+
           if (data['data']['avatar_url'] != null) {
             await prefs.setString(
               'profile_image_url',
               data['data']['avatar_url'],
             );
           }
-          if (user['nik'] != null) {
-            await prefs.setBool('is_verified', true);
-          } else {
-            await prefs.setBool('is_verified', false);
-          }
 
           if (mounted) {
             setState(() {
               _name = user['name'] ?? _name;
               _email = user['email'] ?? _email;
-              _isVerified = user['nik'] != null;
+              _nik = userNik;
+              _address = userAddress;
+              _isVerified = isVerified;
               if (data['data']['avatar_url'] != null) {
                 _imageUrl = data['data']['avatar_url'];
               }
@@ -145,400 +166,502 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildKtpRow(String label, String value, {bool isNik = false, bool isStatus = false, bool isVerified = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 55,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Colors.black.withAlpha(200),
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          Text(
-            ': ',
-            style: TextStyle(
-              color: Colors.black.withAlpha(200),
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                color: isStatus 
-                    ? (isVerified ? Colors.green[800] : Colors.red[800]) 
-                    : Colors.black87,
-                fontSize: isNik ? 13 : 11,
-                fontWeight: isNik || isStatus ? FontWeight.w900 : FontWeight.w800,
-                fontFamily: isNik ? 'monospace' : null,
-                fontStyle: isStatus && !isVerified ? FontStyle.italic : FontStyle.normal,
-                letterSpacing: isNik ? 1.5 : 0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  String _maskNik(String nik) {
+    final cleanNik =
+        (nik.isEmpty ? '1403010101900001' : nik).replaceAll(RegExp(r'\s+'), '');
+    if (cleanNik.length >= 8) {
+      return '${cleanNik.substring(0, 4)}********${cleanNik.substring(cleanNik.length - 4)}';
+    }
+    return cleanNik;
   }
 
   Widget _buildDigitalKTP() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFE0F7FA), // Cyan muda khas KTP
-            Color(0xFFB2EBF2),
-            Color(0xFF80DEEA),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (!_isVerified) {
+      // Tampilan Belum Terverifikasi (Persis seperti Web)
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF451A03).withAlpha(80)
+              : const Color(0xFFFEFCE8),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark
+                ? const Color(0xFFF59E0B).withAlpha(80)
+                : const Color(0xFFFEF08A),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 30 : 6),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white, width: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withAlpha(30),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.shield_outlined,
+                    color: Color(0xFFD97706),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Identitas Belum Terverifikasi',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: isDark
+                          ? const Color(0xFFFDE68A)
+                          : const Color(0xFF92400E),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Anda belum dapat mengakses layanan publik (seperti meminjam fasilitas) sebelum memverifikasi KTP & Wajah.',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.4,
+                color: isDark
+                    ? const Color(0xFFFCD34D).withAlpha(200)
+                    : const Color(0xFFB45309),
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () {
+                  _showVerificationInvitation(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEAB308),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Verifikasi Sekarang',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Tampilan KTP Digital Terverifikasi (Ultra-Spacious & Elegan)
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFF1E40AF),
+        gradient: isDark
+            ? const LinearGradient(
+                colors: [
+                  Color(0xFF1E293B),
+                  Color(0xFF0F172A),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : const LinearGradient(
+                colors: [
+                  Color(0xFF1E40AF),
+                  Color(0xFF2563EB),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xFF3B82F6).withAlpha(120)
+              : const Color(0xFF93C5FD).withAlpha(150),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(25),
-            blurRadius: 15,
+            color: const Color(0xFF1E40AF).withAlpha(isDark ? 60 : 40),
+            blurRadius: 20,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Watermark Logo
-          Positioned(
-            right: 10,
-            bottom: 0,
-            child: Opacity(
-              opacity: 0.08,
-              child: Icon(Icons.account_balance_rounded, size: 120, color: Colors.blue[900]),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Bar: KTP DIGITAL + TERVERIFIKASI (Identik dengan Web)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'KTP DIGITAL',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                    color: Colors.white,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2563EB).withAlpha(70),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    'TERVERIFIKASI',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Divider(
+              color: Colors.white.withAlpha(35),
+              height: 1,
+            ),
+            const SizedBox(height: 14),
+
+            // Content Row: Photo Left + Info Right
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Foto Avatar KTP (3:4 ratio)
+                Container(
+                  width: 76,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFF93C5FD),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(40),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: (_imagePath != null)
+                        ? Image.file(
+                            File(_imagePath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => const Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : (_imageUrl != null)
+                            ? Image.network(
+                                _imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => const Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.grey,
+                              ),
+                  ),
+                ),
+
+                const SizedBox(width: 14),
+
+                // Data Warga
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // NIK
+                      Text(
+                        'NIK',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: Colors.white.withAlpha(180),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(40),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _maskNik(_nik),
+                            style: const TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // NAMA
+                      Text(
+                        'NAMA LENGKAP',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: Colors.white.withAlpha(180),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _name.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.verified,
+                            color: Color(0xFF38BDF8),
+                            size: 14,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // ALAMAT
+                      Text(
+                        'ALAMAT DOMISILI',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: Colors.white.withAlpha(180),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${_address.isNotEmpty ? _address : "RT 01 / RW 02, Bengkalis"} - (Disensor)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.white.withAlpha(210),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+              ],
             ),
           ),
-          
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header KTP
-              const Center(
-                child: Column(
-                  children: [
-                    Text(
-                      'PROVINSI RIAU',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    Text(
-                      'KABUPATEN BENGKALIS',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Kiri: Data
-                  Expanded(
-                    flex: 7,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildKtpRow('NIK', 'SLD-2026-8891', isNik: true),
-                        _buildKtpRow('Nama', _name.toUpperCase()),
-                        _buildKtpRow('Alamat', 'RT 02 / RW 01'),
-                        _buildKtpRow('Status', _isVerified ? 'Tervalidasi AI' : 'Belum Lengkap', isStatus: true, isVerified: _isVerified),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Kanan: Foto
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 3 / 4,
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(30),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
-                            child: (_imagePath != null)
-                                ? Image.file(
-                                    File(_imagePath!),
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => Icon(Icons.person, size: 40, color: Colors.blue[200]),
-                                  )
-                                : (_imageUrl != null)
-                                ? Image.network(
-                                    _imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => Icon(Icons.person, size: 40, color: Colors.blue[200]),
-                                  )
-                                : Icon(Icons.person, size: 40, color: Colors.blue[200]),
-                          ),
-                        ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Header Profile
-            PremiumHeader(
-              bottomPadding: 15.0,
-              child: Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const EditProfilePage(),
-                        ),
-                      ).then((_) => _loadProfile());
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                        child: ClipOval(
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey[200],
-                            child: (_imagePath != null)
-                                ? Image.file(
-                                    File(_imagePath!),
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const Icon(
-                                      Icons.person,
-                                      size: 45,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                                : (_imageUrl != null)
-                                ? Image.network(
-                                    _imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const Icon(
-                                      Icons.person,
-                                      size: 45,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.person,
-                                    size: 45,
-                                    color: Colors.grey,
-                                  ),
+            // Top Clean Minimal Header Bar
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Profil Saya',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
                           ),
                         ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        !_isLoggedIn ? 'Tamu' : _name,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                      ),
-                      if (_isLoggedIn && _isVerified) ...[
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.verified,
-                          color: Colors.white,
-                          size: 20,
+                        const SizedBox(height: 2),
+                        Text(
+                          !_isLoggedIn
+                              ? 'Silakan login untuk mengakses layanan'
+                              : _email,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                          ),
                         ),
                       ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    !_isLoggedIn ? 'Silakan login terlebih dahulu' : _email,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium!.copyWith(color: Colors.white70),
-                  ),
-                  const SizedBox(height: 12),
-                  if (_isLoggedIn && !_isVerified)
-                    GestureDetector(
-                      onTap: () {
-                        _showVerificationInvitation(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(10),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.shield_outlined,
-                              color: Colors.orange[700],
-                              size: 16,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Lengkapi Data Diri',
-                              style: TextStyle(
-                                color: Colors.orange[800],
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                    ),
+                    if (_isLoggedIn)
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const EditProfilePage(),
+                              ),
+                            ).then((_) => _loadProfile());
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1E293B)
+                                  : const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0),
                               ),
                             ),
-                          ],
+                            child: Icon(
+                              Icons.edit_outlined,
+                              size: 18,
+                              color: isDark ? Colors.white70 : const Color(0xFF334155),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
 
-            if (_isLoggedIn && _isVerified) ...[
-              const SizedBox(height: 10),
+            if (_isLoggedIn) ...[
               _buildDigitalKTP(),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: FutureBuilder<SharedPreferences>(
-                  future: SharedPreferences.getInstance(),
-                  builder: (context, snapshot) {
-                    final status = snapshot.data?.getString('transfer_status');
-                    if (status == 'pending') {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withAlpha(20),
-                          border: Border.all(
-                            color: Colors.orange.withAlpha(50),
+              if (_isVerified) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: FutureBuilder<SharedPreferences>(
+                    future: SharedPreferences.getInstance(),
+                    builder: (context, snapshot) {
+                      final status =
+                          snapshot.data?.getString('transfer_status');
+                      if (status == 'pending') {
+                        return Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 14,
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.hourglass_empty,
-                              color: Colors.orange,
-                              size: 20,
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withAlpha(20),
+                            border: Border.all(
+                              color: Colors.orange.withAlpha(50),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'Pemindahan Domisili Anda sedang diproses oleh admin.',
-                                style: TextStyle(
-                                  color: Colors.orange[800],
-                                  fontSize: 12,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.hourglass_empty,
+                                color: Colors.orange,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Pemindahan Domisili Anda sedang diproses oleh admin.',
+                                  style: TextStyle(
+                                    color: Colors.orange[800],
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                    return SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const DomicileTransferPage(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.swap_horiz),
-                        label: const Text(
-                          'Mutasi Domisili & Tarik Warga (Handshake)',
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Theme.of(context).primaryColor,
-                          side: BorderSide(
-                            color: Theme.of(context).primaryColor,
+                            ],
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ),
-              ),
+              ],
             ],
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // Menus - Modern Grouped Section Cards
             Padding(
@@ -551,7 +674,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     'Aktivitas & Kemitraan',
                     Colors.blue[600]!,
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   _buildMenuGroup(
                     context,
                     [
@@ -562,8 +685,29 @@ class _ProfilePageState extends State<ProfilePage> {
                         targetPage: const TransactionHistoryPage(),
                         iconColor: Colors.blue[600],
                         isFirst: true,
-                        isLast: _isVerified, // Menjadi yang terakhir jika kemitraan disembunyikan
+                        isLast: false,
                       ),
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.admin_panel_settings_rounded,
+                        title: 'Portal Pengurus RT / RW',
+                        subtitle: 'Layanan administrasi & pengurus wilayah',
+                        targetPage: const AdminPortalPage(),
+                        iconColor: Colors.teal[600],
+                        isFirst: false,
+                        isLast: false,
+                      ),
+                      if (_isVerified)
+                        _buildMenuTile(
+                          context,
+                          icon: Icons.swap_horiz_rounded,
+                          title: 'Mutasi Domisili & Tarik Warga',
+                          subtitle: 'Handshake data kependudukan',
+                          targetPage: const DomicileTransferPage(),
+                          iconColor: Colors.indigo[600],
+                          isFirst: false,
+                          isLast: true,
+                        ),
                       if (!_isVerified)
                         _buildMenuTile(
                           context,

@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'admin_report_detail_page.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
+import 'package:siladesbeng_mobile/features/admin/admin_report_detail_page.dart';
 
 class AdminReportPage extends StatefulWidget {
   const AdminReportPage({super.key});
@@ -36,20 +37,20 @@ class _AdminReportPageState extends State<AdminReportPage> {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       setState(() {
-        _role = 'rt'; // Force 'rt' for testing Admin Panel
-        _profileName = prefs.getString('profile_name') ?? 'Admin';
+        _role = prefs.getString('user_role') ?? 'rt';
+        _profileName = prefs.getString('profile_name') ?? 'Pengurus';
       });
     }
   }
 
   Future<void> _fetchReports() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = prefs.getString('token') ?? prefs.getString('auth_token');
 
     if (token != null) {
       try {
         final res = await http.get(
-          Uri.parse('http://10.250.3.148:8000/api/admin-reports'),
+          Uri.parse('${ApiConfig.baseUrl}/api/admin-reports'),
           headers: {
             'Authorization': 'Bearer $token',
             'Accept': 'application/json',
@@ -62,16 +63,57 @@ class _AdminReportPageState extends State<AdminReportPage> {
             final List fetchedData = decoded['data'];
             if (mounted) {
               setState(() {
-                _allReports = fetchedData.map((e) => {
-                  'id': e['id'].toString(),
-                  'title': e['title'] ?? 'Laporan',
-                  'kategori': e['category'] ?? 'Lainnya',
-                  'reporter': e['reporter_name'] ?? 'Anonim',
-                  'date': e['created_at'] != null ? e['created_at'].toString().substring(0, 10) : 'Tanpa Tanggal',
-                  'status': e['status'] == 'pending' ? 'Menunggu' : (e['status'] == 'processing' ? 'Diproses' : 'Selesai'),
-                  'description': e['description'] ?? '',
+                _allReports = fetchedData.map<Map<String, dynamic>>((e) {
+                  final userObj = e['user'] is Map ? e['user'] as Map<String, dynamic> : null;
+                  final String reporterName = userObj?['name'] ??
+                      (e['nama'] != null && e['nama'].toString().isNotEmpty
+                          ? e['nama'].toString()
+                          : 'Warga Desa');
+                  final String kategori = e['kategori'] ?? 'Laporan Warga';
+                  final String deskripsi = e['deskripsi'] ?? '';
+                  final String rawStatus = e['status'] ?? 'Pending';
+
+                  // Normalisasi status untuk filter
+                  String normalizedStatus = 'Menunggu';
+                  final sLower = rawStatus.toLowerCase();
+                  if (sLower == 'pending' || sLower == 'menunggu') {
+                    normalizedStatus = 'Menunggu';
+                  } else if (sLower.contains('proses') || sLower.contains('teruskan')) {
+                    normalizedStatus = 'Diproses';
+                  } else if (sLower == 'selesai') {
+                    normalizedStatus = 'Selesai';
+                  } else if (sLower == 'ditolak') {
+                    normalizedStatus = 'Ditolak';
+                  }
+
+                  String dateStr = '';
+                  if (e['created_at'] != null) {
+                    try {
+                      final dt = DateTime.parse(e['created_at'].toString());
+                      dateStr = '${dt.day.toString().padLeft(2, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.year}';
+                    } catch (_) {
+                      dateStr = e['created_at'].toString().substring(0, 10);
+                    }
+                  }
+
+                  return {
+                    'id': e['id'].toString(),
+                    'title': kategori,
+                    'kategori': kategori,
+                    'category': kategori,
+                    'reporter': reporterName,
+                    'reporter_name': reporterName,
+                    'date': dateStr,
+                    'status': rawStatus,
+                    'normalized_status': normalizedStatus,
+                    'description': deskripsi,
+                    'deskripsi': deskripsi,
+                    'lokasi': e['lokasi'] ?? '',
+                    'bukti': e['bukti'] ?? '',
+                    'user': userObj,
+                  };
                 }).toList();
-                _filteredReports = _allReports;
+                _applyFilter(_selectedFilter);
                 _isLoading = false;
               });
             }
@@ -96,9 +138,10 @@ class _AdminReportPageState extends State<AdminReportPage> {
       if (filter == 'Semua') {
         _filteredReports = _allReports;
       } else {
-        _filteredReports = _allReports
-            .where((r) => r['status'] == filter)
-            .toList();
+        _filteredReports = _allReports.where((r) {
+          final norm = r['normalized_status'] ?? '';
+          return norm == filter;
+        }).toList();
       }
     });
   }
@@ -106,201 +149,206 @@ class _AdminReportPageState extends State<AdminReportPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
-      backgroundColor: isDark ? Theme.of(context).scaffoldBackgroundColor : const Color(0xFFF8FAFC),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 180.0,
-            floating: false,
-            pinned: true,
-            backgroundColor: isDark ? const Color(0xFF10192A) : const Color(0xFF1E3C72),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isDark ? [const Color(0xFF10192A), const Color(0xFF1E3C72)] : [const Color(0xFF1E3C72), const Color(0xFF2FA2F1)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      right: -50,
-                      top: -50,
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withAlpha(20),
-                        ),
-                      ),
-                    ),
-                    SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          left: 24.0,
-                          right: 24.0,
-                          top: 60.0,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Halo, $_profileName! (${_role.toUpperCase()})',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Kelola Laporan Warga',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: isDark ? Colors.white : const Color(0xFF1E293B),
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Kelola Laporan Warga',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontWeight: FontWeight.w800,
+                fontSize: 17,
               ),
             ),
+            if (_profileName.isNotEmpty)
+              Text(
+                '$_profileName • ${_role.toUpperCase()}',
+                style: TextStyle(
+                  color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+          ],
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _fetchReports,
+        color: primaryColor,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
           ),
-
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-              child: SizedBox(
-                height: 40,
-                child: ListView.builder(
+          slivers: [
+            // Filter Choice Chips Bar
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
-                  itemCount: _filters.length,
-                  itemBuilder: (context, index) {
-                    final filter = _filters[index];
-                    final isSelected = _selectedFilter == filter;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: ChoiceChip(
-                        label: Text(filter),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          if (selected) _applyFilter(filter);
-                        },
-                        selectedColor: isDark ? const Color(0xFF2E5B88) : const Color(0xFF1E3C72),
-                        labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                        backgroundColor: isDark ? Theme.of(context).cardColor : Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
+                  child: Row(
+                    children: _filters.map((filter) {
+                      final isSelected = _selectedFilter == filter;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(filter),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            if (selected) _applyFilter(filter);
+                          },
+                          selectedColor: const Color(0xFF2563EB),
+                          labelStyle: TextStyle(
                             color: isSelected
-                                ? Colors.transparent
-                                : (isDark ? Colors.grey[700]! : Colors.grey[300]!),
+                                ? Colors.white
+                                : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                           ),
+                          backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? const Color(0xFF2563EB)
+                                  : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                            ),
+                          ),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         ),
-                        elevation: isSelected ? 2 : 0,
-                      ),
-                    );
-                  },
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             ),
-          ),
 
-          if (_isLoading)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (_filteredReports.isEmpty)
-            SliverFillRemaining(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.inbox_outlined,
-                      size: 80,
-                      color: Colors.grey[300],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Belum ada laporan',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 16),
-                    ),
-                  ],
+            if (_isLoading)
+              const SliverFillRemaining(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_filteredReports.isEmpty)
+              SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB).withAlpha(15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.inbox_outlined,
+                          size: 48,
+                          color: Color(0xFF2563EB),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Tidak ada laporan ($_selectedFilter)',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 6, 20, 40),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final report = _filteredReports[index];
+                    return _buildModernReportCard(report, isDark);
+                  }, childCount: _filteredReports.length),
                 ),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.all(20),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final report = _filteredReports[index];
-                  return _buildModernReportCard(report);
-                }, childCount: _filteredReports.length),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildModernReportCard(Map<String, dynamic> report) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildModernReportCard(Map<String, dynamic> report, bool isDark) {
+    final status = report['status'] ?? 'Pending';
+    final sLower = status.toString().toLowerCase();
+
     Color statusColor;
     Color statusBgColor;
     IconData statusIcon;
 
-    switch (report['status']) {
-      case 'Diproses':
-        statusColor = Colors.blue;
-        statusBgColor = Colors.blue.withAlpha(20);
-        statusIcon = Icons.autorenew_rounded;
-        break;
-      case 'Selesai':
-        statusColor = Colors.green;
-        statusBgColor = Colors.green.withAlpha(20);
-        statusIcon = Icons.check_circle_rounded;
-        break;
-      default:
-        statusColor = Colors.orange;
-        statusBgColor = Colors.orange.withAlpha(20);
-        statusIcon = Icons.access_time_rounded;
+    if (sLower == 'selesai') {
+      statusColor = const Color(0xFF10B981);
+      statusBgColor = const Color(0xFF10B981).withAlpha(20);
+      statusIcon = Icons.check_circle_rounded;
+    } else if (sLower.contains('proses') || sLower.contains('teruskan')) {
+      statusColor = const Color(0xFF2563EB);
+      statusBgColor = const Color(0xFF2563EB).withAlpha(20);
+      statusIcon = Icons.autorenew_rounded;
+    } else if (sLower == 'ditolak') {
+      statusColor = Colors.redAccent;
+      statusBgColor = Colors.redAccent.withAlpha(20);
+      statusIcon = Icons.cancel_rounded;
+    } else {
+      statusColor = Colors.amber.shade700;
+      statusBgColor = Colors.amber.withAlpha(25);
+      statusIcon = Icons.access_time_rounded;
     }
 
+    final String title = report['title']?.isNotEmpty == true
+        ? report['title']
+        : 'Laporan Aduan';
+    final String description = report['deskripsi']?.isNotEmpty == true
+        ? report['deskripsi']
+        : 'Tidak ada deskripsi detail.';
+    final String reporter = report['reporter']?.isNotEmpty == true
+        ? report['reporter']
+        : 'Warga';
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? Theme.of(context).cardColor : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withAlpha(isDark ? 20 : 6),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           onTap: () {
             Navigator.push(
               context,
@@ -308,51 +356,53 @@ class _AdminReportPageState extends State<AdminReportPage> {
                 builder: (context) =>
                     AdminReportDetailPage(report: report, role: _role),
               ),
-            );
+            ).then((_) => _fetchReports());
           },
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Top Header Row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                        horizontal: 8,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[800] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
+                        color: const Color(0xFF2563EB).withAlpha(15),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         '#${report['id']}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.grey[300] : Colors.black54,
-                          fontSize: 12,
+                          color: Color(0xFF2563EB),
+                          fontSize: 11.5,
                         ),
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                        horizontal: 9,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: statusBgColor,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(statusIcon, size: 14, color: statusColor),
+                          Icon(statusIcon, size: 13, color: statusColor),
                           const SizedBox(width: 4),
                           Text(
-                            report['status'] ?? 'Menunggu',
+                            status,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                               color: statusColor,
                             ),
@@ -362,75 +412,80 @@ class _AdminReportPageState extends State<AdminReportPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Title (Category)
                 Text(
-                  report['title'] ?? 'Laporan Warga',
+                  title,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 15,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
+
+                // Description
                 Text(
-                  report['description'] ?? 'Tidak ada deskripsi',
+                  description,
                   style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    fontSize: 14,
+                    color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    fontSize: 12.5,
                     height: 1.4,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 16),
-                Divider(color: isDark ? Colors.grey[700] : Colors.grey[200]),
-                const SizedBox(height: 12),
+
+                const SizedBox(height: 14),
+                Divider(
+                  height: 1,
+                  color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
+                ),
+                const SizedBox(height: 10),
+
+                // Footer Row: Pelapor & Date
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 12,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).primaryColor.withAlpha(30),
-                          child: Icon(
-                            Icons.person,
-                            size: 14,
-                            color: Theme.of(context).primaryColor,
-                          ),
+                        Icon(
+                          Icons.person_outline_rounded,
+                          size: 15,
+                          color: const Color(0xFF2563EB),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 5),
                         Text(
-                          report['reporter'] ?? 'Anonim',
+                          reporter,
                           style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
-                            fontSize: 13,
+                            color: isDark ? Colors.white70 : const Color(0xFF334155),
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          size: 14,
-                          color: Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          report['date'],
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 13,
+                    if (report['date'] != null && report['date'].toString().isNotEmpty)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            size: 13,
+                            color: isDark ? Colors.white38 : Colors.grey[400],
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 4),
+                          Text(
+                            report['date'],
+                            style: TextStyle(
+                              color: isDark ? Colors.white38 : Colors.grey[500],
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ],

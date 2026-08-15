@@ -1,19 +1,20 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class AdminWilayahService {
   Future<Map<String, dynamic>> getDashboardStats() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = prefs.getString('token') ?? prefs.getString('auth_token');
 
       if (token == null) {
         return {'success': false, 'message': 'Token tidak ditemukan'};
       }
 
       final response = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/wilayah/dashboard'),
+        Uri.parse('${ApiConfig.baseUrl}/api/wilayah/dashboard'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

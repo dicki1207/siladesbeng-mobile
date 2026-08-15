@@ -344,22 +344,36 @@ class _EditProfilePageState extends State<EditProfilePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white70 : const Color(0xFF1E293B),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white70 : const Color(0xFF1E293B),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (isLocked)
-                Text(
-                  'Terkunci Otomatis',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    color: isDark ? Colors.white30 : Colors.grey[400],
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.lock_outline_rounded,
+                      size: 13,
+                      color: isDark ? Colors.white30 : Colors.grey[400],
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      'Terkunci',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: isDark ? Colors.white30 : Colors.grey[400],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
