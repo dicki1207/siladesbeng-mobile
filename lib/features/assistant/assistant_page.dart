@@ -12,14 +12,7 @@ class AssistantPage extends StatefulWidget {
 
 class _AssistantPageState extends State<AssistantPage> {
   final TextEditingController _messageController = TextEditingController();
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'isUser': false,
-      'text':
-          'Halo! Saya Asisten Cerdas SiladesBeng. Ada yang bisa saya bantu terkait layanan BUMDes hari ini?',
-      'time': '10:00',
-    },
-  ];
+  final List<Map<String, dynamic>> _messages = [];
 
   bool _isTyping = false;
 
@@ -44,7 +37,6 @@ class _AssistantPageState extends State<AssistantPage> {
 
       // Siapkan history untuk context
       List<Map<String, String>> history = _messages
-          .where((m) => m['text'] != 'Halo! Saya Asisten Cerdas SiladesBeng. Ada yang bisa saya bantu terkait layanan BUMDes hari ini?')
           .map((m) => {
                 'role': m['isUser'] ? 'user' : 'model',
                 'text': m['text'].toString(),

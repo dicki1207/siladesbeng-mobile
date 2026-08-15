@@ -4,11 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:siladesbeng_mobile/main_wrapper.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/features/profile/account/change_password_page.dart';
+import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -43,78 +42,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
   );
 
   String? _selectedGender;
+  String _nik = '';
+  bool _isVerified = false;
   bool _isLoading = false;
-  bool _isFetchingLocation = false;
 
   @override
   void initState() {
     super.initState();
     _loadProfileFromApi();
-  }
-
-  Future<void> _fetchLocation() async {
-    setState(() => _isFetchingLocation = true);
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Layanan lokasi (GPS) tidak aktif')),
-        );
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Izin lokasi ditolak')));
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Izin lokasi ditolak permanen')),
-        );
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition();
-      List<Placemark> placemarks = await Geocoding().placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        if (mounted) {
-          setState(() {
-            _kecamatanController.text =
-                place.locality ?? place.subAdministrativeArea ?? 'Bengkalis';
-            _desaController.text =
-                place.subLocality ?? place.thoroughfare ?? 'Air Putih';
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Lokasi berhasil diverifikasi via GPS!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal mendapatkan lokasi GPS')),
-      );
-    } finally {
-      if (mounted) setState(() => _isFetchingLocation = false);
-    }
   }
 
   Future<void> _fallbackToLocalData() async {
@@ -125,6 +60,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
           prefs.getString('profile_email') ?? 'email@example.com';
       _usernameController.text = prefs.getString('profile_name') ?? 'Username';
       _avatarUrl = prefs.getString('profile_image_url');
+      _isVerified = prefs.getBool('is_verified') ?? false;
+      _nik = _isVerified ? '1403010101900001' : '';
     });
   }
 
@@ -182,6 +119,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
             _rtController.text = region['rt'] ?? 'Belum ditentukan';
 
             _avatarUrl = data['data']['avatar_url'];
+            _nik = user['nik']?.toString() ?? '';
+            _isVerified = _nik.isNotEmpty || user['is_verified'] == true;
           });
         }
       } else {
@@ -316,40 +255,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
         });
       }
     } catch (e) {
-      _showError('Gagal membuka galeri: $e');
+      _showError('Gagal memilih foto: $e');
     }
-  }
-
-  void _showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
-    );
-  }
-
-  void _showSuccess(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
-    );
   }
 
   void _showFullScreenImage(ImageProvider imageProvider) {
     showDialog(
       context: context,
-      builder: (context) {
+      barrierColor: Colors.black.withValues(alpha: 0.85),
+      builder: (BuildContext context) {
         return Dialog(
-          backgroundColor: Colors.black.withValues(alpha: 0.9),
-          insetPadding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(10),
           child: Stack(
+            alignment: Alignment.center,
             children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: InteractiveViewer(
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: Center(
-                    child: Image(
+              InteractiveViewer(
+                panEnabled: true,
+                boundaryMargin: const EdgeInsets.all(20),
+                minScale: 0.5,
+                maxScale: 3.0,
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.7,
+                    maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    image: DecorationImage(
                       image: imageProvider,
                       fit: BoxFit.contain,
                     ),
@@ -357,11 +290,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ),
               Positioned(
-                top: 40,
-                right: 20,
+                top: 10,
+                right: 10,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
             ],
@@ -371,85 +308,89 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF10B981),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Widget _buildField({
     required String label,
     required Widget child,
     bool isLocked = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Text(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
                 label,
                 style: TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white70 : const Color(0xFF1E293B),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            if (isLocked)
-              Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.lock_rounded,
-                      size: 11,
-                      color: isDark ? Colors.white38 : Colors.grey[500],
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      'Terkunci',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: isDark ? Colors.white38 : Colors.grey[500],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+              if (isLocked)
+                Text(
+                  'Terkunci Otomatis',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: isDark ? Colors.white30 : Colors.grey[400],
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        child,
-        const SizedBox(height: 16),
-      ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
+      ),
     );
   }
 
   Widget _buildTextField(
     TextEditingController controller, {
     bool enabled = true,
-    int maxLines = 1,
     IconData? prefixIcon,
+    int maxLines = 1,
     TextInputType? keyboardType,
     bool isLocked = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
-
     return Container(
       decoration: BoxDecoration(
-        color: enabled
-            ? Theme.of(context).cardColor
-            : (isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.grey.shade100),
+        color: !enabled
+            ? (isDark
+                ? Colors.white.withValues(alpha: 0.03)
+                : const Color(0xFFF1F5F9))
+            : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: enabled
-              ? (isDark ? Colors.white12 : Colors.grey.shade300)
-              : (isDark ? Colors.white10 : Colors.grey.shade200),
+          color: isDark
+              ? Colors.white10
+              : (!enabled ? Colors.transparent : Colors.grey.shade300),
         ),
       ),
       child: TextField(
@@ -459,19 +400,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
         keyboardType: keyboardType,
         style: TextStyle(
           fontSize: 14,
-          color: enabled
-              ? (isDark ? Colors.white : Colors.black87)
-              : (isDark ? Colors.white38 : Colors.grey[600]),
-          fontWeight: enabled ? FontWeight.w600 : FontWeight.normal,
+          fontWeight: !enabled ? FontWeight.w600 : FontWeight.normal,
+          color: isDark
+              ? (!enabled ? Colors.white54 : Colors.white)
+              : (!enabled ? const Color(0xFF64748B) : const Color(0xFF1E293B)),
         ),
         decoration: InputDecoration(
+          border: InputBorder.none,
           prefixIcon: prefixIcon != null
               ? Icon(
                   prefixIcon,
                   size: 20,
-                  color: enabled
-                      ? primaryColor
-                      : (isDark ? Colors.white24 : Colors.grey[400]),
+                  color: isDark ? Colors.white38 : Colors.grey[400],
                 )
               : null,
           suffixIcon: isLocked
@@ -481,11 +421,370 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   color: isDark ? Colors.white24 : Colors.grey[400],
                 )
               : null,
-          border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
-            vertical: 14,
+            vertical: 13,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDigitalKtpCard(bool isDark, Color primaryColor) {
+    final hasNik = _nik.isNotEmpty;
+    final isVerified = _isVerified || hasNik;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.grey.shade300,
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(17),
+        child: Stack(
+          children: [
+            // Watermark Logo
+            Positioned(
+              right: -10,
+              bottom: isVerified ? -10 : 35,
+              child: Opacity(
+                opacity: isDark ? 0.04 : 0.06,
+                child: Icon(
+                  Icons.account_balance_rounded,
+                  size: 130,
+                  color: primaryColor,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Header KTP DIGITAL & BADGE
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.credit_card_rounded,
+                            size: 18,
+                            color: primaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'KTP DIGITAL',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                              color: isDark ? Colors.white : const Color(0xFF1E293B),
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Status Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isVerified
+                              ? primaryColor.withValues(alpha: 0.12)
+                              : Colors.amber.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isVerified
+                                ? primaryColor.withValues(alpha: 0.4)
+                                : Colors.amber.shade600.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isVerified ? Icons.verified_rounded : Icons.shield_outlined,
+                              size: 13,
+                              color: isVerified ? primaryColor : Colors.amber.shade800,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isVerified ? 'TERVERIFIKASI' : 'BELUM VERIFIKASI',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: isVerified ? primaryColor : Colors.amber.shade900,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 14),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: isDark ? Colors.white10 : Colors.grey.shade200,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 2. Data Card Body
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Foto Profil dengan Action Ganti Foto
+                      Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              if (_imageFile != null) {
+                                _showFullScreenImage(FileImage(_imageFile!));
+                              } else if (_avatarUrl != null) {
+                                _showFullScreenImage(NetworkImage(_avatarUrl!));
+                              }
+                            },
+                            child: Container(
+                              width: 78,
+                              height: 98,
+                              decoration: BoxDecoration(
+                                color: isDark ? Colors.grey[800] : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isDark ? Colors.white24 : Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(9),
+                                child: _imageFile != null
+                                    ? Image.file(
+                                        _imageFile!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => Icon(
+                                          Icons.person_rounded,
+                                          size: 40,
+                                          color: Colors.grey[400],
+                                        ),
+                                      )
+                                    : (_avatarUrl != null
+                                        ? Image.network(
+                                            _avatarUrl!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, _, _) => Icon(
+                                              Icons.person_rounded,
+                                              size: 40,
+                                              color: Colors.grey[400],
+                                            ),
+                                          )
+                                        : Icon(
+                                            Icons.person_rounded,
+                                            size: 40,
+                                            color: Colors.grey[400],
+                                          )),
+                              ),
+                            ),
+                          ),
+                          // Mini Floating Camera Button
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: _pickImage,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: primaryColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Theme.of(context).cardColor,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.25),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 13,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      // Informasi NIK, Nama, Alamat
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // NIK
+                            const Text(
+                              'NIK',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: isVerified
+                                    ? primaryColor.withValues(alpha: 0.08)
+                                    : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                hasNik ? _nik : 'Belum diisi',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: hasNik ? 'monospace' : null,
+                                  letterSpacing: hasNik ? 0.8 : 0,
+                                  color: hasNik
+                                      ? (isDark ? Colors.white : const Color(0xFF1E293B))
+                                      : (isDark ? Colors.white38 : Colors.grey[500]),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+
+                            // NAMA
+                            const Text(
+                              'NAMA',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _nameController.text.isNotEmpty
+                                        ? _nameController.text.toUpperCase()
+                                        : 'WARGA DESA',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (isVerified) ...[
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.check_circle_rounded, size: 14, color: primaryColor),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+
+                            // ALAMAT
+                            const Text(
+                              'ALAMAT',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'RT ${_rtController.text.isNotEmpty ? _rtController.text : '00'} / RW ${_rwController.text.isNotEmpty ? _rwController.text : '00'} - (Disensor)',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white60 : Colors.grey[700],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // 3. Action Button (Jika Belum Verifikasi)
+                  if (!isVerified) ...[
+                    const SizedBox(height: 14),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const VerificationPage(),
+                          ),
+                        ).then((_) => _loadProfileFromApi());
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: primaryColor.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.shield_outlined, size: 15, color: primaryColor),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Verifikasi KTP & Wajah Sekarang',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(Icons.arrow_forward_ios_rounded, size: 12, color: primaryColor),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -502,51 +801,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text(
-            'Profil SiladesBeng',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              fontSize: 18,
-              letterSpacing: 0.3,
-            ),
+            'Edit Profil & Data Diri',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
           ),
-          backgroundColor: primaryColor,
-          elevation: 0,
           centerTitle: true,
-          iconTheme: const IconThemeData(color: Colors.white),
+          elevation: 0,
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(56),
+            preferredSize: const Size.fromHeight(48),
             child: Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(25),
-              ),
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: TabBar(
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                indicator: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                labelColor: isDark ? Colors.white : primaryColor,
-                unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
+                indicatorColor: primaryColor,
+                indicatorWeight: 3,
+                labelColor: primaryColor,
+                unselectedLabelColor: isDark ? Colors.white38 : Colors.grey[500],
                 labelStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 12.5,
+                  fontSize: 13,
                 ),
                 unselectedLabelStyle: const TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 12.5,
+                  fontSize: 13,
                 ),
                 tabs: const [
                   Tab(
@@ -603,115 +880,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.all(20),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Avatar with Floating Camera Action Badge
-                        Center(
-                          child: Stack(
-                            alignment: Alignment.bottomRight,
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (_imageFile != null) {
-                                    _showFullScreenImage(FileImage(_imageFile!));
-                                  } else if (_avatarUrl != null) {
-                                    _showFullScreenImage(
-                                      NetworkImage(_avatarUrl!),
-                                    );
-                                  }
-                                },
-                                child: Container(
-                                  width: 105,
-                                  height: 105,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isDark
-                                        ? Colors.grey[800]
-                                        : Colors.grey[200],
-                                    border: Border.all(
-                                      color: primaryColor,
-                                      width: 2.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: primaryColor.withValues(alpha: 0.2),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipOval(
-                                    child: _imageFile != null
-                                        ? Image.file(
-                                            _imageFile!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, _, _) => Icon(
-                                              Icons.person_rounded,
-                                              size: 55,
-                                              color: Colors.grey[400],
-                                            ),
-                                          )
-                                        : (_avatarUrl != null
-                                            ? Image.network(
-                                                _avatarUrl!,
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_, _, _) => Icon(
-                                                  Icons.person_rounded,
-                                                  size: 55,
-                                                  color: Colors.grey[400],
-                                                ),
-                                              )
-                                            : Icon(
-                                                Icons.person_rounded,
-                                                size: 55,
-                                                color: Colors.grey[400],
-                                              )),
-                                  ),
-                                ),
-                              ),
-                              // Floating Camera Badge Button
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(20),
-                                  onTap: _pickImage,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: primaryColor,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Theme.of(context).cardColor,
-                                        width: 2.5,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.2),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Icon(
-                                      Icons.camera_alt_rounded,
-                                      size: 16,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Ketuk ikon kamera untuk mengubah foto',
-                          style: TextStyle(
-                            color: isDark ? Colors.white38 : Colors.grey[500],
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
+                        // KTP Digital Hero Card (dengan foto profil & ganti foto)
+                        _buildDigitalKtpCard(isDark, primaryColor),
+
+                        const SizedBox(height: 24),
 
                         _buildField(
                           label: 'Nama Pengguna',
@@ -806,53 +980,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Data Domisili & Wilayah',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            TextButton.icon(
-                              onPressed: _isFetchingLocation
-                                  ? null
-                                  : _fetchLocation,
-                              icon: _isFetchingLocation
-                                  ? const SizedBox(
-                                      width: 14,
-                                      height: 14,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.my_location_rounded,
-                                      size: 16,
-                                    ),
-                              label: const Text(
-                                'Verifikasi GPS',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: primaryColor,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                            ),
-                          ],
+                        const Text(
+                          'Data Domisili & Wilayah',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                         const SizedBox(height: 20),
 
@@ -921,7 +1054,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
                   ),
 
-                  // TAB 3: KEAMANAN (Security Hub)
+                  // TAB 3: KEAMANAN
                   SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.all(20),
@@ -929,7 +1062,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Keamanan Akun & Akses',
+                          'Keamanan & Akses Akun',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -969,30 +1102,46 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         _buildSecurityCard(
                           context,
                           icon: Icons.verified_user_rounded,
-                          iconColor: Colors.green,
+                          iconColor: _isVerified ? Colors.green : Colors.amber.shade700,
                           title: 'Status Verifikasi Identitas',
-                          subtitle: 'Sinkronisasi data kependudukan (KTP)',
+                          subtitle: _isVerified
+                              ? 'Sinkronisasi data kependudukan (KTP) Aktif'
+                              : 'KTP belum diverifikasi secara resmi',
                           trailingWidget: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
+                              color: _isVerified
+                                  ? Colors.green.withValues(alpha: 0.1)
+                                  : Colors.amber.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Colors.green.withValues(alpha: 0.3),
+                                color: _isVerified
+                                    ? Colors.green.withValues(alpha: 0.3)
+                                    : Colors.amber.withValues(alpha: 0.3),
                               ),
                             ),
-                            child: const Text(
-                              'Terverifikasi',
+                            child: Text(
+                              _isVerified ? 'Terverifikasi' : 'Belum Diverifikasi',
                               style: TextStyle(
-                                color: Colors.green,
+                                color: _isVerified ? Colors.green : Colors.amber.shade800,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 11,
                               ),
                             ),
                           ),
+                          onTap: _isVerified
+                              ? null
+                              : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const VerificationPage(),
+                                    ),
+                                  ).then((_) => _loadProfileFromApi());
+                                },
                         ),
 
                         const SizedBox(height: 28),
@@ -1028,11 +1177,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       : Colors.grey[600],
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 14),
                               SizedBox(
                                 width: double.infinity,
                                 child: OutlinedButton.icon(
-                                  onPressed: _logout,
+                                  onPressed: () => _logout(),
                                   icon: const Icon(
                                     Icons.logout_rounded,
                                     size: 18,
