@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/core/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -75,7 +77,7 @@ class _AssistantPageState extends State<AssistantPage> {
       }
 
       final response = await http.post(
-        Uri.parse('http://10.250.3.148:8000/api/chatbot'),
+        Uri.parse('${ApiConfig.baseUrl}/api/chatbot'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -85,7 +87,7 @@ class _AssistantPageState extends State<AssistantPage> {
           'message': text,
           'history': history,
         }),
-      );
+      ).timeout(const Duration(seconds: 30));
 
       if (!mounted) return;
 
@@ -104,16 +106,29 @@ class _AssistantPageState extends State<AssistantPage> {
           });
         });
       } else {
+        // Backend sekarang selalu mengirim 'reply' bahkan saat fallback
         final data = json.decode(response.body);
+        final replyText = data['reply'] ?? data['error'] ?? 'Maaf, terjadi kesalahan. Coba lagi nanti ya.';
         setState(() {
           _messages.add({
             'isUser': false,
-            'text': data['error'] ?? 'Terjadi kesalahan sistem saat menghubungi AI.',
+            'text': replyText,
             'time':
                 '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
           });
         });
       }
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() {
+        _isTyping = false;
+        _messages.add({
+          'isUser': false,
+          'text': 'Waktu tunggu habis. Server AI mungkin sedang sibuk. Coba lagi dalam beberapa saat ya 🙏',
+          'time':
+              '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+        });
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {

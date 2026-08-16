@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'gas_booking_page.dart';
-import '../rental/item_detail_page.dart';
+import '../../core/api_config.dart';
 import '../../widgets/product_card_widget.dart';
+import '../rental/item_detail_page.dart';
+import 'gas_booking_page.dart';
 
 class GasPage extends StatefulWidget {
   const GasPage({super.key});
@@ -40,7 +41,7 @@ class _GasPageState extends State<GasPage> {
   Future<void> _fetchGas() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final token = prefs.getString('auth_token') ?? prefs.getString('token');
 
       if (token == null) {
         if (mounted) {
@@ -54,7 +55,7 @@ class _GasPageState extends State<GasPage> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/gas'),
+        Uri.parse('${ApiConfig.baseUrl}/api/gas'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -101,32 +102,54 @@ class _GasPageState extends State<GasPage> {
   }
 
   void _showFilterModal() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = const Color(0xFF2563EB);
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
         return Container(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Filter Kategori',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close_rounded, size: 20, color: isDark ? Colors.white60 : Colors.grey[600]),
                     onPressed: () => Navigator.pop(ctx),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -136,21 +159,22 @@ class _GasPageState extends State<GasPage> {
                     label: Text(
                       category,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.grey[700],
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        color: isSelected
+                            ? Colors.white
+                            : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 13,
                       ),
                     ),
                     selected: isSelected,
-                    selectedColor: const Color(0xFF0EA5E9),
-                    backgroundColor: Colors.white,
+                    selectedColor: primaryColor,
+                    backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
                         color: isSelected
-                            ? const Color(0xFF0EA5E9)
-                            : Colors.grey[300]!,
+                            ? primaryColor
+                            : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                       ),
                     ),
                     onSelected: (selected) {
@@ -174,6 +198,9 @@ class _GasPageState extends State<GasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = const Color(0xFF2563EB);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -181,23 +208,36 @@ class _GasPageState extends State<GasPage> {
           'Layanan Gas LPG',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
           ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: const Color(0xFF2563EB),
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           if (_categories.length > 1)
             IconButton(
-              icon: const Icon(Icons.tune),
+              icon: const Icon(
+                Icons.tune_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               onPressed: _showFilterModal,
             ),
         ],
       ),
       body: RefreshIndicator(
+        color: primaryColor,
         onRefresh: () async {
           setState(() {
             _isLoading = true;
@@ -210,15 +250,15 @@ class _GasPageState extends State<GasPage> {
             SliverPadding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
-                vertical: 24.0,
+                vertical: 20.0,
               ),
               sliver: _isLoading
-                  ? const SliverToBoxAdapter(
+                  ? SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.only(top: 50),
+                        padding: const EdgeInsets.only(top: 50),
                         child: Center(
                           child: CircularProgressIndicator(
-                            color: Color(0xFF0EA5E9),
+                            color: primaryColor,
                           ),
                         ),
                       ),
@@ -226,30 +266,36 @@ class _GasPageState extends State<GasPage> {
                   : _filteredGasItems.isEmpty
                   ? SliverToBoxAdapter(
                       child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.inventory_2_outlined,
-                              size: 80,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Belum Ada Gas',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[700],
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 60),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.inventory_2_outlined,
+                                size: 70,
+                                color: isDark ? Colors.white24 : Colors.grey[400],
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Saat ini BUMDes belum menyediakan stok gas\ndi kategori ini.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.grey[500]),
-                            ),
-                          ],
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum Ada Gas',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Saat ini BUMDes belum menyediakan stok gas\ndi kategori ini.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isDark ? Colors.white54 : Colors.grey[500],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     )
@@ -257,9 +303,9 @@ class _GasPageState extends State<GasPage> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 16.0,
-                            mainAxisSpacing: 16.0,
-                            childAspectRatio: 0.7,
+                            crossAxisSpacing: 14.0,
+                            mainAxisSpacing: 14.0,
+                            childAspectRatio: 0.68,
                           ),
                       delegate: SliverChildBuilderDelegate((
                         BuildContext context,
@@ -269,7 +315,7 @@ class _GasPageState extends State<GasPage> {
                       }, childCount: _filteredGasItems.length),
                     ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
         ),
       ),

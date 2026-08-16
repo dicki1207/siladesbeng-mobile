@@ -31,6 +31,7 @@ class ProductCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final formatCurrency = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -39,11 +40,12 @@ class ProductCardWidget extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: const Color(0xFF334155), width: 1) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(15),
+            color: Colors.black.withAlpha(isDark ? 30 : 12),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -67,8 +69,8 @@ class ProductCardWidget extends StatelessWidget {
                     // Background & Gambar
                     Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFAFAFA),
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
                       ),
                       child: ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -78,17 +80,17 @@ class ProductCardWidget extends StatelessWidget {
                               ? Image.asset(
                                   imageUrl,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (ctx, err, stack) => const Icon(
-                                    Icons.image_not_supported,
-                                    color: Colors.grey,
+                                  errorBuilder: (ctx, err, stack) => Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: isDark ? Colors.white38 : Colors.grey,
                                   ),
                                 )
                               : Image.network(
                                   imageUrl,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (ctx, err, stack) => const Icon(
-                                    Icons.image_not_supported,
-                                    color: Colors.grey,
+                                  errorBuilder: (ctx, err, stack) => Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: isDark ? Colors.white38 : Colors.grey,
                                   ),
                                 ),
                         ),
@@ -127,7 +129,7 @@ class ProductCardWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Bagian Bawah: Kategori, Judul, Harga, Stok
               Expanded(
                 flex: 45,
@@ -146,7 +148,7 @@ class ProductCardWidget extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               margin: const EdgeInsets.only(bottom: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2563EB), // Biru khas tombol kategori web
+                                color: const Color(0xFF2563EB),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -160,10 +162,10 @@ class ProductCardWidget extends StatelessWidget {
                             ),
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF1E293B),
+                              color: isDark ? Colors.white : const Color(0xFF1E293B),
                               height: 1.2,
                             ),
                             maxLines: 2,
@@ -171,7 +173,7 @@ class ProductCardWidget extends StatelessWidget {
                           ),
                         ],
                       ),
-                      
+
                       // Harga & Stok
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -181,11 +183,11 @@ class ProductCardWidget extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Harga',
                                   style: TextStyle(
                                     fontSize: 8,
-                                    color: Colors.grey,
+                                    color: isDark ? Colors.white54 : const Color(0xFF64748B),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -197,18 +199,18 @@ class ProductCardWidget extends StatelessWidget {
                                     children: [
                                       Text(
                                         formatCurrency.format(price),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w900,
-                                          color: Colors.black87,
+                                          color: isDark ? Colors.white : const Color(0xFF0F172A),
                                         ),
                                       ),
                                       if (priceUnit.isNotEmpty)
                                         Text(
                                           priceUnit,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 9,
-                                            color: Colors.grey,
+                                            color: isDark ? Colors.white54 : const Color(0xFF64748B),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -226,18 +228,18 @@ class ProductCardWidget extends StatelessWidget {
                               children: [
                                 Text(
                                   stockLabel,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 8,
-                                    color: Colors.grey,
+                                    color: isDark ? Colors.white54 : const Color(0xFF64748B),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 Text(
                                   stockValue,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.black87,
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                                   ),
                                 ),
                               ],

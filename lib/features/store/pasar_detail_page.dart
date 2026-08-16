@@ -69,18 +69,6 @@ class _PasarDetailPageState extends State<PasarDetailPage> with SingleTickerProv
     return (raw as num).toDouble();
   }
 
-  double? get _originalPrice {
-    final raw = _product?['harga_asli'];
-    if (raw == null) return null;
-    double val;
-    if (raw is String) {
-      val = double.tryParse(raw) ?? 0;
-    } else {
-      val = (raw as num).toDouble();
-    }
-    return val > _price ? val : null;
-  }
-
   int get _stock => _product?['stok'] ?? 0;
 
   @override
@@ -271,35 +259,6 @@ class _PasarDetailPageState extends State<PasarDetailPage> with SingleTickerProv
                         ),
                     ],
                   ),
-                  if (_originalPrice != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        children: [
-                          Text(
-                            formatCurrency.format(_originalPrice),
-                            style: TextStyle(
-                              fontSize: 14,
-                              decoration: TextDecoration.lineThrough,
-                              decorationColor: Colors.grey[400],
-                              color: Colors.grey[400],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withAlpha(20),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '-${((_originalPrice! - _price) / _originalPrice! * 100).round()}%',
-                              style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   const SizedBox(height: 12),
 
                   // Nama

@@ -523,36 +523,40 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               ),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: _tipeOptions.map((tipe) {
-                final bool isSelected = _formTipe == tipe;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(tipe),
-                    selected: isSelected,
-                    selectedColor: const Color(0xFF2563EB),
-                    labelStyle: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : (isDark ? Colors.white70 : const Color(0xFF475569)),
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                    backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: _tipeOptions.map((tipe) {
+                  final bool isSelected = _formTipe == tipe;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(tipe),
+                      selected: isSelected,
+                      selectedColor: const Color(0xFF2563EB),
+                      labelStyle: TextStyle(
                         color: isSelected
-                            ? const Color(0xFF2563EB)
-                            : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                            ? Colors.white
+                            : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
+                      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: isSelected
+                              ? const Color(0xFF2563EB)
+                              : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                        ),
+                      ),
+                      elevation: 0,
+                      onSelected: (_) => setState(() => _formTipe = tipe),
                     ),
-                    elevation: 0,
-                    onSelected: (_) => setState(() => _formTipe = tipe),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
 
             const SizedBox(height: 18),

@@ -490,20 +490,6 @@ class _StorePageState extends State<StorePage> {
       price = (rawPrice as num).toDouble();
     }
 
-    dynamic rawOriginalPrice = product['harga_asli'];
-    double? originalPrice;
-    if (rawOriginalPrice != null) {
-      if (rawOriginalPrice is String) {
-        originalPrice = double.tryParse(rawOriginalPrice);
-      } else {
-        originalPrice = (rawOriginalPrice as num).toDouble();
-      }
-      // Hanya tampilkan jika harga asli lebih besar dari harga jual
-      if (originalPrice != null && originalPrice <= price) {
-        originalPrice = null;
-      }
-    }
-
     return GestureDetector(
       onTap: () async {
         await Navigator.push(
@@ -690,20 +676,6 @@ class _StorePageState extends State<StorePage> {
                               ),
                           ],
                         ),
-                        // Harga coret (jika ada diskon)
-                        if (originalPrice != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              formatCurrency.format(originalPrice),
-                              style: TextStyle(
-                                decoration: TextDecoration.lineThrough,
-                                decorationColor: Colors.grey[400],
-                                color: Colors.grey[400],
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                     // Lokasi desa
