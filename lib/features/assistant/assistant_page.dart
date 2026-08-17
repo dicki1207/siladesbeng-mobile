@@ -153,7 +153,7 @@ class _AssistantPageState extends State<AssistantPage> {
       backgroundColor: isDark ? AppTheme.bgDark : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
-          'Asisten Cerdas',
+          'SiladesBeng Assistant',
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w600,

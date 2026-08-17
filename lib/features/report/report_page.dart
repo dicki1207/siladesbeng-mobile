@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:siladesbeng_mobile/features/report/report_camera_page.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -29,7 +29,6 @@ class _ReportPageState extends State<ReportPage> {
   final _deskripsiController = TextEditingController();
 
   File? _imageFile;
-  final ImagePicker _picker = ImagePicker();
 
   bool _isLoading = false;
   bool _isSubmitting = false;
@@ -109,95 +108,23 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _openCamera() async {
     try {
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        imageQuality: 60,
+      final File? result = await Navigator.push<File>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ReportCameraPage(),
+        ),
       );
-      if (image != null) {
+      if (result != null) {
         setState(() {
-          _imageFile = File(image.path);
+          _imageFile = result;
         });
         _calculateProgress();
       }
     } catch (e) {
-      _showError('Gagal memilih foto: $e');
+      _showError('Gagal membuka kamera: $e');
     }
-  }
-
-  void _showImageSourceDialog() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Pilih Sumber Foto',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 14),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.camera_alt_rounded, color: primaryColor, size: 22),
-              ),
-              title: const Text('Ambil Foto (Kamera)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              subtitle: const Text('Ambil foto langsung dengan kamera', style: TextStyle(fontSize: 11.5)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.photo_library_rounded, color: primaryColor, size: 22),
-              ),
-              title: const Text('Pilih dari Galeri', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              subtitle: const Text('Pilih file gambar dari penyimpanan perangkat', style: TextStyle(fontSize: 11.5)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   void _showError(String message) {
@@ -411,89 +338,103 @@ class _ReportPageState extends State<ReportPage> {
   Widget _buildPhotoUploadSection(bool isDark, Color primaryColor) {
     if (_imageFile == null) {
       return Container(
-        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(14),
+          color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.white12 : Colors.grey.shade300,
+            color: primaryColor.withValues(alpha: 0.35),
+            width: 1.5,
           ),
         ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _pickImage(ImageSource.camera),
-                    icon: Icon(Icons.camera_alt_rounded, size: 16, color: primaryColor),
-                    label: Text(
-                      'Kamera (Foto)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                      ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: _openCamera,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
                     ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: primaryColor.withValues(alpha: 0.3)),
-                      padding: const EdgeInsets.symmetric(vertical: 11),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _pickImage(ImageSource.gallery),
-                    icon: Icon(Icons.photo_library_rounded, size: 16, color: primaryColor),
-                    label: Text(
-                      'Pilih Galeri',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: primaryColor.withValues(alpha: 0.3)),
-                      padding: const EdgeInsets.symmetric(vertical: 11),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: Icon(
+                      Icons.camera_alt_rounded,
+                      size: 28,
+                      color: primaryColor,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Format: JPG, JPEG, PNG (Maksimal 5MB)',
-              style: TextStyle(
-                color: isDark ? Colors.white38 : Colors.grey[500],
-                fontSize: 10.5,
+                  const SizedBox(height: 12),
+                  Text(
+                    'Tambah Foto Bukti Kejadian',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Ambil foto langsung atau pilih dari Album / Galeri',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: isDark ? Colors.white60 : Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.photo_library_outlined, size: 12, color: primaryColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Kamera & Album Galeri',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       );
     }
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+          color: const Color(0xFF10B981).withValues(alpha: 0.35),
         ),
       ),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
             child: Image.file(
               _imageFile!,
-              width: 48,
-              height: 48,
+              width: 52,
+              height: 52,
               fit: BoxFit.cover,
             ),
           ),
@@ -505,11 +446,11 @@ class _ReportPageState extends State<ReportPage> {
                 const Text(
                   'Foto Bukti Terlampir',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.5,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
                   'Siap dikirimkan bersama laporan',
                   style: TextStyle(
@@ -521,12 +462,12 @@ class _ReportPageState extends State<ReportPage> {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.refresh_rounded, color: primaryColor, size: 20),
+            icon: Icon(Icons.refresh_rounded, color: primaryColor, size: 22),
             tooltip: 'Ganti Foto',
-            onPressed: _showImageSourceDialog,
+            onPressed: _openCamera,
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
             tooltip: 'Hapus Foto',
             onPressed: () {
               setState(() => _imageFile = null);

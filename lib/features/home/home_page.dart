@@ -520,7 +520,7 @@ class _HomePageState extends State<HomePage> {
                             child: AnimatedTextKit(
                               animatedTexts: [
                                 TypewriterAnimatedText(
-                                  'Tanya Assistant?',
+                                  'Tanya Asisten',
                                   speed: const Duration(milliseconds: 100),
                                 ),
                               ],
@@ -773,7 +773,7 @@ class _HomePageState extends State<HomePage> {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 5.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
           colors: isDark
               ? [const Color(0xFF1E3A8A), const Color(0xFF0F172A)]
@@ -854,16 +854,16 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHeroBanner() {
     return Container(
       margin: const EdgeInsets.only(
-        top: 10,
-        bottom: 5,
-      ), // Jarak bawah diperkecil
+        top: 8,
+        bottom: 4,
+      ),
       child: CarouselSlider(
         options: CarouselOptions(
-          height: 180.0,
+          height: 140.0,
           autoPlay: true,
           enlargeCenterPage: true,
           viewportFraction: 0.9,
-          aspectRatio: 2.0,
+          aspectRatio: 2.3,
         ),
         items: _banners.isEmpty
             ? [
@@ -872,7 +872,7 @@ class _HomePageState extends State<HomePage> {
                         width: double.infinity,
                         margin: const EdgeInsets.symmetric(horizontal: 5.0),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                           color: Colors.grey.withAlpha(40),
                         ),
                         child: const Center(
@@ -894,11 +894,11 @@ class _HomePageState extends State<HomePage> {
                       width: MediaQuery.of(context).size.width,
                       margin: const EdgeInsets.symmetric(horizontal: 5.0),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         color: Colors.grey.withAlpha(40),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
@@ -907,7 +907,6 @@ class _HomePageState extends State<HomePage> {
                               fit: BoxFit.cover,
                               errorBuilder: (ctx, err, stack) => _buildFallbackBanner(),
                             ),
-                            // Removed gradient and text per user request
                           ],
                         ),
                       ),

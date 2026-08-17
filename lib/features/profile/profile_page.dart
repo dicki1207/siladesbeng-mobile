@@ -531,11 +531,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildProfileHeaderCard() {
+  Widget _buildProfileHeaderCard({EdgeInsetsGeometry? margin}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -544,9 +544,9 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 30 : 6),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -725,86 +725,209 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildTopHeroHeader(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            primaryColor,
+            const Color(0xFF1D4ED8), // Deep vibrant blue
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withValues(alpha: 0.3),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Lingkaran dekoratif 1
+          Positioned(
+            top: -35,
+            right: -25,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          // Lingkaran dekoratif 2
+          Positioned(
+            bottom: -25,
+            left: -20,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+
+          // Konten Header
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              topPadding + 14,
+              20,
+              _isLoggedIn ? 50 : 24, // Extra space at bottom for overlapping profile card
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Profil Saya',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Kabupaten Bengkalis',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isVerified
+                            ? Icons.verified_rounded
+                            : Icons.person_outline_rounded,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        _isVerified ? 'Terverifikasi' : 'Warga',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          'Profil Saya',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.3,
-          ),
-        ),
-        backgroundColor: primaryColor,
-        elevation: 0,
-        centerTitle: true,
-        automaticallyImplyLeading: false,
-      ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 6),
+            _buildTopHeroHeader(context),
+
             if (_isLoggedIn) ...[
-              _buildProfileHeaderCard(),
-              if (_isVerified) ...[
-                Padding(
+              Transform.translate(
+                offset: const Offset(0, -32),
+                child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: FutureBuilder<SharedPreferences>(
-                    future: SharedPreferences.getInstance(),
-                    builder: (context, snapshot) {
-                      final status =
-                          snapshot.data?.getString('transfer_status');
-                      if (status == 'pending') {
-                        return Container(
-                          margin: const EdgeInsets.only(top: 8),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withAlpha(20),
-                            border: Border.all(
-                              color: Colors.orange.withAlpha(50),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.hourglass_empty,
-                                color: Colors.orange,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'Pemindahan Domisili Anda sedang diproses oleh admin.',
-                                  style: TextStyle(
-                                    color: Colors.orange[800],
-                                    fontSize: 12,
-                                  ),
+                  child: Column(
+                    children: [
+                      _buildProfileHeaderCard(margin: EdgeInsets.zero),
+                      if (_isVerified) ...[
+                        FutureBuilder<SharedPreferences>(
+                          future: SharedPreferences.getInstance(),
+                          builder: (context, snapshot) {
+                            final status =
+                                snapshot.data?.getString('transfer_status');
+                            if (status == 'pending') {
+                              return Container(
+                                margin: const EdgeInsets.only(top: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 14,
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withAlpha(20),
+                                  border: Border.all(
+                                    color: Colors.orange.withAlpha(50),
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.hourglass_empty,
+                                      color: Colors.orange,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'Pemindahan Domisili Anda sedang diproses oleh admin.',
+                                        style: TextStyle(
+                                          color: Colors.orange[800],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-              ],
+              ),
+              const SizedBox(height: -14), // Spacing compensation for overlapping offset
+            ] else ...[
+              const SizedBox(height: 16),
             ],
-
-            const SizedBox(height: 16),
 
             // Menus - Modern Grouped Section Cards
             Padding(
