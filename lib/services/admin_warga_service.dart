@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class AdminWargaService {
-  static const String baseUrl = 'http://10.250.3.148:8000/api';
+  String get baseUrl => '${ApiConfig.baseUrl}/api';
 
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();

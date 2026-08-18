@@ -96,6 +96,9 @@ class _AdminReportPageState extends State<AdminReportPage> {
                     }
                   }
 
+                  // Debug: tampilkan data bukti mentah dari API
+                  debugPrint('📸 Laporan #${e['id']} bukti=${e['bukti']} | foto_bukti=${e['foto_bukti']} | foto=${e['foto']}');
+
                   return {
                     'id': e['id'].toString(),
                     'title': kategori,
@@ -109,7 +112,9 @@ class _AdminReportPageState extends State<AdminReportPage> {
                     'description': deskripsi,
                     'deskripsi': deskripsi,
                     'lokasi': e['lokasi'] ?? '',
-                    'bukti': e['bukti'] ?? '',
+                    'bukti': e['bukti'],
+                    'foto_bukti': e['foto_bukti'],
+                    'foto': e['foto'],
                     'user': userObj,
                   };
                 }).toList();
