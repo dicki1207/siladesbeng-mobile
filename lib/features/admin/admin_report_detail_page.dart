@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AdminReportDetailPage extends StatefulWidget {
   final Map<String, dynamic> report;
@@ -78,8 +79,19 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     return url.isNotEmpty ? [url] : [];
   }
 
-  // Parse GPS location
-  LatLng? _parseCoordinates(dynamic loc) {
+  // Parse GPS location from lat/lng or lokasi string
+  LatLng? _parseCoordinates() {
+    // 1. Cek field latitude & longitude dari database
+    if (widget.report['latitude'] != null && widget.report['longitude'] != null) {
+      try {
+        final lat = double.parse(widget.report['latitude'].toString());
+        final lng = double.parse(widget.report['longitude'].toString());
+        return LatLng(lat, lng);
+      } catch (_) {}
+    }
+
+    // 2. Fallback cek field lokasi jika formatnya 'lat, lng'
+    final loc = widget.report['lokasi'];
     if (loc == null) return null;
     final str = loc.toString().trim();
     if (str.isEmpty) return null;
@@ -226,8 +238,13 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     final String deskripsi = deskripsiRaw.isNotEmpty ? deskripsiRaw : 'Tidak ada rincian keterangan tambahan dari pelapor.';
     // Handle both JSON array and plain string bukti formats
     final List<String> buktiUrls = _parseBuktiUrls(widget.report['bukti'] ?? widget.report['foto'] ?? widget.report['foto_bukti']);
-    final LatLng? coords = _parseCoordinates(widget.report['lokasi']);
-    final String lokasiText = widget.report['lokasi_text'] ?? (widget.report['lokasi'] != null && coords == null ? widget.report['lokasi'].toString() : 'Lingkungan RT 02 / RW 01');
+    final LatLng? coords = _parseCoordinates();
+    
+    String lokasiText = widget.report['lokasi_text'] ?? (widget.report['lokasi'] != null ? widget.report['lokasi'].toString() : 'Lingkungan RT 02 / RW 01');
+    // Jika lokasi tidak dikenali tapi ada koordinat, ganti teksnya
+    if ((lokasiText == 'Lokasi tidak dikenali' || lokasiText.trim().isEmpty) && coords != null) {
+      lokasiText = '${coords.latitude}, ${coords.longitude} (Titik GPS)';
+    }
 
     final actions = _getAvailableActions();
     final selectedAction = actions.cast<Map<String, dynamic>?>().firstWhere(
@@ -319,6 +336,44 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                     value: lokasiText,
                     isDark: isDark,
                   ),
+                  if (coords != null) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const SizedBox(width: 15 + 8 + 95 + 10), // Offset sejajar dengan teks value
+                        InkWell(
+                          onTap: () {
+                            final url = 'https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}';
+                            launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: _primaryBlue.withAlpha(76)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.map_rounded, size: 12, color: _primaryBlue),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Buka di Google Maps',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: _primaryBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

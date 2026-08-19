@@ -436,7 +436,7 @@ class _HomePageState extends State<HomePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               PremiumHeader(
-                                bottomPadding: 24.0,
+                                bottomPadding: 12.0,
                                 child: Column(
                                   children: [
                                     _buildTopProfile(),
@@ -602,7 +602,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTopProfile() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 10),
       child: FutureBuilder<SharedPreferences>(
         future: SharedPreferences.getInstance(),
         builder: (context, snapshot) {
@@ -626,82 +626,71 @@ class _HomePageState extends State<HomePage> {
               GestureDetector(
                 onTap: widget.onNavigateToProfile,
                 child: Container(
-                  padding: const EdgeInsets.all(3),
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [
-                        Colors.blueAccent,
-                        Colors.purpleAccent,
-                        Colors.redAccent,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    border: Border.all(color: Colors.white.withAlpha(80), width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blueAccent.withAlpha(60),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        color: Colors.black.withAlpha(20),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.grey[200],
-                      child: ClipOval(
-                        child: (isLoggedIn && imagePath != null)
-                            ? Image.file(
-                                File(imagePath),
-                                width: 44,
-                                height: 44,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(
-                                  Icons.person,
-                                  color: Colors.grey,
-                                ),
-                              )
-                            : (isLoggedIn && imageUrl != null)
-                            ? Image.network(
-                                imageUrl,
-                                width: 44,
-                                height: 44,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(
-                                  Icons.person,
-                                  color: Colors.grey,
-                                ),
-                              )
-                            : const Icon(Icons.person, color: Colors.grey),
-                      ),
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.white24,
+                    child: ClipOval(
+                      child: (isLoggedIn && imagePath != null)
+                          ? Image.file(
+                              File(imagePath),
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            )
+                          : (isLoggedIn && imageUrl != null)
+                          ? Image.network(
+                              imageUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            )
+                          : const Icon(Icons.person, color: Colors.white, size: 22),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Halo, ${_getGreeting()}',
-                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      style: const TextStyle(
                         color: Colors.white70,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 11.5,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       name,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
+                        fontSize: 15,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -723,36 +712,33 @@ class _HomePageState extends State<HomePage> {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
+                        color: Colors.white.withAlpha(35),
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(10),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        border: Border.all(
+                          color: Colors.white.withAlpha(45),
+                          width: 1,
+                        ),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.notifications_outlined,
-                        color: Theme.of(context).primaryColor,
-                        size: 24,
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ),
                     Positioned(
-                      top: 0,
-                      right: 2,
+                      top: 1,
+                      right: 1,
                       child: Container(
-                        width: 12,
-                        height: 12,
+                        width: 9,
+                        height: 9,
                         decoration: BoxDecoration(
-                          color: Colors.redAccent,
+                          color: const Color(0xFFEF4444),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            width: 2,
+                            color: const Color(0xFF2563EB),
+                            width: 1.5,
                           ),
                         ),
                       ),
@@ -919,40 +905,52 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ],
+    return Container(
+      height: 38,
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(35),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withAlpha(50),
+          width: 1,
         ),
-        child: TextField(
-          controller: _searchController,
-          onSubmitted: (value) {
-            _performSearch(value);
-          },
-          decoration: InputDecoration(
-            hintText: 'Cari',
-            hintStyle: const TextStyle(color: Colors.grey),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 14,
-            ),
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.search, color: Colors.grey),
-              onPressed: () {
-                _performSearch(_searchController.text);
-              },
-            ),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12.5,
+        ),
+        cursorColor: Colors.white,
+        onSubmitted: (value) {
+          _performSearch(value);
+        },
+        decoration: InputDecoration(
+          hintText: 'Cari layanan desa, pasar, kabar...',
+          hintStyle: TextStyle(
+            color: Colors.white.withAlpha(180),
+            fontSize: 12,
           ),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 9,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: Colors.white.withAlpha(200),
+            size: 18,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded, color: Colors.white70, size: 16),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                )
+              : null,
         ),
       ),
     );

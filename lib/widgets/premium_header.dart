@@ -7,89 +7,76 @@ class PremiumHeader extends StatelessWidget {
   const PremiumHeader({
     super.key,
     required this.child,
-    this.bottomPadding = 20.0,
+    this.bottomPadding = 14.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
-    final secondaryColor = primaryColor.withAlpha(200);
+    const Color primaryBlue = Color(0xFF2563EB); // Royal Blue
+    const Color darkBlue = Color(0xFF1D4ED8);    // Deep Blue
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            primaryColor,
-            secondaryColor,
+            primaryBlue,
+            darkBlue,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(40),
-          bottomRight: Radius.circular(40),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withAlpha(50), // 20% opacity shadow matching theme
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Color(0x332563EB), // Soft blue glow
+            blurRadius: 16,
+            offset: Offset(0, 6),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(40),
-          bottomRight: Radius.circular(40),
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
         child: Stack(
           children: [
-            // Lingkaran dekoratif 1 (Besar di kanan atas)
+            // Subtle glowing circle 1 (Top Right)
             Positioned(
-              top: -60,
-              right: -40,
+              top: -50,
+              right: -30,
               child: Container(
-                width: 200,
-                height: 200,
+                width: 160,
+                height: 160,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withAlpha(25),
+                  color: Colors.white.withAlpha(20),
                 ),
               ),
             ),
-            // Lingkaran dekoratif 2 (Sedang di kiri bawah)
+            // Subtle glowing circle 2 (Bottom Left)
             Positioned(
-              bottom: -50,
-              left: -30,
+              bottom: -40,
+              left: -20,
               child: Container(
-                width: 140,
-                height: 140,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withAlpha(15),
-                ),
-              ),
-            ),
-            // Lingkaran dekoratif 3 (Kecil di tengah agak atas)
-            Positioned(
-              top: 20,
-              left: MediaQuery.of(context).size.width * 0.4,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withAlpha(10),
+                  color: Colors.white.withAlpha(12),
                 ),
               ),
             ),
             // Konten Utama
             Padding(
               padding: EdgeInsets.fromLTRB(
-                24,
-                MediaQuery.of(context).padding.top + 16,
-                24,
+                16,
+                MediaQuery.of(context).padding.top + 10,
+                16,
                 bottomPadding,
               ),
               child: child,

@@ -47,10 +47,35 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     'RW 04 - Dusun Dahlia': ['RT 01', 'RT 02', 'RT 03', 'RT 04'],
   };
 
-  final List<String> _tipeOptions = [
-    'Gotong Royong',
-    'Acara / Event',
-    'Pengumuman',
+  final List<Map<String, dynamic>> _tipeOptions = [
+    {
+      'label': 'Gotong Royong',
+      'icon': Icons.volunteer_activism_rounded,
+      'desc': 'Kerja bakti & kebersihan',
+      'color': const Color(0xFF10B981),
+      'gradient': [const Color(0xFF059669), const Color(0xFF10B981)],
+    },
+    {
+      'label': 'Acara / Event',
+      'icon': Icons.festival_rounded,
+      'desc': 'Kegiatan warga & pesta',
+      'color': const Color(0xFF8B5CF6),
+      'gradient': [const Color(0xFF7C3AED), const Color(0xFF8B5CF6)],
+    },
+    {
+      'label': 'Pengumuman',
+      'icon': Icons.campaign_rounded,
+      'desc': 'Informasi penting / rapat',
+      'color': const Color(0xFFF59E0B),
+      'gradient': [const Color(0xFFD97706), const Color(0xFFF59E0B)],
+    },
+  ];
+
+  final List<String> _quickLocations = [
+    'Pos Ronda RT',
+    'Balai Pertemuan Desa',
+    'Masjid Jami’',
+    'Lapangan Desa',
   ];
 
   List<Map<String, dynamic>> _events = [];
@@ -60,6 +85,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
     _loadEvents();
   }
 
@@ -104,6 +134,65 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     super.dispose();
   }
 
+  Future<void> _pickDateTime() async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+      helpText: 'Pilih Tanggal Pelaksanaan',
+      confirmText: 'Lanjut Pilih Jam',
+      cancelText: 'Batal',
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF2563EB),
+              primary: const Color(0xFF2563EB),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (date != null && mounted) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: const TimeOfDay(hour: 8, minute: 0),
+        helpText: 'Pilih Waktu / Jam',
+        confirmText: 'Simpan',
+        cancelText: 'Batal',
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF2563EB),
+                primary: const Color(0xFF2563EB),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (time != null && mounted) {
+        final days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        final months = [
+          'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        final dayName = days[date.weekday - 1];
+        final monthName = months[date.month - 1];
+        final timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} WIB';
+        setState(() {
+          _scheduleController.text = '$dayName, ${date.day} $monthName ${date.year} • Pukul $timeStr';
+        });
+      }
+    }
+  }
+
   Future<void> _handleToggleJoin(int idx) async {
     final eventId = _events[idx]['id'];
     if (eventId == null) return;
@@ -120,15 +209,28 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       final bool isJoined = _events[idx]['isJoined'] as bool;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            isJoined
-                ? 'Terima kasih! Anda tercatat siap hadir.'
-                : 'Partisipasi dibatalkan.',
+          content: Row(
+            children: [
+              Icon(
+                isJoined ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  isJoined
+                      ? 'Terima kasih! Anda tercatat siap hadir.'
+                      : 'Partisipasi kehadiran dibatalkan.',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: isJoined ? const Color(0xFF10B981) : const Color(0xFF64748B),
+          backgroundColor: isJoined ? const Color(0xFF10B981) : const Color(0xFF475569),
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -162,16 +264,27 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       _scheduleController.clear();
       _locationController.clear();
       _noteController.clear();
-      _tabController.index = 0;
+      _tabController.animateTo(0);
       await _loadEvents();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Pengumuman kegiatan berhasil dipublikasikan!'),
+          content: const Row(
+            children: [
+              Icon(Icons.celebration_rounded, color: Colors.white, size: 22),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Pengumuman berhasil dipublikasikan ke warga!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
           backgroundColor: const Color(0xFF10B981),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     } else {
@@ -179,6 +292,8 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
         SnackBar(
           content: Text(response['message'] ?? 'Gagal membuat pengumuman'),
           backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
@@ -187,583 +302,1054 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: isDark ? Colors.white : const Color(0xFF1E293B),
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Pengumuman & Kegiatan',
-          style: TextStyle(
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
-            fontWeight: FontWeight.w800,
-            fontSize: 17,
-          ),
-        ),
-        bottom: TabBar(
+      backgroundColor: isDark ? const Color(0xFF090D16) : const Color(0xFFF4F6FA),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              expandedHeight: 175,
+              pinned: true,
+              floating: false,
+              elevation: 0,
+              scrolledUnderElevation: 2,
+              backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF1E3A8A),
+              leading: IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(isDark ? 25 : 35),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Gradient overlay
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isDark
+                              ? [
+                                  const Color(0xFF0F172A),
+                                  const Color(0xFF1E293B),
+                                  const Color(0xFF1E3A8A).withAlpha(120),
+                                ]
+                              : [
+                                  const Color(0xFF1E3A8A),
+                                  const Color(0xFF2563EB),
+                                  const Color(0xFF3B82F6),
+                                ],
+                        ),
+                      ),
+                    ),
+                    // Ambient light circle
+                    Positioned(
+                      right: -30,
+                      top: -30,
+                      child: Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(20),
+                        ),
+                      ),
+                    ),
+                    // Title info in header (positioned with generous breathing room below back button)
+                    Positioned(
+                      left: 20,
+                      right: 20,
+                      top: MediaQuery.of(context).padding.top + 52,
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pengumuman & Agenda',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Pusat kegiatan, gotong royong & info warga',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(54),
+                child: Container(
+                  height: 54,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF090D16) : const Color(0xFFF4F6FA),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2563EB).withAlpha(80),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      labelColor: Colors.white,
+                      unselectedLabelColor: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
+                      dividerColor: Colors.transparent,
+                      tabs: const [
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.event_note_rounded, size: 16),
+                              SizedBox(width: 6),
+                              Text('Daftar Kegiatan'),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_circle_outline_rounded, size: 16),
+                              SizedBox(width: 6),
+                              Text('Buat Agenda'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ];
+        },
+        body: TabBarView(
           controller: _tabController,
-          labelColor: const Color(0xFF2563EB),
-          unselectedLabelColor: isDark ? Colors.white60 : const Color(0xFF64748B),
-          indicatorColor: const Color(0xFF2563EB),
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 13),
-          tabs: const [
-            Tab(text: 'Daftar Kegiatan'),
-            Tab(text: 'Buat Pengumuman'),
+          children: [
+            _buildEventsListTab(isDark),
+            _buildRedesignedCreationForm(isDark),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildEventsListTab(isDark, primaryColor),
-          _buildCleanCreationFormTab(isDark),
-        ],
       ),
     );
   }
 
-  // TAB 1: DAFTAR KEGIATAN & PENGUMUMAN
-  Widget _buildEventsListTab(bool isDark, Color primaryColor) {
+  // ═══════════════════════════════════════════════════════════════════
+  // TAB 1: DAFTAR KEGIATAN (MODERN FEED STYLE)
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildEventsListTab(bool isDark) {
     final filteredEvents = _selectedFilter == 'Semua Wilayah'
         ? _events
         : _events.where((e) => (e['wilayah'] as String).contains(_selectedFilter)).toList();
 
     return RefreshIndicator(
       onRefresh: _loadEvents,
-      color: primaryColor,
-      child: Column(
-        children: [
+      color: const Color(0xFF2563EB),
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
           // Filter Chips Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: ['Semua Wilayah', 'RW 01', 'RW 02', 'RW 03', 'RW 04'].map((filter) {
-                  final bool active = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(filter),
-                      selected: active,
-                      selectedColor: const Color(0xFF2563EB),
-                      labelStyle: TextStyle(
-                        color: active
-                            ? Colors.white
-                            : (isDark ? Colors.white70 : const Color(0xFF475569)),
-                        fontSize: 12,
-                        fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: active
-                              ? const Color(0xFF2563EB)
-                              : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: ['Semua Wilayah', 'RW 01', 'RW 02', 'RW 03', 'RW 04'].map((filter) {
+                    final bool active = _selectedFilter == filter;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        child: FilterChip(
+                          label: Text(filter),
+                          selected: active,
+                          showCheckmark: false,
+                          avatar: active
+                              ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+                              : null,
+                          labelStyle: TextStyle(
+                            color: active
+                                ? Colors.white
+                                : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                            fontSize: 12,
+                            fontWeight: active ? FontWeight.bold : FontWeight.w600,
+                          ),
+                          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          selectedColor: const Color(0xFF2563EB),
+                          side: BorderSide(
+                            color: active
+                                ? const Color(0xFF2563EB)
+                                : (isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          elevation: active ? 2 : 0,
+                          shadowColor: const Color(0xFF2563EB).withAlpha(80),
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          onSelected: (_) => setState(() => _selectedFilter = filter),
                         ),
                       ),
-                      elevation: 0,
-                      onSelected: (_) => setState(() => _selectedFilter = filter),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),
 
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredEvents.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(18),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2563EB).withAlpha(15),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.event_note_outlined,
-                                size: 48,
-                                color: Color(0xFF2563EB),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              'Belum ada pengumuman kegiatan\ndi wilayah "$_selectedFilter"',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 6, 20, 30),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: filteredEvents.length,
-                        itemBuilder: (context, index) {
-                          final item = filteredEvents[index];
-                          final realIndex = _events.indexOf(item);
-                          final bool isJoined = item['isJoined'] as bool;
+          // Event Count Bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Agenda & Pengumuman Aktif',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white70 : const Color(0xFF334155),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2563EB).withAlpha(isDark ? 35 : 20),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${filteredEvents.length} Kegiatan',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2563EB),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 14),
+          // Content List
+          if (_isLoading)
+            const SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+              ),
+            )
+          else if (filteredEvents.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB).withAlpha(isDark ? 25 : 15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.event_busy_rounded,
+                          size: 48,
+                          color: Color(0xFF2563EB),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Belum Ada Kegiatan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Tidak ada pengumuman kegiatan di "$_selectedFilter". Jadilah yang pertama membuat agenda!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      OutlinedButton.icon(
+                        onPressed: () => _tabController.animateTo(1),
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text('Buat Agenda Baru'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF2563EB),
+                          side: const BorderSide(color: Color(0xFF2563EB)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final item = filteredEvents[index];
+                    final realIndex = _events.indexOf(item);
+                    final bool isJoined = item['isJoined'] as bool;
+                    final tipeConfig = _tipeOptions.firstWhere(
+                      (t) => t['label'] == item['tipe'],
+                      orElse: () => _tipeOptions[0],
+                    );
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF131C2E) : Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(isDark ? 30 : 6),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Top Ribbon Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(isDark ? 20 : 6),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                              color: (tipeConfig['color'] as Color).withAlpha(isDark ? 25 : 15),
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(17)),
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: (tipeConfig['color'] as Color).withAlpha(30),
                                 ),
-                              ],
+                              ),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Top Row: Type Badge + Wilayah
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF2563EB).withAlpha(15),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          item['tipe'],
-                                          style: const TextStyle(
-                                            color: Color(0xFF2563EB),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11,
-                                          ),
-                                        ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: tipeConfig['color'] as Color,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    tipeConfig['icon'] as IconData,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  item['tipe'],
+                                  style: TextStyle(
+                                    color: tipeConfig['color'] as Color,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (item['wilayah'].toString().isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
                                       ),
-                                      if (item['wilayah'].toString().isNotEmpty)
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.place_rounded,
+                                          size: 12,
+                                          color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                                        ),
+                                        const SizedBox(width: 4),
                                         Text(
                                           item['wilayah'],
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: isDark ? Colors.white54 : Colors.grey[500],
                                             fontWeight: FontWeight.w600,
+                                            color: isDark ? Colors.white70 : const Color(0xFF475569),
                                           ),
                                         ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-
-                                  // Judul
-                                  Text(
-                                    item['title'],
-                                    style: TextStyle(
-                                      fontSize: 15.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                                      height: 1.3,
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
+                              ],
+                            ),
+                          ),
 
-                                  // Jadwal & Lokasi
-                                  if (item['jadwal'].toString().isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 5),
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.schedule, size: 14, color: isDark ? Colors.white60 : Colors.grey[600]),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Text(
-                                              item['jadwal'],
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: isDark ? Colors.white70 : const Color(0xFF475569),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                          // Card Body
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title
+                                Text(
+                                  item['title'],
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Schedule Row
+                                if (item['jadwal'].toString().isNotEmpty)
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-
-                                  if (item['lokasi'].toString().isNotEmpty)
-                                    Row(
+                                    child: Row(
                                       children: [
-                                        Icon(Icons.location_on_outlined, size: 14, color: isDark ? Colors.white60 : Colors.grey[600]),
-                                        const SizedBox(width: 6),
+                                        const Icon(
+                                          Icons.calendar_today_rounded,
+                                          size: 14,
+                                          color: Color(0xFF2563EB),
+                                        ),
+                                        const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            item['lokasi'],
+                                            item['jadwal'],
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                              fontWeight: FontWeight.w600,
+                                              color: isDark ? Colors.white70 : const Color(0xFF334155),
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
+                                  ),
 
-                                  if (item['note'].toString().isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      item['note'],
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                                        height: 1.35,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
+                                // Location Row
+                                if (item['lokasi'].toString().isNotEmpty)
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
-                                  ],
-
-                                  const SizedBox(height: 14),
-                                  Divider(height: 1, color: isDark ? Colors.white10 : const Color(0xFFF1F5F9)),
-                                  const SizedBox(height: 12),
-
-                                  // Action Row
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.groups_outlined, size: 18, color: const Color(0xFF2563EB)),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            '${item['participants']} Warga Hadir',
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.location_on_rounded,
+                                          size: 14,
+                                          color: Color(0xFFEF4444),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            item['lokasi'],
                                             style: TextStyle(
-                                              fontWeight: FontWeight.bold,
                                               fontSize: 12,
+                                              fontWeight: FontWeight.w600,
                                               color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                // Note
+                                if (item['note'].toString().isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    item['note'],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                      height: 1.4,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+
+                                const SizedBox(height: 14),
+                                Divider(
+                                  height: 1,
+                                  color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Footer: Participants & Join Button
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF10B981).withAlpha(isDark ? 30 : 15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.people_alt_rounded,
+                                            size: 15,
+                                            color: Color(0xFF10B981),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            '${item['participants']} Siap Hadir',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11.5,
+                                              color: Color(0xFF10B981),
                                             ),
                                           ),
                                         ],
                                       ),
-                                      SizedBox(
-                                        height: 34,
-                                        child: ElevatedButton(
-                                          onPressed: () => _handleToggleJoin(realIndex),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: isJoined
-                                                ? const Color(0xFF10B981)
-                                                : const Color(0xFF2563EB),
-                                            foregroundColor: Colors.white,
-                                            elevation: 0,
-                                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            isJoined ? 'Terdaftar Hadir' : 'Siap Hadir',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: () => _handleToggleJoin(realIndex),
+                                      icon: Icon(
+                                        isJoined ? Icons.check_circle_rounded : Icons.handshake_rounded,
+                                        size: 15,
+                                      ),
+                                      label: Text(
+                                        isJoined ? 'Telah Terdaftar' : 'Ikut Hadir',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isJoined
+                                            ? const Color(0xFF10B981)
+                                            : const Color(0xFF2563EB),
+                                        foregroundColor: Colors.white,
+                                        elevation: isJoined ? 0 : 2,
+                                        shadowColor: const Color(0xFF2563EB).withAlpha(100),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          );
-                        },
+                          ),
+                        ],
                       ),
-          ),
+                    );
+                  },
+                  childCount: filteredEvents.length,
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  // TAB 2: BUAT PENGUMUMAN (CLEAN & RINGKAS)
-  Widget _buildCleanCreationFormTab(bool isDark) {
+  // ═══════════════════════════════════════════════════════════════════
+  // TAB 2: BUAT PENGUMUMAN (REDESIGNED PREMIUM INTERACTIVE FORM)
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildRedesignedCreationForm(bool isDark) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
       physics: const BouncingScrollPhysics(),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Tipe Informasi
-            Text(
-              'Tipe Pengumuman',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
+            // ── 1. SELECTOR TIPE PENGUMUMAN (INTERACTIVE CARDS) ──
+            _buildSectionHeader(
+              title: 'Tipe Informasi / Kegiatan',
+              subtitle: 'Pilih jenis publikasi agar warga mudah mengenali',
+              isDark: isDark,
             ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: _tipeOptions.map((tipe) {
-                  final bool isSelected = _formTipe == tipe;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(tipe),
-                      selected: isSelected,
-                      selectedColor: const Color(0xFF2563EB),
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? Colors.white
-                            : (isDark ? Colors.white70 : const Color(0xFF475569)),
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: BorderSide(
+            const SizedBox(height: 10),
+            Row(
+              children: _tipeOptions.map((opt) {
+                final bool isSelected = _formTipe == opt['label'];
+                final color = opt['color'] as Color;
+
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: InkWell(
+                      onTap: () => setState(() => _formTipe = opt['label']),
+                      borderRadius: BorderRadius.circular(14),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                        decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF2563EB)
-                              : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                              ? color.withAlpha(isDark ? 40 : 20)
+                              : (isDark ? const Color(0xFF131C2E) : Colors.white),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isSelected
+                                ? color
+                                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                            width: isSelected ? 1.8 : 1,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: color.withAlpha(50),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? color
+                                    : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                opt['icon'] as IconData,
+                                size: 18,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark ? Colors.white60 : const Color(0xFF64748B)),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              opt['label'],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                                color: isSelected
+                                    ? (isDark ? Colors.white : color)
+                                    : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      elevation: 0,
-                      onSelected: (_) => setState(() => _formTipe = tipe),
                     ),
-                  );
-                }).toList(),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 22),
+
+            // ── 2. CARD: INFORMASI UTAMA ──
+            _buildCardWrapper(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    title: 'Judul & Detail Agenda',
+                    subtitle: 'Tuliskan nama kegiatan yang jelas dan menarik',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Judul Field
+                  TextFormField(
+                    controller: _titleController,
+                    style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+                    decoration: _inputDecoration(
+                      hintText: 'Contoh: Gotong Royong Kebersihan Parit',
+                      isDark: isDark,
+                      icon: Icons.title_rounded,
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Judul wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Catatan / Keterangan Field
+                  TextFormField(
+                    controller: _noteController,
+                    maxLines: 3,
+                    style: const TextStyle(fontSize: 13),
+                    decoration: _inputDecoration(
+                      hintText: 'Instruksi tambahan (misal: membawa cangkul/sapu lidi, konsumsi disediakan)...',
+                      isDark: isDark,
+                      icon: Icons.notes_rounded,
+                    ),
+                  ),
+                ],
               ),
             ),
 
             const SizedBox(height: 18),
 
-            // 2. Judul Pengumuman
-            Text(
-              'Judul Kegiatan / Pengumuman',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _titleController,
-              style: const TextStyle(fontSize: 13.5),
-              decoration: _inputDecoration(
-                hintText: 'Contoh: Gotong Royong Kebersihan Lingkungan',
-                isDark: isDark,
-                icon: Icons.title_rounded,
-              ),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Judul wajib diisi' : null,
-            ),
+            // ── 3. CARD: CAKUPAN WILAYAH ──
+            _buildCardWrapper(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    title: 'Target Wilayah Penerima',
+                    subtitle: 'Tentukan siapa saja warga yang akan melihat info ini',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 12),
 
-            const SizedBox(height: 16),
+                  // Dropdown Scope
+                  DropdownButtonFormField<String>(
+                    initialValue: _targetScope,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                    dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    decoration: _inputDecoration(
+                      hintText: 'Pilih Cakupan Wilayah',
+                      isDark: isDark,
+                      icon: Icons.public_rounded,
+                    ),
+                    items: _scopeList.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _targetScope = val);
+                    },
+                  ),
 
-            // 3. Cakupan Wilayah
-            Text(
-              'Target Wilayah',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            DropdownButtonFormField<String>(
-              initialValue: _targetScope,
-              style: TextStyle(
-                fontSize: 13.5,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-              dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-              decoration: _inputDecoration(
-                hintText: 'Pilih Cakupan',
-                isDark: isDark,
-                icon: Icons.public_rounded,
-              ),
-              items: _scopeList.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => _targetScope = val);
-              },
-            ),
+                  if (_targetScope != 'Seluruh Desa (Umum)') ...[
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedRw,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      decoration: _inputDecoration(
+                        hintText: 'Pilih RW / Dusun',
+                        isDark: isDark,
+                        icon: Icons.holiday_village_outlined,
+                      ),
+                      items: _rwList.map((rw) => DropdownMenuItem(value: rw, child: Text(rw))).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() {
+                            _selectedRw = val;
+                            _selectedRt = _rtOptions[val]?.first ?? 'RT 01';
+                          });
+                        }
+                      },
+                    ),
+                  ],
 
-            if (_targetScope != 'Seluruh Desa (Umum)') ...[
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedRw,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                ),
-                dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                decoration: _inputDecoration(
-                  hintText: 'Pilih RW',
-                  isDark: isDark,
-                  icon: Icons.holiday_village_outlined,
-                ),
-                items: _rwList.map((rw) => DropdownMenuItem(value: rw, child: Text(rw))).toList(),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedRw = val;
-                      _selectedRt = _rtOptions[val]?.first ?? 'RT 01';
-                    });
-                  }
-                },
-              ),
-            ],
-
-            if (_targetScope == 'Spesifik Lingkungan RT') ...[
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: _selectedRt,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                ),
-                dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                decoration: _inputDecoration(
-                  hintText: 'Pilih RT',
-                  isDark: isDark,
-                  icon: Icons.home_work_outlined,
-                ),
-                items: (_rtOptions[_selectedRw] ?? ['RT 01'])
-                    .map((rt) => DropdownMenuItem(value: rt, child: Text(rt)))
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedRt = val);
-                },
-              ),
-            ],
-
-            const SizedBox(height: 16),
-
-            // 4. Jadwal & Waktu
-            Text(
-              'Jadwal & Waktu Pelaksanaan',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _scheduleController,
-              style: const TextStyle(fontSize: 13.5),
-              decoration: _inputDecoration(
-                hintText: 'Contoh: Minggu, 24 Agustus 2026 - Pukul 07.30 WIB',
-                isDark: isDark,
-                icon: Icons.calendar_month_outlined,
-              ),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Jadwal wajib diisi' : null,
-            ),
-
-            const SizedBox(height: 16),
-
-            // 5. Lokasi Kegiatan
-            Text(
-              'Lokasi Kumpul / Titik Kegiatan',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _locationController,
-              style: const TextStyle(fontSize: 13.5),
-              decoration: _inputDecoration(
-                hintText: 'Contoh: Halaman Depan Pos Ronda RT 02',
-                isDark: isDark,
-                icon: Icons.pin_drop_outlined,
-              ),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Lokasi wajib diisi' : null,
-            ),
-
-            const SizedBox(height: 16),
-
-            // 6. Keterangan / Catatan Tambahan (Opsional)
-            Text(
-              'Keterangan Tambahan (Opsional)',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _noteController,
-              maxLines: 3,
-              style: const TextStyle(fontSize: 13.5),
-              decoration: _inputDecoration(
-                hintText: 'Tuliskan instruksi atau pesan tambahan untuk warga...',
-                isDark: isDark,
-                icon: Icons.notes_rounded,
+                  if (_targetScope == 'Spesifik Lingkungan RT') ...[
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedRt,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      decoration: _inputDecoration(
+                        hintText: 'Pilih RT',
+                        isDark: isDark,
+                        icon: Icons.home_work_outlined,
+                      ),
+                      items: (_rtOptions[_selectedRw] ?? ['RT 01'])
+                          .map((rt) => DropdownMenuItem(value: rt, child: Text(rt)))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedRt = val);
+                      },
+                    ),
+                  ],
+                ],
               ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 18),
 
-            // Tombol Publikasi
-            SizedBox(
+            // ── 4. CARD: WAKTU & TEMPAT PELAKSANAAN ──
+            _buildCardWrapper(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    title: 'Jadwal & Lokasi Titik Temu',
+                    subtitle: 'Kapan dan di mana warga harus berkumpul',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Jadwal with Auto Picker Button
+                  TextFormField(
+                    controller: _scheduleController,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    decoration: _inputDecoration(
+                      hintText: 'Pilih atau ketik jadwal pelaksanaan',
+                      isDark: isDark,
+                      icon: Icons.calendar_month_rounded,
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.event_available_rounded, color: Color(0xFF2563EB)),
+                        tooltip: 'Pilih Tanggal & Jam',
+                        onPressed: _pickDateTime,
+                      ),
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Jadwal wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: InkWell(
+                      onTap: _pickDateTime,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                        child: Text(
+                          '📅 Buka Kalender & Waktu',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Lokasi
+                  TextFormField(
+                    controller: _locationController,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    decoration: _inputDecoration(
+                      hintText: 'Contoh: Halaman Pos Ronda RT 02',
+                      isDark: isDark,
+                      icon: Icons.place_rounded,
+                    ),
+                    validator: (v) => v == null || v.trim().isEmpty ? 'Lokasi wajib diisi' : null,
+                  ),
+
+                  // Quick Suggestion Chips for Location
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _quickLocations.map((loc) {
+                      return InkWell(
+                        onTap: () => setState(() => _locationController.text = loc),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.add_location_alt_outlined, size: 11, color: Color(0xFF2563EB)),
+                              const SizedBox(width: 4),
+                              Text(
+                                loc,
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // ── 5. SUBMIT BUTTON ──
+            Container(
               width: double.infinity,
-              height: 46,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withAlpha(100),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _handleSubmitEvent,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
                   foregroundColor: Colors.white,
-                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: _isSubmitting
                     ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                       )
-                    : const Text(
-                        'Publikasikan Pengumuman',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.send_rounded, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Publikasikan Sekarang',
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
                       ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // REUSABLE HELPER WIDGETS
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildSectionHeader({
+    required String title,
+    required String subtitle,
+    required bool isDark,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
+            color: isDark ? Colors.white : const Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 11.5,
+            color: isDark ? Colors.white54 : const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCardWrapper({required Widget child, required bool isDark}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF131C2E) : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 25 : 5),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 
@@ -771,34 +1357,36 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     required String hintText,
     required bool isDark,
     required IconData icon,
+    Widget? suffixIcon,
   }) {
     return InputDecoration(
       hintText: hintText,
       hintStyle: TextStyle(
-        fontSize: 12.5,
-        color: isDark ? Colors.white38 : Colors.grey[400],
+        fontSize: 12,
+        color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
       ),
       prefixIcon: Icon(icon, size: 18, color: const Color(0xFF2563EB)),
+      suffixIcon: suffixIcon,
       filled: true,
-      fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+      fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
-          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(
           color: Color(0xFF2563EB),
-          width: 1.5,
+          width: 1.8,
         ),
       ),
     );

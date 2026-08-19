@@ -15,6 +15,7 @@ class AdminPortalPage extends StatefulWidget {
 
 class _AdminPortalPageState extends State<AdminPortalPage> {
   static const Color _primaryBlue = Color(0xFF2563EB);
+  static const Color _lightBlue = Color(0xFF3B82F6);
 
   String _role = 'rt';
   String _adminName = 'Pengurus Wilayah';
@@ -73,9 +74,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+        backgroundColor: isDark ? const Color(0xFF0B1120) : Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: IconButton(
@@ -86,22 +87,38 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Portal Pengurus',
-          style: TextStyle(
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
-            fontWeight: FontWeight.w800,
-            fontSize: 16,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Portal Pengurus',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                letterSpacing: -0.2,
+              ),
+            ),
+            Text(
+              'Panel Kendali Administrasi Lingkungan',
+              style: TextStyle(
+                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-        centerTitle: false,
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 14),
-            padding: const EdgeInsets.all(2),
+            padding: const EdgeInsets.all(2.5),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(16),
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEEF2F6),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -120,56 +137,130 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Sleek Compact Identity Header
+              // 1. Executive Officer Identity Badge (Glassmorphism & Gradient)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [
+                            const Color(0xFF1E3A8A).withAlpha(140),
+                            const Color(0xFF1E293B),
+                          ]
+                        : [
+                            const Color(0xFFEFF6FF),
+                            Colors.white,
+                          ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? _lightBlue.withAlpha(50)
+                        : const Color(0xFFBFDBFE),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.black.withAlpha(40)
+                          : _primaryBlue.withAlpha(12),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: _primaryBlue.withAlpha(isDark ? 40 : 15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.shield_rounded, size: 20, color: _primaryBlue),
-                      ),
+                    // Official Avatar with Status Dot
+                    Stack(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [_primaryBlue, _lightBlue],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _primaryBlue.withAlpha(60),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.security_rounded,
+                              size: 22,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _adminName,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _adminName,
+                                  style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.verified_rounded,
+                                size: 14,
+                                color: _lightBlue,
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 2),
                           Text(
                             _role == 'rw'
                                 ? 'Koordinator Wilayah RW 01'
                                 : 'Ketua Wilayah RT 02 / RW 01',
                             style: TextStyle(
                               fontSize: 11.5,
-                              fontWeight: FontWeight.w500,
-                              color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF2563EB),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -178,17 +269,27 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _primaryBlue.withAlpha(isDark ? 30 : 12),
+                        gradient: const LinearGradient(
+                          colors: [_primaryBlue, _lightBlue],
+                        ),
                         borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _primaryBlue.withAlpha(40),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: const Text(
                         'Desa Pematang',
                         style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: _primaryBlue,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
@@ -198,29 +299,40 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
 
               const SizedBox(height: 12),
 
-              // 2. Alert Banner (jika ada aduan baru)
+              // 2. Alert Banner (Live Notification)
               if (_laporanBaru > 0) ...[
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                   decoration: BoxDecoration(
-                    color: _primaryBlue.withAlpha(isDark ? 30 : 12),
-                    borderRadius: BorderRadius.circular(10),
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: _primaryBlue.withAlpha(isDark ? 60 : 30),
+                      color: const Color(0xFFF59E0B).withAlpha(isDark ? 80 : 120),
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded, color: _primaryBlue, size: 16),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B).withAlpha(30),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.notifications_active_rounded,
+                          color: Color(0xFFD97706),
+                          size: 14,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '$_laporanBaru aduan warga baru menunggu verifikasi.',
+                          '$_laporanBaru aduan warga baru perlu ditindaklanjuti.',
                           style: TextStyle(
                             fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1E40AF),
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
                           ),
                         ),
                       ),
@@ -231,12 +343,16 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             MaterialPageRoute(builder: (_) => const AdminReportPage()),
                           );
                         },
-                        child: const Text(
-                          'Tinjau ›',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
-                            color: _primaryBlue,
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          child: const Text(
+                            'Tinjau ›',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFD97706),
+                            ),
                           ),
                         ),
                       ),
@@ -246,77 +362,93 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                 const SizedBox(height: 12),
               ],
 
-              // 3. Compact 3-Metrik Statistik Row
+              // 3. Vibrant 3-Metric Stat Cards with Micro-Accents
               Row(
                 children: [
                   Expanded(
-                    child: _buildCompactStatCard(
+                    child: _buildVibrantStatCard(
                       title: 'Aduan Masuk',
                       count: _totalLaporan,
                       subtext: '$_laporanBaru Baru',
-                      icon: Icons.inbox_rounded,
+                      icon: Icons.all_inbox_rounded,
                       isDark: isDark,
-                      color: _primaryBlue,
+                      accentColor: _lightBlue,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _buildCompactStatCard(
+                    child: _buildVibrantStatCard(
                       title: 'Dalam Proses',
                       count: _laporanDiproses,
                       subtext: 'Ditangani',
-                      icon: Icons.pending_actions_rounded,
+                      icon: Icons.hourglass_top_rounded,
                       isDark: isDark,
-                      color: const Color(0xFFD97706),
+                      accentColor: const Color(0xFFF59E0B),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _buildCompactStatCard(
-                      title: 'Selesai',
+                    child: _buildVibrantStatCard(
+                      title: 'Tuntas Selesai',
                       count: _laporanSelesai,
                       subtext: 'Selesai',
-                      icon: Icons.check_circle_outline_rounded,
+                      icon: Icons.task_alt_rounded,
                       isDark: isDark,
-                      color: const Color(0xFF059669),
+                      accentColor: const Color(0xFF10B981),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
-              // 4. Header Layanan Wilayah
+              // 4. Layanan Wilayah Section Header
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    width: 3,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: _primaryBlue,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 3.5,
+                        height: 15,
+                        decoration: BoxDecoration(
+                          color: _primaryBlue,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        'Layanan Wilayah',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 6),
                   Text(
-                    'Layanan Wilayah',
+                    '3 Modul Aktif',
                     style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
-              // 5. Minimalist Compact Action Tiles (Hemat Ruang & Rapi)
-              _buildSlimActionTile(
+              // 5. Distinctive High-Impact Action Tiles (Layanan Wilayah)
+              _buildFeatureActionTile(
                 isDark: isDark,
-                icon: Icons.assignment_turned_in_outlined,
+                icon: Icons.mark_chat_unread_rounded,
                 title: 'Kelola Pengaduan Warga',
-                subtitle: 'Tindak lanjuti dan teruskan aspirasi/aduan warga',
+                subtitle: 'Tindak lanjuti aspirasi & laporan masalah lingkungan',
+                tag: 'Aduan & Respon',
+                gradientColors: [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
                 badge: _laporanBaru > 0 ? '$_laporanBaru Baru' : null,
                 onTap: () {
                   Navigator.push(
@@ -325,13 +457,15 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                   );
                 },
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
 
-              _buildSlimActionTile(
+              _buildFeatureActionTile(
                 isDark: isDark,
-                icon: Icons.campaign_outlined,
+                icon: Icons.campaign_rounded,
                 title: 'Pengumuman & Gotong Royong',
-                subtitle: 'Publikasi kegiatan dan agenda resmi lingkungan',
+                subtitle: 'Publikasi kerja bakti, iuran, dan agenda resmi RT/RW',
+                tag: 'Agenda & Info',
+                gradientColors: [const Color(0xFF7C3AED), const Color(0xFF8B5CF6)],
                 badge: null,
                 onTap: () {
                   Navigator.push(
@@ -340,13 +474,15 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                   );
                 },
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
 
-              _buildSlimActionTile(
+              _buildFeatureActionTile(
                 isDark: isDark,
-                icon: Icons.folder_shared_outlined,
-                title: 'Buku Induk & Daftar Warga',
-                subtitle: 'Data kependudukan, domisili, dan verifikasi KYC',
+                icon: Icons.badge_rounded,
+                title: 'Buku Induk & Data Warga',
+                subtitle: 'Database kependudukan, domisili, & verifikasi KYC',
+                tag: 'Data Warga',
+                gradientColors: [const Color(0xFF0284C7), const Color(0xFF06B6D4)],
                 badge: null,
                 onTap: () {
                   Navigator.push(
@@ -358,17 +494,25 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                 },
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
-              // 6. Aktivitas Terkini (Compact)
+              // 6. Aktivitas Aduan Terkini (Realtime Feed)
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(isDark ? 20 : 4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,42 +520,77 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Aktivitas Aduan Terkini',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.history_rounded,
+                              size: 16,
+                              color: isDark ? Colors.white70 : const Color(0xFF334155),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Aktivitas Aduan Terkini',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
-                            color: _primaryBlue.withAlpha(15),
-                            borderRadius: BorderRadius.circular(4),
+                            color: _primaryBlue.withAlpha(isDark ? 35 : 15),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
-                            'Realtime',
-                            style: TextStyle(
-                              color: _primaryBlue,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircleAvatar(radius: 3, backgroundColor: _primaryBlue),
+                              SizedBox(width: 4),
+                              Text(
+                                'Realtime',
+                                style: TextStyle(
+                                  color: _primaryBlue,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     if (_laporanTerbaru.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         child: Center(
-                          child: Text(
-                            'Belum ada aktivitas aduan terbaru',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.white54 : Colors.grey[500],
-                            ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.assignment_turned_in_outlined,
+                                  size: 22,
+                                  color: Colors.grey.shade400,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Semua aduan telah tertangani dengan baik',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       )
@@ -426,18 +605,18 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(6),
+                                  padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
-                                    color: _primaryBlue.withAlpha(15),
-                                    borderRadius: BorderRadius.circular(6),
+                                    color: _primaryBlue.withAlpha(isDark ? 35 : 12),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
-                                    Icons.receipt_long_outlined,
+                                    Icons.receipt_long_rounded,
                                     color: _primaryBlue,
-                                    size: 14,
+                                    size: 15,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,7 +643,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                 ),
                               ],
                             ),
-                            if (!isLast) const Divider(height: 12),
+                            if (!isLast) const Divider(height: 14),
                           ],
                         );
                       }),
@@ -482,11 +661,21 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
     final bool isSelected = _role == roleKey;
     return GestureDetector(
       onTap: () => setState(() => _role = roleKey),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected ? _primaryBlue : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: _primaryBlue.withAlpha(60),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
@@ -494,30 +683,40 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             color: isSelected
                 ? Colors.white
                 : (isDark ? Colors.white70 : const Color(0xFF475569)),
-            fontSize: 10.5,
-            fontWeight: FontWeight.bold,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCompactStatCard({
+  Widget _buildVibrantStatCard({
     required String title,
     required int count,
     required String subtext,
     required IconData icon,
     required bool isDark,
-    required Color color,
+    required Color accentColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.all(11),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+          color: isDark
+              ? accentColor.withAlpha(35)
+              : accentColor.withAlpha(50),
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withAlpha(isDark ? 15 : 8),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -525,31 +724,39 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(icon, color: color, size: 15),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: color.withAlpha(isDark ? 30 : 12),
+                  color: accentColor.withAlpha(isDark ? 35 : 15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, color: accentColor, size: 14),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: accentColor.withAlpha(isDark ? 30 : 12),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   subtext,
                   style: TextStyle(
                     fontSize: 8.5,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+                    fontWeight: FontWeight.w800,
+                    color: accentColor,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             '$count',
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
               color: isDark ? Colors.white : const Color(0xFF0F172A),
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 1),
@@ -557,7 +764,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             title,
             style: TextStyle(
               fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: isDark ? Colors.white60 : const Color(0xFF64748B),
             ),
             maxLines: 1,
@@ -568,40 +775,67 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
     );
   }
 
-  Widget _buildSlimActionTile({
+  Widget _buildFeatureActionTile({
     required bool isDark,
     required IconData icon,
     required String title,
     required String subtitle,
+    required String tag,
+    required List<Color> gradientColors,
     required String? badge,
     required VoidCallback onTap,
   }) {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 20 : 4),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
             child: Row(
               children: [
+                // Vibrant Gradient Icon Box
                 Container(
-                  padding: const EdgeInsets.all(7),
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    color: _primaryBlue.withAlpha(isDark ? 35 : 12),
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: gradientColors.first.withAlpha(60),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  child: Icon(icon, size: 17, color: _primaryBlue),
+                  child: Center(
+                    child: Icon(icon, size: 19, color: Colors.white),
+                  ),
                 ),
-                const SizedBox(width: 10),
+
+                const SizedBox(width: 12),
+
+                // Title & Subtitle + Tag
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,8 +846,8 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             child: Text(
                               title,
                               style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
                                 color: isDark ? Colors.white : const Color(0xFF0F172A),
                               ),
                               maxLines: 1,
@@ -625,14 +859,14 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEF4444).withAlpha(15),
+                                color: const Color(0xFFEF4444).withAlpha(20),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 badge,
                                 style: const TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w800,
                                   color: Color(0xFFEF4444),
                                 ),
                               ),
@@ -640,7 +874,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 2),
                       Text(
                         subtitle,
                         style: TextStyle(
@@ -653,10 +887,22 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 18,
-                  color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+
+                const SizedBox(width: 4),
+
+                // Clean Modern Arrow Icon Container
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
+                    color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                  ),
                 ),
               ],
             ),
