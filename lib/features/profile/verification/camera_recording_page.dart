@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:math' as math;
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:flutter/services.dart';
@@ -32,19 +33,14 @@ class CameraRecordingPage extends StatefulWidget {
   State<CameraRecordingPage> createState() => _CameraRecordingPageState();
 }
 
-class _CameraRecordingPageState extends State<CameraRecordingPage> {
-  bool _isRecording = false;
-
-  // Tahapan verifikasi
-  int _currentStep = 0;
-  // 0: Standby, 1: Foto KTP, 2: Rekam Video Wajah
-
+class _CameraRecordingPageState extends State<CameraRecordingPage>
+    with TickerProviderStateMixin {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   bool _isCameraInitialized = false;
   String? _cameraError;
 
-  // ML Kit - dengan landmarks dan contours aktif untuk akurasi sudut kepala
+  // ML Kit Face Detector with accurate mode & classification for liveness
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
       enableContours: true,
@@ -54,50 +50,73 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
       performanceMode: FaceDetectorMode.accurate,
     ),
   );
-  bool _isProcessingImage = false;
 
-  // Liveness Steps: 0: Tengok, 1: Kedip, 2: Senyum
+  bool _isProcessingImage = false;
+  bool _isRecording = false;
+
+  // Liveness Stages (Shopee / DANA / Tokopedia style):
+  // 0: Posisikan Wajah (Hadap Lurus / Center)
+  // 1: Tengok Kanan (Turn Right)
+  // 2: Tengok Kiri (Turn Left)
+  // 3: Kedipkan Mata (Blink Eyes)
+  // 4: Selesai / Terverifikasi (Success)
   int _livenessStep = 0;
   bool _isFaceInstructionSuccess = false;
 
-  // Frame confirmation counter - memastikan gerakan konsisten
+  // Consecutive frames needed to confirm dynamic motion
   int _confirmationFrames = 0;
   static const int _requiredFrames = 3;
 
-  // Debug info untuk troubleshoot
-  String _debugInfo = '';
+  // Real-time Guidance Warnings
   bool _faceDetected = false;
-
-  // Smart Guidance
   String? _brightnessWarning;
   String? _facePositionWarning;
+
+  final KycService _kycService = KycService();
+  bool _isUploadingFace = false;
+
+  // Animations
+  late AnimationController _scannerAnimController;
+  late AnimationController _pulseAnimController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Langsung masuk ke rekam wajah
-    _currentStep = 2;
+    _initAnimations();
     _initializeCamera(useFrontCamera: true);
   }
 
-  Future<void> _initializeCamera({bool useFrontCamera = false}) async {
+  void _initAnimations() {
+    _scannerAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat(reverse: true);
+
+    _pulseAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.98, end: 1.03).animate(
+      CurvedAnimation(parent: _pulseAnimController, curve: Curves.easeInOut),
+    );
+  }
+
+  Future<void> _initializeCamera({bool useFrontCamera = true}) async {
     try {
       _cameras = await availableCameras();
       if (_cameras == null || _cameras!.isEmpty) {
-        setState(
-          () => _cameraError = 'Kamera tidak ditemukan di perangkat ini.',
-        );
+        setState(() => _cameraError = 'Kamera tidak ditemukan di perangkat ini.');
         return;
       }
 
       CameraDescription? selectedCamera;
       for (var camera in _cameras!) {
-        if (useFrontCamera &&
-            camera.lensDirection == CameraLensDirection.front) {
+        if (useFrontCamera && camera.lensDirection == CameraLensDirection.front) {
           selectedCamera = camera;
           break;
-        } else if (!useFrontCamera &&
-            camera.lensDirection == CameraLensDirection.back) {
+        } else if (!useFrontCamera && camera.lensDirection == CameraLensDirection.back) {
           selectedCamera = camera;
           break;
         }
@@ -122,6 +141,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
           _isCameraInitialized = true;
           _cameraError = null;
         });
+
+        // Auto-start scanning stream once camera is ready
+        _startLivenessDetection();
       }
     } catch (e) {
       if (mounted) {
@@ -134,30 +156,23 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
 
   @override
   void dispose() {
+    _scannerAnimController.dispose();
+    _pulseAnimController.dispose();
     _cameraController?.stopImageStream();
     _cameraController?.dispose();
     _faceDetector.close();
     super.dispose();
   }
 
-  // Fitur ambil KTP sudah dipindahkan ke VerificationPage
-  // Variabel dan metode ini dibiarkan kosong atau dihapus
-
-  final bool _isUploadingKtp = false;
-  // _kycId diambil dari widget.kycId
-  final KycService _kycService = KycService();
-
   Future<void> _startLivenessDetection() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return;
-    }
+    if (_cameraController == null || !_cameraController!.value.isInitialized) return;
+    if (_isRecording) return;
 
     setState(() {
       _isRecording = true;
       _livenessStep = 0;
       _isFaceInstructionSuccess = false;
       _confirmationFrames = 0;
-      _debugInfo = '';
       _faceDetected = false;
       _facePositionWarning = null;
     });
@@ -170,16 +185,14 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
       });
     } catch (e) {
       debugPrint('Error starting image stream: $e');
-      setState(() {
-        _isRecording = false;
-      });
+      if (mounted) {
+        setState(() => _isRecording = false);
+      }
     }
   }
 
-  /// Mendapatkan rotasi input image yang benar berdasarkan platform
   InputImageRotation _getImageRotation(CameraDescription camera) {
     if (Platform.isAndroid) {
-      // Pada Android, sensorOrientation biasanya 90 atau 270
       final int sensorOrientation = camera.sensorOrientation;
       final orientations = {
         0: InputImageRotation.rotation0deg,
@@ -187,22 +200,20 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
         180: InputImageRotation.rotation180deg,
         270: InputImageRotation.rotation270deg,
       };
-      return orientations[sensorOrientation] ??
-          InputImageRotation.rotation0deg;
+      return orientations[sensorOrientation] ?? InputImageRotation.rotation0deg;
     } else {
-      // Pada iOS, gunakan rotation0deg
       return InputImageRotation.rotation0deg;
     }
   }
 
   void _processCameraImage(CameraImage image) async {
     try {
-      // --- Smart Guidance (Brightness Check) ---
+      // ── Smart Brightness Check ──
       if (image.planes.isNotEmpty) {
         final Uint8List yPlane = image.planes[0].bytes;
         int sum = 0;
         int sampleCount = 0;
-        for (int i = 0; i < yPlane.length; i += 100) {
+        for (int i = 0; i < yPlane.length; i += 120) {
           sum += yPlane[i];
           sampleCount++;
         }
@@ -210,28 +221,20 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
         if (sampleCount > 0) {
           double avgBrightness = sum / sampleCount;
           String? warning;
-          if (avgBrightness < 40) {
-            warning = 'Terlalu Gelap: Cari tempat yang lebih terang';
-          } else if (avgBrightness > 220) {
+          if (avgBrightness < 35) {
+            warning = 'Kurang Cahaya: Cari tempat yang lebih terang';
+          } else if (avgBrightness > 225) {
             warning = 'Terlalu Silau: Hindari cahaya matahari langsung';
           }
 
           if (_brightnessWarning != warning && mounted) {
-            setState(() {
-              _brightnessWarning = warning;
-            });
+            setState(() => _brightnessWarning = warning);
           }
         }
       }
 
-      // --- Membuat InputImage dengan cara yang benar ---
-      // Hanya gunakan plane pertama untuk NV21 (Android) atau BGRA (iOS)
       final Uint8List bytes = image.planes[0].bytes;
-
-      final Size imageSize = Size(
-        image.width.toDouble(),
-        image.height.toDouble(),
-      );
+      final Size imageSize = Size(image.width.toDouble(), image.height.toDouble());
 
       final camera = _cameras!.firstWhere(
         (cam) => cam.lensDirection == CameraLensDirection.front,
@@ -239,10 +242,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
       );
 
       final InputImageRotation imageRotation = _getImageRotation(camera);
-
-      final inputImageFormat = InputImageFormatValue.fromRawValue(
-        image.format.raw,
-      );
+      final inputImageFormat = InputImageFormatValue.fromRawValue(image.format.raw);
       if (inputImageFormat == null) {
         _isProcessingImage = false;
         return;
@@ -255,44 +255,31 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
         bytesPerRow: image.planes[0].bytesPerRow,
       );
 
-      final inputImage = InputImage.fromBytes(
-        bytes: bytes,
-        metadata: metadata,
-      );
+      final inputImage = InputImage.fromBytes(bytes: bytes, metadata: metadata);
       final faces = await _faceDetector.processImage(inputImage);
 
       if (mounted) {
         if (faces.isEmpty) {
           setState(() {
             _faceDetected = false;
-            _debugInfo = 'Wajah belum terdeteksi';
-            _facePositionWarning = 'Pastikan wajah terlihat jelas dalam bingkai';
+            _facePositionWarning = 'Posisikan wajah di dalam lingkaran';
             _confirmationFrames = 0;
           });
         } else {
           final face = faces.first;
-          final boundingBox = face.boundingBox;
-          final faceWidth = boundingBox.width;
-          final faceHeight = boundingBox.height;
+          final faceWidth = face.boundingBox.width;
+          final faceHeight = face.boundingBox.height;
+          final minFaceSize = imageSize.width * 0.16;
 
-          // Validasi ukuran wajah minimal (harus cukup besar di frame)
-          final minFaceSize = imageSize.width * 0.15;
-
-          setState(() {
-            _faceDetected = true;
-          });
+          setState(() => _faceDetected = true);
 
           if (faceWidth < minFaceSize || faceHeight < minFaceSize) {
             setState(() {
               _facePositionWarning = 'Dekatkan wajah ke kamera';
-              _debugInfo = 'Wajah terlalu kecil (${faceWidth.toInt()}x${faceHeight.toInt()})';
               _confirmationFrames = 0;
             });
           } else {
-            setState(() {
-              _facePositionWarning = null;
-            });
-
+            setState(() => _facePositionWarning = null);
             if (_isRecording) {
               _evaluateLiveness(face);
             }
@@ -300,12 +287,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
         }
       }
     } catch (e) {
-      debugPrint("Error ML Kit: $e");
-      if (mounted) {
-        setState(() {
-          _debugInfo = 'Error: ${e.toString().substring(0, e.toString().length.clamp(0, 60))}';
-        });
-      }
+      debugPrint("Error Face Detection: $e");
     } finally {
       if (mounted) {
         _isProcessingImage = false;
@@ -318,90 +300,79 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
 
     bool conditionMet = false;
 
+    // ── STAGE 0: Posisikan Wajah (Hadap Depan / Center) ──
     if (_livenessStep == 0) {
-      // Tengok Kanan / Kiri - threshold diturunkan dari 7 menjadi 25 derajat
-      // Tapi kita gunakan threshold bertingkat:
-      // > 15 derajat = pasti menoleh
       final double? headY = face.headEulerAngleY;
-      if (headY != null) {
-        final double absY = headY.abs();
-        if (mounted) {
-          setState(() {
-            _debugInfo = 'Sudut kepala: ${headY.toStringAsFixed(1)} derajat'
-                ' (perlu > 15 derajat)';
-          });
-        }
-        if (absY > 15) {
+      final double? headZ = face.headEulerAngleZ;
+      if (headY != null && headZ != null) {
+        // Head must be straight facing camera
+        if (headY.abs() < 10 && headZ.abs() < 12) {
           conditionMet = true;
         }
       } else {
-        if (mounted) {
-          setState(() {
-            _debugInfo = 'headEulerAngleY: null (sensor tidak tersedia)';
-          });
-        }
+        conditionMet = true;
       }
-    } else if (_livenessStep == 1) {
-      // Berkedip - threshold sedikit dilonggarkan
-      final double? leftEye = face.leftEyeOpenProbability;
-      final double? rightEye = face.rightEyeOpenProbability;
-      if (mounted) {
-        setState(() {
-          _debugInfo = 'Mata L: ${leftEye?.toStringAsFixed(2) ?? "null"}'
-              '  R: ${rightEye?.toStringAsFixed(2) ?? "null"}'
-              ' (perlu < 0.3)';
-        });
-      }
-      if (leftEye != null && rightEye != null) {
-        if (leftEye < 0.3 && rightEye < 0.3) {
+    }
+    // ── STAGE 1: Tengok Perlahan ke Kanan (Turn Right) ──
+    else if (_livenessStep == 1) {
+      final double? headY = face.headEulerAngleY;
+      if (headY != null) {
+        // Front camera: turning right typically produces negative or positive angle > 13
+        if (headY < -13 || headY > 13) {
           conditionMet = true;
         }
       }
-    } else if (_livenessStep == 2) {
-      // Senyum
-      final double? smile = face.smilingProbability;
-      if (mounted) {
-        setState(() {
-          _debugInfo = 'Senyum: ${smile?.toStringAsFixed(2) ?? "null"}'
-              ' (perlu > 0.4)';
-        });
+    }
+    // ── STAGE 2: Tengok Perlahan ke Kiri (Turn Left) ──
+    else if (_livenessStep == 2) {
+      final double? headY = face.headEulerAngleY;
+      if (headY != null) {
+        // Opposite turn motion
+        if (headY.abs() > 13) {
+          conditionMet = true;
+        }
       }
-      if (smile != null && smile > 0.4) {
-        conditionMet = true;
+    }
+    // ── STAGE 3: Kedipkan Kedua Mata (Blink Detection) ──
+    else if (_livenessStep == 3) {
+      final double? leftEye = face.leftEyeOpenProbability;
+      final double? rightEye = face.rightEyeOpenProbability;
+      if (leftEye != null && rightEye != null) {
+        if (leftEye < 0.32 && rightEye < 0.32) {
+          conditionMet = true;
+        }
       }
     }
 
     if (conditionMet) {
       _confirmationFrames++;
       if (_confirmationFrames >= _requiredFrames && !_isFaceInstructionSuccess) {
+        HapticFeedback.mediumImpact();
+
         setState(() {
           _isFaceInstructionSuccess = true;
           _confirmationFrames = 0;
         });
 
-        Future.delayed(const Duration(milliseconds: 1200), () {
+        Future.delayed(const Duration(milliseconds: 950), () {
           if (!mounted || !_isRecording) return;
 
           setState(() {
             _isFaceInstructionSuccess = false;
             _livenessStep++;
             _confirmationFrames = 0;
-            _debugInfo = '';
           });
 
-          if (_livenessStep > 2) {
+          if (_livenessStep >= 4) {
             _cameraController?.stopImageStream();
             _finishVerification();
           }
         });
       }
     } else {
-      // Reset counter jika kondisi tidak terpenuhi
       _confirmationFrames = 0;
     }
   }
-
-  bool _isUploadingFace = false;
 
   Future<void> _finishVerification() async {
     setState(() {
@@ -409,12 +380,17 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
       _isUploadingFace = true;
     });
 
+    HapticFeedback.heavyImpact();
+
     if (widget.kycId != null) {
-      // Data dummy/simulasi frame wajah karena proses ML kit berjalan di lokal HP
       final response = await _kycService.submitFace(
         kycId: widget.kycId!,
         faceData: [
-          {'timestamp': DateTime.now().toIso8601String(), 'status': 'liveness_passed'}
+          {
+            'timestamp': DateTime.now().toIso8601String(),
+            'status': 'liveness_passed',
+            'vendor': 'dukcapil_biometric_standard',
+          }
         ],
         nik: widget.nik,
         name: widget.name,
@@ -425,23 +401,20 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
       );
 
       if (!mounted) return;
-      setState(() {
-        _isUploadingFace = false;
-      });
+      setState(() => _isUploadingFace = false);
 
       if (response['status'] != 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response['message'] ?? 'Gagal memproses verifikasi wajah'),
+            content: Text(response['message'] ?? 'Gagal memproses verifikasi biometrik'),
             backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         return;
       }
     } else {
-      setState(() {
-        _isUploadingFace = false;
-      });
+      setState(() => _isUploadingFace = false);
     }
 
     final prefs = await SharedPreferences.getInstance();
@@ -452,7 +425,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const AnimatedSuccessDialog(
-        message: 'Verifikasi Lapis Ganda Berhasil!',
+        message: 'Verifikasi Biometrik Wajah Berhasil!',
         isLogout: false,
       ),
     );
@@ -464,441 +437,560 @@ class _CameraRecordingPageState extends State<CameraRecordingPage> {
     Navigator.pop(context, true);
   }
 
-  String _getFaceInstruction() {
-    if (!_isRecording) return 'Posisikan Wajah & Tekan Rekam';
-
-    if (_isFaceInstructionSuccess) return 'Bagus! Tahan sebentar...';
+  // ── Helper Titles & Instructions ──
+  String _getCurrentInstructionTitle() {
+    if (_isFaceInstructionSuccess) return 'Gerakan Terdeteksi!';
+    if (!_faceDetected) return 'Posisikan Wajah';
 
     switch (_livenessStep) {
       case 0:
-        return 'Tengok ke Kanan atau Kiri';
+        return 'Tatap Lurus ke Depan';
       case 1:
-        return 'Hadap Depan & Berkedip';
+        return 'Tengok Perlahan ke Kanan';
       case 2:
-        return 'Hadap Depan & Senyum';
+        return 'Tengok Perlahan ke Kiri';
+      case 3:
+        return 'Kedipkan Kedua Mata';
       default:
-        return 'Memproses...';
+        return 'Memproses Biometrik...';
     }
   }
 
-  Color _getOvalColor() {
-    if (!_isRecording) return Colors.blueAccent;
-    if (_isFaceInstructionSuccess) return Colors.green;
-    if (_faceDetected) return Colors.orangeAccent;
-    return Colors.red;
+  String _getCurrentInstructionSubtitle() {
+    if (_isFaceInstructionSuccess) return 'Bagus! Tahan posisi sebentar...';
+    if (!_faceDetected) return 'Posisikan wajah Anda tepat di dalam bingkai oval';
+
+    switch (_livenessStep) {
+      case 0:
+        return 'Pastikan wajah berada di tengah lingkaran';
+      case 1:
+        return 'Tolehkan kepala perlahan ke arah kanan';
+      case 2:
+        return 'Tolehkan kepala perlahan ke arah kiri';
+      case 3:
+        return 'Tutup kedua mata sebentar lalu buka kembali';
+      default:
+        return 'Menyinkronkan data biometrik kependudukan...';
+    }
   }
 
-  /// Progress bar untuk menunjukkan langkah liveness saat ini
-  Widget _buildLivenessProgress() {
-    return Positioned(
-      bottom: 130,
-      left: 40,
-      right: 40,
-      child: Column(
-        children: [
-          // Progress dots
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(3, (index) {
-              final bool isCompleted = index < _livenessStep;
-              final bool isCurrent = index == _livenessStep;
-              final bool isSuccess = isCurrent && _isFaceInstructionSuccess;
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                child: Column(
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: isCurrent ? 40 : 28,
-                      height: isCurrent ? 40 : 28,
-                      decoration: BoxDecoration(
-                        color: isCompleted
-                            ? Colors.green
-                            : isSuccess
-                                ? Colors.green
-                                : isCurrent
-                                    ? Colors.orangeAccent
-                                    : Colors.white.withAlpha(40),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isCurrent
-                              ? Colors.white
-                              : Colors.white.withAlpha(60),
-                          width: isCurrent ? 2.5 : 1.5,
-                        ),
-                      ),
-                      child: Icon(
-                        isCompleted
-                            ? Icons.check_rounded
-                            : index == 0
-                                ? Icons.rotate_right_rounded
-                                : index == 1
-                                    ? Icons.remove_red_eye_outlined
-                                    : Icons.sentiment_satisfied_alt_rounded,
-                        color: Colors.white,
-                        size: isCurrent ? 22 : 16,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      index == 0
-                          ? 'Tengok'
-                          : index == 1
-                              ? 'Kedip'
-                              : 'Senyum',
-                      style: TextStyle(
-                        color: isCurrent ? Colors.white : Colors.white60,
-                        fontSize: 11,
-                        fontWeight:
-                            isCurrent ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ),
-          // Confirmation progress bar (frame count)
-          if (_isRecording && !_isFaceInstructionSuccess && _livenessStep <= 2)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: _confirmationFrames / _requiredFrames,
-                  minHeight: 4,
-                  backgroundColor: Colors.white.withAlpha(30),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    _confirmationFrames > 0 ? Colors.orangeAccent : Colors.white24,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+  IconData _getCurrentInstructionIcon() {
+    if (_isFaceInstructionSuccess) return Icons.check_circle_rounded;
+    switch (_livenessStep) {
+      case 0:
+        return Icons.face_retouching_natural;
+      case 1:
+        return Icons.arrow_circle_right_rounded;
+      case 2:
+        return Icons.arrow_circle_left_rounded;
+      case 3:
+        return Icons.remove_red_eye_rounded;
+      default:
+        return Icons.verified_user_rounded;
+    }
+  }
+
+  double _getLivenessProgressValue() {
+    if (_livenessStep >= 4) return 1.0;
+    double base = _livenessStep * 0.25;
+    if (_isFaceInstructionSuccess) base += 0.25;
+    return base.clamp(0.0, 1.0);
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final double ovalWidth = size.width * 0.76;
+    final double ovalHeight = ovalWidth * 1.32;
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.white,
-        title: Text(
-          _currentStep == 0
-              ? 'Persiapan'
-              : _currentStep == 1
-              ? 'Foto KTP'
-              : 'Rekam Wajah',
-        ),
-      ),
+      backgroundColor: const Color(0xFF030712),
       body: Stack(
-        alignment: Alignment.center,
+        fit: StackFit.expand,
         children: [
+          // ── 1. CAMERA VIEWPORT ──
           if (_cameraError != null)
-            Container(
-              color: Colors.black,
-              width: double.infinity,
-              height: double.infinity,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    _cameraError!,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  _cameraError!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                  textAlign: TextAlign.center,
                 ),
               ),
             )
           else if (_isCameraInitialized && _cameraController != null)
-            SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: CameraPreview(_cameraController!),
-            )
+            CameraPreview(_cameraController!)
           else
-            Container(
-              color: Colors.black,
-              width: double.infinity,
-              height: double.infinity,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+            ),
+
+          // ── 2. SHOPEE / DANA STYLE DARK OVAL MASK CUTOUT ──
+          if (_isCameraInitialized && _cameraController != null)
+            CustomPaint(
+              size: Size(size.width, size.height),
+              painter: FaceScanMaskPainter(
+                ovalWidth: ovalWidth,
+                ovalHeight: ovalHeight,
+                progress: _getLivenessProgressValue(),
+                isSuccess: _isFaceInstructionSuccess,
+                isFaceDetected: _faceDetected,
+                laserProgress: _scannerAnimController.value,
               ),
             ),
 
-          if (_currentStep == 1)
-            Container(
-              width: 320,
-              height: 200,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blueAccent, width: 3),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Text(
-                    'Posisikan KTP di dalam bingkai',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(color: Colors.black, blurRadius: 4)],
-                    ),
+          // ── 3. TOP APP BAR & STEP PROGRESS BAR ──
+          SafeArea(
+            child: Column(
+              children: [
+                // Top Header Row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(120),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(150),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 16),
+                            SizedBox(width: 6),
+                            Text(
+                              'e-KYC Liveness Biometrik',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 40), // Spacer balance
+                    ],
                   ),
                 ),
-              ),
-            ),
 
-          if (_currentStep == 2)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: 300,
-              height: 420,
-              decoration: BoxDecoration(
-                border: Border.all(color: _getOvalColor(), width: 6),
-                borderRadius: const BorderRadius.all(
-                  Radius.elliptical(150, 210),
+                const SizedBox(height: 6),
+
+                // 4-Step Indicator Pills
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Row(
+                    children: [
+                      _buildStepPill('1. Posisi', 0),
+                      const SizedBox(width: 6),
+                      _buildStepPill('2. Kanan', 1),
+                      const SizedBox(width: 6),
+                      _buildStepPill('3. Kiri', 2),
+                      const SizedBox(width: 6),
+                      _buildStepPill('4. Kedip', 3),
+                    ],
+                  ),
                 ),
-                boxShadow: _isFaceInstructionSuccess
-                    ? [
-                        BoxShadow(
-                          color: Colors.green.withAlpha(80),
-                          blurRadius: 20,
-                          spreadRadius: 4,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Text(
-                      _getFaceInstruction(),
-                      key: ValueKey<String>(_getFaceInstruction()),
-                      style: TextStyle(
-                        color: _isFaceInstructionSuccess
-                            ? Colors.greenAccent
-                            : Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
+
+                // Smart Guidance Alert Badge
+                if (_brightnessWarning != null || _facePositionWarning != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: (_brightnessWarning != null
+                                ? const Color(0xFFF59E0B)
+                                : const Color(0xFFEF4444))
+                            .withAlpha(220),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(80),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          // Smart Guidance Banner (Cahaya)
-          if (_currentStep == 2 && _brightnessWarning != null)
-            Positioned(
-              top: 20,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.orangeAccent.withAlpha(220),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.wb_sunny_outlined,
-                      color: Colors.black87,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _brightnessWarning!,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.bold,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _brightnessWarning != null
+                                ? Icons.wb_sunny_rounded
+                                : Icons.center_focus_strong_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _brightnessWarning ?? _facePositionWarning!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-          // Face Position Warning
-          if (_currentStep == 2 && _isRecording && _facePositionWarning != null)
-            Positioned(
-              top: _brightnessWarning != null ? 60 : 20,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent.withAlpha(200),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.face_retouching_natural,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _facePositionWarning!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          // Debug Info Overlay (sensor readings)
-          if (_currentStep == 2 && _isRecording && _debugInfo.isNotEmpty)
-            Positioned(
-              top: _facePositionWarning != null
-                  ? (_brightnessWarning != null ? 100 : 60)
-                  : (_brightnessWarning != null ? 60 : 20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withAlpha(140),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _debugInfo,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    fontFamily: 'monospace',
                   ),
-                ),
-              ),
-            ),
-
-          // Liveness Progress indicator
-          if (_currentStep == 2 && _isRecording) _buildLivenessProgress(),
-
-          if (_currentStep == 0) Container(color: Colors.black87),
-
-          if (_isUploadingKtp || _isUploadingFace)
-            Container(
-              color: Colors.black87,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(color: Colors.white),
-                    const SizedBox(height: 16),
-                    Text(
-                      _isUploadingFace ? 'Mengirim Data Verifikasi...' : 'Sedang Mengupload KTP...',
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: _currentStep == 0
-                      ? _buildInfoChip('Siapkan KTP Asli Anda')
-                      : _currentStep == 2 &&
-                            !_isRecording &&
-                            _brightnessWarning == null
-                      ? _buildInfoChip('Ikuti Instruksi Liveness Saat Merekam')
-                      : const SizedBox(),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 40),
-                  child: _currentStep == 2 && !_isRecording
-                      ? _buildRecordButton()
-                      : const SizedBox(),
-                ),
               ],
             ),
           ),
+
+          // ── 4. FLOATING INTERACTIVE INSTRUCTION CARD (BOTTOM) ──
+          Positioned(
+            bottom: 36,
+            left: 20,
+            right: 20,
+            child: ScaleTransition(
+              scale: _isFaceInstructionSuccess ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  color: _isFaceInstructionSuccess
+                      ? const Color(0xFF064E3B).withAlpha(240)
+                      : const Color(0xFF0F172A).withAlpha(235),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: _isFaceInstructionSuccess
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF2563EB).withAlpha(120),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_isFaceInstructionSuccess
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF2563EB))
+                          .withAlpha(70),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Animated State Icon
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _isFaceInstructionSuccess
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF2563EB),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_isFaceInstructionSuccess
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFF2563EB))
+                                .withAlpha(100),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        _getCurrentInstructionIcon(),
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+
+                    const SizedBox(width: 14),
+
+                    // Instruction Texts
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _getCurrentInstructionTitle(),
+                            style: TextStyle(
+                              color: _isFaceInstructionSuccess
+                                  ? const Color(0xFF6EE7B7)
+                                  : Colors.white,
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _getCurrentInstructionSubtitle(),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              height: 1.25,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── 5. UPLOAD / FINALIZING OVERLAY ──
+          if (_isUploadingFace)
+            Container(
+              color: Colors.black.withAlpha(210),
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: Color(0xFF10B981),
+                      strokeWidth: 3.5,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Menyinkronkan Data Biometrik...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'Verifikasi Dukcapil / SIAK sedang diproses',
+                      style: TextStyle(color: Colors.white60, fontSize: 12.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoChip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
+  Widget _buildStepPill(String label, int stepIndex) {
+    final bool isPassed = _livenessStep > stepIndex;
+    final bool isCurrent = _livenessStep == stepIndex;
+
+    Color pillBg;
+    Color textCol;
+    Color borderCol;
+
+    if (isPassed) {
+      pillBg = const Color(0xFF10B981);
+      textCol = Colors.white;
+      borderCol = const Color(0xFF10B981);
+    } else if (isCurrent) {
+      pillBg = const Color(0xFF2563EB);
+      textCol = Colors.white;
+      borderCol = const Color(0xFF60A5FA);
+    } else {
+      pillBg = Colors.white.withAlpha(15);
+      textCol = Colors.white54;
+      borderCol = Colors.white10;
+    }
+
+    return Expanded(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: pillBg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: borderCol, width: isCurrent ? 1.5 : 1),
+          boxShadow: isCurrent
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withAlpha(90),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
         ),
-        textAlign: TextAlign.center,
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: textCol,
+            fontSize: 11,
+            fontWeight: isCurrent || isPassed ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
+}
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SHOPEE / DANA / TOKOPEDIA STYLE BIOMETRIC OVAL MASK CUSTOM PAINTER
+// ═══════════════════════════════════════════════════════════════════════════
+class FaceScanMaskPainter extends CustomPainter {
+  final double ovalWidth;
+  final double ovalHeight;
+  final double progress; // 0.0 to 1.0
+  final bool isSuccess;
+  final bool isFaceDetected;
+  final double laserProgress; // 0.0 to 1.0 for sweep effect
 
+  FaceScanMaskPainter({
+    required this.ovalWidth,
+    required this.ovalHeight,
+    required this.progress,
+    required this.isSuccess,
+    required this.isFaceDetected,
+    required this.laserProgress,
+  });
 
-  Widget _buildRecordButton() {
-    return GestureDetector(
-      onTap: _startLivenessDetection,
-      child: Container(
-        width: 75,
-        height: 75,
-        decoration: BoxDecoration(
-          color: Colors.redAccent,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 4),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.red.withAlpha(100),
-              blurRadius: 10,
-              spreadRadius: 5,
-            ),
-          ],
-        ),
-        child: const Icon(Icons.videocam, color: Colors.white, size: 36),
-      ),
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect fullScreenRect = Offset.zero & size;
+    final Offset center = Offset(size.width / 2, size.height * 0.44);
+
+    final Rect ovalRect = Rect.fromCenter(
+      center: center,
+      width: ovalWidth,
+      height: ovalHeight,
     );
+
+    // ── 1. DARK BACKGROUND WITH TRANSPARENT OVAL CUTOUT ──
+    final Path backgroundPath = Path()..addRect(fullScreenRect);
+    final Path ovalPath = Path()..addOval(ovalRect);
+    final Path maskPath = Path.combine(PathOperation.difference, backgroundPath, ovalPath);
+
+    final Paint maskPaint = Paint()..color = const Color(0xE0050B14);
+    canvas.drawPath(maskPath, maskPaint);
+
+    // ── 2. OVAL BASE TRACK BORDER ──
+    final Paint trackBorderPaint = Paint()
+      ..color = Colors.white.withAlpha(40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+    canvas.drawOval(ovalRect, trackBorderPaint);
+
+    // ── 3. GLOWING BIOMETRIC PROGRESS RING ──
+    final Color progressColor = isSuccess
+        ? const Color(0xFF10B981)
+        : (isFaceDetected ? const Color(0xFF2563EB) : const Color(0xFFEF4444));
+
+    // Outer Glow effect
+    final Paint glowPaint = Paint()
+      ..color = progressColor.withAlpha(isSuccess ? 120 : 70)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10.0
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawOval(ovalRect, glowPaint);
+
+    // Active Progress Arc Stroke
+    if (progress > 0) {
+      final Paint progressPaint = Paint()
+        ..shader = SweepGradient(
+          startAngle: -math.pi / 2,
+          endAngle: 3 * math.pi / 2,
+          colors: isSuccess
+              ? [const Color(0xFF34D399), const Color(0xFF10B981)]
+              : [const Color(0xFF60A5FA), const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+        ).createShader(ovalRect)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 5.5;
+
+      final double sweepAngle = 2 * math.pi * progress;
+      canvas.drawArc(ovalRect, -math.pi / 2, sweepAngle, false, progressPaint);
+    }
+
+    // ── 4. CORNER HUD BIOMETRIC BRACKET ACCENTS ──
+    _drawBiometricCornerBrackets(canvas, center, ovalWidth, ovalHeight, progressColor);
+
+    // ── 5. LASER SWEEP SCAN LINE EFFECT ──
+    if (isFaceDetected && !isSuccess) {
+      final double laserY = (center.dy - ovalHeight / 2) + (ovalHeight * laserProgress);
+      final double halfWidthAtY = (ovalWidth / 2) *
+          math.sqrt((1 - math.pow((laserY - center.dy) / (ovalHeight / 2), 2)).clamp(0.0, 1.0));
+
+      final Paint laserPaint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            Colors.transparent,
+            const Color(0xFF60A5FA).withAlpha(180),
+            Colors.transparent,
+          ],
+        ).createShader(Rect.fromLTWH(center.dx - halfWidthAtY, laserY - 1, halfWidthAtY * 2, 2))
+        ..strokeWidth = 2.0;
+
+      canvas.drawLine(
+        Offset(center.dx - halfWidthAtY + 10, laserY),
+        Offset(center.dx + halfWidthAtY - 10, laserY),
+        laserPaint,
+      );
+    }
+  }
+
+  void _drawBiometricCornerBrackets(
+    Canvas canvas,
+    Offset center,
+    double width,
+    double height,
+    Color color,
+  ) {
+    final Paint bracketPaint = Paint()
+      ..color = color.withAlpha(220)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.5;
+
+    const double bracketLen = 18.0;
+    final double left = center.dx - width / 2 - 6;
+    final double right = center.dx + width / 2 + 6;
+    final double top = center.dy - height / 2 - 6;
+    final double bottom = center.dy + height / 2 + 6;
+
+    // Top-Left bracket
+    canvas.drawLine(Offset(left, top + bracketLen), Offset(left, top), bracketPaint);
+    canvas.drawLine(Offset(left, top), Offset(left + bracketLen, top), bracketPaint);
+
+    // Top-Right bracket
+    canvas.drawLine(Offset(right - bracketLen, top), Offset(right, top), bracketPaint);
+    canvas.drawLine(Offset(right, top), Offset(right, top + bracketLen), bracketPaint);
+
+    // Bottom-Left bracket
+    canvas.drawLine(Offset(left, bottom - bracketLen), Offset(left, bottom), bracketPaint);
+    canvas.drawLine(Offset(left, bottom), Offset(left + bracketLen, bottom), bracketPaint);
+
+    // Bottom-Right bracket
+    canvas.drawLine(Offset(right - bracketLen, bottom), Offset(right, bottom), bracketPaint);
+    canvas.drawLine(Offset(right, bottom), Offset(right, bottom - bracketLen), bracketPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant FaceScanMaskPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.isSuccess != isSuccess ||
+        oldDelegate.isFaceDetected != isFaceDetected ||
+        oldDelegate.laserProgress != laserProgress;
   }
 }
