@@ -513,9 +513,16 @@ class ItemDetailPage extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.shopping_bag_outlined, size: 18),
+                  icon: Icon(
+                    (category.toLowerCase().contains('gas'))
+                        ? Icons.shopping_bag_outlined
+                        : Icons.calendar_month_rounded,
+                    size: 18,
+                  ),
                   label: Text(
-                    category.contains('Sewa') ? 'Sewa Sekarang' : 'Pesan Sekarang',
+                    (category.toLowerCase().contains('gas'))
+                        ? 'Pesan Sekarang'
+                        : 'Sewa Sekarang',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

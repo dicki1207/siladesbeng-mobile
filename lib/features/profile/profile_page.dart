@@ -155,7 +155,7 @@ class _ProfilePageState extends State<ProfilePage> {
           isLogout: true,
         ),
       );
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(milliseconds: 1200));
       if (!context.mounted) return;
     }
 
@@ -786,9 +786,9 @@ class _ProfilePageState extends State<ProfilePage> {
           Padding(
             padding: EdgeInsets.fromLTRB(
               20,
-              topPadding + 14,
+              topPadding + 16,
               20,
-              _isLoggedIn ? 50 : 24, // Extra space at bottom for overlapping profile card
+              _isLoggedIn ? 80 : 24, // Extra space at bottom so card doesn't cover title
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -801,17 +801,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       'Profil Saya',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     Text(
                       'Kabupaten Bengkalis',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -865,66 +865,74 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTopHeroHeader(context),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                _buildTopHeroHeader(context),
+                if (_isLoggedIn)
+                  Positioned(
+                    bottom: -45,
+                    left: 20,
+                    right: 20,
+                    child: _buildProfileHeaderCard(margin: EdgeInsets.zero),
+                  ),
+              ],
+            ),
 
             if (_isLoggedIn) ...[
-              Transform.translate(
-                offset: const Offset(0, -32),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      _buildProfileHeaderCard(margin: EdgeInsets.zero),
-                      if (_isVerified) ...[
-                        FutureBuilder<SharedPreferences>(
-                          future: SharedPreferences.getInstance(),
-                          builder: (context, snapshot) {
-                            final status =
-                                snapshot.data?.getString('transfer_status');
-                            if (status == 'pending') {
-                              return Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 14,
+              const SizedBox(height: 55), // Space compensation for the positioned card
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    if (_isVerified) ...[
+                      FutureBuilder<SharedPreferences>(
+                        future: SharedPreferences.getInstance(),
+                        builder: (context, snapshot) {
+                          final status =
+                              snapshot.data?.getString('transfer_status');
+                          if (status == 'pending') {
+                            return Container(
+                              margin: const EdgeInsets.only(top: 10),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withAlpha(20),
+                                border: Border.all(
+                                  color: Colors.orange.withAlpha(50),
                                 ),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withAlpha(20),
-                                  border: Border.all(
-                                    color: Colors.orange.withAlpha(50),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.hourglass_empty,
+                                    color: Colors.orange,
+                                    size: 18,
                                   ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.hourglass_empty,
-                                      color: Colors.orange,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'Pemindahan Domisili Anda sedang diproses oleh admin.',
-                                        style: TextStyle(
-                                          color: Colors.orange[800],
-                                          fontSize: 12,
-                                        ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Pemindahan Domisili Anda sedang diproses oleh admin.',
+                                      style: TextStyle(
+                                        color: Colors.orange[800],
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  ],
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                      ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
-              const SizedBox(height: -14), // Spacing compensation for overlapping offset
             ] else ...[
               const SizedBox(height: 16),
             ],

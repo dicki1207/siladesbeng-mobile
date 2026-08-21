@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'widgets/network_wrapper.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:siladesbeng_mobile/core/theme.dart';
 import 'package:siladesbeng_mobile/services/firebase_messaging_service.dart';
 import 'splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inisialisasi locale bahasa Indonesia untuk formatting tanggal
+  await initializeDateFormatting('id_ID', null);
   
   try {
     await Firebase.initializeApp();

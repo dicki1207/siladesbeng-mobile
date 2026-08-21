@@ -27,12 +27,35 @@ class KemitraanService {
     }
   }
 
+  Future<Map<String, dynamic>> checkDesaAdmin(String desaId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/kemitraan/check-desa/$desaId'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          return data['data'];
+        }
+      }
+      return {'has_admin': false};
+    } catch (e) {
+      return {'has_admin': false};
+    }
+  }
+
   Future<Map<String, dynamic>> submitPartnership({
     required String applicantName,
     required String position,
     required String contactPhone,
     required String contactEmail,
     required String regionId,
+    required String regionType,
+    required String regionName,
     required String reason,
     required String filePath,
   }) async {
@@ -54,8 +77,8 @@ class KemitraanService {
       // Add text fields
       request.fields['applicant_name'] = applicantName;
       request.fields['position'] = position;
-      request.fields['region_type'] = 'desa'; // assuming always submitting desa id
-      request.fields['region_name'] = '-'; // not strictly used if parent_region_id is the focus, but required by validation
+      request.fields['region_type'] = regionType;
+      request.fields['region_name'] = regionName;
       request.fields['parent_region_id'] = regionId;
       request.fields['contact_phone'] = contactPhone;
       request.fields['contact_email'] = contactEmail;

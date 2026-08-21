@@ -19,6 +19,10 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
 
   String _role = 'rt';
   String _adminName = 'Pengurus Wilayah';
+  String? _adminAvatar;
+  String _rt = '02';
+  String _rw = '01';
+  String _desaName = 'Desa Pematang';
 
   final AdminWilayahService _wilayahService = AdminWilayahService();
   int _totalLaporan = 0;
@@ -44,6 +48,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         }
         _role = loadedRole;
         _adminName = prefs.getString('profile_name') ?? 'Pengurus Wilayah';
+        _adminAvatar = prefs.getString('profile_image_url');
       });
     }
   }
@@ -54,6 +59,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
     if (result['success'] == true) {
       final data = result['data'];
       final statistik = data['statistik'] ?? {};
+      final pengurus = data['pengurus'] ?? {};
       final laporanList = data['laporan_terbaru'] as List? ?? [];
 
       setState(() {
@@ -61,6 +67,16 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         _laporanBaru = statistik['laporan_baru'] ?? 0;
         _laporanSelesai = statistik['laporan_selesai'] ?? 0;
         _laporanDiproses = (_totalLaporan - _laporanBaru - _laporanSelesai).clamp(0, 999);
+
+        if (pengurus['name'] != null && pengurus['name'].toString().isNotEmpty) {
+          _adminName = pengurus['name'];
+        }
+        if (pengurus['avatar_url'] != null && pengurus['avatar_url'].toString().isNotEmpty) {
+          _adminAvatar = pengurus['avatar_url'];
+        }
+        if (pengurus['rt'] != null) _rt = pengurus['rt'].toString();
+        if (pengurus['rw'] != null) _rw = pengurus['rw'].toString();
+        if (pengurus['desa'] != null) _desaName = pengurus['desa'].toString();
 
         _laporanTerbaru = laporanList.map<Map<String, dynamic>>((item) {
           return Map<String, dynamic>.from(item);
@@ -199,13 +215,39 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                               ),
                             ],
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.security_rounded,
-                              size: 22,
-                              color: Colors.white,
-                            ),
-                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: (_adminAvatar != null && _adminAvatar!.trim().isNotEmpty)
+                              ? Image.network(
+                                  _adminAvatar!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Center(
+                                    child: Icon(
+                                      Icons.security_rounded,
+                                      size: 22,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : const Center(
+                                  child: Icon(
+                                    Icons.security_rounded,
+                                    size: 22,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                         Positioned(
                           bottom: 0,
@@ -255,8 +297,8 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                           const SizedBox(height: 2),
                           Text(
                             _role == 'rw'
-                                ? 'Koordinator Wilayah RW 01'
-                                : 'Ketua Wilayah RT 02 / RW 01',
+                                ? 'Koordinator Wilayah RW $_rw'
+                                : 'Ketua Wilayah RT $_rt / RW $_rw',
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
@@ -283,9 +325,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                           ),
                         ],
                       ),
-                      child: const Text(
-                        'Desa Pematang',
-                        style: TextStyle(
+                      child: Text(
+                        _desaName,
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,

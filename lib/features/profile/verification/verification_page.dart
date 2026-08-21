@@ -215,24 +215,27 @@ class _VerificationPageState extends State<VerificationPage> {
 
   Widget _buildUploadState() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = const Color(0xFF0EA5E9);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Banner/Header
+          // Banner / Instruksi Atas
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF1E3A8A).withAlpha(100), const Color(0xFF1E293B)]
-                    : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
+                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                    : [const Color(0xFFF0F9FF), const Color(0xFFE0F2FE)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFF2563EB).withAlpha(isDark ? 80 : 50),
+                color: isDark ? Colors.white12 : const Color(0xFFBAE6FD),
               ),
             ),
             child: Row(
@@ -240,13 +243,13 @@ class _VerificationPageState extends State<VerificationPage> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB).withAlpha(30),
+                    color: primaryColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.document_scanner_rounded,
-                    color: Color(0xFF2563EB),
-                    size: 26,
+                    color: primaryColor,
+                    size: 24,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -257,17 +260,17 @@ class _VerificationPageState extends State<VerificationPage> {
                       Text(
                         'Pindai e-KTP Asli',
                         style: TextStyle(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.bold,
                           fontSize: 14.5,
                           color: isDark ? Colors.white : const Color(0xFF0F172A),
                         ),
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Posisikan KTP di dalam bingkai kotak kamera. Sistem akan membaca NIK & Nama Anda secara otomatis.',
+                        'Posisikan e-KTP Anda di dalam bingkai kamera untuk verifikasi data otomatis.',
                         style: TextStyle(
-                          fontSize: 11.5,
-                          color: isDark ? Colors.white70 : const Color(0xFF475569),
+                          fontSize: 12,
+                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
                           height: 1.3,
                         ),
                       ),
@@ -278,25 +281,25 @@ class _VerificationPageState extends State<VerificationPage> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Interactive KTP Box Scanner Card (Shopee / DANA Style)
+          // Interactive KTP Scanner Preview Card
           GestureDetector(
             onTap: _scanKtp,
             child: AspectRatio(
               aspectRatio: 1.58,
               child: Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFF2563EB),
-                    width: 2,
+                    color: primaryColor.withValues(alpha: isDark ? 0.6 : 0.8),
+                    width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2563EB).withAlpha(isDark ? 40 : 25),
-                      blurRadius: 18,
+                      color: primaryColor.withValues(alpha: isDark ? 0.15 : 0.08),
+                      blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -305,151 +308,97 @@ class _VerificationPageState extends State<VerificationPage> {
                   children: [
                     // Corner HUD Brackets
                     Positioned(
-                      top: 12,
-                      left: 12,
+                      top: 14,
+                      left: 14,
                       child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
                           border: Border(
-                            top: BorderSide(color: Color(0xFF2563EB), width: 3),
-                            left: BorderSide(color: Color(0xFF2563EB), width: 3),
+                            top: BorderSide(color: primaryColor, width: 3),
+                            left: BorderSide(color: primaryColor, width: 3),
                           ),
                         ),
                       ),
                     ),
                     Positioned(
-                      top: 12,
-                      right: 12,
+                      top: 14,
+                      right: 14,
                       child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
                           border: Border(
-                            top: BorderSide(color: Color(0xFF2563EB), width: 3),
-                            right: BorderSide(color: Color(0xFF2563EB), width: 3),
+                            top: BorderSide(color: primaryColor, width: 3),
+                            right: BorderSide(color: primaryColor, width: 3),
                           ),
                         ),
                       ),
                     ),
                     Positioned(
-                      bottom: 12,
-                      left: 12,
+                      bottom: 14,
+                      left: 14,
                       child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
                           border: Border(
-                            bottom: BorderSide(color: Color(0xFF2563EB), width: 3),
-                            left: BorderSide(color: Color(0xFF2563EB), width: 3),
+                            bottom: BorderSide(color: primaryColor, width: 3),
+                            left: BorderSide(color: primaryColor, width: 3),
                           ),
                         ),
                       ),
                     ),
                     Positioned(
-                      bottom: 12,
-                      right: 12,
+                      bottom: 14,
+                      right: 14,
                       child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
                           border: Border(
-                            bottom: BorderSide(color: Color(0xFF2563EB), width: 3),
-                            right: BorderSide(color: Color(0xFF2563EB), width: 3),
+                            bottom: BorderSide(color: primaryColor, width: 3),
+                            right: BorderSide(color: primaryColor, width: 3),
                           ),
                         ),
                       ),
                     ),
 
-                    // KTP Wireframe Ghosting
-                    Positioned(
-                      top: 24,
-                      left: 28,
+                    // Center Scanner Illustration & Action Hint
+                    Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 90,
-                            height: 7,
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.white12 : Colors.black12,
-                              borderRadius: BorderRadius.circular(4),
+                              color: primaryColor.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            width: 140,
-                            height: 9,
-                            decoration: BoxDecoration(
-                              color: isDark ? Colors.white24 : Colors.black26,
-                              borderRadius: BorderRadius.circular(4),
+                            child: Icon(
+                              Icons.camera_enhance_rounded,
+                              color: primaryColor,
+                              size: 38,
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Container(
-                            width: 110,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: isDark ? Colors.white10 : Colors.black12,
-                              borderRadius: BorderRadius.circular(4),
+                          Text(
+                            'Ketuk untuk Membuka Kamera',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : const Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Mendukung deteksi NIK & Nama otomatis',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
                             ),
                           ),
                         ],
-                      ),
-                    ),
-
-                    // Photo Ghost Placeholder on Right
-                    Positioned(
-                      right: 24,
-                      top: 24,
-                      bottom: 24,
-                      child: Container(
-                        width: 65,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withAlpha(10) : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.person_outline_rounded,
-                          color: Colors.grey,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-
-                    // Center Action Overlay
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF2563EB).withAlpha(100),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
-                            SizedBox(width: 8),
-                            Text(
-                              'Buka Scanner e-KTP',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13.5,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ],
@@ -458,43 +407,100 @@ class _VerificationPageState extends State<VerificationPage> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // Secondary Gallery Pick Option
-          TextButton.icon(
-            icon: const Icon(Icons.photo_library_outlined, size: 18),
-            label: const Text('Pilih Foto KTP dari Galeri HP'),
-            style: TextButton.styleFrom(
-              foregroundColor: isDark ? Colors.white70 : const Color(0xFF475569),
+          // Action Buttons
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _scanKtp,
+              icon: const Icon(Icons.camera_alt_rounded, size: 18),
+              label: const Text(
+                'Buka Scanner e-KTP',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
+              ),
             ),
-            onPressed: _pickKtpFromGallery,
           ),
 
           const SizedBox(height: 10),
 
-          // Instructions Card
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: OutlinedButton.icon(
+              onPressed: _pickKtpFromGallery,
+              icon: Icon(
+                Icons.photo_library_outlined,
+                size: 18,
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
+              ),
+              label: Text(
+                'Unggah Foto KTP dari Galeri',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Tips & Ketentuan Card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF131C2E) : const Color(0xFFF8FAFC),
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
               ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '💡 Tips Memindai e-KTP:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline_rounded,
+                      color: Colors.amber[700],
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Panduan Pemindaian e-KTP:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 _buildTipRow('Gunakan e-KTP fisik asli (bukan fotokopi).'),
-                const SizedBox(height: 4),
-                _buildTipRow('Posisikan KTP pas di dalam kotak garis biru.'),
-                const SizedBox(height: 4),
-                _buildTipRow('Hindari pantulan cahaya/silau lampu pada tulisan NIK.'),
+                const SizedBox(height: 6),
+                _buildTipRow('Pastikan seluruh bagian KTP masuk ke dalam bingkai.'),
+                const SizedBox(height: 6),
+                _buildTipRow('Pastikan tulisan NIK & Nama jelas serta tidak terkena pantulan cahaya.'),
               ],
             ),
           ),
@@ -504,18 +510,23 @@ class _VerificationPageState extends State<VerificationPage> {
   }
 
   Widget _buildTipRow(String tip) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('• ', style: TextStyle(fontWeight: FontWeight.bold)),
+        Icon(
+          Icons.check_circle_outline_rounded,
+          size: 15,
+          color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+        ),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             tip,
             style: TextStyle(
-              fontSize: 11.5,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white70
-                  : const Color(0xFF64748B),
+              fontSize: 12,
+              color: isDark ? Colors.white70 : const Color(0xFF64748B),
+              height: 1.35,
             ),
           ),
         ),

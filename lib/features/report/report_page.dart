@@ -5,7 +5,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/report/report_camera_page.dart';
+import 'package:siladesbeng_mobile/features/report/report_map_picker_page.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -78,7 +80,7 @@ class _ReportPageState extends State<ReportPage> {
       if (token == null) return;
 
       final response = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/user'),
+        Uri.parse('${ApiConfig.baseUrl}/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -166,7 +168,7 @@ class _ReportPageState extends State<ReportPage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.250.3.148:8000/api/laporan'),
+        Uri.parse('${ApiConfig.baseUrl}/api/laporan'),
       );
 
       request.headers.addAll({
@@ -479,6 +481,27 @@ class _ReportPageState extends State<ReportPage> {
     );
   }
 
+  Future<void> _openMapPicker() async {
+    final result = await Navigator.push<LatLng>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportMapPickerPage(
+          initialLocation: _selectedLocation,
+          hasInitialLocation: _hasSelectedLocation,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _selectedLocation = result;
+        _hasSelectedLocation = true;
+      });
+      _mapController.move(result, 16.0);
+      _calculateProgress();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -523,96 +546,7 @@ class _ReportPageState extends State<ReportPage> {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(16.0),
         children: [
-          // 1. Compact Header Banner
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: primaryColor.withValues(alpha: 0.15),
-              ),
-            ),
-            child: Row(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          'http://10.250.3.148:8000/Admin/img/illustrations/logokab.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => Icon(Icons.account_balance, color: primaryColor, size: 20),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          'http://10.250.3.148:8000/Admin/img/illustrations/logodomain.webp',
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => Icon(Icons.campaign_outlined, color: primaryColor, size: 20),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Form Pengaduan & Aspirasi',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Sampaikan keluhan secara transparan dan beretika',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark ? Colors.white54 : Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // 2. Form Input Fields
+          // 1. Form Input Fields
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -692,115 +626,175 @@ class _ReportPageState extends State<ReportPage> {
             },
           ),
 
-          // 3. Compact Mini-Map Section (Height 130px)
+          // 2. Interactive Full-Screen Capable Map Section
           _buildLabel('Lokasi Kejadian *', icon: Icons.map_outlined),
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white12 : Colors.grey.shade300,
+                color: _hasSelectedLocation
+                    ? primaryColor.withValues(alpha: isDark ? 0.6 : 0.4)
+                    : (isDark ? Colors.white12 : Colors.grey.shade300),
+                width: _hasSelectedLocation ? 1.5 : 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Column(
               children: [
-                // Mini Map Box (130px)
-                SizedBox(
-                  height: 130,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(13)),
-                    child: Stack(
-                      children: [
-                        FlutterMap(
-                          mapController: _mapController,
-                          options: MapOptions(
-                            initialCenter: _selectedLocation,
-                            initialZoom: 15.0,
-                            onTap: (tapPosition, point) {
-                              setState(() {
-                                _selectedLocation = point;
-                                _hasSelectedLocation = true;
-                              });
-                              _calculateProgress();
-                            },
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.siladesbeng',
+                // Clickable Map Preview Area (Clean without redundant text overlays)
+                GestureDetector(
+                  onTap: _openMapPicker,
+                  child: SizedBox(
+                    height: 140,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                      child: Stack(
+                        children: [
+                          FlutterMap(
+                            mapController: _mapController,
+                            options: MapOptions(
+                              initialCenter: _selectedLocation,
+                              initialZoom: 15.5,
+                              interactionOptions: const InteractionOptions(
+                                flags: InteractiveFlag.none,
+                              ),
+                              onTap: (tapPosition, point) => _openMapPicker(),
                             ),
-                            if (_hasSelectedLocation)
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: _selectedLocation,
-                                    width: 36,
-                                    height: 36,
-                                    child: const Icon(
-                                      Icons.location_on_rounded,
-                                      color: Colors.redAccent,
-                                      size: 36,
+                            children: [
+                              TileLayer(
+                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                userAgentPackageName: 'com.example.siladesbeng',
+                              ),
+                              if (_hasSelectedLocation)
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      point: _selectedLocation,
+                                      width: 40,
+                                      height: 40,
+                                      child: const Icon(
+                                        Icons.location_on_rounded,
+                                        color: Colors.redAccent,
+                                        size: 40,
+                                      ),
                                     ),
+                                  ],
+                                ),
+                            ],
+                          ),
+
+                          // Clean Floating Fullscreen Indicator Button
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF1E293B).withValues(alpha: 0.85)
+                                    : Colors.white.withValues(alpha: 0.9),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.15),
+                                    blurRadius: 4,
                                   ),
                                 ],
                               ),
-                          ],
-                        ),
-                        // Quick Map Hint Overlay
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.65),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'Ketuk peta untuk menandai titik',
-                              style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w600),
+                              child: Icon(
+                                Icons.fullscreen_rounded,
+                                color: isDark ? Colors.white : const Color(0xFF334155),
+                                size: 20,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                // Location Status Bar
+
+                // Location Bottom Info & Action Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
-                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(13)),
+                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15)),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.location_on_rounded,
-                        color: _hasSelectedLocation ? Colors.redAccent : Colors.grey,
-                        size: 16,
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: _hasSelectedLocation
+                              ? Colors.redAccent.withValues(alpha: 0.12)
+                              : Colors.grey.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.location_on_rounded,
+                          color: _hasSelectedLocation ? Colors.redAccent : Colors.grey,
+                          size: 18,
+                        ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          _hasSelectedLocation
-                              ? "${_selectedLocation.latitude.toStringAsFixed(6)}, ${_selectedLocation.longitude.toStringAsFixed(6)} (Lokasi Terkunci)"
-                              : "Belum ada lokasi dipilih. Ketuk titik pada peta di atas.",
-                          style: TextStyle(
-                            color: _hasSelectedLocation
-                                ? (isDark ? Colors.white : const Color(0xFF1E293B))
-                                : (isDark ? Colors.white38 : Colors.grey[500]),
-                            fontSize: 11.5,
-                            fontWeight: _hasSelectedLocation ? FontWeight.bold : FontWeight.normal,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _hasSelectedLocation ? 'Titik Lokasi Terkunci' : 'Belum ada lokasi dipilih',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? Colors.white60 : Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              _hasSelectedLocation
+                                  ? "${_selectedLocation.latitude.toStringAsFixed(6)}, ${_selectedLocation.longitude.toStringAsFixed(6)}"
+                                  : "Ketuk tombol untuk buka peta",
+                              style: TextStyle(
+                                color: _hasSelectedLocation
+                                    ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                                    : (isDark ? Colors.white38 : Colors.grey[500]),
+                                fontSize: 12.5,
+                                fontWeight: _hasSelectedLocation ? FontWeight.bold : FontWeight.normal,
+                                fontFamily: _hasSelectedLocation ? 'monospace' : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Tombol Buka / Ubah Peta
+                      OutlinedButton.icon(
+                        onPressed: _openMapPicker,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: primaryColor,
+                          side: BorderSide(color: primaryColor.withValues(alpha: 0.5)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          visualDensity: VisualDensity.compact,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                        icon: Icon(
+                          _hasSelectedLocation ? Icons.edit_location_alt_rounded : Icons.map_rounded,
+                          size: 15,
+                        ),
+                        label: Text(
+                          _hasSelectedLocation ? 'Ubah Titik' : 'Pilih di Peta',
+                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -914,60 +908,33 @@ class _ReportPageState extends State<ReportPage> {
           ),
 
           const SizedBox(height: 24),
-
-          // 7. Action Buttons
-          Row(
-            children: [
-              Expanded(
-                flex: 35,
-                child: OutlinedButton(
-                  onPressed: _isSubmitting ? null : () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.grey.shade300,
-                    ),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: Text(
-                    'Batal',
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.grey[700],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
+          // 7. Submit Action Button (Full Width)
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: _isSubmitting ? null : _submitReport,
+              icon: _isSubmitting
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Icon(Icons.send_rounded, size: 18),
+              label: Text(
+                _isSubmitting ? 'Mengirim...' : 'Kirim Laporan',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 65,
-                child: ElevatedButton.icon(
-                  onPressed: _isSubmitting ? null : _submitReport,
-                  icon: _isSubmitting
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send_rounded, size: 18),
-                  label: Text(
-                    _isSubmitting ? 'Mengirim...' : 'Kirim Laporan',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
-                  ),
-                ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 30),
         ],

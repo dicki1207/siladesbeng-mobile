@@ -647,16 +647,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: ElevatedButton.icon(
+                      child: ElevatedButton(
                         onPressed: () {
                           setState(() => _selectedPackageIndex = idx);
                           _handleBooking();
                         },
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                        label: const Text(
-                          'Langsung Sewa',
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
-                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           foregroundColor: Colors.white,
@@ -665,6 +660,10 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           elevation: 0,
+                        ),
+                        child: const Text(
+                          'Langsung Sewa',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -1048,13 +1047,8 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 55,
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
                     onPressed: _handleBooking,
-                    icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                    label: const Text(
-                      'Lanjutkan Sewa',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
-                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
@@ -1063,6 +1057,10 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         borderRadius: BorderRadius.circular(14),
                       ),
                       elevation: 0,
+                    ),
+                    child: const Text(
+                      'Lanjutkan Sewa',
+                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

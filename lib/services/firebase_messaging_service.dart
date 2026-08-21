@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 // Top-level handler for background messages
 @pragma('vm:entry-point')
@@ -106,7 +107,7 @@ class FirebaseMessagingService {
       if (token == null) return;
 
       final res = await http.post(
-        Uri.parse('http://10.250.3.148:8000/api/fcm-token'),
+        Uri.parse('${ApiConfig.baseUrl}/api/fcm-token'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

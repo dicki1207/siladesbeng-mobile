@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+import 'package:siladesbeng_mobile/features/profile/verification/ktp_camera_scanner_page.dart';
 import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
+import 'package:siladesbeng_mobile/services/kyc_service.dart';
+import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
 class PartnershipRegistrationPage extends StatefulWidget {
-  const PartnershipRegistrationPage({super.key});
+  final String initialRole; // 'desa', 'rw', 'rt'
+
+  const PartnershipRegistrationPage({
+    super.key,
+    this.initialRole = 'desa',
+  });
 
   @override
   State<PartnershipRegistrationPage> createState() =>
@@ -15,19 +22,29 @@ class _PartnershipRegistrationPageState
     extends State<PartnershipRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final KemitraanService _kemitraanService = KemitraanService();
+  final KycService _kycService = KycService();
+
+  late String _currentRole; // 'desa', 'rw', 'rt'
   bool _isSubmitting = false;
   bool _isLoadingRegions = true;
+  bool _isScanningKtp = false;
 
   final _namaPendaftarController = TextEditingController();
+  final _nikController = TextEditingController();
   final _jabatanController = TextEditingController();
   final _noHpController = TextEditingController();
   final _emailController = TextEditingController();
   final _pesanController = TextEditingController();
 
+  // RT / RW specific controllers
+  final _rtNumberController = TextEditingController();
+  final _rwNumberController = TextEditingController();
+
   List<dynamic> _kecamatans = [];
   String? _selectedKecamatanId;
   List<dynamic> _desas = [];
   String? _selectedDesaId;
+  Map<String, dynamic>? _selectedDesaData;
 
   String? _filePath;
   String? _fileName;
@@ -35,7 +52,25 @@ class _PartnershipRegistrationPageState
   @override
   void initState() {
     super.initState();
+    _currentRole = widget.initialRole;
+    _updateDefaultJabatan();
     _fetchRegions();
+  }
+
+  void _updateDefaultJabatan() {
+    if (_currentRole == 'desa') {
+      if (_jabatanController.text.isEmpty ||
+          _jabatanController.text.startsWith('Ketua RT') ||
+          _jabatanController.text.startsWith('Ketua RW')) {
+        _jabatanController.text = 'Kepala Desa / Perangkat Desa';
+      }
+    } else if (_currentRole == 'rw') {
+      final rwNo = _rwNumberController.text.trim();
+      _jabatanController.text = rwNo.isNotEmpty ? 'Ketua RW $rwNo' : 'Ketua RW';
+    } else if (_currentRole == 'rt') {
+      final rtNo = _rtNumberController.text.trim();
+      _jabatanController.text = rtNo.isNotEmpty ? 'Ketua RT $rtNo' : 'Ketua RT';
+    }
   }
 
   Future<void> _fetchRegions() async {
@@ -45,6 +80,261 @@ class _PartnershipRegistrationPageState
         _kecamatans = regions;
         _isLoadingRegions = false;
       });
+    }
+  }
+
+  void _onKecamatanChanged(String? kecamatanId) {
+    setState(() {
+      _selectedKecamatanId = kecamatanId;
+      _selectedDesaId = null;
+      _selectedDesaData = null;
+
+      if (kecamatanId != null) {
+        final kec = _kecamatans.firstWhere(
+          (item) => item['id'].toString() == kecamatanId,
+          orElse: () => null,
+        );
+        _desas = kec != null ? (kec['children'] ?? []) : [];
+      } else {
+        _desas = [];
+      }
+    });
+  }
+
+  void _onDesaChanged(String? desaId) {
+    if (desaId == null) {
+      setState(() {
+        _selectedDesaId = null;
+        _selectedDesaData = null;
+      });
+      return;
+    }
+
+    final desa = _desas.firstWhere(
+      (item) => item['id'].toString() == desaId,
+      orElse: () => null,
+    );
+
+    setState(() {
+      _selectedDesaId = desaId;
+      _selectedDesaData = desa;
+    });
+
+    // Check if role is RT/RW and Desa has NO admin
+    if ((_currentRole == 'rw' || _currentRole == 'rt') && desa != null) {
+      final bool hasAdmin = desa['has_admin'] == true;
+      if (!hasAdmin) {
+        _showDesaBelumTerdaftarDialog(desa['name'] ?? 'Desa');
+      }
+    }
+  }
+
+  void _showDesaBelumTerdaftarDialog(String desaName) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Glowing Warning Icon
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFDE68A), width: 2),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.gpp_maybe_rounded,
+                    color: Color(0xFFD97706),
+                    size: 38,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Title
+              const Text(
+                'Desa Belum Bergabung',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+
+              // Description
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withAlpha(10) : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? Colors.white12 : Colors.grey.shade200,
+                  ),
+                ),
+                child: Text(
+                  'Mohon maaf, pendaftaran akun kepengurusan ${_currentRole.toUpperCase()} untuk $desaName belum dapat diproses.\n\nDesa Anda tercatat belum bergabung dalam kemitraan resmi SilaDesBeng. Pendaftaran ${_currentRole.toUpperCase()} memerlukan verifikasi dan persetujuan dari Pemerintah Desa setempat untuk memastikan keabsahan wilayah tugas Anda.',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    height: 1.5,
+                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Action Buttons
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _currentRole = 'desa';
+                      _updateDefaultJabatan();
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Beralih ke formulir pendaftaran Desa.'),
+                        backgroundColor: Color(0xFF0EA5E9),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_business_rounded, color: Colors.white, size: 18),
+                  label: const Text(
+                    'Daftarkan Desa Anda',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0EA5E9),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _selectedDesaId = null;
+                      _selectedDesaData = null;
+                    });
+                  },
+                  child: Text(
+                    'Pilih Desa / Wilayah Lain',
+                    style: TextStyle(
+                      color: isDark ? Colors.white60 : Colors.grey[600],
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _scanKtpForAutofill() async {
+    final String? imagePath = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(builder: (_) => const KtpCameraScannerPage()),
+    );
+
+    if (imagePath == null) return;
+
+    setState(() => _isScanningKtp = true);
+
+    try {
+      final res = await _kycService.processKtp(imagePath: imagePath);
+      if (!mounted) return;
+      setState(() => _isScanningKtp = false);
+
+      if (res['status'] == 'success' && res['ocr_data'] != null) {
+        final ocr = res['ocr_data'];
+        final String? ocrName = ocr['nama'];
+        final String? ocrNik = ocr['nik'];
+        final String? ocrKec = ocr['kecamatan'];
+        final String? ocrDesa = ocr['kelurahan_desa'];
+        final String? ocrRtRw = ocr['rt_rw'];
+
+        if (ocrName != null && ocrName.isNotEmpty) {
+          _namaPendaftarController.text = ocrName;
+        }
+        if (ocrNik != null && ocrNik.isNotEmpty) {
+          _nikController.text = ocrNik;
+        }
+
+        // Auto parse RT/RW if available (e.g. "003/002")
+        if (ocrRtRw != null && ocrRtRw.contains('/')) {
+          final parts = ocrRtRw.split('/');
+          if (parts.isNotEmpty) {
+            _rtNumberController.text = parts[0].trim();
+          }
+          if (parts.length > 1) {
+            _rwNumberController.text = parts[1].trim();
+          }
+          _updateDefaultJabatan();
+        }
+
+        // Try to match Kecamatan and Desa
+        if (ocrKec != null && _kecamatans.isNotEmpty) {
+          final matchedKec = _kecamatans.firstWhere(
+            (k) => k['name'].toString().toLowerCase().contains(ocrKec.toLowerCase()),
+            orElse: () => null,
+          );
+          if (matchedKec != null) {
+            _onKecamatanChanged(matchedKec['id'].toString());
+
+            if (ocrDesa != null && _desas.isNotEmpty) {
+              final matchedDesa = _desas.firstWhere(
+                (d) => d['name'].toString().toLowerCase().contains(ocrDesa.toLowerCase()),
+                orElse: () => null,
+              );
+              if (matchedDesa != null) {
+                _onDesaChanged(matchedDesa['id'].toString());
+              }
+            }
+          }
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Data KTP berhasil dipindai & diisi otomatis!'),
+            backgroundColor: Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        _showError('Gagal memproses KTP: ${res['message'] ?? 'Foto kurang jelas'}');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isScanningKtp = false);
+      _showError('Terjadi kesalahan saat memproses KTP: $e');
     }
   }
 
@@ -70,20 +360,43 @@ class _PartnershipRegistrationPageState
       return;
     }
 
+    // Guard: RT / RW cannot register if Desa has no admin
+    if ((_currentRole == 'rw' || _currentRole == 'rt') &&
+        _selectedDesaData != null &&
+        _selectedDesaData!['has_admin'] != true) {
+      _showDesaBelumTerdaftarDialog(_selectedDesaData!['name'] ?? 'Desa');
+      return;
+    }
+
     if (_filePath == null) {
-      _showError('Silakan unggah SK/Surat Tugas terlebih dahulu');
+      _showError('Silakan unggah dokumen SK / Surat Tugas');
       return;
     }
 
     setState(() => _isSubmitting = true);
 
+    // Build region name depending on role
+    String regionName = _selectedDesaData?['name'] ?? '-';
+    if (_currentRole == 'rt') {
+      final rtNo = _rtNumberController.text.trim();
+      final rwNo = _rwNumberController.text.trim();
+      regionName = 'RT $rtNo / RW $rwNo ($regionName)';
+    } else if (_currentRole == 'rw') {
+      final rwNo = _rwNumberController.text.trim();
+      regionName = 'RW $rwNo ($regionName)';
+    }
+
     final result = await _kemitraanService.submitPartnership(
-      applicantName: _namaPendaftarController.text,
-      position: _jabatanController.text,
-      contactPhone: _noHpController.text,
-      contactEmail: _emailController.text,
+      applicantName: _namaPendaftarController.text.trim(),
+      position: _jabatanController.text.trim(),
+      contactPhone: _noHpController.text.trim(),
+      contactEmail: _emailController.text.trim(),
       regionId: _selectedDesaId!,
-      reason: _pesanController.text,
+      regionType: _currentRole,
+      regionName: regionName,
+      reason: _pesanController.text.trim().isNotEmpty
+          ? _pesanController.text.trim()
+          : 'Pengajuan akun ${_currentRole.toUpperCase()} $regionName',
       filePath: _filePath!,
     );
 
@@ -91,12 +404,15 @@ class _PartnershipRegistrationPageState
     setState(() => _isSubmitting = false);
 
     if (result['status'] == 'success') {
+      final String successMsg = _currentRole == 'desa'
+          ? 'Pengajuan kemitraan Admin Desa berhasil dikirim! Tim Admin Kabupaten akan segera memverifikasi SK Anda.'
+          : 'Pengajuan akun ${_currentRole.toUpperCase()} berhasil dikirim! Permohonan akan diverifikasi langsung oleh Admin Desa ${_selectedDesaData?['name'] ?? ''}.';
+
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const AnimatedSuccessDialog(
-          message:
-              'Pengajuan kemitraan berhasil dikirim! Tim kami akan segera menghubungi Anda.',
+        builder: (context) => AnimatedSuccessDialog(
+          message: successMsg,
           isLogout: false,
         ),
       );
@@ -106,7 +422,7 @@ class _PartnershipRegistrationPageState
       Navigator.pop(context); // close dialog
       Navigator.pop(context); // close page
     } else {
-      _showError(result['message'] ?? 'Gagal mengirim pengajuan');
+      _showError(result['message'] ?? 'Gagal mengirim pengajuan kemitraan');
     }
   }
 
@@ -123,23 +439,26 @@ class _PartnershipRegistrationPageState
   @override
   void dispose() {
     _namaPendaftarController.dispose();
+    _nikController.dispose();
     _jabatanController.dispose();
     _noHpController.dispose();
     _emailController.dispose();
     _pesanController.dispose();
+    _rtNumberController.dispose();
+    _rwNumberController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
+    final primaryColor = const Color(0xFF0EA5E9);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
-          'Pengajuan Kemitraan',
+          'Pengajuan Kemitraan Akun',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -149,7 +468,7 @@ class _PartnershipRegistrationPageState
         ),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: primaryColor,
+        backgroundColor: const Color(0xFF1E3C72),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoadingRegions
@@ -158,542 +477,607 @@ class _PartnershipRegistrationPageState
               key: _formKey,
               child: ListView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                 children: [
-                  // 1. Compact Header Banner
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: primaryColor.withValues(alpha: 0.15),
+                  // 1. Role Selector Tab (Desa, RW, RT)
+                  _buildRoleSegmentedBar(isDark),
+                  const SizedBox(height: 16),
+
+                  // 2. KTP Auto Scan Card
+                  _buildKtpAutoFillCard(isDark),
+                  const SizedBox(height: 16),
+
+                  // 3. Status Wilayah & Admin Desa Banner (if Desa selected)
+                  if (_selectedDesaData != null) _buildAdminDesaStatusCard(isDark),
+                  if (_selectedDesaData != null) const SizedBox(height: 16),
+
+                  // 4. Form Section 1: Informasi Wilayah
+                  _buildSectionCard(
+                    isDark: isDark,
+                    title: '1. Informasi Wilayah',
+                    icon: Icons.location_on_rounded,
+                    iconColor: const Color(0xFF3B82F6),
+                    children: [
+                      // Kabupaten Fixed
+                      _buildFixedField(
+                        label: 'Kabupaten',
+                        value: 'Kabupaten Bengkalis',
+                        icon: Icons.account_balance_rounded,
+                        isDark: isDark,
                       ),
-                    ),
-                    child: Row(
-                      children: [
+                      const SizedBox(height: 12),
+
+                      // Dropdown Kecamatan
+                      _buildDropdownField(
+                        label: 'Kecamatan',
+                        hint: 'Pilih Kecamatan',
+                        value: _selectedKecamatanId,
+                        items: _kecamatans.map((kec) {
+                          return DropdownMenuItem<String>(
+                            value: kec['id'].toString(),
+                            child: Text(kec['name'] ?? '-'),
+                          );
+                        }).toList(),
+                        onChanged: _onKecamatanChanged,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Dropdown Desa / Kelurahan
+                      _buildDropdownField(
+                        label: 'Kelurahan / Desa',
+                        hint: _selectedKecamatanId == null
+                            ? 'Pilih Kecamatan terlebih dahulu'
+                            : 'Pilih Desa / Kelurahan',
+                        value: _selectedDesaId,
+                        items: _desas.map((desa) {
+                          final bool hasAdmin = desa['has_admin'] == true;
+                          return DropdownMenuItem<String>(
+                            value: desa['id'].toString(),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    desa['name'] ?? '-',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: hasAdmin
+                                        ? const Color(0xFF10B981).withAlpha(25)
+                                        : Colors.grey.withAlpha(25),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    hasAdmin ? 'Mitra Aktif' : 'Belum Ada Admin',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: hasAdmin ? const Color(0xFF10B981) : Colors.grey[600],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: _onDesaChanged,
+                        isDark: isDark,
+                      ),
+
+                      // Nomor RT / RW if applicable
+                      if (_currentRole == 'rt' || _currentRole == 'rw') ...[
+                        const SizedBox(height: 12),
                         Row(
                           children: [
-                            Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.06),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: ClipOval(
-                                child: Image.network(
-                                  'http://10.250.3.148:8000/Admin/img/illustrations/logokab.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, _, _) => Icon(Icons.account_balance, color: primaryColor, size: 20),
+                            if (_currentRole == 'rt')
+                              Expanded(
+                                child: _buildTextFormField(
+                                  controller: _rtNumberController,
+                                  label: 'Nomor RT',
+                                  hint: 'Contoh: 003',
+                                  icon: Icons.numbers_rounded,
+                                  keyboardType: TextInputType.number,
+                                  isDark: isDark,
+                                  onChanged: (_) => _updateDefaultJabatan(),
+                                  validator: (val) => val == null || val.isEmpty ? 'Isi No. RT' : null,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.06),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: ClipOval(
-                                child: Image.network(
-                                  'http://10.250.3.148:8000/Admin/img/illustrations/logodomain.webp',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, _, _) => Icon(Icons.handshake_outlined, color: primaryColor, size: 20),
-                                ),
+                            if (_currentRole == 'rt') const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextFormField(
+                                controller: _rwNumberController,
+                                label: _currentRole == 'rt' ? 'RW Naungan' : 'Nomor RW',
+                                hint: 'Contoh: 002',
+                                icon: Icons.tag_rounded,
+                                keyboardType: TextInputType.number,
+                                isDark: isDark,
+                                onChanged: (_) => _updateDefaultJabatan(),
+                                validator: (val) => val == null || val.isEmpty ? 'Isi No. RW' : null,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 5. Form Section 2: Data Pemohon
+                  _buildSectionCard(
+                    isDark: isDark,
+                    title: '2. Data Pribadi Pengurus',
+                    icon: Icons.person_rounded,
+                    iconColor: const Color(0xFF8B5CF6),
+                    children: [
+                      _buildTextFormField(
+                        controller: _namaPendaftarController,
+                        label: 'Nama Lengkap (Sesuai KTP)',
+                        hint: 'Contoh: Budi Santoso',
+                        icon: Icons.badge_outlined,
+                        isDark: isDark,
+                        validator: (val) => val == null || val.isEmpty ? 'Nama pendaftar wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextFormField(
+                        controller: _nikController,
+                        label: 'Nomor Induk Kependudukan (NIK)',
+                        hint: '16 Digit NIK',
+                        icon: Icons.credit_card_rounded,
+                        keyboardType: TextInputType.number,
+                        isDark: isDark,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'NIK wajib diisi';
+                          if (val.length != 16) return 'NIK harus 16 digit';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextFormField(
+                        controller: _jabatanController,
+                        label: 'Jabatan / Posisi',
+                        hint: 'Contoh: Ketua RT 003',
+                        icon: Icons.work_outline_rounded,
+                        isDark: isDark,
+                        validator: (val) => val == null || val.isEmpty ? 'Jabatan wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextFormField(
+                        controller: _noHpController,
+                        label: 'Nomor WhatsApp Aktif',
+                        hint: 'Contoh: 081234567890',
+                        icon: Icons.phone_outlined,
+                        keyboardType: TextInputType.phone,
+                        isDark: isDark,
+                        validator: (val) => val == null || val.isEmpty ? 'Nomor WhatsApp wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextFormField(
+                        controller: _emailController,
+                        label: 'Email Kontak',
+                        hint: 'Contoh: rt03.desa@gmail.com',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        isDark: isDark,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'Email wajib diisi';
+                          if (!val.contains('@')) return 'Format email tidak valid';
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 6. Form Section 3: Unggah Dokumen Legalitas
+                  _buildSectionCard(
+                    isDark: isDark,
+                    title: '3. Dokumen Legalitas & SK',
+                    icon: Icons.assignment_outlined,
+                    iconColor: const Color(0xFF10B981),
+                    children: [
+                      Text(
+                        _currentRole == 'desa'
+                            ? 'Unggah SK Pengangkatan Kepala Desa / Surat Kepengurusan BUMDes resmi (PDF/JPG max 5MB).'
+                            : 'Unggah SK Pengangkatan ${_currentRole.toUpperCase()} yang ditandatangani Kepala Desa (PDF/JPG max 5MB).',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white60 : Colors.grey[600],
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      InkWell(
+                        onTap: _pickFile,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withAlpha(5) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _filePath != null
+                                  ? const Color(0xFF10B981)
+                                  : (isDark ? Colors.white12 : Colors.grey.shade300),
+                              width: _filePath != null ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                'Form Kemitraan Desa',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: _filePath != null
+                                      ? const Color(0xFF10B981).withAlpha(25)
+                                      : primaryColor.withAlpha(25),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  _filePath != null ? Icons.check_circle_rounded : Icons.cloud_upload_outlined,
+                                  color: _filePath != null ? const Color(0xFF10B981) : primaryColor,
+                                  size: 22,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Daftarkan desa Anda ke Sistem SILA-DesBeng',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? Colors.white54 : Colors.grey[600],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _fileName ?? 'Pilih File Dokumen SK / Surat Tugas',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: _filePath != null
+                                            ? (_currentRole == 'desa' ? primaryColor : const Color(0xFF10B981))
+                                            : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _filePath != null ? 'Dokumen siap diunggah' : 'Format: PDF, PNG, JPG (Maks. 5MB)',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: isDark ? Colors.white38 : Colors.grey[500],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildTextFormField(
+                        controller: _pesanController,
+                        label: 'Catatan / Pesan Pengajuan (Opsional)',
+                        hint: 'Tuliskan catatan pengajuan atau informasi tambahan...',
+                        icon: Icons.notes_rounded,
+                        maxLines: 2,
+                        isDark: isDark,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+      bottomSheet: _buildBottomSubmitBar(isDark),
+    );
+  }
+
+  Widget _buildRoleSegmentedBar(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          _buildRoleTabItem('desa', '🏛️ Admin Desa', isDark),
+          _buildRoleTabItem('rw', '👥 Ketua RW', isDark),
+          _buildRoleTabItem('rt', '🏠 Ketua RT', isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoleTabItem(String roleKey, String label, bool isDark) {
+    final isSelected = _currentRole == roleKey;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _currentRole = roleKey;
+            _updateDefaultJabatan();
+          });
+
+          // If changing to RT/RW and selected desa has no admin, prompt warning
+          if ((roleKey == 'rw' || roleKey == 'rt') &&
+              _selectedDesaData != null &&
+              _selectedDesaData!['has_admin'] != true) {
+            _showDesaBelumTerdaftarDialog(_selectedDesaData!['name'] ?? 'Desa');
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark ? const Color(0xFF0EA5E9) : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(20),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected
+                  ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                  : (isDark ? Colors.white60 : const Color(0xFF64748B)),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKtpAutoFillCard(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF1E3A8A).withAlpha(150), const Color(0xFF0F172A)]
+              : [const Color(0xFFEFF6FF), Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withAlpha(60),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6).withAlpha(30),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.document_scanner_rounded, color: Color(0xFF3B82F6), size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Pindai KTP (Isi Otomatis)',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Pindai e-KTP untuk mengisi Nama, NIK & Wilayah instan',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? Colors.white60 : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: _isScanningKtp ? null : _scanKtpForAutofill,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: _isScanningKtp
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Text('Pindai', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminDesaStatusCard(bool isDark) {
+    final bool hasAdmin = _selectedDesaData?['has_admin'] == true;
+    final String desaName = _selectedDesaData?['name'] ?? 'Desa';
+
+    if (_currentRole == 'desa') {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0EA5E9).withAlpha(15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF0EA5E9).withAlpha(40)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline_rounded, color: Color(0xFF0EA5E9), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Pendaftaran kemitraan Desa akan diverifikasi langsung oleh Admin Kabupaten Bengkalis.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.white70 : const Color(0xFF0369A1),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (hasAdmin) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withAlpha(15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF10B981).withAlpha(40)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.verified_rounded, color: Color(0xFF10B981), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$desaName Sudah Bergabung',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF10B981),
                     ),
                   ),
-
-                  const SizedBox(height: 18),
-
-                  // 2. Section: Data Pendaftar
-                  _buildSectionHeader('Data Pendaftar'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildCleanTextField(
-                          controller: _namaPendaftarController,
-                          label: 'Nama Lengkap Pendaftar',
-                          hint: 'Budi Santoso',
-                          prefixIcon: Icons.badge_outlined,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildCleanTextField(
-                          controller: _jabatanController,
-                          label: 'Jabatan di Desa / Kelurahan',
-                          hint: 'Kepala Desa / Sekretaris Desa',
-                          prefixIcon: Icons.work_outline_rounded,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildCleanTextField(
-                          controller: _noHpController,
-                          label: 'Nomor WhatsApp / HP',
-                          hint: '08123456789',
-                          prefixIcon: Icons.phone_android_rounded,
-                          keyboardType: TextInputType.phone,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildCleanTextField(
-                          controller: _emailController,
-                          label: 'Email Kontak Resmi',
-                          hint: 'kontak@desa.id',
-                          prefixIcon: Icons.email_outlined,
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.info_outline_rounded, size: 14, color: primaryColor),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                'Email dan kata sandi akun akan dikirimkan ke alamat email ini.',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? Colors.white54 : Colors.grey[600],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // 3. Section: Informasi Wilayah
-                  _buildSectionHeader('Informasi Wilayah'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Kabupaten (Prefilled & Locked)
-                        _buildStaticLockedField(
-                          label: 'Kabupaten',
-                          value: 'Kabupaten Bengkalis',
-                          isDark: isDark,
-                          primaryColor: primaryColor,
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Kecamatan Dropdown
-                        _buildCleanDropdownField(
-                          label: 'Kecamatan',
-                          hint: 'Pilih Kecamatan...',
-                          value: _selectedKecamatanId,
-                          prefixIcon: Icons.map_outlined,
-                          items: _kecamatans.map((kec) {
-                            return DropdownMenuItem<String>(
-                              value: kec['id'].toString(),
-                              child: Text(
-                                kec['name'],
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedKecamatanId = value;
-                              _selectedDesaId = null;
-                              final selectedKec = _kecamatans.firstWhere(
-                                (k) => k['id'].toString() == value,
-                                orElse: () => null,
-                              );
-                              _desas = selectedKec != null ? (selectedKec['children'] ?? []) : [];
-                            });
-                          },
-                          isDark: isDark,
-                          primaryColor: primaryColor,
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Desa / Kelurahan Dropdown
-                        _buildCleanDropdownField(
-                          label: 'Kelurahan / Desa',
-                          hint: _desas.isEmpty ? 'Pilih Kecamatan terlebih dahulu' : 'Pilih Kelurahan/Desa...',
-                          value: _selectedDesaId,
-                          prefixIcon: Icons.holiday_village_outlined,
-                          items: _desas.map((desa) {
-                            return DropdownMenuItem<String>(
-                              value: desa['id'].toString(),
-                              child: Text(
-                                desa['name'],
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: _desas.isEmpty
-                              ? null
-                              : (value) {
-                                  setState(() => _selectedDesaId = value);
-                                },
-                          isDark: isDark,
-                          primaryColor: primaryColor,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // 4. Section: Dokumen Pendukung (COMPACT UPLOADER STRIP)
-                  _buildSectionHeader('Dokumen Pendukung'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: _filePath != null
-                            ? const Color(0xFF10B981)
-                            : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
-                        width: _filePath != null ? 1.5 : 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'SK Pengangkatan / Surat Tugas',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white60 : Colors.grey[700],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Compact Upload Strip Tile
-                        Material(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
-                            onTap: _pickFile,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: _filePath != null
-                                    ? const Color(0xFF10B981).withValues(alpha: 0.08)
-                                    : (isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC)),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: _filePath != null
-                                      ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                                      : (isDark ? Colors.white12 : Colors.grey.shade300),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: _filePath != null
-                                          ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                                          : primaryColor.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      _filePath != null ? Icons.description_rounded : Icons.upload_file_rounded,
-                                      color: _filePath != null ? const Color(0xFF10B981) : primaryColor,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _fileName ?? 'Pilih Berkas SK / Surat Tugas',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: _filePath != null
-                                                ? (isDark ? Colors.white : const Color(0xFF1E293B))
-                                                : (isDark ? Colors.white70 : Colors.black87),
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          _filePath != null
-                                              ? 'Berkas siap diunggah'
-                                              : 'Format PDF, JPG, PNG (Maks 5MB)',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: _filePath != null
-                                                ? const Color(0xFF10B981)
-                                                : (isDark ? Colors.white38 : Colors.grey[500]),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: _filePath != null
-                                          ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                                          : primaryColor.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      _filePath != null ? 'Ganti' : 'Pilih',
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: _filePath != null ? const Color(0xFF10B981) : primaryColor,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // 5. Section: Pesan Tambahan
-                  _buildSectionHeader('Pesan Tambahan'),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildCleanTextField(
-                          controller: _pesanController,
-                          label: 'Alasan Bergabung / Keterangan',
-                          hint: 'Tuliskan alasan atau harapan desa Anda bergabung...',
-                          prefixIcon: Icons.edit_note_rounded,
-                          maxLines: 3,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '* Semua data dan dokumen akan diverifikasi oleh admin kabupaten.',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? Colors.white38 : Colors.grey[500],
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ],
+                  const SizedBox(height: 2),
+                  Text(
+                    'Pemerintah Desa aktif & siap memvalidasi permohonan akun ${_currentRole.toUpperCase()} Anda.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? Colors.white60 : Colors.grey[700],
                     ),
                   ),
                 ],
               ),
             ),
-
-      // Sticky Bottom Bar
-      bottomSheet: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(
-            top: BorderSide(
-              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4),
+          color: const Color(0xFFFEF2F2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFFCA5A5)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$desaName Belum Bergabung',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFB91C1C),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Pemerintah Desa belum mengaktifkan kemitraan SilaDesBeng. Daftarkan Desa Anda terlebih dahulu agar kepengurusan ${_currentRole.toUpperCase()} dapat divalidasi.',
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF7F1D1D)),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        child: SafeArea(
-          child: Row(
+      );
+    }
+  }
+
+  Widget _buildSectionCard({
+    required bool isDark,
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required List<Widget> children,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.shade200,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 30 : 10),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Expanded(
-                flex: 35,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.grey.shade300,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                    'Batal',
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white70 : Colors.grey[700],
-                    ),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: iconColor.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                child: Icon(icon, color: iconColor, size: 18),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 65,
-                child: ElevatedButton.icon(
-                  onPressed: _isSubmitting ? null : _submitForm,
-                  icon: _isSubmitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send_rounded, size: 18),
-                  label: Text(
-                    _isSubmitting ? 'Mengirim...' : 'Kirim Pengajuan',
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                  ),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 14),
+          ...children,
+        ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 13.5,
-        fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white70 : const Color(0xFF1E293B),
-      ),
-    );
-  }
-
-  Widget _buildStaticLockedField({
+  Widget _buildFixedField({
     required String label,
     required String value,
+    required IconData icon,
     required bool isDark,
-    required Color primaryColor,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -703,54 +1087,27 @@ class _PartnershipRegistrationPageState
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white60 : Colors.grey[700],
+            color: isDark ? Colors.white70 : Colors.grey[700],
           ),
         ),
         const SizedBox(height: 6),
         Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF1F5F9),
+            color: isDark ? Colors.white.withAlpha(8) : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.grey.shade300,
-            ),
+            border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade300),
           ),
           child: Row(
             children: [
-              Icon(Icons.location_city_rounded, size: 18, color: primaryColor),
+              Icon(icon, color: const Color(0xFF0EA5E9), size: 18),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white70 : const Color(0xFF1E293B),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white10 : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.lock_rounded, size: 11, color: isDark ? Colors.white54 : Colors.grey[600]),
-                    const SizedBox(width: 3),
-                    Text(
-                      'Terkunci',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white54 : Colors.grey[600],
-                      ),
-                    ),
-                  ],
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
             ],
@@ -760,15 +1117,13 @@ class _PartnershipRegistrationPageState
     );
   }
 
-  Widget _buildCleanDropdownField({
+  Widget _buildDropdownField({
     required String label,
     required String hint,
     required String? value,
-    required IconData prefixIcon,
     required List<DropdownMenuItem<String>> items,
-    required ValueChanged<String?>? onChanged,
+    required void Function(String?) onChanged,
     required bool isDark,
-    required Color primaryColor,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -778,43 +1133,28 @@ class _PartnershipRegistrationPageState
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white60 : Colors.grey[700],
+            color: isDark ? Colors.white70 : Colors.grey[700],
           ),
         ),
         const SizedBox(height: 6),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+            color: isDark ? const Color(0xFF0F172A) : Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.grey.shade300,
-            ),
+            border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade300),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
-              hint: Row(
-                children: [
-                  Icon(prefixIcon, size: 18, color: primaryColor),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      hint,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? Colors.white24 : Colors.grey[400],
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              dropdownColor: Theme.of(context).cardColor,
               value: value,
-              icon: Icon(Icons.keyboard_arrow_down_rounded, color: primaryColor),
+              hint: Text(
+                hint,
+                style: TextStyle(fontSize: 13, color: isDark ? Colors.white38 : Colors.grey[500]),
+              ),
               items: items,
               onChanged: onChanged,
+              dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
             ),
           ),
         ),
@@ -822,17 +1162,17 @@ class _PartnershipRegistrationPageState
     );
   }
 
-  Widget _buildCleanTextField({
+  Widget _buildTextFormField({
     required TextEditingController controller,
     required String label,
     required String hint,
-    required IconData prefixIcon,
+    required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    required bool isDark,
+    String? Function(String?)? validator,
+    void Function(String)? onChanged,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -841,46 +1181,93 @@ class _PartnershipRegistrationPageState
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white60 : Colors.grey[700],
+            color: isDark ? Colors.white70 : Colors.grey[700],
           ),
         ),
         const SizedBox(height: 6),
-        Container(
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.grey.shade300,
-            ),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? Colors.white : const Color(0xFF0F172A),
           ),
-          child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            maxLines: maxLines,
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Wajib diisi';
-              }
-              return null;
-            },
-            style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : Colors.black87,
+          onChanged: onChanged,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(fontSize: 13, color: isDark ? Colors.white38 : Colors.grey[400]),
+            prefixIcon: Icon(icon, size: 18, color: const Color(0xFF0EA5E9)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            filled: true,
+            fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: isDark ? Colors.white12 : Colors.grey.shade300),
             ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white24 : Colors.grey[400],
-              ),
-              prefixIcon: Icon(prefixIcon, size: 18, color: primaryColor),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: isDark ? Colors.white12 : Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 1.5),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBottomSubmitBar(bool isDark) {
+    final bool isBlocked = (_currentRole == 'rw' || _currentRole == 'rt') &&
+        _selectedDesaData != null &&
+        _selectedDesaData!['has_admin'] != true;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton(
+            onPressed: (_isSubmitting || isBlocked) ? null : _submitForm,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0EA5E9),
+              disabledBackgroundColor: Colors.grey.shade400,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              elevation: 0,
+            ),
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Text(
+                    isBlocked
+                        ? 'Desa Belum Memiliki Admin'
+                        : (_currentRole == 'desa'
+                            ? 'Ajukan Kemitraan Desa'
+                            : 'Ajukan Akun ${_currentRole.toUpperCase()} ke Admin Desa'),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 }

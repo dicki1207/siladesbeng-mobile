@@ -94,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
 
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(const Duration(milliseconds: 1200));
         if (!mounted) return;
         Navigator.pop(context); // Close dialog
         Navigator.pop(
@@ -235,7 +235,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
 
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(milliseconds: 1200));
           if (!mounted) return;
           Navigator.pop(context); // Close dialog
           Navigator.pop(context, true); // Close login page

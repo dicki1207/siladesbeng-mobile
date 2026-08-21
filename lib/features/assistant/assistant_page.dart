@@ -22,6 +22,18 @@ class _AssistantPageState extends State<AssistantPage> {
   bool _isTyping = false;
 
   @override
+  void initState() {
+    super.initState();
+    _messages.add({
+      'isUser': false,
+      'text':
+          'Halo! Saya Asisten Virtual SiladesBeng 👋\n\nAda yang bisa saya bantu terkait layanan desa, sewa alat, gas LPG, pasar daerah, atau laporan keluhan di Bengkalis? Silakan tanyakan langsung.',
+      'time':
+          '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+    });
+  }
+
+  @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
@@ -180,134 +192,19 @@ class _AssistantPageState extends State<AssistantPage> {
       body: Column(
         children: [
           Expanded(
-            child: _messages.isEmpty
-                ? _buildEmptyState(isDark)
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final msg = _messages[index];
-                      return _buildMessageBubble(msg, isDark);
-                    },
-                  ),
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final msg = _messages[index];
+                return _buildMessageBubble(msg, isDark);
+              },
+            ),
           ),
           if (_isTyping) _buildTypingIndicator(isDark),
           _buildMessageInput(isDark),
         ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(bool isDark) {
-    final List<String> suggestions = [
-      'Bagaimana cara sewa tenda atau alat berat?',
-      'Cara pembelian gas LPG subsidi?',
-      'Bagaimana cara membuat laporan warga?',
-      'Siapa Bupati Bengkalis saat ini?',
-    ];
-
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: (isDark ? AppTheme.primaryDark : AppTheme.primaryLight)
-                    .withValues(alpha: 0.12),
-              ),
-              child: const CircleAvatar(
-                radius: 36,
-                backgroundImage: AssetImage('logodomain.png'),
-                backgroundColor: Colors.transparent,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'SiladesBeng Assistant',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppTheme.textLight : AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tanyakan informasi seputar layanan desa, sewa alat, gas LPG, atau laporan keluhan di Bengkalis.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                height: 1.4,
-                color: isDark ? AppTheme.textGrayDark : AppTheme.textGrayLight,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Saran Pertanyaan:',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppTheme.textGrayDark : AppTheme.textGrayLight,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Column(
-              children: suggestions.map((text) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: InkWell(
-                    onTap: () => _sendMessage(text),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppTheme.cardDark : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.black.withValues(alpha: 0.06),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.chat_bubble_outline_rounded,
-                            size: 16,
-                            color: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              text,
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: isDark ? AppTheme.textLight : AppTheme.textDark,
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 12,
-                            color: isDark ? AppTheme.textGrayDark : Colors.black26,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -406,7 +303,7 @@ class _AssistantPageState extends State<AssistantPage> {
                     isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   Text(
-                    msg['text'],
+                    msg['text'].toString().replaceAll('*', ''),
                     style: GoogleFonts.inter(
                       color: isUser
                           ? Colors.white

@@ -1200,22 +1200,8 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
               const SizedBox(width: 14),
               Expanded(
                 flex: 55,
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitBooking,
-                  icon: _isSubmitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Icon(Icons.arrow_forward_rounded, size: 18),
-                  label: Text(
-                    _isSubmitting ? 'Memproses...' : 'Pesan Sekarang',
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
@@ -1225,6 +1211,19 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     ),
                     elevation: 0,
                   ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Sewa Sekarang',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],

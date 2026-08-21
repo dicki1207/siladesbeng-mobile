@@ -19,6 +19,7 @@ import 'package:siladesbeng_mobile/features/home/all_services_page.dart';
 import 'package:siladesbeng_mobile/features/assistant/assistant_page.dart';
 import 'package:siladesbeng_mobile/widgets/premium_header.dart';
 import 'package:siladesbeng_mobile/features/store/store_page.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToProfile;
@@ -137,11 +138,11 @@ class _HomePageState extends State<HomePage> {
       final timeoutDuration = const Duration(milliseconds: 2500);
 
       final results = await Future.wait([
-        http.get(Uri.parse('http://10.250.3.148:8000/api/banners')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('http://10.250.3.148:8000/api/announcements')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('http://10.250.3.148:8000/api/services')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('http://10.250.3.148:8000/api/unit-pelayanan'), headers: headers).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('http://10.250.3.148:8000/api/pasar-daerah/products')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('${ApiConfig.baseUrl}/api/banners')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('${ApiConfig.baseUrl}/api/announcements')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('${ApiConfig.baseUrl}/api/services')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('${ApiConfig.baseUrl}/api/unit-pelayanan'), headers: headers).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
+        http.get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
       ]);
 
       final bannerRes = results[0];
@@ -160,10 +161,10 @@ class _HomePageState extends State<HomePage> {
             _banners = rawBanners.map((item) {
               if (item is Map<String, dynamic> && item['image_url'] != null) {
                 String imgUrl = item['image_url'].toString();
-                imgUrl = imgUrl.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
-                imgUrl = imgUrl.replaceAll('http://localhost', 'http://10.250.3.148:8000');
-                imgUrl = imgUrl.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
-                imgUrl = imgUrl.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
+                imgUrl = imgUrl.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+                imgUrl = imgUrl.replaceAll('http://localhost', ApiConfig.baseUrl);
+                imgUrl = imgUrl.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+                imgUrl = imgUrl.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
                 item['image_url'] = imgUrl;
               }
               return item;
@@ -180,10 +181,10 @@ class _HomePageState extends State<HomePage> {
               _announcements = data.map((item) {
                 if (item is Map<String, dynamic> && item['image'] != null) {
                   String img = item['image'].toString();
-                  img = img.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
-                  img = img.replaceAll('http://localhost', 'http://10.250.3.148:8000');
-                  img = img.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
-                  img = img.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
+                  img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+                  img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
+                  img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+                  img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
                   item['image'] = img;
                 }
                 return item;
@@ -191,6 +192,9 @@ class _HomePageState extends State<HomePage> {
             }
           } catch (_) {}
         }
+
+
+        // Parse Services
         if (_announcements.isEmpty) {
           _announcements = [
             {
@@ -212,10 +216,10 @@ class _HomePageState extends State<HomePage> {
             _availableServices = rawServices.map((item) {
               if (item is Map<String, dynamic> && item['image'] != null) {
                 String img = item['image'].toString();
-                img = img.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
-                img = img.replaceAll('http://localhost', 'http://10.250.3.148:8000');
-                img = img.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
-                img = img.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
+                img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+                img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
+                img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+                img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
                 item['image'] = img;
               }
               return item;
@@ -257,6 +261,7 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
+
         if (_announcements.isEmpty) {
           _announcements = [
             {
@@ -550,7 +555,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             child: ClipOval(
                               child: Image.network(
-                                'http://10.250.3.148:8000/User/img/logo/logocb.webp',
+                                '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,
@@ -871,7 +876,7 @@ class _HomePageState extends State<HomePage> {
                 final imageUrl = banner['image_url'] != null
                     ? banner['image_url'].toString()
                     : banner['image'] != null 
-                        ? 'http://10.250.3.148:8000/storage/${banner['image']}' 
+                        ? '${ApiConfig.baseUrl}/storage/${banner['image']}' 
                         : '';
 
                 return Builder(
