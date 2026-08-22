@@ -25,6 +25,10 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
   final _kkController = TextEditingController();
   final _reasonController = TextEditingController();
   final _addressController = TextEditingController();
+  
+  // Custom Desa Controllers
+  final _customDesaAsalController = TextEditingController();
+  final _customDesaTujuanController = TextEditingController();
 
   String _selectedDesaAsal = 'Desa Sila-DesBeng (Desa Kita)';
   String _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Mandau)';
@@ -39,6 +43,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     'Desa Kelapapati (Kec. Bengkalis)',
     'Desa Sukamaju (Kec. Rupat)',
     'Desa Sukaasih (Kec. Bukit Batu)',
+    'Luar Daerah / Luar Kecamatan (Ketik Manual)',
   ];
 
   final List<String> _statusPemohonList = [
@@ -162,6 +167,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     _kkController.dispose();
     _reasonController.dispose();
     _addressController.dispose();
+    _customDesaAsalController.dispose();
+    _customDesaTujuanController.dispose();
     super.dispose();
   }
 
@@ -202,12 +209,32 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     final bool isKeluar = _tipePermohonan.contains('Keluar');
 
+    final String finalDesaAsal = _selectedDesaAsal.contains('Luar Daerah')
+        ? _customDesaAsalController.text.trim()
+        : _selectedDesaAsal;
+        
+    final String finalDesaTujuan = _selectedDesaTujuan.contains('Luar Daerah')
+        ? _customDesaTujuanController.text.trim()
+        : _selectedDesaTujuan;
+
+    if (finalDesaAsal.isEmpty || finalDesaTujuan.isEmpty) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Detail wilayah luar daerah wajib diisi'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final response = await _mutasiService.store(
       nama: _nameController.text.trim(),
       nik: _nikController.text.trim(),
       noKk: _kkController.text.trim(),
-      desaAsal: _selectedDesaAsal,
-      desaTujuan: _selectedDesaTujuan,
+      desaAsal: finalDesaAsal,
+      desaTujuan: finalDesaTujuan,
       alamat: _addressController.text.trim(),
       statusPemohon: _selectedPemohonStatus,
       alasan: _reasonController.text.trim(),
@@ -622,6 +649,22 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       if (val != null) setState(() => _selectedDesaAsal = val);
                     },
                   ),
+                  
+                  if (_selectedDesaAsal.contains('Luar Daerah')) ...[
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _customDesaAsalController,
+                      style: const TextStyle(fontSize: 13),
+                      decoration: _inputDecoration(
+                        hintText: 'Ketik lengkap: Nama Desa, Kecamatan, Kab...',
+                        isDark: isDark,
+                        icon: Icons.edit_location_alt_rounded,
+                      ),
+                      validator: (val) => (val == null || val.trim().isEmpty)
+                          ? 'Detail wilayah luar daerah wajib diisi'
+                          : null,
+                    ),
+                  ],
 
                   // Animated Direction Connector
                   Padding(
@@ -669,6 +712,22 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       if (val != null) setState(() => _selectedDesaTujuan = val);
                     },
                   ),
+
+                  if (_selectedDesaTujuan.contains('Luar Daerah')) ...[
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _customDesaTujuanController,
+                      style: const TextStyle(fontSize: 13),
+                      decoration: _inputDecoration(
+                        hintText: 'Ketik lengkap: Nama Desa, Kecamatan, Kab...',
+                        isDark: isDark,
+                        icon: Icons.edit_location_alt_rounded,
+                      ),
+                      validator: (val) => (val == null || val.trim().isEmpty)
+                          ? 'Detail wilayah luar daerah wajib diisi'
+                          : null,
+                    ),
+                  ],
                 ],
               ),
             ),

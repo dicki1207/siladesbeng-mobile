@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'delivery_tracking_page.dart';
@@ -92,14 +97,7 @@ class TransactionReceiptPage extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(Icons.download_rounded, color: textColor),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Struk resmi PDF berhasil diunduh ke perangkat Anda.'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
+            onPressed: () => _generateAndDownloadPdf(context),
           ),
         ],
       ),
@@ -421,6 +419,198 @@ class TransactionReceiptPage extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: valueColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _generateAndDownloadPdf(BuildContext context) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sedang membuat dokumen PDF...'),
+        backgroundColor: Color(0xFF0EA5E9),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    try {
+      final pdf = pw.Document();
+
+      // Load logo for header
+      final logoData = await rootBundle.load('logodomain.png');
+      final logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context ctx) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+              children: [
+                // Header SilaDesBeng
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Image(logoImage, width: 50, height: 50),
+                    pw.SizedBox(width: 10),
+                    pw.Text('SilaDesBeng',
+                        style: pw.TextStyle(
+                            fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                    pw.Spacer(),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text('Bukti Transaksi',
+                            style: pw.TextStyle(
+                                fontSize: 16,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.blue800)),
+                        pw.Text(_receiptSubtitle,
+                            style: pw.TextStyle(
+                                fontSize: 11, color: PdfColors.grey700)),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+                pw.Divider(thickness: 1, color: PdfColors.grey300),
+                pw.SizedBox(height: 16),
+
+                // Transaction Info
+                _buildPdfRow('No. Pesanan', orderNumber),
+                _buildPdfRow('Waktu Pemesanan', orderTime),
+                _buildPdfRow('Nama Akun', accountName),
+                _buildPdfRow('Email Akun', accountEmail),
+                if (type == 'Sewa' || type == 'Ambulans')
+                  _buildPdfRow('Nama Pemohon', recipientName),
+                if (type == 'Sewa')
+                  _buildPdfRow('Tujuan / Kegiatan', rentalPurpose ?? '-'),
+                if (type == 'Ambulans' || type == 'Pasar')
+                  _buildPdfRow(
+                      type == 'Ambulans'
+                          ? 'Alamat Penjemputan'
+                          : 'Alamat Pengiriman',
+                      address),
+                if (type == 'Pasar')
+                  _buildPdfRow('Metode Pengiriman', deliveryMethod),
+
+                pw.SizedBox(height: 16),
+                pw.Divider(thickness: 1, color: PdfColors.grey300),
+                pw.SizedBox(height: 16),
+
+                // Payment Info
+                pw.Text('INFORMASI PEMBAYARAN',
+                    style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                        color: PdfColors.grey600)),
+                pw.SizedBox(height: 10),
+                _buildPdfRow('Waktu Pembayaran', paymentTime),
+                _buildPdfRow('Metode Pembayaran', paymentMethod),
+                _buildPdfRow('Total Pembayaran', totalPayment, isBold: true),
+                _buildPdfRow('Status', status),
+
+                pw.SizedBox(height: 16),
+                pw.Divider(thickness: 1, color: PdfColors.grey300),
+                pw.SizedBox(height: 16),
+
+                // Item Details
+                pw.Text('RINCIAN PESANAN',
+                    style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                        color: PdfColors.grey600)),
+                pw.SizedBox(height: 10),
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(12),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey300),
+                    borderRadius: pw.BorderRadius.circular(8),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(itemName,
+                          style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold, fontSize: 14)),
+                      pw.SizedBox(height: 8),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text('Total Tagihan',
+                              style: pw.TextStyle(color: PdfColors.grey700)),
+                          pw.Text(totalPayment,
+                              style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                pw.Spacer(),
+
+                // Footer
+                pw.Center(
+                  child: pw.Text(
+                    'Dokumen ini merupakan bukti transaksi yang sah dan diterbitkan oleh sistem SilaDesBeng.\nDicetak secara otomatis dari Aplikasi Mobile SilaDesBeng.',
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/Bukti_Transaksi_$orderNumber.pdf');
+      await file.writeAsBytes(await pdf.save());
+
+      if (context.mounted) {
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
+            text: 'Bukti Transaksi SilaDesBeng: $orderNumber',
+            subject: 'Bukti Transaksi - SilaDesBeng',
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuat PDF: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  pw.Widget _buildPdfRow(String label, String value, {bool isBold = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 8),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.SizedBox(
+            width: 130,
+            child: pw.Text(label,
+                style: pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
+          ),
+          pw.Text(':',
+              style: pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
+          pw.SizedBox(width: 8),
+          pw.Expanded(
+            child: pw.Text(
+              value,
+              style: pw.TextStyle(
+                  fontSize: 12,
+                  fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal),
+            ),
           ),
         ],
       ),

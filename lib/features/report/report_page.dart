@@ -620,9 +620,9 @@ class _ReportPageState extends State<ReportPage> {
               _calculateProgress();
             },
             displayNames: const {
-              'rt': 'Laporkan kepada RT dan Pemerintah Desa',
-              'rw': 'Laporkan kepada RW dan Pemerintah Desa',
-              'desa': 'Laporkan kepada Pemerintah Desa Saja',
+              'rt': 'Pengurus RT Setempat',
+              'rw': 'Pengurus RW Setempat',
+              'desa': 'Pemerintah Desa',
             },
           ),
 

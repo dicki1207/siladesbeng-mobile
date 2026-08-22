@@ -253,6 +253,9 @@ class TransactionDetailPage extends StatelessWidget {
                                 description: transaction['title'] ?? 'Judul Laporan',
                                 status: transaction['status'] ?? 'Menunggu',
                                 statusColor: statusColor,
+                                rawData: transaction['raw_data'] is Map<String, dynamic>
+                                    ? transaction['raw_data']
+                                    : null,
                               ),
                             ),
                           );

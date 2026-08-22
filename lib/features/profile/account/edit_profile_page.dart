@@ -1109,54 +1109,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             );
                           },
                         ),
-
-                        const SizedBox(height: 12),
-
-                        // Card 2: Status Verifikasi KTP
-                        _buildSecurityCard(
-                          context,
-                          icon: Icons.verified_user_rounded,
-                          iconColor: _isVerified ? Colors.green : Colors.amber.shade700,
-                          title: 'Status Verifikasi Identitas',
-                          subtitle: _isVerified
-                              ? 'Sinkronisasi data kependudukan (KTP) Aktif'
-                              : 'KTP belum diverifikasi secara resmi',
-                          trailingWidget: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _isVerified
-                                  ? Colors.green.withValues(alpha: 0.1)
-                                  : Colors.amber.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: _isVerified
-                                    ? Colors.green.withValues(alpha: 0.3)
-                                    : Colors.amber.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Text(
-                              _isVerified ? 'Terverifikasi' : 'Belum Diverifikasi',
-                              style: TextStyle(
-                                color: _isVerified ? Colors.green : Colors.amber.shade800,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                          onTap: _isVerified
-                              ? null
-                              : () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const VerificationPage(),
-                                    ),
-                                  ).then((_) => _loadProfileFromApi());
-                                },
-                        ),
                         const SizedBox(height: 80),
                       ],
                     ),

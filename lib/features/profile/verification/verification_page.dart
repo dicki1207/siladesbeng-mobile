@@ -601,6 +601,7 @@ class _VerificationPageState extends State<VerificationPage> {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _selectedKecamatanId,
               icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
               decoration: InputDecoration(
@@ -650,6 +651,7 @@ class _VerificationPageState extends State<VerificationPage> {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _selectedDesa,
               icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
               decoration: InputDecoration(
