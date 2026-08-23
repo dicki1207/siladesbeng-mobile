@@ -703,7 +703,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: widget.item['image'] != null
+                    child: (widget.item['image'] != null && widget.item['image'].toString().isNotEmpty)
                         ? Image.network(
                             widget.item['image'],
                             fit: BoxFit.cover,

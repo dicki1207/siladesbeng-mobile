@@ -1,3 +1,4 @@
+import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_booking_page.dart';
@@ -155,15 +156,29 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
                       color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(
-                      adminIndex != null ? Icons.inventory_2_outlined : Icons.handyman_outlined,
-                      color: primaryColor,
-                      size: 26,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: (item['image'] != null && item['image'].toString().isNotEmpty)
+                          ? Image.network(
+                              item['image'],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                adminIndex != null ? Icons.inventory_2_outlined : Icons.handyman_outlined,
+                                color: primaryColor,
+                                size: 26,
+                              ),
+                            )
+                          : Icon(
+                              adminIndex != null ? Icons.inventory_2_outlined : Icons.handyman_outlined,
+                              color: primaryColor,
+                              size: 26,
+                            ),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -375,7 +390,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
             'price': pricePerDay,
             'type': 'paket',
             'description': itemsDesc,
-            'image': 'http://10.250.3.148:8000/assets/img/package_placeholder.png',
+            'image': '${ApiConfig.baseUrl}/assets/img/package_placeholder.png',
           },
           category: 'Paket Sewa Alat',
           initialDuration: _durationDays,
@@ -803,7 +818,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     ),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                      child: item['image'] != null
+                      child: (item['image'] != null && item['image'].toString().isNotEmpty)
                           ? Image.network(
                               item['image'].toString(),
                               fit: BoxFit.cover,

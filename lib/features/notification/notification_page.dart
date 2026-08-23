@@ -374,33 +374,35 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F8FF),
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Notifikasi',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            fontSize: 18,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        elevation: 0.5,
+        backgroundColor: const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Color(0xFF0EA5E9)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
           : RefreshIndicator(
               onRefresh: _fetchNotifications,
-              color: const Color(0xFF0EA5E9),
+              color: const Color(0xFF2563EB),
               child: ListView(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -415,15 +417,15 @@ class _NotificationPageState extends State<NotificationPage> {
                       horizontal: 16,
                     ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF115789), Color(0xFF38BDF8)],
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF115789).withAlpha(40),
+                          color: const Color(0xFF2563EB).withAlpha(40),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -482,8 +484,8 @@ class _NotificationPageState extends State<NotificationPage> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: _markAllAsRead,
-                            icon: Icon(Icons.done_all_rounded, size: 16),
-                            label: Text(
+                            icon: const Icon(Icons.done_all_rounded, size: 16),
+                            label: const Text(
                               'Tandai Semua Dibaca',
                               style: TextStyle(
                                 fontSize: 12,
@@ -491,7 +493,7 @@ class _NotificationPageState extends State<NotificationPage> {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0EA5E9),
+                              backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -507,8 +509,8 @@ class _NotificationPageState extends State<NotificationPage> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: _showDeleteConfirmDialog,
-                            icon: Icon(Icons.delete_outline_rounded, size: 16),
-                            label: Text(
+                            icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                            label: const Text(
                               'Hapus Semua',
                               style: TextStyle(
                                 fontSize: 12,
@@ -578,18 +580,18 @@ class _NotificationPageState extends State<NotificationPage> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF0EA5E9)
+              ? const Color(0xFF2563EB)
               : (isDark ? const Color(0xFF1E293B) : Colors.white),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF0EA5E9)
+                ? const Color(0xFF2563EB)
                 : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
           ),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: const Color(0xFF0EA5E9).withAlpha(50),
+                color: const Color(0xFF2563EB).withAlpha(50),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),

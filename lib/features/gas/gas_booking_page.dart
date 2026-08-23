@@ -760,197 +760,213 @@ class _GasBookingPageState extends State<GasBookingPage> {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         children: [
-          // 1. Compact BUMDes Info Strip
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: primaryColor.withValues(alpha: 0.15),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.storefront_rounded, color: primaryColor, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.item['region']?['bumdes_name'] ?? 'Pangkalan Gas BUMDes Desa',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12.5,
-                      color: isDark ? Colors.white : const Color(0xFF1E293B),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle_rounded, size: 10, color: Colors.green),
-                      SizedBox(width: 4),
-                      Text(
-                        'Resmi Desa',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
 
-          const SizedBox(height: 14),
 
-          // 2. Compact Capsule Delivery Switcher
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _deliveryMethod = 'antar'),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(vertical: 9),
-                      decoration: BoxDecoration(
+          // 1. Delivery Method Section (Side-by-Side Cards)
+          _buildSectionHeader('Metode Pengambilan'),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              // Option A: Diantar ke Rumah
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _deliveryMethod = 'antar'),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _deliveryMethod == 'antar'
+                          ? (isDark ? primaryColor.withValues(alpha: 0.18) : const Color(0xFFEFF6FF))
+                          : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
                         color: _deliveryMethod == 'antar'
-                            ? (isDark ? const Color(0xFF1E293B) : Colors.white)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: _deliveryMethod == 'antar'
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : [],
+                            ? primaryColor
+                            : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                        width: _deliveryMethod == 'antar' ? 1.8 : 1,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.local_shipping_rounded,
-                            size: 16,
-                            color: _deliveryMethod == 'antar'
-                                ? primaryColor
-                                : (isDark ? Colors.white54 : Colors.grey[600]),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Diantar ke Rumah',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: _deliveryMethod == 'antar' ? FontWeight.bold : FontWeight.w600,
+                      boxShadow: [
+                        BoxShadow(
+                          color: _deliveryMethod == 'antar'
+                              ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.12)
+                              : Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: _deliveryMethod == 'antar'
+                                    ? primaryColor.withValues(alpha: 0.2)
+                                    : (isDark ? Colors.white10 : const Color(0xFFF1F5F9)),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.local_shipping_rounded,
+                                size: 18,
+                                color: _deliveryMethod == 'antar'
+                                    ? primaryColor
+                                    : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                              ),
+                            ),
+                            Icon(
+                              _deliveryMethod == 'antar'
+                                  ? Icons.check_circle_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              size: 20,
                               color: _deliveryMethod == 'antar'
                                   ? primaryColor
-                                  : (isDark ? Colors.white54 : Colors.grey[600]),
+                                  : (isDark ? Colors.white24 : Colors.grey[400]),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Diantar ke Rumah',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Kurir antar ke alamat',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _deliveryMethod = 'jemput'),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(vertical: 9),
-                      decoration: BoxDecoration(
+              ),
+              const SizedBox(width: 12),
+              // Option B: Ambil Mandiri
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _deliveryMethod = 'jemput'),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _deliveryMethod == 'jemput'
+                          ? (isDark ? primaryColor.withValues(alpha: 0.18) : const Color(0xFFEFF6FF))
+                          : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
                         color: _deliveryMethod == 'jemput'
-                            ? (isDark ? const Color(0xFF1E293B) : Colors.white)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: _deliveryMethod == 'jemput'
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : [],
+                            ? primaryColor
+                            : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                        width: _deliveryMethod == 'jemput' ? 1.8 : 1,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.storefront_rounded,
-                            size: 16,
-                            color: _deliveryMethod == 'jemput'
-                                ? primaryColor
-                                : (isDark ? Colors.white54 : Colors.grey[600]),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Ambil Mandiri',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: _deliveryMethod == 'jemput' ? FontWeight.bold : FontWeight.w600,
+                      boxShadow: [
+                        BoxShadow(
+                          color: _deliveryMethod == 'jemput'
+                              ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.12)
+                              : Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: _deliveryMethod == 'jemput'
+                                    ? Colors.teal.withValues(alpha: 0.2)
+                                    : (isDark ? Colors.white10 : const Color(0xFFF1F5F9)),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.storefront_rounded,
+                                size: 18,
+                                color: _deliveryMethod == 'jemput'
+                                    ? Colors.teal
+                                    : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                              ),
+                            ),
+                            Icon(
+                              _deliveryMethod == 'jemput'
+                                  ? Icons.check_circle_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              size: 20,
                               color: _deliveryMethod == 'jemput'
                                   ? primaryColor
-                                  : (isDark ? Colors.white54 : Colors.grey[600]),
+                                  : (isDark ? Colors.white24 : Colors.grey[400]),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Ambil Mandiri',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Ambil di Pangkalan',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 18),
 
-          // 3. Detail Pemesan / Alamat Section
-          _buildSectionHeader(_deliveryMethod == 'antar' ? 'Alamat Pengantaran' : 'Data Pemesan'),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+          // 2. Dynamic Content: Alamat Pengantaran (jika Diantar) atau Lokasi Pengambilan (jika Ambil Mandiri)
+          if (_deliveryMethod == 'antar') ...[
+            _buildSectionHeader('Alamat Pengantaran'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCleanTextField(
-                  controller: _nameController,
-                  label: 'Nama Lengkap Pemesan',
-                  prefixIcon: Icons.person_outline_rounded,
-                ),
-                if (_deliveryMethod == 'antar') ...[
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCleanTextField(
+                    controller: _nameController,
+                    label: 'Nama Lengkap Pemesan',
+                    prefixIcon: Icons.person_outline_rounded,
+                  ),
                   const SizedBox(height: 12),
                   _buildCleanTextField(
                     controller: _addressController,
@@ -962,26 +978,127 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   _buildCleanTextField(
                     controller: _noteController,
                     label: 'Catatan Pengantaran (Opsional)',
-                    hint: 'Contoh: Rumah pagar hitam samping masjid',
+                    hint: 'Contoh: Rumah pagar hitam samping musala',
                     prefixIcon: Icons.edit_note_rounded,
                   ),
-                ] else ...[
-                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ] else ...[
+            _buildSectionHeader('Lokasi Pengambilan (Pick-up)'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCleanTextField(
+                    controller: _nameController,
+                    label: 'Nama Lengkap Pemesan',
+                    prefixIcon: Icons.person_outline_rounded,
+                  ),
+                  const SizedBox(height: 14),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(12),
+                      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.location_on_rounded, size: 20, color: Colors.teal),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Pangkalan Gas BUMDes Desa',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Kantor BUMDes / Pangkalan Resmi Desa',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Divider(height: 1),
+                        ),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time_filled_rounded, size: 14, color: isDark ? Colors.white60 : Colors.grey[600]),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Jam Layanan: 08.00 - 16.00 WIB',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? Colors.white70 : const Color(0xFF334155),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.info_outline_rounded, size: 18, color: primaryColor),
-                        const SizedBox(width: 10),
+                        Icon(Icons.info_outline_rounded, size: 16, color: primaryColor),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Silakan ambil tabung gas di kantor BUMDes pada jam operasional kerja (08.00 - 16.00 WIB).',
+                            'Silakan bawa tabung kosong (jika tukar) & tunjukkan bukti transaksi digital di aplikasi kepada petugas pangkalan.',
                             style: TextStyle(
-                              fontSize: 11.5,
+                              fontSize: 11,
                               color: isDark ? Colors.white70 : const Color(0xFF334155),
                               height: 1.35,
                             ),
@@ -991,9 +1108,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
+          ],
 
           const SizedBox(height: 18),
 

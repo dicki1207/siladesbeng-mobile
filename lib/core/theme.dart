@@ -54,6 +54,9 @@ class AppTheme {
           color: textDark,
         ),
       ),
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (BuildContext context) => const Icon(Icons.arrow_back_ios_new_rounded),
+      ),
       textTheme: TextTheme(
         titleLarge: GoogleFonts.inter(
           fontSize: 24,
@@ -100,6 +103,9 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: textLight,
         ),
+      ),
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (BuildContext context) => const Icon(Icons.arrow_back_ios_new_rounded),
       ),
       textTheme: TextTheme(
         titleLarge: GoogleFonts.inter(

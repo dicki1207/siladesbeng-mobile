@@ -167,7 +167,7 @@ class ItemDetailPage extends StatelessWidget {
                   ),
                   child: IconButton(
                     icon: Icon(
-                      Icons.arrow_back_rounded,
+                      Icons.arrow_back_ios_new_rounded,
                       size: 20,
                       color: isDark ? Colors.white : Colors.black87,
                     ),

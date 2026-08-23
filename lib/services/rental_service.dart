@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:siladesbeng_mobile/core/api_config.dart';
+
 class RentalService {
-  static const String baseUrl = 'http://10.250.3.148:8000/api';
+  static const String baseUrl = '${ApiConfig.baseUrl}/api';
 
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
@@ -23,10 +25,24 @@ class RentalService {
 
   String _replaceLocalhost(String? url) {
     if (url == null) return '';
+    final ip = baseUrl.replaceAll('http://', '').split(':').first;
     if (url.contains('localhost')) {
-      final ip = baseUrl.replaceAll('http://', '').split(':').first;
       return url.replaceAll('localhost', '$ip:8000');
     }
+    if (url.contains('127.0.0.1')) {
+      return url.replaceAll('127.0.0.1', ip);
+    }
+    // Note: asset() in laravel might use localhost without port, or 127.0.0.1:8000
+    // So let's make sure it handles both gracefully
+    if (url.contains('10.0.2.2')) {
+      return url.replaceAll('10.0.2.2', ip);
+    }
+    
+    // Fallback: if it's just a relative path, prepend baseUrl
+    if (!url.startsWith('http')) {
+      return 'http://$ip:8000/$url';
+    }
+    
     return url;
   }
 
@@ -80,7 +96,19 @@ class RentalService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return {'status': 'success', 'data': data['data']};
+        final itemData = data['data'] as Map<String, dynamic>;
+        
+        if (itemData.containsKey('image') && itemData['image'] != null) {
+          itemData['image'] = _replaceLocalhost(itemData['image'] as String?);
+        }
+        if (itemData.containsKey('image_2') && itemData['image_2'] != null) {
+          itemData['image_2'] = _replaceLocalhost(itemData['image_2'] as String?);
+        }
+        if (itemData.containsKey('image_3') && itemData['image_3'] != null) {
+          itemData['image_3'] = _replaceLocalhost(itemData['image_3'] as String?);
+        }
+
+        return {'status': 'success', 'data': itemData};
       }
       return {'status': 'error', 'message': 'Gagal mengambil detail'};
     } catch (e) {

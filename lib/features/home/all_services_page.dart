@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:siladesbeng_mobile/features/rental/tool_package_booking_page.dart';
 import 'package:siladesbeng_mobile/features/gas/gas_page.dart';
@@ -36,8 +37,8 @@ class _AllServicesPageState extends State<AllServicesPage> {
     setState(() => _isLoading = true);
     try {
       final res = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/services'),
-      ).timeout(const Duration(milliseconds: 2000));
+        Uri.parse('${ApiConfig.baseUrl}/api/services'),
+      );
       if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
         if (!mounted) return;
         setState(() {
@@ -240,35 +241,33 @@ class _AllServicesPageState extends State<AllServicesPage> {
                 ),
               ],
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      item['name'] ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        color: Theme.of(context).textTheme.bodyLarge?.color,
-                      ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item['name'] ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
-                    Text(
-                      priceVal == 0
-                          ? 'Gratis'
-                          : formatCurrency.format(priceVal),
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    priceVal == 0
+                        ? 'Gratis'
+                        : formatCurrency.format(priceVal),
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -283,11 +282,14 @@ class _AllServicesPageState extends State<AllServicesPage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Theme.of(context).cardColor,
+        backgroundColor: const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Semua Layanan',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
         ),
+        centerTitle: true,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -297,9 +299,9 @@ class _AllServicesPageState extends State<AllServicesPage> {
               padding: const EdgeInsets.all(16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.65,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                childAspectRatio: 0.82,
               ),
               itemCount: _services.length,
               itemBuilder: (context, index) {

@@ -166,23 +166,25 @@ class NotificationDetailPage extends StatelessWidget {
     final imageUrl = notification.fullImageUrl;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F8FF),
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Detail Pesan & Notifikasi',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        elevation: 0.5,
+        backgroundColor: const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),

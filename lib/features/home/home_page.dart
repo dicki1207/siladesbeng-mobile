@@ -134,51 +134,66 @@ class _HomePageState extends State<HomePage> {
       final token = prefs.getString('auth_token');
       final headers = token != null ? {'Authorization': 'Bearer $token'} : null;
 
-      // Gunakan timeout cepat (2.5 detik) agar tidak lama berputar (loading)
-      final timeoutDuration = const Duration(milliseconds: 2500);
-
-      final results = await Future.wait([
-        http.get(Uri.parse('${ApiConfig.baseUrl}/api/banners')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('${ApiConfig.baseUrl}/api/announcements')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('${ApiConfig.baseUrl}/api/services')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('${ApiConfig.baseUrl}/api/unit-pelayanan'), headers: headers).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-        http.get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products')).timeout(timeoutDuration, onTimeout: () => http.Response('{"error": "timeout"}', 408)),
-      ]);
-
-      final bannerRes = results[0];
-      final annRes = results[1];
-      final servicesRes = results[2];
-      final unitRes = results[3];
-      final pasarDaerahRes = results[4];
-
-      if (!mounted) return;
-
-      setState(() {
-        // Parse Banner tanpa mencetak error HTML mentah Laravel ke layar
-        if (bannerRes.statusCode == 200 && bannerRes.body.trim().startsWith('{')) {
+      // ==========================================
+      // LOAD APIs INDEPENDENTLY (TIDAK SALING BLOCK)
+      // ==========================================
+      
+      // 1. Fetch Banners
+      http.get(Uri.parse('${ApiConfig.baseUrl}/api/banners')).then((res) {
+        if (!mounted) return;
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
           try {
-            final List rawBanners = json.decode(bannerRes.body)['data'] ?? [];
-            _banners = rawBanners.map((item) {
-              if (item is Map<String, dynamic> && item['image_url'] != null) {
-                String imgUrl = item['image_url'].toString();
-                imgUrl = imgUrl.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
-                imgUrl = imgUrl.replaceAll('http://localhost', ApiConfig.baseUrl);
-                imgUrl = imgUrl.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
-                imgUrl = imgUrl.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
-                item['image_url'] = imgUrl;
-              }
-              return item;
-            }).toList();
+            final List rawBanners = json.decode(res.body)['data'] ?? [];
+            setState(() {
+              _banners = rawBanners.map((item) {
+                if (item is Map<String, dynamic> && item['image_url'] != null) {
+                  String imgUrl = item['image_url'].toString();
+                  imgUrl = imgUrl.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+                  imgUrl = imgUrl.replaceAll('http://localhost', ApiConfig.baseUrl);
+                  imgUrl = imgUrl.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+                  imgUrl = imgUrl.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
+                  item['image_url'] = imgUrl;
+                }
+                return item;
+              }).toList();
+            });
           } catch (_) {}
         }
+      }).catchError((_) {});
 
-        // Parse Announcement dengan fallback jika kosong atau timeout
-        if (annRes.statusCode == 200 && annRes.body.trim().startsWith('{')) {
+      // 2. Fetch Announcements
+      http.get(Uri.parse('${ApiConfig.baseUrl}/api/announcements')).then((res) {
+        if (!mounted) return;
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
           try {
-            final List data = json.decode(annRes.body)['data'] ?? [];
+            final List data = json.decode(res.body)['data'] ?? [];
             if (data.isNotEmpty) {
-              // Fix localhost URLs in image fields
-              _announcements = data.map((item) {
+              setState(() {
+                _announcements = data.map((item) {
+                  if (item is Map<String, dynamic> && item['image'] != null) {
+                    String img = item['image'].toString();
+                    img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+                    img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
+                    img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+                    img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
+                    item['image'] = img;
+                  }
+                  return item;
+                }).toList();
+              });
+            }
+          } catch (_) {}
+        }
+      }).catchError((_) {});
+
+      // 3. Fetch Services
+      http.get(Uri.parse('${ApiConfig.baseUrl}/api/services')).then((res) {
+        if (!mounted) return;
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          try {
+            final List rawServices = json.decode(res.body)['data'] ?? [];
+            setState(() {
+              _availableServices = rawServices.map((item) {
                 if (item is Map<String, dynamic> && item['image'] != null) {
                   String img = item['image'].toString();
                   img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
@@ -189,12 +204,54 @@ class _HomePageState extends State<HomePage> {
                 }
                 return item;
               }).toList();
+            });
+          } catch (_) {}
+        }
+      }).catchError((_) {});
+
+      // 4. Fetch Unit Pelayanan
+      http.get(Uri.parse('${ApiConfig.baseUrl}/api/unit-pelayanan'), headers: headers).then((res) {
+        if (!mounted) return;
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          try {
+            final List data = json.decode(res.body)['data'] ?? [];
+            setState(() {
+              _unitPelayanan = data.length >= 4 ? data : _getDefaultUnitPelayanan();
+            });
+          } catch (_) {
+            setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
+          }
+        } else {
+          setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
+        }
+      }).catchError((_) {
+        if (mounted) setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
+      });
+
+      // 5. Fetch Pasar Daerah
+      http.get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products')).then((res) {
+        if (!mounted) return;
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          try {
+            final Map<String, dynamic> data = json.decode(res.body);
+            if (data['status'] == 'success') {
+              setState(() {
+                _pasarDaerahProducts = List<Map<String, dynamic>>.from(data['data']);
+              });
             }
           } catch (_) {}
         }
+      }).catchError((_) {});
 
-
-        // Parse Services
+      // Matikan indikator loading skeleton utama dengan sangat cepat 
+      // agar struktur UI tidak ter-block. List yang kosong akan di-handle oleh 
+      // check if empty/shrink secara elegan di bagian build.
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        
+        // Fallback untuk Announcement jika gagal loading
         if (_announcements.isEmpty) {
           _announcements = [
             {
@@ -207,61 +264,12 @@ class _HomePageState extends State<HomePage> {
             },
           ];
         }
-
-        // Parse Services
-        if (servicesRes.statusCode == 200 && servicesRes.body.trim().startsWith('{')) {
-          try {
-            final List rawServices = json.decode(servicesRes.body)['data'] ?? [];
-            // Fix localhost URLs in image fields
-            _availableServices = rawServices.map((item) {
-              if (item is Map<String, dynamic> && item['image'] != null) {
-                String img = item['image'].toString();
-                img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
-                img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
-                img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
-                img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
-                item['image'] = img;
-              }
-              return item;
-            }).toList();
-          } catch (_) {}
-        }
-
-        // Parse Unit Pelayanan atau gunakan default
-        if (unitRes.statusCode == 200 && unitRes.body.trim().startsWith('{')) {
-          try {
-            final List data = json.decode(unitRes.body)['data'] ?? [];
-            if (data.length >= 4) {
-              _unitPelayanan = data;
-            } else {
-              _unitPelayanan = _getDefaultUnitPelayanan();
-            }
-          } catch (_) {
-            _unitPelayanan = _getDefaultUnitPelayanan();
-          }
-        } else {
-          _unitPelayanan = _getDefaultUnitPelayanan();
-        }
-
-        // Parse Pasar Daerah
-        if (pasarDaerahRes.statusCode == 200 && pasarDaerahRes.body.trim().startsWith('{')) {
-          try {
-            final Map<String, dynamic> data = json.decode(pasarDaerahRes.body);
-            if (data['status'] == 'success') {
-              _pasarDaerahProducts = List<Map<String, dynamic>>.from(data['data']);
-            }
-          } catch (e) {
-            debugPrint('Error parsing Pasar Daerah API: $e');
-          }
-        }
-
-        _isLoading = false;
       });
+      
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-
         if (_announcements.isEmpty) {
           _announcements = [
             {
@@ -276,7 +284,6 @@ class _HomePageState extends State<HomePage> {
         }
         _unitPelayanan = _getDefaultUnitPelayanan();
       });
-      // Jangan tampilkan pesan error mentah ke layar user agar tetap mulus
     }
   }
 
@@ -1045,26 +1052,22 @@ class _HomePageState extends State<HomePage> {
                 if (item['color'] == 'red') cardColor = Colors.redAccent;
                 if (item['color'] == 'green') cardColor = Colors.green;
                 if (item['color'] == 'purple') cardColor = Colors.purple;
+                if (item['color'] == 'teal') cardColor = Colors.teal;
 
-                String imgPath = item['imageUrl']?.toString() ?? '';
+                String imgPath = item['imageUrl']?.toString() ?? item['image']?.toString() ?? '';
                 String fallbackAsset = 'assets/images/F2.png';
-                final titleLower =
-                    (item['title'] ?? '').toString().toLowerCase();
-                if (titleLower.contains('gas') || imgPath.contains('F2')) {
+                final titleLower = (item['title'] ?? '').toString().toLowerCase();
+                if (titleLower.contains('pasar') || titleLower.contains('toko') || imgPath.contains('PasarDaerah')) {
+                  fallbackAsset = 'assets/images/PasarDaerah.png';
+                } else if (titleLower.contains('gas') || imgPath.contains('F2')) {
                   fallbackAsset = 'assets/images/F2.png';
-                } else if (titleLower.contains('lapor') ||
-                    imgPath.contains('lapor')) {
+                } else if (titleLower.contains('lapor') || imgPath.contains('lapor')) {
                   fallbackAsset = 'assets/images/lapor.png';
-                } else if (titleLower.contains('alat') ||
-                    imgPath.contains('F1')) {
+                } else if (titleLower.contains('alat') || imgPath.contains('F1')) {
                   fallbackAsset = 'assets/images/F1.png';
-                } else if (titleLower.contains('ambulans') ||
-                    titleLower.contains('mobil') ||
-                    imgPath.contains('mobil')) {
+                } else if (titleLower.contains('ambulans') || titleLower.contains('mobil') || imgPath.contains('mobil')) {
                   fallbackAsset = 'assets/images/mobil.png';
-                } else if (titleLower.contains('fasilitas') ||
-                    titleLower.contains('gedung') ||
-                    imgPath.contains('fasilitas')) {
+                } else if (titleLower.contains('fasilitas') || titleLower.contains('gedung') || imgPath.contains('fasilitas')) {
                   fallbackAsset = 'assets/images/fasilitas.png';
                 }
 
@@ -1177,7 +1180,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 180,
+            height: 165,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
@@ -1194,8 +1197,8 @@ class _HomePageState extends State<HomePage> {
                 return GestureDetector(
                   onTap: () => _checkLoginAndProceed('Toko BUMDes'),
                   child: Container(
-                    width: 140,
-                    margin: const EdgeInsets.only(right: 12),
+                    width: 135,
+                    margin: const EdgeInsets.only(right: 12, bottom: 4),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
@@ -1210,48 +1213,43 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
-                        Expanded(
-                          flex: 5,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                            ),
-                            child: imageUrl.isNotEmpty
-                                ? ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                                    child: Image.network(
-                                      imageUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.handyman, color: Colors.grey),
-                                    ),
-                                  )
-                                : const Icon(Icons.handyman, color: Colors.grey),
+                        Container(
+                          height: 95,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           ),
+                          child: imageUrl.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                  child: Image.network(
+                                    imageUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.storefront, color: Colors.grey),
+                                  ),
+                                )
+                              : const Icon(Icons.storefront, color: Colors.grey),
                         ),
-                        Expanded(
-                          flex: 4,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  NumberFormat.currency(locale: 'id', symbol: 'Rp', decimalDigits: 0).format(price),
-                                  style: const TextStyle(color: Color(0xFF0EA5E9), fontWeight: FontWeight.bold, fontSize: 12),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                NumberFormat.currency(locale: 'id', symbol: 'Rp', decimalDigits: 0).format(price),
+                                style: const TextStyle(color: Color(0xFF0EA5E9), fontWeight: FontWeight.bold, fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -1311,7 +1309,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 200,
+            height: 175,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
@@ -1380,8 +1378,8 @@ class _HomePageState extends State<HomePage> {
         }
       },
       child: Container(
-        width: 150,
-        margin: const EdgeInsets.only(right: 12, bottom: 8),
+        width: 145,
+        margin: const EdgeInsets.only(right: 12, bottom: 4),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
@@ -1404,7 +1402,7 @@ class _HomePageState extends State<HomePage> {
                     top: Radius.circular(20),
                   ),
                   child: Container(
-                    height: 100,
+                    height: 95,
                     width: double.infinity,
                     color: Colors.white,
                     padding: const EdgeInsets.all(8),
@@ -1440,26 +1438,26 @@ class _HomePageState extends State<HomePage> {
             ),
             // Details Section
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     item['name'] ?? '',
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     priceVal == 0 ? 'Gratis' : formatCurrency.format(priceVal),
                     style: TextStyle(
                       color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 13.5,
                     ),
                   ),
                 ],

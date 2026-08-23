@@ -220,7 +220,7 @@ class _SearchPageState extends State<SearchPage> {
         elevation: 0,
         backgroundColor: Theme.of(context).cardColor,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),
         ),
         title: TextField(

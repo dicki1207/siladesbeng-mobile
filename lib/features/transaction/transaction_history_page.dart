@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_detail_page.dart';
 
@@ -87,7 +88,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       final response = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/history'),
+        Uri.parse('${ApiConfig.baseUrl}/history'),
         headers: {'Authorization': 'Bearer $token'},
       );
 

@@ -20,28 +20,31 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
-    final bgColor = isDark ? const Color(0xFF121212) : const Color(0xFFF3F4F6);
-    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    final labelColor = isDark ? Colors.grey[400] : Colors.grey[600];
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F8FF);
+    final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final labelColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: cardColor,
+        backgroundColor: const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
         elevation: 0,
-        iconTheme: IconThemeData(color: textColor),
-        title: Text(
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
           'Lacak Pengantaran',
           style: TextStyle(
-            color: textColor,
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline),
+            icon: const Icon(Icons.help_outline, color: Colors.white),
+            tooltip: 'Bantuan',
             onPressed: () {},
           ),
         ],
@@ -58,10 +61,13 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha(isDark ? 20 : 10),
-                      blurRadius: 10,
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                      blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -110,7 +116,7 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             size: 40,
                             color: widget.type == 'Ambulans'
                                 ? Colors.red
-                                : Colors.blue,
+                                : const Color(0xFF2563EB),
                           ),
                         ),
                       ],
@@ -135,17 +141,17 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Divider(color: isDark ? Colors.grey[800] : Colors.grey[200]),
+                    Divider(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                     const SizedBox(height: 12),
                     // DRIVER PROFILE
                     Row(
                       children: [
                         const CircleAvatar(
-                          radius: 24,
-                          backgroundImage: AssetImage('assets/images/placeholder_avatar.png'),
+                          radius: 22,
                           backgroundColor: Colors.grey,
+                          child: Icon(Icons.person, color: Colors.white, size: 26),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,35 +160,41 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                                 'FERDI KURNIAWAN (Supir)',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 13.5,
                                   color: textColor,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 3),
                               Row(
                                 children: [
-                                  const Icon(Icons.star, color: Colors.orange, size: 16),
-                                  const SizedBox(width: 4),
+                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 15),
+                                  const SizedBox(width: 3),
                                   Text(
                                     '4.9',
-                                    style: TextStyle(fontSize: 13, color: labelColor),
+                                    style: TextStyle(fontSize: 12, color: labelColor),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   Container(
-                                    width: 4,
-                                    height: 4,
+                                    width: 3,
+                                    height: 3,
                                     decoration: BoxDecoration(
                                       color: labelColor,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'BM 6262 ABP',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      color: textColor,
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      'BM 6262 BP',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        color: textColor,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -190,26 +202,35 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 8),
                         // Action buttons
                         Container(
+                          width: 38,
+                          height: 38,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.grey.withAlpha(50)),
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.call_outlined, size: 20),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(Icons.call_outlined, size: 18),
                             color: textColor,
                             onPressed: () {},
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                         Container(
+                          width: 38,
+                          height: 38,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.grey.withAlpha(50)),
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(Icons.chat_bubble_outline, size: 18),
                             color: textColor,
                             onPressed: () {},
                           ),
@@ -226,10 +247,13 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha(isDark ? 20 : 10),
-                      blurRadius: 10,
+                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                      blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
                   ],
