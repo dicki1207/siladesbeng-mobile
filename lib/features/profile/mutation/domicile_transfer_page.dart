@@ -15,27 +15,22 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
   late TabController _tabController;
   String _selectedFilter = 'Semua';
   bool _isLoading = false;
+  bool _isFetching = true;
+
   final MutasiService _mutasiService = MutasiService();
 
   // Form State
   final _formKey = GlobalKey<FormState>();
-  String _tipePermohonan = 'Pindah Keluar (Akun Saya)';
-  final _nameController = TextEditingController();
-  final _nikController = TextEditingController();
-  final _kkController = TextEditingController();
   final _reasonController = TextEditingController();
-  final _addressController = TextEditingController();
-  
-  // Custom Desa Controllers
-  final _customDesaAsalController = TextEditingController();
   final _customDesaTujuanController = TextEditingController();
 
-  String _selectedDesaAsal = 'Desa Sila-DesBeng (Desa Kita)';
+  String _userName = 'Diki Wahyu';
+  String _userNik = '1403010101900001';
+  String _userAddress = 'Jalan Haji Usman Zein, Bengkalis';
+  final String _desaAsal = 'Desa Sila-DesBeng (Desa Saat Ini)';
   String _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Mandau)';
-  String _selectedPemohonStatus = 'Mandiri (Diri Sendiri)';
 
   final List<String> _desaList = [
-    'Desa Sila-DesBeng (Desa Kita)',
     'Desa Batin Solapan (Kec. Mandau)',
     'Desa Makmur Jaya (Kec. Bantan)',
     'Desa Pinggir (Kec. Pinggir)',
@@ -46,25 +41,43 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     'Luar Daerah / Luar Kecamatan (Ketik Manual)',
   ];
 
-  final List<String> _statusPemohonList = [
-    'Mandiri (Diri Sendiri)',
-    'Kepala Keluarga / Pasangan',
-    'Tarik Data Orang Tua / Lansia',
-    'Wali / Kerabat yang Dirawat',
-    'Admin RT/RW (Mewakili Warga)',
-  ];
-
-  String _selectedReasonCategory = 'Pindah Rumah / Tempat Tinggal';
-  final List<String> _reasonSuggestions = [
-    'Pindah Rumah / Tempat Tinggal',
-    'Mengikuti Keluarga / Pasangan',
-    'Pekerjaan / Dinas Luar Daerah',
-    'Pendidikan / Sekolah',
-    'Perawatan Keluarga / Lansia',
-    'Lainnya (Tulis Manual)',
+  final List<String> _quickReasons = [
+    'Pindah Rumah',
+    'Ikut Keluarga / Pasangan',
+    'Pekerjaan / Dinas Luar',
+    'Pendidikan / Studi',
+    'Perawatan Orang Tua',
   ];
 
   List<Map<String, dynamic>> _mutationList = [];
+
+  bool get _hasPendingMutasi {
+    return _mutationList.any((m) {
+      final s = (m['status'] ?? '').toString().toLowerCase();
+      final tab = (m['tabType'] ?? '').toString().toLowerCase();
+      return s == 'pending' ||
+          s == 'menunggu pelepasan' ||
+          s == 'menunggu penerimaan' ||
+          tab == 'keluar' ||
+          tab == 'masuk';
+    });
+  }
+
+  Map<String, dynamic>? get _pendingMutasi {
+    try {
+      return _mutationList.firstWhere((m) {
+        final s = (m['status'] ?? '').toString().toLowerCase();
+        final tab = (m['tabType'] ?? '').toString().toLowerCase();
+        return s == 'pending' ||
+            s == 'menunggu pelepasan' ||
+            s == 'menunggu penerimaan' ||
+            tab == 'keluar' ||
+            tab == 'masuk';
+      });
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   void initState() {
@@ -87,109 +100,99 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     if (mounted) {
       setState(() {
-        if (_tipePermohonan == 'Pindah Keluar (Akun Saya)') {
-          _nameController.text = name;
-          _nikController.text = nik;
-          _kkController.text = '1403010101900055';
-          _addressController.text = address;
-        }
+        _userName = name;
+        _userNik = nik;
+        _userAddress = address;
       });
     }
   }
 
   Future<void> _loadMutations() async {
-    final data = await _mutasiService.getMyMutations();
-    if (!mounted) return;
-    setState(() {
-      _mutationList = data.map<Map<String, dynamic>>((item) {
-        final String tipe = item['tipe'] ?? 'keluar';
-        final String status = item['status'] ?? 'pending';
-        String tabType;
-        String statusTitle;
-        Color badgeCol;
-        Color bgCol;
-        bool isLocked;
-        String lockStatus;
-        int stepIndex;
+    setState(() => _isFetching = true);
+    try {
+      final data = await _mutasiService.getMyMutations();
+      if (!mounted) return;
+      setState(() {
+        _mutationList = data.map<Map<String, dynamic>>((item) {
+          final String tipe = item['tipe'] ?? 'keluar';
+          final String status = item['status'] ?? 'pending';
+          String tabType;
+          String statusTitle;
+          Color badgeCol;
+          Color bgCol;
+          bool isLocked;
+          String lockStatus;
+          int stepIndex;
 
-        if (status == 'completed') {
-          tabType = 'Riwayat';
-          statusTitle = 'Mutasi Selesai (Handshake Sukses)';
-          badgeCol = const Color(0xFF10B981);
-          bgCol = const Color(0xFF10B981).withAlpha(25);
-          isLocked = false;
-          lockStatus = 'Gembok Terbuka • NIK Resmi Aktif di Desa Tujuan';
-          stepIndex = 3;
-        } else if (tipe == 'keluar') {
-          tabType = 'Keluar';
-          statusTitle = 'Menunggu Pelepasan (Desa Asal)';
-          badgeCol = const Color(0xFF2563EB);
-          bgCol = const Color(0xFF2563EB).withAlpha(25);
-          isLocked = true;
-          lockStatus = 'Gembok NIK Terkunci • Menunggu persetujuan Admin Desa Asal';
-          stepIndex = 1;
-        } else {
-          tabType = 'Masuk';
-          statusTitle = 'Menunggu Persetujuan Desa Lama';
-          badgeCol = const Color(0xFF8B5CF6);
-          bgCol = const Color(0xFF8B5CF6).withAlpha(25);
-          isLocked = true;
-          lockStatus = 'Menunggu Admin Desa Asal membuka kunci pelepasan NIK';
-          stepIndex = 2;
-        }
+          if (status == 'completed' || status == 'selesai') {
+            tabType = 'Selesai';
+            statusTitle = 'Mutasi Selesai (Handshake Sukses)';
+            badgeCol = const Color(0xFF10B981);
+            bgCol = const Color(0xFF10B981).withAlpha(25);
+            isLocked = false;
+            lockStatus = 'Gembok Terbuka • NIK Resmi Aktif di Desa Tujuan';
+            stepIndex = 3;
+          } else if (status == 'cancelled' || status == 'batal' || status == 'ditolak') {
+            tabType = 'Dibatalkan';
+            statusTitle = 'Pengajuan Dibatalkan';
+            badgeCol = const Color(0xFFEF4444);
+            bgCol = const Color(0xFFEF4444).withAlpha(25);
+            isLocked = false;
+            lockStatus = 'Pengajuan ditolak/dibatalkan • NIK tetap di desa asal';
+            stepIndex = 0;
+          } else if (tipe == 'keluar') {
+            tabType = 'Keluar';
+            statusTitle = 'Menunggu Pelepasan (Kades Asal)';
+            badgeCol = const Color(0xFFF59E0B);
+            bgCol = const Color(0xFFF59E0B).withAlpha(25);
+            isLocked = true;
+            lockStatus = 'Gembok NIK Terkunci • Menunggu persetujuan Admin Desa Asal';
+            stepIndex = 1;
+          } else {
+            tabType = 'Masuk';
+            statusTitle = 'Menunggu Aktivasi (Kades Tujuan)';
+            badgeCol = const Color(0xFF3B82F6);
+            bgCol = const Color(0xFF3B82F6).withAlpha(25);
+            isLocked = true;
+            lockStatus = 'Menunggu Admin Desa Tujuan mengaktifkan data NIK Anda';
+            stepIndex = 2;
+          }
 
-        return {
-          'id': item['id'],
-          'name': item['nama'] ?? '',
-          'nik': item['nik'] ?? '',
-          'tabType': tabType,
-          'statusTitle': statusTitle,
-          'desaAsal': item['desa_asal'] ?? '',
-          'desaTujuan': item['desa_tujuan'] ?? '',
-          'pemohon': item['status_pemohon'] ?? '',
-          'alasan': item['alasan'] ?? '',
-          'lockStatus': lockStatus,
-          'isLocked': isLocked,
-          'stepIndex': stepIndex,
-          'date': item['created_at']?.toString().substring(0, 10) ?? '',
-          'color': badgeCol,
-          'bgColor': bgCol,
-        };
-      }).toList();
-    });
+          return {
+            'id': item['id'],
+            'name': item['nama'] ?? _userName,
+            'nik': item['nik'] ?? _userNik,
+            'tabType': tabType,
+            'status': status,
+            'statusTitle': statusTitle,
+            'desaAsal': item['desa_asal'] ?? _desaAsal,
+            'desaTujuan': item['desa_tujuan'] ?? _selectedDesaTujuan,
+            'pemohon': item['status_pemohon'] ?? 'Mandiri (Diri Sendiri)',
+            'alasan': item['alasan'] ?? '-',
+            'lockStatus': lockStatus,
+            'isLocked': isLocked,
+            'stepIndex': stepIndex,
+            'date': item['created_at']?.toString().substring(0, 10) ??
+                DateTime.now().toString().substring(0, 10),
+            'color': badgeCol,
+            'bgColor': bgCol,
+          };
+        }).toList();
+        _isFetching = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isFetching = false);
+      }
+    }
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _nameController.dispose();
-    _nikController.dispose();
-    _kkController.dispose();
     _reasonController.dispose();
-    _addressController.dispose();
-    _customDesaAsalController.dispose();
     _customDesaTujuanController.dispose();
     super.dispose();
-  }
-
-  void _onTipeChanged(String val) {
-    setState(() {
-      _tipePermohonan = val;
-      if (_tipePermohonan == 'Pindah Keluar (Akun Saya)') {
-        _loadUserData();
-        _selectedDesaAsal = 'Desa Sila-DesBeng (Desa Kita)';
-        _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Mandau)';
-        _selectedPemohonStatus = 'Mandiri (Diri Sendiri)';
-      } else {
-        _nameController.text = '';
-        _nikController.text = '';
-        _kkController.text = '';
-        _addressController.text = '';
-        _selectedDesaAsal = 'Desa Makmur Jaya (Kec. Bantan)';
-        _selectedDesaTujuan = 'Desa Sila-DesBeng (Desa Kita)';
-        _selectedPemohonStatus = 'Tarik Data Orang Tua / Lansia';
-      }
-    });
   }
 
   Future<void> _handleSubmitMutation() async {
@@ -207,17 +210,11 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     setState(() => _isLoading = true);
 
-    final bool isKeluar = _tipePermohonan.contains('Keluar');
-
-    final String finalDesaAsal = _selectedDesaAsal.contains('Luar Daerah')
-        ? _customDesaAsalController.text.trim()
-        : _selectedDesaAsal;
-        
     final String finalDesaTujuan = _selectedDesaTujuan.contains('Luar Daerah')
         ? _customDesaTujuanController.text.trim()
         : _selectedDesaTujuan;
 
-    if (finalDesaAsal.isEmpty || finalDesaTujuan.isEmpty) {
+    if (finalDesaTujuan.isEmpty) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -230,15 +227,15 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     }
 
     final response = await _mutasiService.store(
-      nama: _nameController.text.trim(),
-      nik: _nikController.text.trim(),
-      noKk: _kkController.text.trim(),
-      desaAsal: finalDesaAsal,
+      nama: _userName,
+      nik: _userNik,
+      noKk: '1403010101900055',
+      desaAsal: _desaAsal,
       desaTujuan: finalDesaTujuan,
-      alamat: _addressController.text.trim(),
-      statusPemohon: _selectedPemohonStatus,
+      alamat: _userAddress,
+      statusPemohon: 'Mandiri (Diri Sendiri)',
       alasan: _reasonController.text.trim(),
-      tipe: isKeluar ? 'keluar' : 'masuk',
+      tipe: 'keluar',
     );
 
     if (!mounted) return;
@@ -246,17 +243,15 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     if (response['status'] == 'success') {
       _reasonController.clear();
-      _tabController.animateTo(1);
+      _customDesaTujuanController.clear();
       await _loadMutations();
 
       if (!mounted) return;
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => AnimatedSuccessDialog(
-          message: isKeluar
-              ? 'Pengajuan Pindah Keluar berhasil dikirim'
-              : 'Permohonan Tarik Warga (Handshake) berhasil dikirim',
+        builder: (context) => const AnimatedSuccessDialog(
+          message: 'Pengajuan Pindah Desa berhasil dikirim ke Kades',
           isLogout: false,
         ),
       );
@@ -276,75 +271,61 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     }
   }
 
-  void _handleActionClick(int index) {
-    final item = _mutationList[index];
-    final type = item['tabType'];
-
-    if (type == 'Keluar') {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text('Batalkan Pengajuan?'),
-          content: Text(
-            'Apakah Anda ingin membatalkan permohonan pindah domisili untuk NIK: ${item['nik']}?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Tidak'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                Navigator.pop(ctx);
-                final itemId = item['id'];
-                if (itemId != null) {
-                  final res = await _mutasiService.cancel(itemId);
-                  if (res['status'] == 'success') {
-                    await _loadMutations();
-                  }
-                }
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Permohonan pindah berhasil dibatalkan'),
-                    backgroundColor: Colors.redAccent,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              child: const Text('Ya, Batalkan'),
+  void _showCancelDialog(Map<String, dynamic> item) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 28),
+            SizedBox(width: 10),
+            Text(
+              'Batalkan Pengajuan?',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
           ],
         ),
-      );
-    } else if (type == 'Masuk') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Pengingat Handshake telah dikirim ke Admin ${item['desaAsal']}',
-          ),
-          backgroundColor: const Color(0xFF2563EB),
-          behavior: SnackBarBehavior.floating,
+        content: const Text(
+          'Apakah Anda yakin ingin membatalkan permohonan pindah domisili ini? Data Anda akan tetap aktif di desa asal.',
+          style: TextStyle(fontSize: 13.5, height: 1.4),
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Mengunduh Surat Bukti Mutasi Domisili & Berkas...',
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Kembali', style: TextStyle(color: Colors.grey)),
           ),
-          backgroundColor: Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final itemId = item['id'];
+              if (itemId != null) {
+                final res = await _mutasiService.cancel(itemId);
+                if (res['status'] == 'success') {
+                  await _loadMutations();
+                }
+              }
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Permohonan pindah berhasil dibatalkan'),
+                  backgroundColor: Colors.redAccent,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            child: const Text('Ya, Batalkan'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -352,12 +333,12 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF090D16) : const Color(0xFFF4F6FA),
+      backgroundColor: isDark ? const Color(0xFF090D16) : const Color(0xFFF1F8FF),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
-              expandedHeight: 175,
+              expandedHeight: 180,
               pinned: true,
               floating: false,
               elevation: 0,
@@ -365,7 +346,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF1E3A8A),
               leading: IconButton(
                 icon: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(isDark ? 25 : 35),
                     shape: BoxShape.circle,
@@ -415,26 +396,44 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                         ),
                       ),
                     ),
-                    // Title info in header (positioned with generous breathing room below back button)
+                    Positioned(
+                      left: -20,
+                      bottom: -20,
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(15),
+                        ),
+                      ),
+                    ),
+                    // Title info in header
                     Positioned(
                       left: 20,
                       right: 20,
-                      top: MediaQuery.of(context).padding.top + 52,
+                      top: MediaQuery.of(context).padding.top + 50,
                       child: const Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Mutasi Domisili (Handshake)',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 19,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.3,
-                            ),
+                          Row(
+                            children: [
+                              Icon(Icons.swap_horiz_rounded, color: Colors.white, size: 24),
+                              SizedBox(width: 8),
+                              Text(
+                                'Mutasi Domisili (Handshake)',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 3),
+                          SizedBox(height: 4),
                           Text(
-                            'Integrasi perpindahan NIK & data antar-desa digital',
+                            'Pindah desa mandiri dengan integrasi NIK resmi antar Kepala Desa',
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 11.5,
@@ -448,19 +447,19 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 ),
               ),
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(54),
+                preferredSize: const Size.fromHeight(56),
                 child: Container(
-                  height: 54,
+                  height: 56,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF090D16) : const Color(0xFFF4F6FA),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                    color: isDark ? const Color(0xFF090D16) : const Color(0xFFF1F8FF),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   ),
                   child: Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(3.5),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: TabBar(
                       controller: _tabController,
@@ -468,11 +467,11 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                         ),
-                        borderRadius: BorderRadius.circular(11),
+                        borderRadius: BorderRadius.circular(13),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF2563EB).withAlpha(80),
-                            blurRadius: 6,
+                            color: const Color(0xFF2563EB).withAlpha(90),
+                            blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -482,14 +481,17 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
                       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12.5),
                       dividerColor: Colors.transparent,
-                      tabs: const [
+                      tabs: [
                         Tab(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.edit_document, size: 16),
-                              SizedBox(width: 6),
-                              Text('Ajukan Mutasi'),
+                              Icon(
+                                _hasPendingMutasi ? Icons.hourglass_top_rounded : Icons.edit_document,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(_hasPendingMutasi ? 'Status Pengajuan' : 'Ajukan Pindah'),
                             ],
                           ),
                         ),
@@ -497,9 +499,9 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.track_changes_rounded, size: 16),
-                              SizedBox(width: 6),
-                              Text('Status & Riwayat'),
+                              const Icon(Icons.history_rounded, size: 16),
+                              const SizedBox(width: 6),
+                              Text('Riwayat (${_mutationList.length})'),
                             ],
                           ),
                         ),
@@ -523,36 +525,227 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // TAB 1: FORMULIR PENGAJUAN MUTASI (HIGH-END REDESIGN)
+  // TAB 1: FORM PENGAJUAN PINDAH ATAU STATUS PENDING (BEAUTIFIED)
   // ═══════════════════════════════════════════════════════════════════
   Widget _buildCreationFormTab(bool isDark) {
-    final bool isAkunSaya = _tipePermohonan == 'Pindah Keluar (Akun Saya)';
+    if (_isFetching) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+      );
+    }
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 50),
-      child: Form(
-        key: _formKey,
+    if (_hasPendingMutasi) {
+      return _buildPendingStatusView(isDark);
+    }
+
+    return _buildActiveFormView(isDark);
+  }
+
+  // ── VIEW 1: STATUS SEDANG DIPROSES (HANDSHAKE TIMELINE) ──
+  Widget _buildPendingStatusView(bool isDark) {
+    final pending = _pendingMutasi;
+    final String desaTujuan = pending?['desaTujuan'] ?? _selectedDesaTujuan;
+    final String desaAsal = pending?['desaAsal'] ?? _desaAsal;
+    final String tanggal = pending?['date'] ?? '-';
+    final String alasan = pending?['alasan'] ?? '-';
+    final int step = pending?['stepIndex'] ?? 1;
+
+    return RefreshIndicator(
+      onRefresh: _loadMutations,
+      color: const Color(0xFF2563EB),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── EXPLANATION BANNER (HANDSHAKE INFO) ──
+            // Status Hero Card (Glow Amber)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                      : [Colors.white, const Color(0xFFFFFBEB)],
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: const Color(0xFFF59E0B).withAlpha(isDark ? 80 : 120),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFF59E0B).withAlpha(isDark ? 30 : 25),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Animated pulsing icon
+                  Container(
+                    width: 68,
+                    height: 68,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withAlpha(30),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 52,
+                        height: 52,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF59E0B),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.sync_rounded,
+                          size: 28,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withAlpha(35),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'STATUS: SEDANG DIPROSES',
+                      style: TextStyle(
+                        color: Color(0xFFD97706),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Menunggu Persetujuan Handshake',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Pengajuan pindah Anda dari $desaAsal ke $desaTujuan sedang menunggu persetujuan dari Kepala Desa saat ini.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.45,
+                      color: isDark ? Colors.white70 : const Color(0xFF475569),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // Stepper Visual Timeline Card
+            _buildCardWrapper(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.alt_route_rounded, color: Color(0xFF2563EB), size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Tahapan Handshake Protocol',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTimelineStep(
+                    stepNumber: 1,
+                    title: 'Formulir Pindah Dikirim',
+                    subtitle: 'Warga mandiri mengajukan kepindahan via aplikasi',
+                    isDone: true,
+                    isActive: false,
+                    isDark: isDark,
+                  ),
+                  _buildTimelineStep(
+                    stepNumber: 2,
+                    title: 'Pelepasan NIK (Kades Asal)',
+                    subtitle: 'Kades asal memvalidasi & membuka kunci gembok NIK',
+                    isDone: step > 1,
+                    isActive: step == 1,
+                    isDark: isDark,
+                  ),
+                  _buildTimelineStep(
+                    stepNumber: 3,
+                    title: 'Aktivasi Data (Kades Tujuan)',
+                    subtitle: 'Data resmi dialihkan dan aktif di desa tujuan',
+                    isDone: step >= 3,
+                    isActive: step == 2,
+                    isLast: true,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Summary Information Card
+            _buildCardWrapper(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Ringkasan Data Pengajuan',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSummaryRow('Nama Pemohon', _userName, isDark),
+                  _buildSummaryRow('NIK Warga', _userNik, isDark, isMonospace: true),
+                  _buildSummaryRow('Desa Asal', desaAsal, isDark),
+                  _buildSummaryRow('Desa Tujuan', desaTujuan, isDark, isHighlighted: true),
+                  _buildSummaryRow('Alasan Pindah', alasan, isDark),
+                  _buildSummaryRow('Tanggal Diajukan', tanggal, isDark),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Notice Box
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF2563EB).withAlpha(isDark ? 30 : 15),
+                color: Colors.blue.withAlpha(isDark ? 25 : 15),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: const Color(0xFF2563EB).withAlpha(40),
-                ),
+                border: Border.all(color: Colors.blue.withAlpha(40)),
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB), size: 20),
+                  Icon(Icons.shield_outlined, color: Color(0xFF2563EB), size: 20),
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Sistem Handshake memastikan NIK dilepas oleh desa asal dan langsung aktif di desa tujuan secara otomatis.',
+                      'Pemesanan fasilitas di desa asal ditangguhkan sementara hingga proses mutasi ini selesai.',
                       style: TextStyle(
                         fontSize: 11.5,
                         color: Color(0xFF2563EB),
@@ -565,129 +758,163 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 22),
 
-            // ── 1. SELECTOR JENIS PERMOHONAN (INTERACTIVE HERO CARDS) ──
-            _buildSectionHeader(
-              title: '1. Pilih Jenis Permohonan',
-              subtitle: 'Tentukan jenis mutasi kependudukan yang diajukan',
-              isDark: isDark,
-            ),
-            const SizedBox(height: 10),
+            // Action Buttons
             Row(
               children: [
                 Expanded(
-                  child: _buildPermohonanCard(
-                    title: 'Pindah Keluar',
-                    subtitle: 'Akun Saya Sendiri',
-                    badge: 'Otomatis',
-                    icon: Icons.logout_rounded,
-                    color: const Color(0xFF2563EB),
-                    isSelected: isAkunSaya,
-                    isDark: isDark,
-                    onTap: () => _onTipeChanged('Pindah Keluar (Akun Saya)'),
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showCancelDialog(pending ?? {}),
+                    icon: const Icon(Icons.close_rounded, size: 16),
+                    label: const Text('Batalkan Pengajuan'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                      side: const BorderSide(color: Colors.redAccent),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _buildPermohonanCard(
-                    title: 'Tarik Warga',
-                    subtitle: 'Lansia / Keluarga',
-                    badge: 'Bantu Kerabat',
-                    icon: Icons.group_add_rounded,
-                    color: const Color(0xFF8B5CF6),
-                    isSelected: !isAkunSaya,
-                    isDark: isDark,
-                    onTap: () => _onTipeChanged('Tarik Warga / Lansia'),
+                  child: ElevatedButton.icon(
+                    onPressed: _loadMutations,
+                    icon: const Icon(Icons.refresh_rounded, size: 16),
+                    label: const Text('Cek Status'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                   ),
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            const SizedBox(height: 22),
+  // ── VIEW 2: ACTIVE FORMULIR PENGAJUAN PINDAH (CLEAN & MODERN) ──
+  Widget _buildActiveFormView(bool isDark) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 50),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Hero Banner
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                ),
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withAlpha(50),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(35),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.handshake_rounded, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sistem Handshake Digital',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Data NIK Anda akan otomatis dialihkan ke desa tujuan setelah disetujui Kepala Desa.',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-            // ── 2. IDENTITAS WARGA (DIGITAL KTP CARD PREVIEW OR FORM) ──
+            const SizedBox(height: 20),
+
             _buildSectionHeader(
-              title: '2. Identitas Warga yang Dimutasi',
-              subtitle: isAkunSaya
-                  ? 'Data resmi akun terverifikasi yang akan dipindahkan'
-                  : 'Lengkapi data identitas warga yang ingin ditarik',
+              title: 'Arah Perpindahan Domisili',
+              subtitle: 'Tentukan desa asal pelepasan dan desa tujuan baru',
               isDark: isDark,
             ),
             const SizedBox(height: 10),
 
-            _buildCardWrapper(
-              isDark: isDark,
-              child: isAkunSaya
-                  ? _buildDigitalKtpCardPreview(isDark)
-                  : _buildManualFamilyForm(isDark),
-            ),
-
-            const SizedBox(height: 22),
-
-            // ── 3. VISUAL MIGRATION ROUTE CONNECTOR (DESA ASAL -> DESA TUJUAN) ──
-            _buildSectionHeader(
-              title: '3. Arah Perpindahan Domisili',
-              subtitle: 'Tentukan desa asal pelepasan dan desa tujuan aktivasi',
-              isDark: isDark,
-            ),
-            const SizedBox(height: 10),
-
+            // Route Card
             _buildCardWrapper(
               isDark: isDark,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Desa Asal
-                  _buildDropdownField(
+                  _buildReadOnlyField(
                     label: 'Desa Asal (Pelepasan NIK)',
-                    value: _selectedDesaAsal,
-                    items: _desaList,
+                    value: _desaAsal,
                     icon: Icons.outbox_rounded,
-                    iconColor: const Color(0xFFEF4444),
                     isDark: isDark,
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedDesaAsal = val);
-                    },
                   ),
-                  
-                  if (_selectedDesaAsal.contains('Luar Daerah')) ...[
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: _customDesaAsalController,
-                      style: const TextStyle(fontSize: 13),
-                      decoration: _inputDecoration(
-                        hintText: 'Ketik lengkap: Nama Desa, Kecamatan, Kab...',
-                        isDark: isDark,
-                        icon: Icons.edit_location_alt_rounded,
-                      ),
-                      validator: (val) => (val == null || val.trim().isEmpty)
-                          ? 'Detail wilayah luar daerah wajib diisi'
-                          : null,
-                    ),
-                  ],
 
-                  // Animated Direction Connector
+                  // Directional Connector
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Row(
                       children: [
-                        const Expanded(child: Divider()),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          width: 2,
+                          height: 20,
+                          color: const Color(0xFF2563EB).withAlpha(80),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB).withAlpha(isDark ? 40 : 20),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFF2563EB).withAlpha(50)),
+                            color: const Color(0xFF2563EB).withAlpha(isDark ? 30 : 15),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Row(
-                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.arrow_downward_rounded, size: 14, color: Color(0xFF2563EB)),
+                              Icon(Icons.arrow_downward_rounded, size: 12, color: Color(0xFF2563EB)),
                               SizedBox(width: 4),
                               Text(
-                                'Mutasi Digital',
+                                'Dialihkan ke',
                                 style: TextStyle(
-                                  fontSize: 10.5,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF2563EB),
                                 ),
@@ -695,14 +922,13 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                             ],
                           ),
                         ),
-                        const Expanded(child: Divider()),
                       ],
                     ),
                   ),
 
-                  // Desa Tujuan
+                  // Desa Tujuan Dropdown
                   _buildDropdownField(
-                    label: 'Desa Tujuan (Aktivasi NIK)',
+                    label: 'Pilih Desa Tujuan (Aktivasi NIK)',
                     value: _selectedDesaTujuan,
                     items: _desaList,
                     icon: Icons.inbox_rounded,
@@ -719,25 +945,28 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       controller: _customDesaTujuanController,
                       style: const TextStyle(fontSize: 13),
                       decoration: _inputDecoration(
-                        hintText: 'Ketik lengkap: Nama Desa, Kecamatan, Kab...',
+                        hintText: 'Tuliskan Nama Desa & Kecamatan Tujuan...',
                         isDark: isDark,
                         icon: Icons.edit_location_alt_rounded,
+                        iconColor: const Color(0xFF10B981),
                       ),
-                      validator: (val) => (val == null || val.trim().isEmpty)
-                          ? 'Detail wilayah luar daerah wajib diisi'
-                          : null,
+                      validator: (val) {
+                        if (_selectedDesaTujuan.contains('Luar Daerah') && (val == null || val.isEmpty)) {
+                          return 'Desa tujuan wajib diisi';
+                        }
+                        return null;
+                      },
                     ),
                   ],
                 ],
               ),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 20),
 
-            // ── 4. ALASAN PEMINDAHAN (WITH QUICK SUGGESTIONS) ──
             _buildSectionHeader(
-              title: '4. Alasan Pemindahan Domisili',
-              subtitle: 'Pilih atau tuliskan alasan kepindahan warga',
+              title: 'Alasan Kepindahan',
+              subtitle: 'Pilih opsi cepat atau tuliskan alasan Anda',
               isDark: isDark,
             ),
             const SizedBox(height: 10),
@@ -747,113 +976,75 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDropdownField(
-                    label: 'Kategori Alasan',
-                    value: _selectedReasonCategory,
-                    items: _reasonSuggestions,
-                    icon: Icons.category_rounded,
-                    iconColor: const Color(0xFF2563EB),
-                    isDark: isDark,
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedReasonCategory = val;
-                          if (val != 'Lainnya (Tulis Manual)') {
-                            _reasonController.text = val;
-                          } else {
-                            _reasonController.clear();
-                          }
-                        });
-                      }
-                    },
+                  // Quick suggestion chips
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: _quickReasons.map((reason) {
+                      final bool isSelected = _reasonController.text.contains(reason);
+                      return ActionChip(
+                        label: Text(reason),
+                        labelStyle: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: isSelected
+                              ? const Color(0xFF2563EB)
+                              : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                        ),
+                        backgroundColor: isSelected
+                            ? const Color(0xFF2563EB).withAlpha(isDark ? 40 : 20)
+                            : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
+                        side: BorderSide(
+                          color: isSelected
+                              ? const Color(0xFF2563EB)
+                              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        onPressed: () {
+                          setState(() {
+                            _reasonController.text = reason;
+                          });
+                        },
+                      );
+                    }).toList(),
                   ),
 
                   const SizedBox(height: 12),
 
                   TextFormField(
                     controller: _reasonController,
-                    maxLines: 2,
+                    maxLines: 3,
                     style: const TextStyle(fontSize: 13),
                     decoration: _inputDecoration(
-                      hintText: 'Tuliskan rincian atau keterangan alasan pemindahan...',
+                      hintText: 'Contoh: Ikut suami, pindah domisili kerja, dll',
+                      label: 'Tuliskan Alasan Lengkap',
                       isDark: isDark,
-                      icon: Icons.notes_rounded,
+                      icon: Icons.chat_bubble_outline_rounded,
                     ),
-                    validator: (val) => (val == null || val.trim().isEmpty)
-                        ? 'Alasan mutasi wajib diisi'
+                    validator: (val) => val == null || val.isEmpty
+                        ? 'Alasan pindah wajib diisi'
                         : null,
-                  ),
-
-                  // Quick reason chips
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      'Ikut Keluarga',
-                      'Pindah Rumah',
-                      'Pekerjaan',
-                      'Sekolah',
-                    ].map((reason) {
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                            _reasonController.text = reason;
-                            _selectedReasonCategory = 'Lainnya (Tulis Manual)';
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                            ),
-                          ),
-                          child: Text(
-                            '+ $reason',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white70 : const Color(0xFF475569),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 28),
 
-            // ── 5. SUBMIT BUTTON ──
-            Container(
+            // Submit Button
+            SizedBox(
               width: double.infinity,
-              height: 52,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2563EB).withAlpha(100),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
+              height: 50,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleSubmitMutation,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
+                  backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 2,
+                  shadowColor: const Color(0xFF2563EB).withAlpha(120),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -867,7 +1058,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                           Icon(Icons.send_rounded, size: 18),
                           SizedBox(width: 8),
                           Text(
-                            'Kirim Pengajuan Handshake',
+                            'Ajukan Pindah Sekarang',
                             style: TextStyle(
                               fontSize: 14.5,
                               fontWeight: FontWeight.bold,
@@ -884,124 +1075,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     );
   }
 
-  // Digital KTP Card Preview for "Pindah Keluar"
-  Widget _buildDigitalKtpCardPreview(bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withAlpha(isDark ? 40 : 20),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.verified_rounded, size: 16, color: Color(0xFF10B981)),
-            ),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'Data Terverifikasi dari Akun Anda',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF10B981),
-                ),
-              ),
-            ),
-            const Icon(Icons.lock_rounded, size: 16, color: Colors.grey),
-          ],
-        ),
-        const SizedBox(height: 14),
-
-        _buildReadOnlyField(
-          label: 'Nama Lengkap',
-          value: _nameController.text,
-          icon: Icons.person_rounded,
-          isDark: isDark,
-        ),
-        const SizedBox(height: 10),
-        _buildReadOnlyField(
-          label: 'Nomor Induk Kependudukan (NIK)',
-          value: _nikController.text,
-          icon: Icons.badge_rounded,
-          isDark: isDark,
-          isMonospace: true,
-        ),
-        const SizedBox(height: 10),
-        _buildReadOnlyField(
-          label: 'Alamat Domisili Saat Ini',
-          value: _addressController.text,
-          icon: Icons.home_rounded,
-          isDark: isDark,
-        ),
-      ],
-    );
-  }
-
-  // Manual Form for "Tarik Warga"
-  Widget _buildManualFamilyForm(bool isDark) {
-    return Column(
-      children: [
-        TextFormField(
-          controller: _nameController,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-          decoration: _inputDecoration(
-            hintText: 'Contoh: Ahmad Fadilah',
-            isDark: isDark,
-            icon: Icons.person_outline_rounded,
-            label: 'Nama Lengkap Warga yang Ditarik',
-          ),
-          validator: (val) => (val == null || val.trim().isEmpty) ? 'Nama wajib diisi' : null,
-        ),
-        const SizedBox(height: 12),
-
-        TextFormField(
-          controller: _nikController,
-          keyboardType: TextInputType.number,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-          decoration: _inputDecoration(
-            hintText: '1403xxxxxxxxxxxx (16 Digit)',
-            isDark: isDark,
-            icon: Icons.badge_outlined,
-            label: 'Nomor Induk Kependudukan (NIK)',
-          ),
-          validator: (val) => (val == null || val.trim().length < 16)
-              ? 'NIK harus 16 digit angka'
-              : null,
-        ),
-        const SizedBox(height: 12),
-
-        _buildDropdownField(
-          label: 'Hubungan / Status dengan Pemohon',
-          value: _selectedPemohonStatus,
-          items: _statusPemohonList,
-          icon: Icons.family_restroom_rounded,
-          iconColor: const Color(0xFF8B5CF6),
-          isDark: isDark,
-          onChanged: (val) {
-            if (val != null) setState(() => _selectedPemohonStatus = val);
-          },
-        ),
-        const SizedBox(height: 12),
-
-        TextFormField(
-          controller: _addressController,
-          style: const TextStyle(fontSize: 13),
-          decoration: _inputDecoration(
-            hintText: 'RT/RW, Dusun, atau Jalan',
-            isDark: isDark,
-            icon: Icons.home_outlined,
-            label: 'Alamat Domisili Asal',
-          ),
-        ),
-      ],
-    );
-  }
-
   // ═══════════════════════════════════════════════════════════════════
-  // TAB 2: STATUS & RIWAYAT (STEPPER TIMELINE STYLE)
+  // TAB 2: RIWAYAT MUTASI (BEAUTIFIED LIST)
   // ═══════════════════════════════════════════════════════════════════
   Widget _buildStatusListTab(bool isDark) {
     List<Map<String, dynamic>> filteredList = _mutationList;
@@ -1013,13 +1088,13 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     final int cKeluar = _mutationList.where((e) => e['tabType'] == 'Keluar').length;
     final int cMasuk = _mutationList.where((e) => e['tabType'] == 'Masuk').length;
-    final int cRiwayat = _mutationList.where((e) => e['tabType'] == 'Riwayat').length;
+    final int cSelesai = _mutationList.where((e) => e['tabType'] == 'Selesai').length;
 
     return RefreshIndicator(
       onRefresh: _loadMutations,
       color: const Color(0xFF2563EB),
       child: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         slivers: [
           // Filter Chips
           SliverToBoxAdapter(
@@ -1032,8 +1107,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                   children: [
                     _buildFilterChip('Semua (${_mutationList.length})', 'Semua', isDark),
                     _buildFilterChip('Pelepasan ($cKeluar)', 'Keluar', isDark),
-                    _buildFilterChip('Persetujuan ($cMasuk)', 'Masuk', isDark),
-                    _buildFilterChip('Selesai ($cRiwayat)', 'Riwayat', isDark),
+                    _buildFilterChip('Aktivasi ($cMasuk)', 'Masuk', isDark),
+                    _buildFilterChip('Selesai ($cSelesai)', 'Selesai', isDark),
                   ],
                 ),
               ),
@@ -1043,6 +1118,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
           // List Items
           if (filteredList.isEmpty)
             SliverFillRemaining(
+              hasScrollBody: false,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
@@ -1063,7 +1139,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Belum Ada Pengajuan Mutasi',
+                        'Belum Ada Riwayat Mutasi',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1072,7 +1148,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Riwayat pemindahan domisili dan tarik warga Anda akan tercatat secara resmi di sini.',
+                        'Riwayat pemindahan domisili Anda antar desa akan tercatat secara resmi di sini.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12.5,
@@ -1084,7 +1160,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       OutlinedButton.icon(
                         onPressed: () => _tabController.animateTo(0),
                         icon: const Icon(Icons.add_rounded, size: 18),
-                        label: const Text('Buat Pengajuan Mutasi'),
+                        label: const Text('Ajukan Pindah Desa'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF2563EB),
                           side: const BorderSide(color: Color(0xFF2563EB)),
@@ -1103,9 +1179,9 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final item = filteredList[index];
-                    final int realIdx = _mutationList.indexOf(item);
                     final Color badgeCol = item['color'];
                     final bool isLocked = item['isLocked'];
+                    final bool isPending = item['tabType'] == 'Keluar' || item['tabType'] == 'Masuk';
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 14),
@@ -1136,11 +1212,11 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                             child: Row(
                               children: [
                                 Icon(
-                                  item['tabType'] == 'Keluar'
-                                      ? Icons.logout_rounded
-                                      : item['tabType'] == 'Masuk'
-                                          ? Icons.group_add_rounded
-                                          : Icons.check_circle_rounded,
+                                  item['tabType'] == 'Selesai'
+                                      ? Icons.check_circle_rounded
+                                      : item['tabType'] == 'Dibatalkan'
+                                          ? Icons.cancel_rounded
+                                          : Icons.hourglass_top_rounded,
                                   size: 16,
                                   color: badgeCol,
                                 ),
@@ -1172,53 +1248,6 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Nama & NIK
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item['name'],
-                                            style: TextStyle(
-                                              fontSize: 15.5,
-                                              fontWeight: FontWeight.w800,
-                                              color: isDark ? Colors.white : const Color(0xFF0F172A),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 3),
-                                          Text(
-                                            'NIK: ${item['nik']}',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontFamily: 'monospace',
-                                              color: isDark ? Colors.white70 : const Color(0xFF475569),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: (isLocked ? const Color(0xFF2563EB) : const Color(0xFF10B981))
-                                            .withAlpha(isDark ? 35 : 15),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        isLocked ? Icons.lock_rounded : Icons.lock_open_rounded,
-                                        color: isLocked ? const Color(0xFF2563EB) : const Color(0xFF10B981),
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 12),
-
                                 // Route Info
                                 Container(
                                   padding: const EdgeInsets.all(12),
@@ -1243,7 +1272,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                             Text(
                                               item['desaAsal'],
                                               style: TextStyle(
-                                                fontSize: 11.5,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.bold,
                                                 color: isDark ? Colors.white : const Color(0xFF0F172A),
                                               ),
@@ -1256,7 +1285,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                       const Icon(
                                         Icons.arrow_forward_rounded,
                                         color: Color(0xFF2563EB),
-                                        size: 16,
+                                        size: 18,
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
@@ -1272,7 +1301,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                               item['desaTujuan'],
                                               textAlign: TextAlign.end,
                                               style: const TextStyle(
-                                                fontSize: 11.5,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.bold,
                                                 color: Color(0xFF2563EB),
                                               ),
@@ -1283,6 +1312,17 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                         ),
                                       ),
                                     ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                // Alasan
+                                Text(
+                                  'Alasan: ${item['alasan']}',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: isDark ? Colors.white70 : const Color(0xFF475569),
                                   ),
                                 ),
 
@@ -1320,46 +1360,26 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                   ),
                                 ),
 
-                                const SizedBox(height: 12),
-
-                                // Action Button
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton.icon(
-                                    onPressed: () => _handleActionClick(realIdx),
-                                    icon: Icon(
-                                      item['tabType'] == 'Keluar'
-                                          ? Icons.close_rounded
-                                          : item['tabType'] == 'Masuk'
-                                              ? Icons.notifications_active_rounded
-                                              : Icons.download_rounded,
-                                      size: 15,
-                                    ),
-                                    label: Text(
-                                      item['tabType'] == 'Keluar'
-                                          ? 'Batalkan Pengajuan'
-                                          : item['tabType'] == 'Masuk'
-                                              ? 'Kirim Pengingat'
-                                              : 'Unduh Bukti Mutasi',
-                                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: item['tabType'] == 'Keluar'
-                                          ? Colors.redAccent
-                                          : item['tabType'] == 'Masuk'
-                                              ? const Color(0xFF2563EB)
-                                              : const Color(0xFF10B981),
-                                      backgroundColor: (item['tabType'] == 'Keluar'
-                                              ? Colors.redAccent
-                                              : item['tabType'] == 'Masuk'
-                                                  ? const Color(0xFF2563EB)
-                                                  : const Color(0xFF10B981))
-                                          .withAlpha(20),
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                if (isPending) ...[
+                                  const SizedBox(height: 12),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton.icon(
+                                      onPressed: () => _showCancelDialog(item),
+                                      icon: const Icon(Icons.close_rounded, size: 14),
+                                      label: const Text(
+                                        'Batalkan Permohonan',
+                                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.redAccent,
+                                        backgroundColor: Colors.redAccent.withAlpha(20),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           ),
@@ -1379,6 +1399,127 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
   // ═══════════════════════════════════════════════════════════════════
   // REUSABLE HELPER WIDGETS
   // ═══════════════════════════════════════════════════════════════════
+  Widget _buildTimelineStep({
+    required int stepNumber,
+    required String title,
+    required String subtitle,
+    required bool isDone,
+    required bool isActive,
+    bool isLast = false,
+    required bool isDark,
+  }) {
+    Color nodeColor;
+    IconData nodeIcon;
+
+    if (isDone) {
+      nodeColor = const Color(0xFF10B981);
+      nodeIcon = Icons.check_rounded;
+    } else if (isActive) {
+      nodeColor = const Color(0xFFF59E0B);
+      nodeIcon = Icons.sync_rounded;
+    } else {
+      nodeColor = Colors.grey[400]!;
+      nodeIcon = Icons.radio_button_unchecked_rounded;
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: nodeColor.withAlpha(isActive ? 35 : (isDone ? 30 : 20)),
+                shape: BoxShape.circle,
+                border: Border.all(color: nodeColor, width: isActive ? 2 : 1.5),
+              ),
+              child: Center(
+                child: Icon(
+                  nodeIcon,
+                  size: 16,
+                  color: nodeColor,
+                ),
+              ),
+            ),
+            if (!isLast)
+              Container(
+                width: 2,
+                height: 34,
+                color: isDone ? const Color(0xFF10B981) : Colors.grey.withAlpha(60),
+              ),
+          ],
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isActive
+                        ? const Color(0xFFD97706)
+                        : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                  ),
+                ),
+                if (!isLast) const SizedBox(height: 14),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, bool isDark,
+      {bool isMonospace = false, bool isHighlighted = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: isHighlighted ? FontWeight.w900 : FontWeight.bold,
+                fontFamily: isMonospace ? 'monospace' : null,
+                color: isHighlighted
+                    ? const Color(0xFF2563EB)
+                    : (isDark ? Colors.white : const Color(0xFF0F172A)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSectionHeader({
     required String title,
     required String subtitle,
@@ -1429,114 +1570,6 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     );
   }
 
-  Widget _buildPermohonanCard({
-    required String title,
-    required String subtitle,
-    required String badge,
-    required IconData icon,
-    required Color color,
-    required bool isSelected,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? color.withAlpha(isDark ? 45 : 20)
-              : (isDark ? const Color(0xFF131C2E) : Colors.white),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? color
-                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
-            width: isSelected ? 1.8 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withAlpha(60),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? color
-                        : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: isSelected
-                        ? Colors.white
-                        : (isDark ? Colors.white60 : const Color(0xFF64748B)),
-                    size: 20,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: color.withAlpha(isDark ? 40 : 20),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    badge,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13.5,
-                      color: isSelected
-                          ? (isDark ? Colors.white : color)
-                          : (isDark ? Colors.white : const Color(0xFF0F172A)),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildReadOnlyField({
     required String label,
     required String value,
@@ -1545,10 +1578,10 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     bool isMonospace = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
@@ -1564,7 +1597,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
                     color: isDark ? Colors.white54 : const Color(0xFF64748B),
                   ),
                 ),
@@ -1647,19 +1681,19 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
       fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(
           color: Color(0xFF2563EB),
           width: 1.8,
