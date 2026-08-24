@@ -18,7 +18,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     final input = _emailOrPhoneController.text.trim();
     if (input.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email / Nomor Telepon tidak boleh kosong')),
+        const SnackBar(
+          content: Text('Email / Nomor Telepon tidak boleh kosong'),
+        ),
       );
       return;
     }
@@ -39,15 +41,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     if (result['status'] == 'success') {
-
-
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ForgotPasswordOtpPage(
-            emailOrPhone: input,
-            otpMethod: method,
-          ),
+          builder: (context) =>
+              ForgotPasswordOtpPage(emailOrPhone: input, otpMethod: method),
         ),
       );
     } else {
@@ -78,11 +76,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Lupa Password'),
+        title: const Text(
+          'Lupa Password',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -179,7 +184,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   elevation: 5,
-                  shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+                  shadowColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.5),
                 ),
                 child: _isLoading
                     ? const SizedBox(

@@ -54,7 +54,16 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bantuan & FAQ'),
+        title: const Text(
+          'Pusat Bantuan & FAQ',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         elevation: 0,
       ),

@@ -54,7 +54,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     );
 
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = false;
     });
@@ -71,10 +71,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
       await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
-      
+
       // Kembali ke halaman Login (Pop until Login Page)
       Navigator.of(context).popUntil((route) => route.isFirst);
-      
     } else {
       showDialog(
         context: context,
@@ -104,9 +103,18 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Buat Kata Sandi Baru'),
+        title: const Text(
+          'Buat Kata Sandi Baru',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -124,10 +132,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               const Text(
                 'Kata Sandi Baru',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               Text(

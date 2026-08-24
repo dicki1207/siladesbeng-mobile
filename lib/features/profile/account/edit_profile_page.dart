@@ -397,8 +397,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       decoration: BoxDecoration(
         color: !enabled
             ? (isDark
-                ? Colors.white.withValues(alpha: 0.03)
-                : const Color(0xFFF1F5F9))
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : const Color(0xFFF1F5F9))
             : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
@@ -505,14 +505,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               fontSize: 13.5,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.8,
-                              color: isDark ? Colors.white : const Color(0xFF1E293B),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1E293B),
                             ),
                           ),
                         ],
                       ),
                       // Status Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: isVerified
                               ? primaryColor.withValues(alpha: 0.12)
@@ -528,9 +533,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isVerified ? Icons.verified_rounded : Icons.shield_outlined,
+                              isVerified
+                                  ? Icons.verified_rounded
+                                  : Icons.shield_outlined,
                               size: 13,
-                              color: isVerified ? primaryColor : Colors.amber.shade800,
+                              color: isVerified
+                                  ? primaryColor
+                                  : Colors.amber.shade800,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -538,7 +547,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.bold,
-                                color: isVerified ? primaryColor : Colors.amber.shade900,
+                                color: isVerified
+                                    ? primaryColor
+                                    : Colors.amber.shade900,
                                 letterSpacing: 0.3,
                               ),
                             ),
@@ -576,10 +587,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               width: 78,
                               height: 98,
                               decoration: BoxDecoration(
-                                color: isDark ? Colors.grey[800] : Colors.grey[100],
+                                color: isDark
+                                    ? Colors.grey[800]
+                                    : Colors.grey[100],
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: isDark ? Colors.white24 : Colors.grey.shade300,
+                                  color: isDark
+                                      ? Colors.white24
+                                      : Colors.grey.shade300,
                                   width: 1.5,
                                 ),
                               ),
@@ -596,20 +611,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                         ),
                                       )
                                     : (_avatarUrl != null
-                                        ? Image.network(
-                                            _avatarUrl!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, _, _) => Icon(
+                                          ? Image.network(
+                                              _avatarUrl!,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, _, _) => Icon(
+                                                Icons.person_rounded,
+                                                size: 40,
+                                                color: Colors.grey[400],
+                                              ),
+                                            )
+                                          : Icon(
                                               Icons.person_rounded,
                                               size: 40,
                                               color: Colors.grey[400],
-                                            ),
-                                          )
-                                        : Icon(
-                                            Icons.person_rounded,
-                                            size: 40,
-                                            color: Colors.grey[400],
-                                          )),
+                                            )),
                               ),
                             ),
                           ),
@@ -630,7 +645,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.25),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.25,
+                                      ),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -666,11 +683,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ),
                             const SizedBox(height: 2),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: isVerified
                                     ? primaryColor.withValues(alpha: 0.08)
-                                    : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+                                    : (isDark
+                                          ? Colors.white.withValues(alpha: 0.05)
+                                          : const Color(0xFFF1F5F9)),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -681,8 +703,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   fontFamily: hasNik ? 'monospace' : null,
                                   letterSpacing: hasNik ? 0.8 : 0,
                                   color: hasNik
-                                      ? (isDark ? Colors.white : const Color(0xFF1E293B))
-                                      : (isDark ? Colors.white38 : Colors.grey[500]),
+                                      ? (isDark
+                                            ? Colors.white
+                                            : const Color(0xFF1E293B))
+                                      : (isDark
+                                            ? Colors.white38
+                                            : Colors.grey[500]),
                                 ),
                               ),
                             ),
@@ -709,7 +735,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     style: TextStyle(
                                       fontSize: 12.5,
                                       fontWeight: FontWeight.w800,
-                                      color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1E293B),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -717,7 +745,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                                 if (isVerified) ...[
                                   const SizedBox(width: 4),
-                                  Icon(Icons.check_circle_rounded, size: 14, color: primaryColor),
+                                  Icon(
+                                    Icons.check_circle_rounded,
+                                    size: 14,
+                                    color: primaryColor,
+                                  ),
                                 ],
                               ],
                             ),
@@ -739,7 +771,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white60 : Colors.grey[700],
+                                color: isDark
+                                    ? Colors.white60
+                                    : Colors.grey[700],
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -764,7 +798,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       },
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: primaryColor.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
@@ -777,7 +814,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.shield_outlined, size: 15, color: primaryColor),
+                                Icon(
+                                  Icons.shield_outlined,
+                                  size: 15,
+                                  color: primaryColor,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Verifikasi KTP & Wajah Sekarang',
@@ -789,7 +830,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                               ],
                             ),
-                            Icon(Icons.arrow_forward_ios_rounded, size: 12, color: primaryColor),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 12,
+                              color: primaryColor,
+                            ),
                           ],
                         ),
                       ),
@@ -816,11 +861,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
         appBar: AppBar(
           title: const Text(
             'Edit Profil & Data Diri',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 17,
+              color: Colors.white,
+            ),
           ),
           centerTitle: true,
           elevation: 0,
           backgroundColor: primaryColor,
+          iconTheme: const IconThemeData(color: Colors.white),
           foregroundColor: Colors.white,
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(48),
@@ -830,7 +880,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 indicatorColor: primaryColor,
                 indicatorWeight: 3,
                 labelColor: primaryColor,
-                unselectedLabelColor: isDark ? Colors.white38 : Colors.grey[500],
+                unselectedLabelColor: isDark
+                    ? Colors.white38
+                    : Colors.grey[500],
                 labelStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
@@ -1104,7 +1156,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const ChangePasswordPage(),
+                                builder: (context) =>
+                                    const ChangePasswordPage(),
                               ),
                             );
                           },

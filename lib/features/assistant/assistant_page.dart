@@ -77,10 +77,12 @@ class _AssistantPageState extends State<AssistantPage> {
 
       // Siapkan history untuk context percakapan
       List<Map<String, String>> history = _messages
-          .map((m) => {
-                'role': (m['isUser'] as bool) ? 'user' : 'model',
-                'text': m['text'].toString(),
-              })
+          .map(
+            (m) => {
+              'role': (m['isUser'] as bool) ? 'user' : 'model',
+              'text': m['text'].toString(),
+            },
+          )
           .toList();
 
       // Jangan kirim pesan terakhir karena akan dikirim sebagai 'message' utama
@@ -88,18 +90,17 @@ class _AssistantPageState extends State<AssistantPage> {
         history.removeLast();
       }
 
-      final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/api/chatbot'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-        body: json.encode({
-          'message': text,
-          'history': history,
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/api/chatbot'),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              if (token != null) 'Authorization': 'Bearer $token',
+            },
+            body: json.encode({'message': text, 'history': history}),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (!mounted) return;
 
@@ -120,7 +121,10 @@ class _AssistantPageState extends State<AssistantPage> {
       } else {
         // Backend sekarang selalu mengirim 'reply' bahkan saat fallback
         final data = json.decode(response.body);
-        final replyText = data['reply'] ?? data['error'] ?? 'Maaf, terjadi kesalahan. Coba lagi nanti ya.';
+        final replyText =
+            data['reply'] ??
+            data['error'] ??
+            'Maaf, terjadi kesalahan. Coba lagi nanti ya.';
         setState(() {
           _messages.add({
             'isUser': false,
@@ -136,7 +140,8 @@ class _AssistantPageState extends State<AssistantPage> {
         _isTyping = false;
         _messages.add({
           'isUser': false,
-          'text': 'Waktu tunggu habis. Server AI mungkin sedang sibuk. Coba lagi dalam beberapa saat ya 🙏',
+          'text':
+              'Waktu tunggu habis. Server AI mungkin sedang sibuk. Coba lagi dalam beberapa saat ya 🙏',
           'time':
               '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
         });
@@ -169,25 +174,15 @@ class _AssistantPageState extends State<AssistantPage> {
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: isDark ? AppTheme.textLight : AppTheme.textDark,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: isDark ? AppTheme.cardDark : Colors.white,
-        foregroundColor: isDark ? AppTheme.textLight : AppTheme.textDark,
-        iconTheme: IconThemeData(
-          color: isDark ? AppTheme.textLight : AppTheme.textDark,
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.05),
-            height: 1,
-          ),
-        ),
+        backgroundColor: isDark
+            ? AppTheme.cardDark
+            : Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
@@ -258,8 +253,9 @@ class _AssistantPageState extends State<AssistantPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
@@ -299,8 +295,9 @@ class _AssistantPageState extends State<AssistantPage> {
                 ],
               ),
               child: Column(
-                crossAxisAlignment:
-                    isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: isUser
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
                 children: [
                   Text(
                     msg['text'].toString().replaceAll('*', ''),
@@ -318,7 +315,9 @@ class _AssistantPageState extends State<AssistantPage> {
                     style: GoogleFonts.inter(
                       color: isUser
                           ? Colors.white70
-                          : (isDark ? AppTheme.textGrayDark : AppTheme.textGrayLight),
+                          : (isDark
+                                ? AppTheme.textGrayDark
+                                : AppTheme.textGrayLight),
                       fontSize: 10,
                     ),
                   ),
@@ -373,7 +372,9 @@ class _AssistantPageState extends State<AssistantPage> {
                     color: isDark ? AppTheme.textLight : AppTheme.textDark,
                     fontSize: 14,
                   ),
-                  cursorColor: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
+                  cursorColor: isDark
+                      ? AppTheme.primaryDark
+                      : AppTheme.primaryLight,
                   decoration: InputDecoration(
                     hintText: 'Ketik pesan Anda...',
                     hintStyle: GoogleFonts.inter(

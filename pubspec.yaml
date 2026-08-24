@@ -41,6 +41,7 @@ dependencies:
   share_plus: ^12.0.2
   pinput: ^6.0.2
   pdf: ^3.12.0
+  flutter_svg: ^2.0.17
 
 dev_dependencies:
   flutter_test:

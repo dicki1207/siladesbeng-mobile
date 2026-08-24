@@ -116,7 +116,9 @@ class _AllServicesPageState extends State<AllServicesPage> {
       } else if (actionName == 'Sewa Fasilitas') {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const FacilityRentalPage(initialTabIndex: 0)),
+          MaterialPageRoute(
+            builder: (_) => const FacilityRentalPage(initialTabIndex: 0),
+          ),
         );
       }
     } else {
@@ -133,24 +135,39 @@ class _AllServicesPageState extends State<AllServicesPage> {
   Widget _buildPremiumServiceCard(Map<String, dynamic> item) {
     Color typeColor;
     String typeLabel;
+    String actionName;
+
+    final bool isAmbulance =
+        item['is_ambulance'] == true ||
+        (item['name']?.toString().toLowerCase().contains('ambulan') ?? false);
 
     switch (item['type']) {
       case 'gas':
         typeColor = Colors.green;
         typeLabel = 'Gas';
+        actionName = 'Beli Gas';
         break;
       case 'mobil':
-        typeColor = Colors.blue;
-        typeLabel = 'Mobil';
+        if (isAmbulance) {
+          typeColor = Colors.purple;
+          typeLabel = 'Fasilitas';
+          actionName = 'Sewa Fasilitas';
+        } else {
+          typeColor = Colors.blue;
+          typeLabel = 'Mobil';
+          actionName = 'Sewa Mobil';
+        }
         break;
       case 'fasilitas':
         typeColor = Colors.purple;
         typeLabel = 'Fasilitas';
+        actionName = 'Sewa Fasilitas';
         break;
       case 'rental':
       default:
         typeColor = Colors.orange;
         typeLabel = 'Sewa Alat';
+        actionName = 'Sewa Alat';
         break;
     }
 
@@ -170,15 +187,7 @@ class _AllServicesPageState extends State<AllServicesPage> {
 
     return GestureDetector(
       onTap: () {
-        if (item['type'] == 'gas') {
-          _checkLoginAndProceed('Beli Gas');
-        } else if (item['type'] == 'mobil') {
-          _checkLoginAndProceed('Sewa Mobil');
-        } else if (item['type'] == 'fasilitas') {
-          _checkLoginAndProceed('Sewa Fasilitas');
-        } else {
-          _checkLoginAndProceed('Sewa Alat');
-        }
+        _checkLoginAndProceed(actionName);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -258,9 +267,7 @@ class _AllServicesPageState extends State<AllServicesPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    priceVal == 0
-                        ? 'Gratis'
-                        : formatCurrency.format(priceVal),
+                    priceVal == 0 ? 'Gratis' : formatCurrency.format(priceVal),
                     style: TextStyle(
                       color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
@@ -287,7 +294,11 @@ class _AllServicesPageState extends State<AllServicesPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Semua Layanan',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
       ),

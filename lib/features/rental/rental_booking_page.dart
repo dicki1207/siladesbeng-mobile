@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_ticket_page.dart';
@@ -97,7 +98,11 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     }
   }
 
-  Widget _buildPaymentLogo(String key, {double width = 46, double height = 26}) {
+  Widget _buildPaymentLogo(
+    String key, {
+    double width = 46,
+    double height = 26,
+  }) {
     String? assetPath;
     switch (key.toLowerCase()) {
       case 'bank_transfer_bca':
@@ -134,12 +139,30 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         child: Image.asset(
           assetPath,
           fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.account_balance, size: 16, color: Colors.blue),
         ),
       );
     }
 
-    // Default icon badge for QRIS or generic
+    if (key.toLowerCase().contains('qris')) {
+      return Container(
+        width: width,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.grey.shade300, width: 0.8),
+        ),
+        child: SvgPicture.asset(
+          'assets/images/banks/qris.svg',
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+
+    // Default icon badge for generic fallback
     return Container(
       width: width,
       height: height,
@@ -149,18 +172,8 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.grey.shade300, width: 0.8),
       ),
-      child: Center(
-        child: key.contains('qris')
-            ? const Text(
-                'QRIS',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 10.5,
-                  letterSpacing: 0.5,
-                  color: Color(0xFFE11D48),
-                ),
-              )
-            : const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+      child: const Center(
+        child: Icon(Icons.account_balance, size: 16, color: Colors.blue),
       ),
     );
   }
@@ -179,7 +192,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
             return Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
               child: SafeArea(
@@ -225,10 +240,15 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                           color: primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(Icons.payments_outlined, color: primaryColor, size: 20),
+                        child: Icon(
+                          Icons.payments_outlined,
+                          color: primaryColor,
+                          size: 20,
+                        ),
                       ),
                       title: 'Bayar Tunai',
-                      subtitle: 'Bayar saat serah terima alat / di kantor BUMDes',
+                      subtitle:
+                          'Bayar saat serah terima alat / di kantor BUMDes',
                       isSelected: _paymentCategory == 'tunai',
                       onTap: () {
                         setState(() {
@@ -250,13 +270,16 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                         border: Border.all(
                           color: _paymentCategory == 'bank'
                               ? primaryColor
-                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                              : (isDark
+                                    ? Colors.white10
+                                    : Colors.grey.withValues(alpha: 0.15)),
                           width: _paymentCategory == 'bank' ? 1.5 : 1,
                         ),
                       ),
                       child: ExpansionTile(
                         initiallyExpanded: _paymentCategory == 'bank',
-                        leading: _paymentCategory == 'bank' && _selectedBank != null
+                        leading:
+                            _paymentCategory == 'bank' && _selectedBank != null
                             ? _buildPaymentLogo(_selectedBank!)
                             : Container(
                                 padding: const EdgeInsets.all(6),
@@ -264,7 +287,11 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                                   color: primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(Icons.account_balance_outlined, color: primaryColor, size: 20),
+                                child: Icon(
+                                  Icons.account_balance_outlined,
+                                  color: primaryColor,
+                                  size: 20,
+                                ),
                               ),
                         title: Text(
                           _paymentCategory == 'bank' && _selectedBank != null
@@ -273,7 +300,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: _paymentCategory == 'bank' ? primaryColor : null,
+                            color: _paymentCategory == 'bank'
+                                ? primaryColor
+                                : null,
                           ),
                         ),
                         subtitle: Text(
@@ -284,20 +313,35 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                           ),
                         ),
                         children: _bankOptions.map((bank) {
-                          final isBankActive = _paymentCategory == 'bank' && _selectedBank == bank;
+                          final isBankActive =
+                              _paymentCategory == 'bank' &&
+                              _selectedBank == bank;
                           return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 2,
+                            ),
                             leading: _buildPaymentLogo(bank),
                             title: Text(
                               _formatBankName(bank),
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: isBankActive ? FontWeight.bold : FontWeight.w600,
-                                color: isBankActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                fontWeight: isBankActive
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: isBankActive
+                                    ? primaryColor
+                                    : (isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1E293B)),
                               ),
                             ),
                             trailing: isBankActive
-                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                ? Icon(
+                                    Icons.check_circle_rounded,
+                                    color: primaryColor,
+                                    size: 18,
+                                  )
                                 : null,
                             onTap: () {
                               setState(() {
@@ -322,13 +366,17 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                         border: Border.all(
                           color: _paymentCategory == 'ewallet'
                               ? primaryColor
-                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                              : (isDark
+                                    ? Colors.white10
+                                    : Colors.grey.withValues(alpha: 0.15)),
                           width: _paymentCategory == 'ewallet' ? 1.5 : 1,
                         ),
                       ),
                       child: ExpansionTile(
                         initiallyExpanded: _paymentCategory == 'ewallet',
-                        leading: _paymentCategory == 'ewallet' && _selectedEWallet != null
+                        leading:
+                            _paymentCategory == 'ewallet' &&
+                                _selectedEWallet != null
                             ? _buildPaymentLogo(_selectedEWallet!)
                             : Container(
                                 padding: const EdgeInsets.all(6),
@@ -336,16 +384,23 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                                   color: primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
+                                child: Icon(
+                                  Icons.qr_code_scanner_rounded,
+                                  color: primaryColor,
+                                  size: 20,
+                                ),
                               ),
                         title: Text(
-                          _paymentCategory == 'ewallet' && _selectedEWallet != null
+                          _paymentCategory == 'ewallet' &&
+                                  _selectedEWallet != null
                               ? _formatEWalletName(_selectedEWallet!)
                               : 'E-Wallet / QRIS',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: _paymentCategory == 'ewallet' ? primaryColor : null,
+                            color: _paymentCategory == 'ewallet'
+                                ? primaryColor
+                                : null,
                           ),
                         ),
                         subtitle: Text(
@@ -356,20 +411,35 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                           ),
                         ),
                         children: _eWalletOptions.map((wallet) {
-                          final isWalletActive = _paymentCategory == 'ewallet' && _selectedEWallet == wallet;
+                          final isWalletActive =
+                              _paymentCategory == 'ewallet' &&
+                              _selectedEWallet == wallet;
                           return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 2,
+                            ),
                             leading: _buildPaymentLogo(wallet),
                             title: Text(
                               _formatEWalletName(wallet),
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: isWalletActive ? FontWeight.bold : FontWeight.w600,
-                                color: isWalletActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                fontWeight: isWalletActive
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: isWalletActive
+                                    ? primaryColor
+                                    : (isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1E293B)),
                               ),
                             ),
                             trailing: isWalletActive
-                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                ? Icon(
+                                    Icons.check_circle_rounded,
+                                    color: primaryColor,
+                                    size: 18,
+                                  )
                                 : null,
                             onTap: () {
                               setState(() {
@@ -444,9 +514,13 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     if (_paymentCategory == 'tunai') {
       return 'Bayar Tunai';
     } else if (_paymentCategory == 'bank') {
-      return _selectedBank != null ? _formatBankName(_selectedBank!) : 'Pilih Bank Virtual Account';
+      return _selectedBank != null
+          ? _formatBankName(_selectedBank!)
+          : 'Pilih Bank Virtual Account';
     } else if (_paymentCategory == 'ewallet') {
-      return _selectedEWallet != null ? _formatEWalletName(_selectedEWallet!) : 'Pilih QRIS / E-Wallet';
+      return _selectedEWallet != null
+          ? _formatEWalletName(_selectedEWallet!)
+          : 'Pilih QRIS / E-Wallet';
     }
     return 'Pilih Metode Pembayaran';
   }
@@ -490,9 +564,11 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         (!isFasilitas && _addressController.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(isFasilitas
-              ? 'Mohon lengkapi Data Penyewa (Nama dan Nomor WhatsApp)'
-              : 'Mohon lengkapi Data Penyewa (Nama, WA, dan Alamat)'),
+          content: Text(
+            isFasilitas
+                ? 'Mohon lengkapi Data Penyewa (Nama dan Nomor WhatsApp)'
+                : 'Mohon lengkapi Data Penyewa (Nama, WA, dan Alamat)',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -532,11 +608,18 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     }
 
     String paymentMethod = 'tunai';
-    if (_paymentCategory == 'bank') paymentMethod = _selectedBank ?? 'bank_transfer_bca';
-    if (_paymentCategory == 'ewallet') paymentMethod = _selectedEWallet ?? 'qris';
+    if (_paymentCategory == 'bank') {
+      paymentMethod = _selectedBank ?? 'bank_transfer_bca';
+    }
+    if (_paymentCategory == 'ewallet') {
+      paymentMethod = _selectedEWallet ?? 'qris';
+    }
 
     final String startDate = DateTime.now().toIso8601String().substring(0, 10);
-    final String endDate = DateTime.now().add(Duration(days: _durationDays)).toIso8601String().substring(0, 10);
+    final String endDate = DateTime.now()
+        .add(Duration(days: _durationDays))
+        .toIso8601String()
+        .substring(0, 10);
 
     Map<String, dynamic> result;
 
@@ -592,18 +675,22 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         context,
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 400),
-          pageBuilder: (context, animation, secondaryAnimation) => RentalTicketPage(
-            itemName: widget.item['name'] ?? 'Penyewaan',
-            renterName: _nameController.text,
-            eventType: _eventCategory == 'sosial'
-                ? 'Sosial (Gratis)'
-                : 'Pribadi (Berbayar)',
-            needsLogistics: _needsAdditionalFacilities,
-            totalPrice: total,
-            durationDays: _durationDays,
-          ),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              RentalTicketPage(
+                itemName: widget.item['name'] ?? 'Penyewaan',
+                renterName: _nameController.text,
+                eventType: _eventCategory == 'sosial'
+                    ? 'Sosial (Gratis)'
+                    : 'Pribadi (Berbayar)',
+                needsLogistics: _needsAdditionalFacilities,
+                totalPrice: total,
+                durationDays: _durationDays,
+              ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutQuart);
+            final curve = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutQuart,
+            );
             return FadeTransition(
               opacity: curve,
               child: SlideTransition(
@@ -682,7 +769,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.grey.withValues(alpha: 0.15),
               ),
               boxShadow: [
                 BoxShadow(
@@ -698,18 +787,28 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: (widget.item['image'] != null && widget.item['image'].toString().isNotEmpty)
+                    child:
+                        (widget.item['image'] != null &&
+                            widget.item['image'].toString().isNotEmpty)
                         ? Image.network(
                             widget.item['image'],
                             fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
+                            errorBuilder: (_, _, _) => Icon(
+                              Icons.inventory_2_outlined,
+                              color: Colors.grey[400],
+                            ),
                           )
-                        : Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
+                        : Icon(
+                            Icons.inventory_2_outlined,
+                            color: Colors.grey[400],
+                          ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -722,7 +821,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.5,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -750,44 +851,67 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                 // Duration Stepper
                 Container(
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(20),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                      color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
                     ),
                   ),
                   child: Row(
                     children: [
                       InkWell(
-                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(16),
+                        ),
                         onTap: () {
                           if (_durationDays > 1) {
                             setState(() => _durationDays--);
                           }
                         },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                          child: Icon(Icons.remove_rounded, size: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          child: Icon(
+                            Icons.remove_rounded,
+                            size: 18,
+                            color: _durationDays > 1
+                                ? primaryColor
+                                : Colors.grey,
+                          ),
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Text(
-                          '$_durationDays Hr',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                          '$_durationDays Hari',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                            color: primaryColor,
                           ),
                         ),
                       ),
                       InkWell(
-                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(20)),
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(16),
+                        ),
                         onTap: () {
                           setState(() => _durationDays++);
                         },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                          child: Icon(Icons.add_rounded, size: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          child: Icon(
+                            Icons.add_rounded,
+                            size: 18,
+                            color: primaryColor,
+                          ),
                         ),
                       ),
                     ],
@@ -808,7 +932,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.grey.withValues(alpha: 0.15),
               ),
               boxShadow: [
                 BoxShadow(
@@ -839,8 +965,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color:
-                          Colors.blue.withValues(alpha: isDark ? 0.15 : 0.08),
+                      color: Colors.blue.withValues(
+                        alpha: isDark ? 0.15 : 0.08,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: Colors.blue.withValues(alpha: 0.25),
@@ -1008,7 +1135,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.grey.withValues(alpha: 0.15),
               ),
               boxShadow: [
                 BoxShadow(
@@ -1039,7 +1168,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                               style: TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B),
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -1047,14 +1178,19 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                               'Ketuk untuk memilih metode pembayaran lain',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: isDark ? Colors.white38 : Colors.grey[500],
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.grey[500],
                               ),
                             ),
                           ],
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: primaryColor.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
@@ -1071,7 +1207,11 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: primaryColor),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 16,
+                              color: primaryColor,
+                            ),
                           ],
                         ),
                       ),
@@ -1093,7 +1233,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.grey.withValues(alpha: 0.15),
               ),
               boxShadow: [
                 BoxShadow(
@@ -1153,7 +1295,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
           color: Theme.of(context).cardColor,
           border: Border(
             top: BorderSide(
-              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.grey.withValues(alpha: 0.15),
             ),
           ),
           boxShadow: [
@@ -1215,7 +1359,10 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Text(
                           'Sewa Sekarang',
@@ -1270,7 +1417,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDark ? Colors.white10 : Colors.grey.shade300,
@@ -1293,7 +1442,10 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
               ),
               prefixIcon: Icon(prefixIcon, size: 18, color: primaryColor),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
         ),
@@ -1322,7 +1474,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.bold,
-            color: isFree ? Colors.green : (isDark ? Colors.white : const Color(0xFF1E293B)),
+            color: isFree
+                ? Colors.green
+                : (isDark ? Colors.white : const Color(0xFF1E293B)),
           ),
         ),
       ],

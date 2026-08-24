@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/features/store/pasar_payment_page.dart';
 import 'package:siladesbeng_mobile/services/pasar_checkout_service.dart';
@@ -15,12 +16,12 @@ class PasarCheckoutPage extends StatefulWidget {
 class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
   final PasarCheckoutService _pasarCheckoutService = PasarCheckoutService();
   String _deliveryMethod = 'Ambil Sendiri';
-  
+
   // Unified Payment State matching Gas & Rental services
   String _paymentCategory = 'tunai'; // 'tunai', 'bank', 'ewallet'
   String? _selectedBank;
   String? _selectedEWallet;
-  
+
   final List<String> _bankOptions = ['bca', 'bri', 'bni', 'mandiri'];
   final List<String> _eWalletOptions = ['qris', 'gopay', 'dana'];
 
@@ -45,13 +46,18 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
   }
 
   void _submitOrder() async {
-    if (_deliveryMethod == 'Diantar' && _addressController.text.trim().isEmpty) {
+    if (_deliveryMethod == 'Diantar' &&
+        _addressController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Alamat pengiriman wajib diisi untuk layanan Diantar'),
+          content: const Text(
+            'Alamat pengiriman wajib diisi untuk layanan Diantar',
+          ),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
       return;
@@ -60,10 +66,14 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
     if (_paymentCategory == 'bank' && _selectedBank == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Silakan pilih Bank tujuan transfer Virtual Account'),
+          content: const Text(
+            'Silakan pilih Bank tujuan transfer Virtual Account',
+          ),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
       return;
@@ -75,7 +85,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
           content: const Text('Silakan pilih opsi E-Wallet / QRIS'),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
       return;
@@ -92,8 +104,12 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
 
     final result = await _pasarCheckoutService.checkout(
       _deliveryMethod,
-      deliveryAddress: _deliveryMethod == 'Diantar' ? _addressController.text.trim() : null,
-      notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
+      deliveryAddress: _deliveryMethod == 'Diantar'
+          ? _addressController.text.trim()
+          : null,
+      notes: _notesController.text.trim().isNotEmpty
+          ? _notesController.text.trim()
+          : null,
       paymentMethod: finalPaymentMethod,
     );
 
@@ -124,7 +140,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
           content: Text(result['message'] ?? 'Terjadi kesalahan saat checkout'),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -169,7 +187,11 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
     return 'Pilih Metode Pembayaran';
   }
 
-  Widget _buildPaymentLogo(String key, {double width = 46, double height = 26}) {
+  Widget _buildPaymentLogo(
+    String key, {
+    double width = 46,
+    double height = 26,
+  }) {
     String? assetPath;
     switch (key.toLowerCase()) {
       case 'bca':
@@ -194,22 +216,15 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
         return Container(
           width: width,
           height: height,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: Colors.grey.shade300, width: 0.8),
           ),
-          child: const Center(
-            child: Text(
-              'QRIS',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 10.5,
-                letterSpacing: 0.5,
-                color: Color(0xFFE11D48),
-              ),
-            ),
+          child: SvgPicture.asset(
+            'assets/images/banks/qris.svg',
+            fit: BoxFit.contain,
           ),
         );
     }
@@ -227,7 +242,8 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
         child: Image.asset(
           assetPath,
           fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.account_balance, size: 16, color: Colors.blue),
         ),
       );
     }
@@ -286,7 +302,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
             return Container(
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
               child: SafeArea(
@@ -316,11 +334,17 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.close_rounded, size: 20, color: isDark ? Colors.white60 : Colors.grey[600]),
+                            icon: Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: isDark ? Colors.white60 : Colors.grey[600],
+                            ),
                             onPressed: () => Navigator.pop(context),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -337,10 +361,15 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                             color: primaryColor.withAlpha(20),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(Icons.payments_outlined, color: primaryColor, size: 20),
+                          child: Icon(
+                            Icons.payments_outlined,
+                            color: primaryColor,
+                            size: 20,
+                          ),
                         ),
                         title: 'Bayar Tunai (COD)',
-                        subtitle: 'Bayar uang pas saat kurir mengantar / ambil di toko',
+                        subtitle:
+                            'Bayar uang pas saat kurir mengantar / ambil di toko',
                         isSelected: _paymentCategory == 'tunai',
                         onTap: () {
                           setState(() {
@@ -357,12 +386,16 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                       // Option 2: Bank Transfer (Virtual Account)
                       Container(
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: _paymentCategory == 'bank'
                                 ? primaryColor
-                                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                : (isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0)),
                             width: _paymentCategory == 'bank' ? 1.5 : 1,
                           ),
                         ),
@@ -370,7 +403,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                           initiallyExpanded: _paymentCategory == 'bank',
                           shape: const Border(),
                           collapsedShape: const Border(),
-                          leading: _paymentCategory == 'bank' && _selectedBank != null
+                          leading:
+                              _paymentCategory == 'bank' &&
+                                  _selectedBank != null
                               ? _buildPaymentLogo(_selectedBank!)
                               : Container(
                                   padding: const EdgeInsets.all(7),
@@ -378,7 +413,11 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                                     color: primaryColor.withAlpha(20),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(Icons.account_balance_outlined, color: primaryColor, size: 20),
+                                  child: Icon(
+                                    Icons.account_balance_outlined,
+                                    color: primaryColor,
+                                    size: 20,
+                                  ),
                                 ),
                           title: Text(
                             _paymentCategory == 'bank' && _selectedBank != null
@@ -389,31 +428,50 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                               fontWeight: FontWeight.bold,
                               color: _paymentCategory == 'bank'
                                   ? primaryColor
-                                  : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                                  : (isDark
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A)),
                             ),
                           ),
                           subtitle: Text(
                             'BCA, BRI, BNI, Mandiri',
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                              color: isDark
+                                  ? Colors.white54
+                                  : const Color(0xFF64748B),
                             ),
                           ),
                           children: _bankOptions.map((bank) {
-                            final isBankActive = _paymentCategory == 'bank' && _selectedBank == bank;
+                            final isBankActive =
+                                _paymentCategory == 'bank' &&
+                                _selectedBank == bank;
                             return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 2,
+                              ),
                               leading: _buildPaymentLogo(bank),
                               title: Text(
                                 _formatBankName(bank),
                                 style: TextStyle(
                                   fontSize: 13,
-                                  fontWeight: isBankActive ? FontWeight.bold : FontWeight.w600,
-                                  color: isBankActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                  fontWeight: isBankActive
+                                      ? FontWeight.bold
+                                      : FontWeight.w600,
+                                  color: isBankActive
+                                      ? primaryColor
+                                      : (isDark
+                                            ? Colors.white
+                                            : const Color(0xFF1E293B)),
                                 ),
                               ),
                               trailing: isBankActive
-                                  ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                  ? Icon(
+                                      Icons.check_circle_rounded,
+                                      color: primaryColor,
+                                      size: 18,
+                                    )
                                   : null,
                               onTap: () {
                                 setState(() {
@@ -433,12 +491,16 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                       // Option 3: E-Wallet / QRIS
                       Container(
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: _paymentCategory == 'ewallet'
                                 ? primaryColor
-                                : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                                : (isDark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFE2E8F0)),
                             width: _paymentCategory == 'ewallet' ? 1.5 : 1,
                           ),
                         ),
@@ -446,7 +508,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                           initiallyExpanded: _paymentCategory == 'ewallet',
                           shape: const Border(),
                           collapsedShape: const Border(),
-                          leading: _paymentCategory == 'ewallet' && _selectedEWallet != null
+                          leading:
+                              _paymentCategory == 'ewallet' &&
+                                  _selectedEWallet != null
                               ? _buildPaymentLogo(_selectedEWallet!)
                               : Container(
                                   padding: const EdgeInsets.all(7),
@@ -454,10 +518,15 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                                     color: primaryColor.withAlpha(20),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Icon(Icons.qr_code_2_rounded, color: primaryColor, size: 20),
+                                  child: Icon(
+                                    Icons.qr_code_2_rounded,
+                                    color: primaryColor,
+                                    size: 20,
+                                  ),
                                 ),
                           title: Text(
-                            _paymentCategory == 'ewallet' && _selectedEWallet != null
+                            _paymentCategory == 'ewallet' &&
+                                    _selectedEWallet != null
                                 ? _formatEWalletName(_selectedEWallet!)
                                 : 'E-Wallet / QRIS Instant',
                             style: TextStyle(
@@ -465,31 +534,50 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                               fontWeight: FontWeight.bold,
                               color: _paymentCategory == 'ewallet'
                                   ? primaryColor
-                                  : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                                  : (isDark
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A)),
                             ),
                           ),
                           subtitle: Text(
                             'QRIS Instant, GoPay, DANA',
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                              color: isDark
+                                  ? Colors.white54
+                                  : const Color(0xFF64748B),
                             ),
                           ),
                           children: _eWalletOptions.map((wallet) {
-                            final isWalletActive = _paymentCategory == 'ewallet' && _selectedEWallet == wallet;
+                            final isWalletActive =
+                                _paymentCategory == 'ewallet' &&
+                                _selectedEWallet == wallet;
                             return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 2,
+                              ),
                               leading: _buildPaymentLogo(wallet),
                               title: Text(
                                 _formatEWalletName(wallet),
                                 style: TextStyle(
                                   fontSize: 13,
-                                  fontWeight: isWalletActive ? FontWeight.bold : FontWeight.w600,
-                                  color: isWalletActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                  fontWeight: isWalletActive
+                                      ? FontWeight.bold
+                                      : FontWeight.w600,
+                                  color: isWalletActive
+                                      ? primaryColor
+                                      : (isDark
+                                            ? Colors.white
+                                            : const Color(0xFF1E293B)),
                                 ),
                               ),
                               trailing: isWalletActive
-                                  ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                  ? Icon(
+                                      Icons.check_circle_rounded,
+                                      color: primaryColor,
+                                      size: 18,
+                                    )
                                   : null,
                               onTap: () {
                                 setState(() {
@@ -555,7 +643,11 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? primaryColor : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                          color: isSelected
+                              ? primaryColor
+                              : (isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A)),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -563,16 +655,26 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                         subtitle,
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                          color: isDark
+                              ? Colors.white54
+                              : const Color(0xFF64748B),
                         ),
                       ),
                     ],
                   ),
                 ),
                 if (isSelected)
-                  Icon(Icons.check_circle_rounded, color: primaryColor, size: 20)
+                  Icon(
+                    Icons.check_circle_rounded,
+                    color: primaryColor,
+                    size: 20,
+                  )
                 else
-                  Icon(Icons.radio_button_unchecked_rounded, color: isDark ? Colors.white30 : const Color(0xFFCBD5E1), size: 20),
+                  Icon(
+                    Icons.radio_button_unchecked_rounded,
+                    color: isDark ? Colors.white30 : const Color(0xFFCBD5E1),
+                    size: 20,
+                  ),
               ],
             ),
           ),
@@ -581,9 +683,17 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
     );
   }
 
-  Widget _buildStep(int step, String title, bool isActive, bool isFinished, bool isDark) {
+  Widget _buildStep(
+    int step,
+    String title,
+    bool isActive,
+    bool isFinished,
+    bool isDark,
+  ) {
     final activeColor = const Color(0xFF2563EB);
-    final inactiveColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final inactiveColor = isDark
+        ? const Color(0xFF334155)
+        : const Color(0xFFE2E8F0);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -601,7 +711,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
               : Text(
                   step.toString(),
                   style: TextStyle(
-                    color: isActive ? Colors.white : (isDark ? Colors.white60 : const Color(0xFF64748B)),
+                    color: isActive
+                        ? Colors.white
+                        : (isDark ? Colors.white60 : const Color(0xFF64748B)),
                     fontSize: 11.5,
                     fontWeight: FontWeight.bold,
                   ),
@@ -624,7 +736,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
 
   Widget _buildStepper(bool isDark) {
     final activeLineColor = const Color(0xFF2563EB);
-    final inactiveLineColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final inactiveLineColor = isDark
+        ? const Color(0xFF334155)
+        : const Color(0xFFE2E8F0);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
@@ -640,9 +754,21 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildStep(1, 'Keranjang', false, true, isDark),
-          Expanded(child: Container(height: 2, margin: const EdgeInsets.symmetric(horizontal: 8), color: activeLineColor)),
+          Expanded(
+            child: Container(
+              height: 2,
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              color: activeLineColor,
+            ),
+          ),
           _buildStep(2, 'Checkout', true, false, isDark),
-          Expanded(child: Container(height: 2, margin: const EdgeInsets.symmetric(horizontal: 8), color: inactiveLineColor)),
+          Expanded(
+            child: Container(
+              height: 2,
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              color: inactiveLineColor,
+            ),
+          ),
           _buildStep(3, 'Pembayaran', false, false, isDark),
         ],
       ),
@@ -693,12 +819,16 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? primaryColor.withAlpha(20)
-                        : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
+                        : (isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     icon,
-                    color: isSelected ? primaryColor : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                    color: isSelected
+                        ? primaryColor
+                        : (isDark ? Colors.white70 : const Color(0xFF64748B)),
                     size: 20,
                   ),
                 ),
@@ -712,12 +842,17 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13.5,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
                         ),
                       ),
                       const SizedBox(height: 3),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: badgeColor.withAlpha(20),
                           borderRadius: BorderRadius.circular(5),
@@ -767,22 +902,23 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: isDark ? Colors.white : const Color(0xFF1E293B),
+            color: Colors.white,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'Checkout',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 17,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
@@ -844,29 +980,39 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Contoh: Dusun Mawar RT 02 / RW 01, Rumah Pagar Hitam...',
+                        hintText:
+                            'Contoh: Dusun Mawar RT 02 / RW 01, Rumah Pagar Hitam...',
                         hintStyle: TextStyle(
                           fontSize: 12,
                           color: isDark ? Colors.white38 : Colors.grey[400],
                         ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        fillColor: isDark
+                            ? const Color(0xFF1E293B)
+                            : Colors.white,
                         contentPadding: const EdgeInsets.all(12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(
-                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(
-                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: primaryColor, width: 1.5),
+                          borderSide: BorderSide(
+                            color: primaryColor,
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
@@ -889,7 +1035,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                       color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE2E8F0),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -905,7 +1053,10 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                         borderRadius: BorderRadius.circular(14),
                         onTap: _showPaymentPicker,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                           child: Row(
                             children: [
                               _getSelectedPaymentLeadingWidget(isDark),
@@ -919,7 +1070,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                                       style: TextStyle(
                                         fontSize: 13.5,
                                         fontWeight: FontWeight.bold,
-                                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                        color: isDark
+                                            ? Colors.white
+                                            : const Color(0xFF0F172A),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -927,7 +1080,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                                       'Ketuk untuk memilih metode lain',
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                                        color: isDark
+                                            ? Colors.white54
+                                            : const Color(0xFF64748B),
                                       ),
                                     ),
                                   ],
@@ -935,7 +1090,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                               ),
                               Icon(
                                 Icons.chevron_right_rounded,
-                                color: isDark ? Colors.white38 : Colors.grey[400],
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.grey[400],
                                 size: 20,
                               ),
                             ],
@@ -964,24 +1121,34 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Contoh: Titip di pos ronda / hubungi sebelum antar...',
+                      hintText:
+                          'Contoh: Titip di pos ronda / hubungi sebelum antar...',
                       hintStyle: TextStyle(
                         fontSize: 12,
                         color: isDark ? Colors.white38 : Colors.grey[400],
                       ),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      fillColor: isDark
+                          ? const Color(0xFF1E293B)
+                          : Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
-                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
-                          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
@@ -1055,7 +1222,9 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13.5,
-                      color: _ongkir == 0 ? const Color(0xFF10B981) : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                      color: _ongkir == 0
+                          ? const Color(0xFF10B981)
+                          : (isDark ? Colors.white : const Color(0xFF0F172A)),
                     ),
                   ),
                 ],
@@ -1097,18 +1266,26 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 0,
                   ),
                   child: _isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Text(
                           'Buat Pesanan',
-                          style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),

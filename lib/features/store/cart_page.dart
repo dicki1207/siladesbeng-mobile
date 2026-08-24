@@ -37,7 +37,9 @@ class _CartPageState extends State<CartPage> {
     return _cartItems.fold(0, (sum, item) {
       dynamic price = item['price'] ?? 0;
       int quantity = item['quantity'] ?? 0;
-      double parsedPrice = (price is String) ? (double.tryParse(price) ?? 0) : (price as num).toDouble();
+      double parsedPrice = (price is String)
+          ? (double.tryParse(price) ?? 0)
+          : (price as num).toDouble();
       return sum + (parsedPrice * quantity);
     });
   }
@@ -54,20 +56,26 @@ class _CartPageState extends State<CartPage> {
     symbol: 'Rp ',
     decimalDigits: 0,
   );
-  
+
   double _getParsedPrice(dynamic price) {
     if (price is String) return double.tryParse(price) ?? 0;
     return (price as num?)?.toDouble() ?? 0;
   }
 
-  Future<void> _showDeleteConfirmation(BuildContext context, Map<String, dynamic> item, int index) async {
+  Future<void> _showDeleteConfirmation(
+    BuildContext context,
+    Map<String, dynamic> item,
+    int index,
+  ) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Konfirmasi'),
           content: Text('Hapus ${item['name']} dari keranjang?'),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -77,7 +85,9 @@ class _CartPageState extends State<CartPage> {
               onPressed: () => Navigator.of(context).pop(true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: const Text('Hapus', style: TextStyle(color: Colors.white)),
             ),
@@ -91,7 +101,9 @@ class _CartPageState extends State<CartPage> {
       if (success && mounted) {
         setState(() => _cartItems.removeAt(index));
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menghapus item')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Gagal menghapus item')));
       }
     }
   }
@@ -101,40 +113,41 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Keranjang Belanja',
           style: TextStyle(
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+            color: Colors.white,
             fontWeight: FontWeight.w800,
+            fontSize: 18,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
-        iconTheme: IconThemeData(
-          color: Theme.of(context).textTheme.bodyLarge?.color,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0EA5E9)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF0EA5E9)),
+            )
           : _cartItems.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _fetchCart,
-                  color: const Color(0xFF0EA5E9),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _cartItems.length,
-                    itemBuilder: (context, index) {
-                      final item = _cartItems[index];
-                      final price = _getParsedPrice(item['price']);
-                      final qty = item['quantity'] as int? ?? 1;
-                      final subtotal = price * qty;
-                      
-                      return _buildCartItemCard(item, price, qty, subtotal, index);
-                    },
-                  ),
-                ),
+          ? _buildEmptyState()
+          : RefreshIndicator(
+              onRefresh: _fetchCart,
+              color: const Color(0xFF0EA5E9),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _cartItems.length,
+                itemBuilder: (context, index) {
+                  final item = _cartItems[index];
+                  final price = _getParsedPrice(item['price']);
+                  final qty = item['quantity'] as int? ?? 1;
+                  final subtotal = price * qty;
+
+                  return _buildCartItemCard(item, price, qty, subtotal, index);
+                },
+              ),
+            ),
       bottomNavigationBar: _cartItems.isEmpty ? null : _buildBottomBar(),
     );
   }
@@ -154,17 +167,12 @@ class _CartPageState extends State<CartPage> {
             const SizedBox(height: 24),
             const Text(
               'Keranjang Masih Kosong',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Yuk mulai belanja di Pasar Daerah!',
-              style: TextStyle(
-                color: Colors.grey,
-              ),
+              style: TextStyle(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -177,7 +185,10 @@ class _CartPageState extends State<CartPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
               child: const Text(
                 'Mulai Belanja',
@@ -194,7 +205,13 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildCartItemCard(Map<String, dynamic> item, double price, int qty, double subtotal, int index) {
+  Widget _buildCartItemCard(
+    Map<String, dynamic> item,
+    double price,
+    int qty,
+    double subtotal,
+    int index,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -225,9 +242,16 @@ class _CartPageState extends State<CartPage> {
                         ? Image.network(
                             item['image_url'],
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.image_not_supported, color: Colors.grey),
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.grey,
+                                ),
                           )
-                        : const Icon(Icons.image_not_supported, color: Colors.grey),
+                        : const Icon(
+                            Icons.image_not_supported,
+                            color: Colors.grey,
+                          ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -239,7 +263,10 @@ class _CartPageState extends State<CartPage> {
                         padding: const EdgeInsets.only(right: 32.0),
                         child: Text(
                           item['name'],
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -247,12 +274,19 @@ class _CartPageState extends State<CartPage> {
                       const SizedBox(height: 6),
                       Text(
                         formatCurrency.format(price),
-                        style: const TextStyle(color: Color(0xFF0EA5E9), fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                          color: Color(0xFF0EA5E9),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Subtotal: ${formatCurrency.format(subtotal)}',
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -263,11 +297,18 @@ class _CartPageState extends State<CartPage> {
                             onTap: () async {
                               if (qty > 1) {
                                 setState(() => item['quantity']--);
-                                bool success = await _pasarCartService.updateCart(item['id'], item['quantity']);
+                                bool success = await _pasarCartService
+                                    .updateCart(item['id'], item['quantity']);
                                 if (!success) {
                                   setState(() => item['quantity']++); // revert
                                   if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengubah kuantitas')));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Gagal mengubah kuantitas',
+                                        ),
+                                      ),
+                                    );
                                   }
                                 }
                               } else {
@@ -279,7 +320,10 @@ class _CartPageState extends State<CartPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               '$qty',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                           _buildStepperButton(
@@ -287,15 +331,26 @@ class _CartPageState extends State<CartPage> {
                             onTap: () async {
                               final stock = item['stock'] ?? 0;
                               if (qty >= stock) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Stok tidak mencukupi')));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Stok tidak mencukupi'),
+                                  ),
+                                );
                                 return;
                               }
                               setState(() => item['quantity']++);
-                              bool success = await _pasarCartService.updateCart(item['id'], item['quantity']);
+                              bool success = await _pasarCartService.updateCart(
+                                item['id'],
+                                item['quantity'],
+                              );
                               if (!success) {
                                 setState(() => item['quantity']--); // revert
                                 if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal mengubah kuantitas')));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Gagal mengubah kuantitas'),
+                                    ),
+                                  );
                                 }
                               }
                             },
@@ -312,7 +367,11 @@ class _CartPageState extends State<CartPage> {
             top: 4,
             right: 4,
             child: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+              icon: const Icon(
+                Icons.delete_outline,
+                color: Colors.red,
+                size: 20,
+              ),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               splashRadius: 20,
@@ -324,7 +383,10 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildStepperButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildStepperButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
@@ -368,7 +430,11 @@ class _CartPageState extends State<CartPage> {
                 const SizedBox(height: 4),
                 Text(
                   formatCurrency.format(_totalPrice),
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF0EA5E9)),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                    color: Color(0xFF0EA5E9),
+                  ),
                 ),
               ],
             ),
@@ -377,7 +443,8 @@ class _CartPageState extends State<CartPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => PasarCheckoutPage(totalAmount: _totalPrice),
+                    builder: (context) =>
+                        PasarCheckoutPage(totalAmount: _totalPrice),
                   ),
                 ).then((_) {
                   _fetchCart();
@@ -385,10 +452,22 @@ class _CartPageState extends State<CartPage> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0EA5E9),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
               ),
-              child: const Text('Lanjut Bayar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              child: const Text(
+                'Lanjut Bayar',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ],
         ),

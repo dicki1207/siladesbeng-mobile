@@ -25,7 +25,11 @@ class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToProfile;
   final VoidCallback onNavigateToNews;
 
-  const HomePage({super.key, required this.onNavigateToProfile, required this.onNavigateToNews});
+  const HomePage({
+    super.key,
+    required this.onNavigateToProfile,
+    required this.onNavigateToNews,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -90,7 +94,12 @@ class _HomePageState extends State<HomePage> {
     ];
   }
 
-  Widget _buildElementImage(String path, {double? width, double? height, BoxFit fit = BoxFit.contain}) {
+  Widget _buildElementImage(
+    String path, {
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.contain,
+  }) {
     String cleanPath = path;
     if (path.contains('F2.png')) {
       cleanPath = 'assets/images/F2.png';
@@ -110,7 +119,11 @@ class _HomePageState extends State<HomePage> {
         width: width,
         height: height,
         fit: fit,
-        errorBuilder: (c, e, s) => Icon(Icons.miscellaneous_services, size: width != null ? width * 0.7 : 40, color: Colors.blue),
+        errorBuilder: (c, e, s) => Icon(
+          Icons.miscellaneous_services,
+          size: width != null ? width * 0.7 : 40,
+          color: Colors.blue,
+        ),
       );
     }
     return Image.network(
@@ -118,7 +131,11 @@ class _HomePageState extends State<HomePage> {
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (c, e, s) => Icon(Icons.broken_image, size: width != null ? width * 0.7 : 40, color: Colors.grey.withAlpha(100)),
+      errorBuilder: (c, e, s) => Icon(
+        Icons.broken_image,
+        size: width != null ? width * 0.7 : 40,
+        color: Colors.grey.withAlpha(100),
+      ),
     );
   }
 
@@ -137,135 +154,198 @@ class _HomePageState extends State<HomePage> {
       // ==========================================
       // LOAD APIs INDEPENDENTLY (TIDAK SALING BLOCK)
       // ==========================================
-      
+
       // 1. Fetch Banners
-      http.get(Uri.parse('${ApiConfig.baseUrl}/api/banners')).then((res) {
-        if (!mounted) return;
-        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-          try {
-            final List rawBanners = json.decode(res.body)['data'] ?? [];
-            setState(() {
-              _banners = rawBanners.map((item) {
-                if (item is Map<String, dynamic> && item['image_url'] != null) {
-                  String imgUrl = item['image_url'].toString();
-                  imgUrl = imgUrl.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
-                  imgUrl = imgUrl.replaceAll('http://localhost', ApiConfig.baseUrl);
-                  imgUrl = imgUrl.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
-                  imgUrl = imgUrl.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
-                  item['image_url'] = imgUrl;
-                }
-                return item;
-              }).toList();
-            });
-          } catch (_) {}
-        }
-      }).catchError((_) {});
+      http
+          .get(Uri.parse('${ApiConfig.baseUrl}/api/banners'))
+          .then((res) {
+            if (!mounted) return;
+            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+              try {
+                final List rawBanners = json.decode(res.body)['data'] ?? [];
+                setState(() {
+                  _banners = rawBanners.map((item) {
+                    if (item is Map<String, dynamic> &&
+                        item['image_url'] != null) {
+                      String imgUrl = item['image_url'].toString();
+                      imgUrl = imgUrl.replaceAll(
+                        'http://localhost:8000',
+                        ApiConfig.baseUrl,
+                      );
+                      imgUrl = imgUrl.replaceAll(
+                        'http://localhost',
+                        ApiConfig.baseUrl,
+                      );
+                      imgUrl = imgUrl.replaceAll(
+                        'http://127.0.0.1:8000',
+                        ApiConfig.baseUrl,
+                      );
+                      imgUrl = imgUrl.replaceAll(
+                        'http://127.0.0.1',
+                        ApiConfig.baseUrl,
+                      );
+                      item['image_url'] = imgUrl;
+                    }
+                    return item;
+                  }).toList();
+                });
+              } catch (_) {}
+            }
+          })
+          .catchError((_) {});
 
       // 2. Fetch Announcements
-      http.get(Uri.parse('${ApiConfig.baseUrl}/api/announcements')).then((res) {
-        if (!mounted) return;
-        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-          try {
-            final List data = json.decode(res.body)['data'] ?? [];
-            if (data.isNotEmpty) {
-              setState(() {
-                _announcements = data.map((item) {
-                  if (item is Map<String, dynamic> && item['image'] != null) {
-                    String img = item['image'].toString();
-                    img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
-                    img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
-                    img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
-                    img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
-                    item['image'] = img;
-                  }
-                  return item;
-                }).toList();
-              });
+      http
+          .get(Uri.parse('${ApiConfig.baseUrl}/api/announcements'))
+          .then((res) {
+            if (!mounted) return;
+            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+              try {
+                final List data = json.decode(res.body)['data'] ?? [];
+                if (data.isNotEmpty) {
+                  setState(() {
+                    _announcements = data.map((item) {
+                      if (item is Map<String, dynamic> &&
+                          item['image'] != null) {
+                        String img = item['image'].toString();
+                        img = img.replaceAll(
+                          'http://localhost:8000',
+                          ApiConfig.baseUrl,
+                        );
+                        img = img.replaceAll(
+                          'http://localhost',
+                          ApiConfig.baseUrl,
+                        );
+                        img = img.replaceAll(
+                          'http://127.0.0.1:8000',
+                          ApiConfig.baseUrl,
+                        );
+                        img = img.replaceAll(
+                          'http://127.0.0.1',
+                          ApiConfig.baseUrl,
+                        );
+                        item['image'] = img;
+                      }
+                      return item;
+                    }).toList();
+                  });
+                }
+              } catch (_) {}
             }
-          } catch (_) {}
-        }
-      }).catchError((_) {});
+          })
+          .catchError((_) {});
 
       // 3. Fetch Services
-      http.get(Uri.parse('${ApiConfig.baseUrl}/api/services')).then((res) {
-        if (!mounted) return;
-        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-          try {
-            final List rawServices = json.decode(res.body)['data'] ?? [];
-            setState(() {
-              _availableServices = rawServices.map((item) {
-                if (item is Map<String, dynamic> && item['image'] != null) {
-                  String img = item['image'].toString();
-                  img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
-                  img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
-                  img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
-                  img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
-                  item['image'] = img;
-                }
-                return item;
-              }).toList();
-            });
-          } catch (_) {}
-        }
-      }).catchError((_) {});
+      http
+          .get(Uri.parse('${ApiConfig.baseUrl}/api/services'))
+          .then((res) {
+            if (!mounted) return;
+            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+              try {
+                final List rawServices = json.decode(res.body)['data'] ?? [];
+                setState(() {
+                  _availableServices = rawServices.map((item) {
+                    if (item is Map<String, dynamic> && item['image'] != null) {
+                      String img = item['image'].toString();
+                      img = img.replaceAll(
+                        'http://localhost:8000',
+                        ApiConfig.baseUrl,
+                      );
+                      img = img.replaceAll(
+                        'http://localhost',
+                        ApiConfig.baseUrl,
+                      );
+                      img = img.replaceAll(
+                        'http://127.0.0.1:8000',
+                        ApiConfig.baseUrl,
+                      );
+                      img = img.replaceAll(
+                        'http://127.0.0.1',
+                        ApiConfig.baseUrl,
+                      );
+                      item['image'] = img;
+                    }
+                    return item;
+                  }).toList();
+                });
+              } catch (_) {}
+            }
+          })
+          .catchError((_) {});
 
       // 4. Fetch Unit Pelayanan
-      http.get(Uri.parse('${ApiConfig.baseUrl}/api/unit-pelayanan'), headers: headers).then((res) {
-        if (!mounted) return;
-        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-          try {
-            final List data = json.decode(res.body)['data'] ?? [];
-            setState(() {
-              _unitPelayanan = data.length >= 4 ? data : _getDefaultUnitPelayanan();
-            });
-          } catch (_) {
-            setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
-          }
-        } else {
-          setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
-        }
-      }).catchError((_) {
-        if (mounted) setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
-      });
+      http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/api/unit-pelayanan'),
+            headers: headers,
+          )
+          .then((res) {
+            if (!mounted) return;
+            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+              try {
+                final List data = json.decode(res.body)['data'] ?? [];
+                setState(() {
+                  _unitPelayanan = data.length >= 4
+                      ? data
+                      : _getDefaultUnitPelayanan();
+                });
+              } catch (_) {
+                setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
+              }
+            } else {
+              setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
+            }
+          })
+          .catchError((_) {
+            if (mounted) {
+              setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
+            }
+          });
 
       // 5. Fetch Pasar Daerah
-      http.get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products')).then((res) {
-        if (!mounted) return;
-        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-          try {
-            final Map<String, dynamic> data = json.decode(res.body);
-            if (data['status'] == 'success') {
-              setState(() {
-                _pasarDaerahProducts = List<Map<String, dynamic>>.from(data['data']);
-              });
+      http
+          .get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products'))
+          .then((res) {
+            if (!mounted) return;
+            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+              try {
+                final Map<String, dynamic> data = json.decode(res.body);
+                if (data['status'] == 'success') {
+                  setState(() {
+                    _pasarDaerahProducts = List<Map<String, dynamic>>.from(
+                      data['data'],
+                    );
+                  });
+                }
+              } catch (_) {}
             }
-          } catch (_) {}
-        }
-      }).catchError((_) {});
+          })
+          .catchError((_) {});
 
-      // Matikan indikator loading skeleton utama dengan sangat cepat 
-      // agar struktur UI tidak ter-block. List yang kosong akan di-handle oleh 
+      // Matikan indikator loading skeleton utama dengan sangat cepat
+      // agar struktur UI tidak ter-block. List yang kosong akan di-handle oleh
       // check if empty/shrink secara elegan di bagian build.
       await Future.delayed(const Duration(milliseconds: 200));
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        
+
         // Fallback untuk Announcement jika gagal loading
         if (_announcements.isEmpty) {
           _announcements = [
             {
               'title': 'Bantuan Sosial 2026',
-              'content': 'Penyaluran bantuan sosial desa bulan ini untuk seluruh RT/RW...',
+              'content':
+                  'Penyaluran bantuan sosial desa bulan ini untuk seluruh RT/RW...',
             },
             {
               'title': 'Rapat Kerja Bakti Warga',
-              'content': 'Diadakan di balai desa membahas kebersihan dan ketentraman...',
+              'content':
+                  'Diadakan di balai desa membahas kebersihan dan ketentraman...',
             },
           ];
         }
       });
-      
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -369,14 +449,16 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(builder: (_) => const ReportPage()),
         );
-      } else if (actionName == 'Sewa Mobil' || actionName == 'Sewa Kendaraan' || actionName == 'Penyewaan Kendaraan' || actionName == 'Ambulans & Bus') {
+      } else if (actionName == 'Sewa Mobil' ||
+          actionName == 'Sewa Kendaraan' ||
+          actionName == 'Penyewaan Kendaraan' ||
+          actionName == 'Ambulans & Bus') {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => const CarRentalPage(),
-          ),
+          MaterialPageRoute(builder: (_) => const CarRentalPage()),
         );
-      } else if (actionName == 'Sewa Fasilitas' || actionName == 'Fasilitas Umum') {
+      } else if (actionName == 'Sewa Fasilitas' ||
+          actionName == 'Fasilitas Umum') {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -461,7 +543,9 @@ class _HomePageState extends State<HomePage> {
                               _buildBumdesStoreMini(),
                               _buildAvailableServices(),
                               _buildKabarDaerah(),
-                              const SizedBox(height: 120), // Spacing leluasa untuk clearing bottom nav & assistant
+                              const SizedBox(
+                                height: 120,
+                              ), // Spacing leluasa untuk clearing bottom nav & assistant
                             ],
                           ),
                         ),
@@ -641,7 +725,10 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withAlpha(80), width: 1.5),
+                    border: Border.all(
+                      color: Colors.white.withAlpha(80),
+                      width: 1.5,
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withAlpha(20),
@@ -678,7 +765,11 @@ class _HomePageState extends State<HomePage> {
                                 size: 22,
                               ),
                             )
-                          : const Icon(Icons.person, color: Colors.white, size: 22),
+                          : const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 22,
+                            ),
                     ),
                   ),
                 ),
@@ -805,7 +896,10 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(40),
                     borderRadius: BorderRadius.circular(20),
@@ -851,10 +945,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHeroBanner() {
     return Container(
-      margin: const EdgeInsets.only(
-        top: 8,
-        bottom: 4,
-      ),
+      margin: const EdgeInsets.only(top: 8, bottom: 4),
       child: CarouselSlider(
         options: CarouselOptions(
           height: 140.0,
@@ -882,9 +973,9 @@ class _HomePageState extends State<HomePage> {
             : _banners.map((banner) {
                 final imageUrl = banner['image_url'] != null
                     ? banner['image_url'].toString()
-                    : banner['image'] != null 
-                        ? '${ApiConfig.baseUrl}/storage/${banner['image']}' 
-                        : '';
+                    : banner['image'] != null
+                    ? '${ApiConfig.baseUrl}/storage/${banner['image']}'
+                    : '';
 
                 return Builder(
                   builder: (BuildContext context) {
@@ -903,7 +994,8 @@ class _HomePageState extends State<HomePage> {
                             Image.network(
                               imageUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (ctx, err, stack) => _buildFallbackBanner(),
+                              errorBuilder: (ctx, err, stack) =>
+                                  _buildFallbackBanner(),
                             ),
                           ],
                         ),
@@ -922,17 +1014,11 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(35),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withAlpha(50),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withAlpha(50), width: 1),
       ),
       child: TextField(
         controller: _searchController,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12.5,
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 12.5),
         cursorColor: Colors.white,
         onSubmitted: (value) {
           _performSearch(value);
@@ -956,7 +1042,11 @@ class _HomePageState extends State<HomePage> {
           ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, color: Colors.white70, size: 16),
+                  icon: const Icon(
+                    Icons.clear_rounded,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {});
@@ -1054,20 +1144,34 @@ class _HomePageState extends State<HomePage> {
                 if (item['color'] == 'purple') cardColor = Colors.purple;
                 if (item['color'] == 'teal') cardColor = Colors.teal;
 
-                String imgPath = item['imageUrl']?.toString() ?? item['image']?.toString() ?? '';
+                String imgPath =
+                    item['imageUrl']?.toString() ??
+                    item['image']?.toString() ??
+                    '';
                 String fallbackAsset = 'assets/images/F2.png';
-                final titleLower = (item['title'] ?? '').toString().toLowerCase();
-                if (titleLower.contains('pasar') || titleLower.contains('toko') || imgPath.contains('PasarDaerah')) {
+                final titleLower = (item['title'] ?? '')
+                    .toString()
+                    .toLowerCase();
+                if (titleLower.contains('pasar') ||
+                    titleLower.contains('toko') ||
+                    imgPath.contains('PasarDaerah')) {
                   fallbackAsset = 'assets/images/PasarDaerah.png';
-                } else if (titleLower.contains('gas') || imgPath.contains('F2')) {
+                } else if (titleLower.contains('gas') ||
+                    imgPath.contains('F2')) {
                   fallbackAsset = 'assets/images/F2.png';
-                } else if (titleLower.contains('lapor') || imgPath.contains('lapor')) {
+                } else if (titleLower.contains('lapor') ||
+                    imgPath.contains('lapor')) {
                   fallbackAsset = 'assets/images/lapor.png';
-                } else if (titleLower.contains('alat') || imgPath.contains('F1')) {
+                } else if (titleLower.contains('alat') ||
+                    imgPath.contains('F1')) {
                   fallbackAsset = 'assets/images/F1.png';
-                } else if (titleLower.contains('ambulans') || titleLower.contains('mobil') || imgPath.contains('mobil')) {
+                } else if (titleLower.contains('ambulans') ||
+                    titleLower.contains('mobil') ||
+                    imgPath.contains('mobil')) {
                   fallbackAsset = 'assets/images/mobil.png';
-                } else if (titleLower.contains('fasilitas') || titleLower.contains('gedung') || imgPath.contains('fasilitas')) {
+                } else if (titleLower.contains('fasilitas') ||
+                    titleLower.contains('gedung') ||
+                    imgPath.contains('fasilitas')) {
                   fallbackAsset = 'assets/images/fasilitas.png';
                 }
 
@@ -1130,7 +1234,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBumdesStoreMini() {
-
     // We no longer use mock products here, we use _pasarDaerahProducts.
     // If it's empty, we won't show the horizontal list.
     if (_pasarDaerahProducts.isEmpty) return const SizedBox.shrink();
@@ -1156,9 +1259,9 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       'Pasar Daerah',
                       style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -1185,13 +1288,17 @@ class _HomePageState extends State<HomePage> {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _pasarDaerahProducts.length > 5 ? 5 : _pasarDaerahProducts.length,
+              itemCount: _pasarDaerahProducts.length > 5
+                  ? 5
+                  : _pasarDaerahProducts.length,
               itemBuilder: (context, index) {
                 final product = _pasarDaerahProducts[index];
-                
+
                 String name = product['nama_produk'] ?? 'Tanpa Nama';
                 dynamic rawPrice = product['harga'] ?? 0;
-                double price = (rawPrice is String) ? (double.tryParse(rawPrice) ?? 0) : (rawPrice as num).toDouble();
+                double price = (rawPrice is String)
+                    ? (double.tryParse(rawPrice) ?? 0)
+                    : (rawPrice as num).toDouble();
                 String imageUrl = product['image_url'] ?? '';
 
                 return GestureDetector(
@@ -1218,18 +1325,30 @@ class _HomePageState extends State<HomePage> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
                           ),
                           child: imageUrl.isNotEmpty
                               ? ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(16),
+                                  ),
                                   child: Image.network(
                                     imageUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.storefront, color: Colors.grey),
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.storefront,
+                                              color: Colors.grey,
+                                            ),
                                   ),
                                 )
-                              : const Icon(Icons.storefront, color: Colors.grey),
+                              : const Icon(
+                                  Icons.storefront,
+                                  color: Colors.grey,
+                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -1238,14 +1357,25 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Text(
                                 name,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 3),
                               Text(
-                                NumberFormat.currency(locale: 'id', symbol: 'Rp', decimalDigits: 0).format(price),
-                                style: const TextStyle(color: Color(0xFF0EA5E9), fontWeight: FontWeight.bold, fontSize: 12),
+                                NumberFormat.currency(
+                                  locale: 'id',
+                                  symbol: 'Rp',
+                                  decimalDigits: 0,
+                                ).format(price),
+                                style: const TextStyle(
+                                  color: Color(0xFF0EA5E9),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1329,24 +1459,39 @@ class _HomePageState extends State<HomePage> {
   Widget _buildServiceCard(Map<String, dynamic> item) {
     Color typeColor;
     String typeLabel;
+    String actionName;
+
+    final bool isAmbulance =
+        item['is_ambulance'] == true ||
+        (item['name']?.toString().toLowerCase().contains('ambulan') ?? false);
 
     switch (item['type']) {
       case 'gas':
         typeColor = Colors.green;
         typeLabel = 'Gas';
+        actionName = 'Beli Gas';
         break;
       case 'mobil':
-        typeColor = Colors.blue;
-        typeLabel = 'Mobil';
+        if (isAmbulance) {
+          typeColor = Colors.purple;
+          typeLabel = 'Fasilitas';
+          actionName = 'Sewa Fasilitas';
+        } else {
+          typeColor = Colors.blue;
+          typeLabel = 'Mobil';
+          actionName = 'Sewa Mobil';
+        }
         break;
       case 'fasilitas':
         typeColor = Colors.purple;
         typeLabel = 'Fasilitas';
+        actionName = 'Sewa Fasilitas';
         break;
       case 'rental':
       default:
         typeColor = Colors.orange;
         typeLabel = 'Sewa Alat';
+        actionName = 'Sewa Alat';
         break;
     }
 
@@ -1367,15 +1512,7 @@ class _HomePageState extends State<HomePage> {
 
     return GestureDetector(
       onTap: () {
-        if (item['type'] == 'gas') {
-          _checkLoginAndProceed('Beli Gas');
-        } else if (item['type'] == 'mobil') {
-          _checkLoginAndProceed('Sewa Mobil');
-        } else if (item['type'] == 'fasilitas') {
-          _checkLoginAndProceed('Sewa Fasilitas');
-        } else {
-          _checkLoginAndProceed('Sewa Alat');
-        }
+        _checkLoginAndProceed(actionName);
       },
       child: Container(
         width: 145,
@@ -1494,10 +1631,7 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 4),
                     Text(
                       'Pengumuman dan agenda terbaru',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -1555,13 +1689,15 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => NewsDetailPage(newsItem: ann),
+                              builder: (context) =>
+                                  NewsDetailPage(newsItem: ann),
                             ),
                           );
                         },
                         child: _buildTerbaruCard(
                           ann['title']?.toString() ?? 'Tidak ada judul',
-                          ann['image']?.toString() ?? 'https://cdn-icons-png.flaticon.com/512/3176/3176298.png',
+                          ann['image']?.toString() ??
+                              'https://cdn-icons-png.flaticon.com/512/3176/3176298.png',
                         ),
                       );
                     },
@@ -1592,7 +1728,12 @@ class _HomePageState extends State<HomePage> {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: _buildElementImage(imageUrl, width: double.infinity, height: 120, fit: BoxFit.cover),
+            child: _buildElementImage(
+              imageUrl,
+              width: double.infinity,
+              height: 120,
+              fit: BoxFit.cover,
+            ),
           ),
           Expanded(
             child: Padding(
@@ -1633,9 +1774,10 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 4),
                   Text(
                     title,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium!.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

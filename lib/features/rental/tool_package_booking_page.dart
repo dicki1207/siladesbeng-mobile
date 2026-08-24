@@ -37,7 +37,8 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     if (val is double) return val.toInt();
     if (val is num) return val.toInt();
     if (val is String) {
-      return int.tryParse(val) ?? (double.tryParse(val)?.toInt() ?? defaultValue);
+      return int.tryParse(val) ??
+          (double.tryParse(val)?.toInt() ?? defaultValue);
     }
     return defaultValue;
   }
@@ -66,27 +67,46 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       if (mounted) {
         setState(() {
           _adminPackages = items
-              .where((item) => item['unit'] == 'Paket' || item['unit'] == 'paket')
+              .where(
+                (item) => item['unit'] == 'Paket' || item['unit'] == 'paket',
+              )
               .map((item) {
-                final int itemPrice = _parseInt(item['price'] ?? item['harga'] ?? item['harga_satuan']);
+                final int itemPrice = _parseInt(
+                  item['price'] ?? item['harga'] ?? item['harga_satuan'],
+                );
                 return {
                   'id': _parseInt(item['id']),
                   'name': item['name'] ?? item['nama'] ?? 'Paket Alat',
-                  'items': item['description'] ?? item['deskripsi'] ?? 'Perlengkapan alat terpadu dari BUMDes',
+                  'items':
+                      item['description'] ??
+                      item['deskripsi'] ??
+                      'Perlengkapan alat terpadu dari BUMDes',
                   'price': itemPrice,
-                  'description': item['description'] ?? item['deskripsi'] ?? 'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
+                  'description':
+                      item['description'] ??
+                      item['deskripsi'] ??
+                      'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
                   'image': item['image'] ?? item['foto'],
-                  'details': (item['description'] != null && item['description'].toString().isNotEmpty)
+                  'details':
+                      (item['description'] != null &&
+                          item['description'].toString().isNotEmpty)
                       ? [item['description'].toString()]
-                      : ['Peralatan lengkap dan siap pakai', 'Layanan pengantaran tersedia'],
+                      : [
+                          'Peralatan lengkap dan siap pakai',
+                          'Layanan pengantaran tersedia',
+                        ],
                 };
               })
               .toList();
 
           _customItems = items
-              .where((item) => item['unit'] != 'Paket' && item['unit'] != 'paket')
+              .where(
+                (item) => item['unit'] != 'Paket' && item['unit'] != 'paket',
+              )
               .map((item) {
-                final int itemPrice = _parseInt(item['price'] ?? item['harga'] ?? item['harga_satuan']);
+                final int itemPrice = _parseInt(
+                  item['price'] ?? item['harga'] ?? item['harga_satuan'],
+                );
                 return {
                   'id': _parseInt(item['id']),
                   'name': item['name'] ?? item['nama'] ?? 'Alat',
@@ -164,18 +184,25 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
-                      child: (item['image'] != null && item['image'].toString().isNotEmpty)
+                      child:
+                          (item['image'] != null &&
+                              item['image'].toString().isNotEmpty)
                           ? Image.network(
                               item['image'],
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Icon(
-                                adminIndex != null ? Icons.inventory_2_outlined : Icons.handyman_outlined,
-                                color: primaryColor,
-                                size: 26,
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(
+                                    adminIndex != null
+                                        ? Icons.inventory_2_outlined
+                                        : Icons.handyman_outlined,
+                                    color: primaryColor,
+                                    size: 26,
+                                  ),
                             )
                           : Icon(
-                              adminIndex != null ? Icons.inventory_2_outlined : Icons.handyman_outlined,
+                              adminIndex != null
+                                  ? Icons.inventory_2_outlined
+                                  : Icons.handyman_outlined,
                               color: primaryColor,
                               size: 26,
                             ),
@@ -191,7 +218,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : const Color(0xFF1E293B),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF1E293B),
                           ),
                         ),
                         const SizedBox(height: 3),
@@ -219,14 +248,16 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
               ),
               const SizedBox(height: 6),
               Text(
-                item['description'] ?? 'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
+                item['description'] ??
+                    'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark ? Colors.white60 : Colors.grey[700],
                   height: 1.5,
                 ),
               ),
-              if (item['details'] != null && (item['details'] as List).isNotEmpty) ...[
+              if (item['details'] != null &&
+                  (item['details'] as List).isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text(
                   'Fasilitas & Kelengkapan:',
@@ -256,7 +287,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                                 detail,
                                 style: TextStyle(
                                   fontSize: 12.5,
-                                  color: isDark ? Colors.white70 : Colors.grey[800],
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.grey[800],
                                 ),
                               ),
                             ),
@@ -328,7 +361,8 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
           _selectedPackageIndex! >= _adminPackages.length) {
         return 0;
       }
-      return _parseInt(_adminPackages[_selectedPackageIndex!]['price']) * _durationDays;
+      return _parseInt(_adminPackages[_selectedPackageIndex!]['price']) *
+          _durationDays;
     } else {
       return _calculateCustomDailyPrice() * _durationDays;
     }
@@ -368,16 +402,18 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         ? _getSummaryTitle()
         : 'Paket Custom Bebas';
 
-    final String itemsDesc = _tabController.index == 0 &&
+    final String itemsDesc =
+        _tabController.index == 0 &&
             _selectedPackageIndex != null &&
             _selectedPackageIndex! < _adminPackages.length
         ? _adminPackages[_selectedPackageIndex!]['items']
         : _getSummaryTitle();
 
     final int pricePerDay = _tabController.index == 0
-        ? (_selectedPackageIndex != null && _selectedPackageIndex! < _adminPackages.length
-            ? _parseInt(_adminPackages[_selectedPackageIndex!]['price'])
-            : 0)
+        ? (_selectedPackageIndex != null &&
+                  _selectedPackageIndex! < _adminPackages.length
+              ? _parseInt(_adminPackages[_selectedPackageIndex!]['price'])
+              : 0)
         : _calculateCustomDailyPrice();
 
     Navigator.push(
@@ -504,7 +540,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   Widget _buildAdminPackagesTab() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor));
+      return Center(
+        child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+      );
     }
     if (_adminPackages.isEmpty) {
       return Center(
@@ -549,7 +587,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
               border: Border.all(
                 color: isSelected
                     ? primaryColor
-                    : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                    : (isDark
+                          ? Colors.white10
+                          : Colors.grey.withValues(alpha: 0.15)),
                 width: isSelected ? 1.5 : 1,
               ),
               boxShadow: [
@@ -572,7 +612,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15.5,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -580,7 +622,10 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
@@ -633,7 +678,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       ],
                     ),
                     Icon(
-                      isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                      isSelected
+                          ? Icons.check_circle_rounded
+                          : Icons.radio_button_unchecked_rounded,
                       color: isSelected ? primaryColor : Colors.grey[400],
                       size: 22,
                     ),
@@ -644,11 +691,15 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => _showDetailModal(context, item, adminIndex: idx),
+                        onPressed: () =>
+                            _showDetailModal(context, item, adminIndex: idx),
                         icon: const Icon(Icons.info_outline_rounded, size: 16),
                         label: const Text(
                           'Lihat Detail',
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: primaryColor,
@@ -678,7 +729,10 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         ),
                         child: const Text(
                           'Langsung Sewa',
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -694,7 +748,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   Widget _buildCustomPackageTab() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor));
+      return Center(
+        child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+      );
     }
     if (_customItems.isEmpty) {
       return Center(
@@ -736,7 +792,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     child: Text(
                       'Pilih alat yang Anda butuhkan dan sesuaikan jumlahnya untuk membuat paket sendiri.',
                       style: TextStyle(
-                        color: isDark ? Colors.white70 : const Color(0xFF334155),
+                        color: isDark
+                            ? Colors.white70
+                            : const Color(0xFF334155),
                         fontSize: 12,
                         height: 1.35,
                       ),
@@ -791,7 +849,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
           border: Border.all(
             color: isSelected
                 ? primaryColor
-                : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                : (isDark
+                      ? Colors.white10
+                      : Colors.grey.withValues(alpha: 0.15)),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: [
@@ -813,18 +873,34 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(15),
+                      ),
                     ),
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                      child: (item['image'] != null && item['image'].toString().isNotEmpty)
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(15),
+                      ),
+                      child:
+                          (item['image'] != null &&
+                              item['image'].toString().isNotEmpty)
                           ? Image.network(
                               item['image'].toString(),
                               fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Icon(Icons.handyman_outlined, size: 36, color: Colors.grey[400]),
+                              errorBuilder: (_, _, _) => Icon(
+                                Icons.handyman_outlined,
+                                size: 36,
+                                color: Colors.grey[400],
+                              ),
                             )
-                          : Icon(Icons.handyman_outlined, size: 36, color: Colors.grey[400]),
+                          : Icon(
+                              Icons.handyman_outlined,
+                              size: 36,
+                              color: Colors.grey[400],
+                            ),
                     ),
                   ),
                   Positioned(
@@ -833,7 +909,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: isSelected ? primaryColor : Colors.white.withValues(alpha: 0.8),
+                        color: isSelected
+                            ? primaryColor
+                            : Colors.white.withValues(alpha: 0.8),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -863,7 +941,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
-                            color: isDark ? Colors.white : const Color(0xFF1E293B),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF1E293B),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -886,7 +966,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         InkWell(
                           onTap: () {
                             if (qty > 1) {
-                              setState(() => _customItems[idx]['qty'] = qty - 1);
+                              setState(
+                                () => _customItems[idx]['qty'] = qty - 1,
+                              );
                             } else if (qty == 1) {
                               setState(() {
                                 _customItems[idx]['selected'] = false;
@@ -897,7 +979,9 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.white12 : Colors.grey.shade200,
+                              color: isDark
+                                  ? Colors.white12
+                                  : Colors.grey.shade200,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(Icons.remove, size: 14),
@@ -905,7 +989,10 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         ),
                         Text(
                           '$qty',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                         InkWell(
                           onTap: () {
@@ -920,7 +1007,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                               color: primaryColor,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.add, size: 14, color: Colors.white),
+                            child: const Icon(
+                              Icons.add,
+                              size: 14,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -935,24 +1026,119 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     );
   }
 
+  void _showCustomDurationDialog() {
+    final controller = TextEditingController(text: _durationDays.toString());
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.calendar_month_rounded, color: primaryColor, size: 22),
+            const SizedBox(width: 8),
+            Text(
+              'Atur Durasi Sewa',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF1E293B),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Masukkan jumlah hari sewa yang diinginkan:',
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? Colors.white60 : Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              autofocus: true,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              decoration: InputDecoration(
+                labelText: 'Jumlah Hari',
+                suffixText: 'Hari',
+                suffixStyle: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: primaryColor, width: 2),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Batal',
+              style: TextStyle(
+                color: isDark ? Colors.white60 : Colors.grey[600],
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final val = int.tryParse(controller.text.trim());
+              if (val != null && val > 0) {
+                setState(() => _durationDays = val);
+              }
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 0,
+            ),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).primaryColor;
     final int total = _getTotalPrice();
+    final List<int> quickPresets = [1, 2, 3, 7, 14, 30];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         border: Border(
           top: BorderSide(
-            color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+            color: isDark
+                ? Colors.white10
+                : Colors.grey.withValues(alpha: 0.15),
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
             offset: const Offset(0, -4),
           ),
         ],
@@ -960,86 +1146,238 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Row 1: Duration Header & Big Thumb Stepper
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    _getSummaryTitle(),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white70 : const Color(0xFF334155),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                // Left: Label with Icon
                 Row(
                   children: [
-                    Text(
-                      'Durasi:',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: isDark ? Colors.white38 : Colors.grey[500],
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.calendar_today_rounded,
+                        color: primaryColor,
+                        size: 15,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark ? Colors.white12 : Colors.grey.shade300,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              if (_durationDays > 1) {
-                                setState(() => _durationDays--);
-                              }
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
-                              child: Icon(Icons.remove, size: 14),
-                            ),
-                          ),
-                          Text(
-                            '$_durationDays Hari',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              setState(() => _durationDays++);
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
-                              child: Icon(Icons.add, size: 14),
-                            ),
-                          ),
-                        ],
+                    const SizedBox(width: 8),
+                    Text(
+                      'Durasi Sewa',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
                       ),
                     ),
                   ],
                 ),
+
+                // Right: Big Thumb-Friendly Stepper
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Minus Button
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () {
+                            if (_durationDays > 1) {
+                              setState(() => _durationDays--);
+                            }
+                          },
+                          child: Container(
+                            width: 38,
+                            height: 36,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: _durationDays > 1
+                                  ? (isDark ? Colors.white10 : Colors.white)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: _durationDays > 1
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.05,
+                                        ),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Icon(
+                              Icons.remove_rounded,
+                              size: 19,
+                              color: _durationDays > 1
+                                  ? (isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1E293B))
+                                  : (isDark
+                                        ? Colors.white24
+                                        : Colors.grey[400]),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Duration Text & Tap to Custom
+                      GestureDetector(
+                        onTap: _showCustomDurationDialog,
+                        child: Container(
+                          constraints: const BoxConstraints(minWidth: 64),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '$_durationDays Hari',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13.5,
+                              color: primaryColor,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Plus Button
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () {
+                            setState(() => _durationDays++);
+                          },
+                          child: Container(
+                            width: 38,
+                            height: 36,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primaryColor.withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.add_rounded,
+                              size: 19,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
+
             const SizedBox(height: 10),
+
+            // Row 2: Quick Duration Chips
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: quickPresets.map((days) {
+                  final bool isSelected = _durationDays == days;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => setState(() => _durationDays = days),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? primaryColor
+                              : (isDark
+                                    ? Colors.white.withValues(alpha: 0.05)
+                                    : const Color(0xFFF1F5F9)),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? primaryColor
+                                : (isDark
+                                      ? Colors.white12
+                                      : const Color(0xFFE2E8F0)),
+                          ),
+                        ),
+                        child: Text(
+                          days == 7
+                              ? '1 Minggu'
+                              : (days == 14
+                                    ? '2 Minggu'
+                                    : (days == 30 ? '1 Bulan' : '$days Hari')),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark
+                                      ? Colors.white70
+                                      : const Color(0xFF475569)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: isDark
+                  ? Colors.white10
+                  : Colors.grey.withValues(alpha: 0.1),
+            ),
+            const SizedBox(height: 10),
+
+            // Row 3: Total Price & Checkout Button
             Row(
               children: [
                 Expanded(
-                  flex: 45,
+                  flex: 48,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Biaya',
+                        'Total Biaya ($_durationDays Hari)',
                         style: TextStyle(
                           fontSize: 11,
+                          fontWeight: FontWeight.w500,
                           color: isDark ? Colors.white38 : Colors.grey[500],
                         ),
                       ),
@@ -1050,7 +1388,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         child: Text(
                           _currencyFormat.format(total),
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 18.5,
                             fontWeight: FontWeight.w900,
                             color: primaryColor,
                           ),
@@ -1061,9 +1399,17 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  flex: 55,
-                  child: ElevatedButton(
+                  flex: 52,
+                  child: ElevatedButton.icon(
                     onPressed: _handleBooking,
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                    label: const Text(
+                      'Lanjutkan Sewa',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
@@ -1072,10 +1418,6 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         borderRadius: BorderRadius.circular(14),
                       ),
                       elevation: 0,
-                    ),
-                    child: const Text(
-                      'Lanjutkan Sewa',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

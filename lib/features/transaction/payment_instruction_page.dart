@@ -72,13 +72,15 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final String channel = widget.paymentData['channel']?.toString() ?? 'Metode Pembayaran';
+    final String channel =
+        widget.paymentData['channel']?.toString() ?? 'Metode Pembayaran';
     final String vaNumber = widget.paymentData['va_number']?.toString() ?? '';
     final String qrUrl = widget.paymentData['qr_url']?.toString() ?? '';
     final String amount = widget.paymentData['total_amount']?.toString() ?? '0';
-    
+
     // Format nominal ke Rupiah
-    final amountFormatted = 'Rp ${amount.replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), '.')}';
+    final amountFormatted =
+        'Rp ${amount.replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), '.')}';
 
     return PopScope(
       canPop: false,
@@ -88,10 +90,20 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Instruksi Pembayaran'),
+          title: const Text(
+            'Instruksi Pembayaran',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
           centerTitle: true,
+          backgroundColor: Theme.of(context).primaryColor,
+          iconTheme: const IconThemeData(color: Colors.white),
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.close),
+            icon: const Icon(Icons.close, color: Colors.white),
             onPressed: widget.onFinish,
           ),
         ),
@@ -115,7 +127,11 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.timer_outlined, color: Colors.red[700], size: 20),
+                          Icon(
+                            Icons.timer_outlined,
+                            color: Colors.red[700],
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'SELESAIKAN PEMBAYARAN DALAM',
@@ -177,10 +193,7 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                   children: [
                     Text(
                       'Total Pembayaran',
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -239,7 +252,9 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(8),
@@ -258,7 +273,9 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                             ),
                             InkWell(
                               onTap: () {
-                                Clipboard.setData(ClipboardData(text: vaNumber));
+                                Clipboard.setData(
+                                  ClipboardData(text: vaNumber),
+                                );
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Nomor VA disalin!'),
@@ -285,9 +302,9 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               ElevatedButton(
                 onPressed: widget.onFinish,
                 style: ElevatedButton.styleFrom(

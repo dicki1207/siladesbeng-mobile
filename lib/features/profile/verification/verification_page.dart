@@ -91,14 +91,26 @@ class _VerificationPageState extends State<VerificationPage> {
 
       setState(() {
         _hasUploadedKtp = true;
-        if (ocrData['name'] != null) _nameController.text = ocrData['name'];
-        if (ocrData['nik'] != null) _nikController.text = ocrData['nik'];
-        if (ocrData['address'] != null) _addressController.text = ocrData['address'];
+        if (ocrData['name'] != null) {
+          _nameController.text = ocrData['name'];
+        }
+        if (ocrData['nik'] != null) {
+          _nikController.text = ocrData['nik'];
+        }
+        if (ocrData['address'] != null) {
+          _addressController.text = ocrData['address'];
+        }
 
         String rtRw = '';
-        if (ocrData['rt'] != null) rtRw += ocrData['rt'];
-        if (ocrData['rw'] != null) rtRw += '/${ocrData['rw']}';
-        if (rtRw.isNotEmpty) _rtRwController.text = rtRw;
+        if (ocrData['rt'] != null) {
+          rtRw += ocrData['rt'];
+        }
+        if (ocrData['rw'] != null) {
+          rtRw += '/${ocrData['rw']}';
+        }
+        if (rtRw.isNotEmpty) {
+          _rtRwController.text = rtRw;
+        }
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -160,17 +172,26 @@ class _VerificationPageState extends State<VerificationPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Lengkapi Data Diri (e-KYC)'),
+        title: const Text(
+          'Lengkapi Data Diri (e-KYC)',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         elevation: 0,
       ),
       body: _isLoadingRegions
           ? const Center(child: CircularProgressIndicator())
           : _isProcessingOcr
-              ? _buildLoadingState()
-              : !_hasUploadedKtp
-                  ? _buildUploadState()
-                  : _buildFormState(),
+          ? _buildLoadingState()
+          : !_hasUploadedKtp
+          ? _buildUploadState()
+          : _buildFormState(),
     );
   }
 
@@ -262,7 +283,9 @@ class _VerificationPageState extends State<VerificationPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.5,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -270,7 +293,9 @@ class _VerificationPageState extends State<VerificationPage> {
                         'Posisikan e-KTP Anda di dalam bingkai kamera untuk verifikasi data otomatis.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF64748B),
                           height: 1.3,
                         ),
                       ),
@@ -298,7 +323,9 @@ class _VerificationPageState extends State<VerificationPage> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryColor.withValues(alpha: isDark ? 0.15 : 0.08),
+                      color: primaryColor.withValues(
+                        alpha: isDark ? 0.15 : 0.08,
+                      ),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -387,7 +414,9 @@ class _VerificationPageState extends State<VerificationPage> {
                             style: TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : const Color(0xFF1E293B),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1E293B),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -395,7 +424,9 @@ class _VerificationPageState extends State<VerificationPage> {
                             'Mendukung deteksi NIK & Nama otomatis',
                             style: TextStyle(
                               fontSize: 11.5,
-                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF64748B),
                             ),
                           ),
                         ],
@@ -498,9 +529,13 @@ class _VerificationPageState extends State<VerificationPage> {
                 const SizedBox(height: 10),
                 _buildTipRow('Gunakan e-KTP fisik asli (bukan fotokopi).'),
                 const SizedBox(height: 6),
-                _buildTipRow('Pastikan seluruh bagian KTP masuk ke dalam bingkai.'),
+                _buildTipRow(
+                  'Pastikan seluruh bagian KTP masuk ke dalam bingkai.',
+                ),
                 const SizedBox(height: 6),
-                _buildTipRow('Pastikan tulisan NIK & Nama jelas serta tidak terkena pantulan cahaya.'),
+                _buildTipRow(
+                  'Pastikan tulisan NIK & Nama jelas serta tidak terkena pantulan cahaya.',
+                ),
               ],
             ),
           ),
@@ -550,11 +585,7 @@ class _VerificationPageState extends State<VerificationPage> {
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 40,
-                ),
+                const Icon(Icons.check_circle, color: Colors.green, size: 40),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -572,7 +603,9 @@ class _VerificationPageState extends State<VerificationPage> {
                         'Silakan periksa kembali dan lengkapi data yang belum terisi sebelum lanjut verifikasi wajah.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).textTheme.bodyMedium?.color?.withAlpha(180),
+                          color: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.color?.withAlpha(180),
                         ),
                       ),
                     ],
@@ -607,7 +640,10 @@ class _VerificationPageState extends State<VerificationPage> {
               decoration: InputDecoration(
                 hintText: 'Pilih Kecamatan',
                 hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon: Icon(Icons.map_outlined, color: Theme.of(context).iconTheme.color),
+                prefixIcon: Icon(
+                  Icons.map_outlined,
+                  color: Theme.of(context).iconTheme.color,
+                ),
                 filled: true,
                 fillColor: Theme.of(context).brightness == Brightness.dark
                     ? const Color(0xFF1E1E1E)
@@ -638,7 +674,9 @@ class _VerificationPageState extends State<VerificationPage> {
               onChanged: (val) {
                 setState(() {
                   _selectedKecamatanId = val;
-                  final selectedKec = _kecamatans.firstWhere((k) => k['id'].toString() == val);
+                  final selectedKec = _kecamatans.firstWhere(
+                    (k) => k['id'].toString() == val,
+                  );
                   _selectedKecamatan = selectedKec['name'];
                   _selectedDesa = null;
                   _desas = selectedKec['children'] ?? [];
@@ -657,7 +695,10 @@ class _VerificationPageState extends State<VerificationPage> {
               decoration: InputDecoration(
                 hintText: 'Pilih Desa / Kelurahan',
                 hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon: Icon(Icons.location_city_outlined, color: Theme.of(context).iconTheme.color),
+                prefixIcon: Icon(
+                  Icons.location_city_outlined,
+                  color: Theme.of(context).iconTheme.color,
+                ),
                 filled: true,
                 fillColor: Theme.of(context).brightness == Brightness.dark
                     ? const Color(0xFF1E1E1E)
@@ -685,11 +726,13 @@ class _VerificationPageState extends State<VerificationPage> {
                   child: Text(desa['name']),
                 );
               }).toList(),
-              onChanged: _desas.isEmpty ? null : (val) {
-                setState(() {
-                  _selectedDesa = val;
-                });
-              },
+              onChanged: _desas.isEmpty
+                  ? null
+                  : (val) {
+                      setState(() {
+                        _selectedDesa = val;
+                      });
+                    },
             ),
           ),
 

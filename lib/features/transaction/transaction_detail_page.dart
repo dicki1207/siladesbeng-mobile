@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_receipt_page.dart';
 import 'package:siladesbeng_mobile/features/report/report_receipt_page.dart';
+
 class TransactionDetailPage extends StatelessWidget {
   final Map<String, dynamic> transaction;
 
@@ -23,24 +24,27 @@ class TransactionDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(transaction['status']?.toString() ?? '');
+    final statusColor = _getStatusColor(
+      transaction['status']?.toString() ?? '',
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).cardColor,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+            color: Colors.white,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'Detail Aktivitas',
           style: TextStyle(
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -102,7 +106,9 @@ class TransactionDetailPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: statusColor.withAlpha(20),
                             borderRadius: BorderRadius.circular(30),
-                            border: Border.all(color: statusColor.withAlpha(50)),
+                            border: Border.all(
+                              color: statusColor.withAlpha(50),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -114,7 +120,10 @@ class TransactionDetailPage extends StatelessWidget {
                                   color: statusColor,
                                   shape: BoxShape.circle,
                                   boxShadow: [
-                                    BoxShadow(color: statusColor, blurRadius: 5),
+                                    BoxShadow(
+                                      color: statusColor,
+                                      blurRadius: 5,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -133,9 +142,9 @@ class TransactionDetailPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(width: 16),
-                  
+
                   // Right side (Image)
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -193,7 +202,8 @@ class TransactionDetailPage extends StatelessWidget {
                     transaction['date'],
                     Icons.access_time_outlined,
                   ),
-                  if (transaction['payment'] != null && transaction['payment'] != '-')
+                  if (transaction['payment'] != null &&
+                      transaction['payment'] != '-')
                     _buildDetailRow(
                       context,
                       'Pembayaran',
@@ -247,13 +257,19 @@ class TransactionDetailPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ReportReceiptPage(
-                                reportId: transaction['id']?.toString() ?? 'RPT-12345',
-                                category: transaction['category'] ?? 'Laporan Warga',
+                                reportId:
+                                    transaction['id']?.toString() ??
+                                    'RPT-12345',
+                                category:
+                                    transaction['category'] ?? 'Laporan Warga',
                                 date: transaction['date'] ?? '12 Juli 2026',
-                                description: transaction['title'] ?? 'Judul Laporan',
+                                description:
+                                    transaction['title'] ?? 'Judul Laporan',
                                 status: transaction['status'] ?? 'Menunggu',
                                 statusColor: statusColor,
-                                rawData: transaction['raw_data'] is Map<String, dynamic>
+                                rawData:
+                                    transaction['raw_data']
+                                        is Map<String, dynamic>
                                     ? transaction['raw_data']
                                     : null,
                               ),
@@ -264,15 +280,20 @@ class TransactionDetailPage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => TransactionReceiptPage(
-                                orderNumber: transaction['id']?.toString() ?? 'TRX-12345',
-                                orderTime: transaction['date'] ?? '12 Juli 2026',
+                                orderNumber:
+                                    transaction['id']?.toString() ??
+                                    'TRX-12345',
+                                orderTime:
+                                    transaction['date'] ?? '12 Juli 2026',
                                 accountName: 'Andi Desa',
                                 accountEmail: 'andi@example.com',
                                 recipientName: 'Andi Desa',
                                 address: 'Jl. Pemuda No. 4, Bengkalis',
                                 deliveryMethod: 'Diantar',
-                                paymentTime: transaction['date'] ?? '12 Juli 2026',
-                                paymentMethod: transaction['payment'] ?? 'Transfer Bank',
+                                paymentTime:
+                                    transaction['date'] ?? '12 Juli 2026',
+                                paymentMethod:
+                                    transaction['payment'] ?? 'Transfer Bank',
                                 totalPayment: transaction['price'] ?? 'Rp 0',
                                 status: transaction['status'] ?? 'Selesai',
                                 statusColor: statusColor,

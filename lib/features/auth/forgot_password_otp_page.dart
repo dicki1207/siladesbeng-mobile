@@ -25,9 +25,9 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
   Future<void> _verifyOtp() async {
     final otp = _otpController.text.trim();
     if (otp.length != 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kode OTP harus 4 digit')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Kode OTP harus 4 digit')));
       return;
     }
 
@@ -35,24 +35,25 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
       _isLoading = true;
     });
 
-    final result = await _authService.verifyForgotPasswordOtp(widget.emailOrPhone, otp);
+    final result = await _authService.verifyForgotPasswordOtp(
+      widget.emailOrPhone,
+      otp,
+    );
 
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = false;
     });
 
     if (result['status'] == 'success') {
       final resetToken = result['data']['reset_token'];
-      
+
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const AnimatedSuccessDialog(
-          message: 'OTP Valid!',
-          isLogout: false,
-        ),
+        builder: (context) =>
+            const AnimatedSuccessDialog(message: 'OTP Valid!', isLogout: false),
       );
 
       await Future.delayed(const Duration(seconds: 2));
@@ -73,7 +74,9 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Gagal Verifikasi'),
-          content: Text(result['message'] ?? 'OTP tidak valid atau sudah kadaluarsa.'),
+          content: Text(
+            result['message'] ?? 'OTP tidak valid atau sudah kadaluarsa.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -96,9 +99,18 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Verifikasi OTP'),
+        title: const Text(
+          'Verifikasi OTP',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -116,10 +128,7 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
               const Text(
                 'Masukkan Kode OTP',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               Text(
@@ -132,14 +141,18 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
                 ),
               ),
               const SizedBox(height: 40),
-              
+
               Pinput(
                 controller: _otpController,
                 length: 4,
                 defaultPinTheme: PinTheme(
                   width: 50,
                   height: 50,
-                  textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(
+                    fontSize: 22,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     border: Border.all(color: Colors.blueGrey),
@@ -155,10 +168,17 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
                 focusedPinTheme: PinTheme(
                   width: 50,
                   height: 50,
-                  textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(
+                    fontSize: 22,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
-                    border: Border.all(color: Theme.of(context).primaryColor, width: 2),
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
@@ -171,7 +191,7 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
               ),
               const SizedBox(height: 32),
-              
+
               ElevatedButton(
                 onPressed: _isLoading ? null : _verifyOtp,
                 style: ElevatedButton.styleFrom(

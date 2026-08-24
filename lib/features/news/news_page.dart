@@ -25,7 +25,7 @@ class _NewsPageState extends State<NewsPage> {
   final List<String> _categories = [
     'Semua',
     'Pengumuman',
-    'Event',
+    'Acara / Event',
     'Gotong Royong',
   ];
 
@@ -84,13 +84,36 @@ class _NewsPageState extends State<NewsPage> {
   IconData _getCategoryIcon(String category) {
     switch (category) {
       case 'Pengumuman':
+      case 'rapat':
         return Icons.campaign_rounded;
+      case 'Acara / Event':
       case 'Event':
-        return Icons.event_rounded;
+      case 'Acara':
+      case 'kegiatan_sosial':
+        return Icons.festival_rounded;
       case 'Gotong Royong':
+      case 'gotong_royong':
         return Icons.volunteer_activism_rounded;
       default:
         return Icons.grid_view_rounded;
+    }
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category) {
+      case 'Gotong Royong':
+      case 'gotong_royong':
+        return const Color(0xFF10B981);
+      case 'Acara / Event':
+      case 'Event':
+      case 'Acara':
+      case 'kegiatan_sosial':
+        return const Color(0xFF8B5CF6);
+      case 'Pengumuman':
+      case 'rapat':
+        return const Color(0xFFF59E0B);
+      default:
+        return const Color(0xFF0284C7);
     }
   }
 
@@ -169,7 +192,9 @@ class _NewsPageState extends State<NewsPage> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.2 : 0.04,
+                            ),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -256,20 +281,26 @@ class _NewsPageState extends State<NewsPage> {
                                     color: isSelected
                                         ? primaryColor
                                         : (isDark
-                                            ? Colors.white.withValues(alpha: 0.05)
-                                            : Colors.grey[100]),
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.05,
+                                                )
+                                              : Colors.grey[100]),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                       color: isSelected
                                           ? primaryColor
                                           : (isDark
-                                              ? Colors.white12
-                                              : Colors.grey.withValues(alpha: 0.2)),
+                                                ? Colors.white12
+                                                : Colors.grey.withValues(
+                                                    alpha: 0.2,
+                                                  )),
                                     ),
                                     boxShadow: isSelected
                                         ? [
                                             BoxShadow(
-                                              color: primaryColor.withValues(alpha: 0.3),
+                                              color: primaryColor.withValues(
+                                                alpha: 0.3,
+                                              ),
                                               blurRadius: 6,
                                               offset: const Offset(0, 2),
                                             ),
@@ -285,8 +316,8 @@ class _NewsPageState extends State<NewsPage> {
                                         color: isSelected
                                             ? Colors.white
                                             : (isDark
-                                                ? Colors.white70
-                                                : Colors.grey[700]),
+                                                  ? Colors.white70
+                                                  : Colors.grey[700]),
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
@@ -295,8 +326,8 @@ class _NewsPageState extends State<NewsPage> {
                                           color: isSelected
                                               ? Colors.white
                                               : (isDark
-                                                  ? Colors.white70
-                                                  : Colors.grey[700]),
+                                                    ? Colors.white70
+                                                    : Colors.grey[700]),
                                           fontWeight: isSelected
                                               ? FontWeight.bold
                                               : FontWeight.w500,
@@ -355,7 +386,9 @@ class _NewsPageState extends State<NewsPage> {
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white70 : Colors.grey[800],
+                                color: isDark
+                                    ? Colors.white70
+                                    : Colors.grey[800],
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -365,7 +398,9 @@ class _NewsPageState extends State<NewsPage> {
                                   : 'Belum ada pengumuman yang sesuai dengan filter.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: isDark ? Colors.white38 : Colors.grey[500],
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.grey[500],
                                 fontSize: 13,
                               ),
                             ),
@@ -397,8 +432,12 @@ class _NewsPageState extends State<NewsPage> {
     final primaryColor = Theme.of(context).primaryColor;
     final String categoryName =
         news['category']?.toString() ?? (isBerita ? 'Berita' : 'Pengumuman');
+    final Color badgeColor = isBerita
+        ? primaryColor
+        : _getCategoryColor(categoryName);
     final String formattedDate = _formatDate(news['date']?.toString());
-    final String? description = news['desc']?.toString() ??
+    final String? description =
+        news['desc']?.toString() ??
         news['content']?.toString() ??
         news['description']?.toString();
 
@@ -492,19 +531,32 @@ class _NewsPageState extends State<NewsPage> {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: primaryColor.withValues(alpha: 0.1),
+                              color: badgeColor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: primaryColor.withValues(alpha: 0.2),
+                                color: badgeColor.withValues(alpha: 0.25),
                               ),
                             ),
-                            child: Text(
-                              categoryName,
-                              style: TextStyle(
-                                color: primaryColor,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isBerita
+                                      ? Icons.newspaper_rounded
+                                      : _getCategoryIcon(categoryName),
+                                  size: 11,
+                                  color: badgeColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  categoryName,
+                                  style: TextStyle(
+                                    color: badgeColor,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           Row(
@@ -512,7 +564,9 @@ class _NewsPageState extends State<NewsPage> {
                               Icon(
                                 Icons.calendar_today_outlined,
                                 size: 11,
-                                color: isDark ? Colors.white38 : Colors.grey[500],
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.grey[500],
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -538,7 +592,9 @@ class _NewsPageState extends State<NewsPage> {
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           height: 1.3,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

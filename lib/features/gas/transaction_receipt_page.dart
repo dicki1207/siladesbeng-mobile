@@ -39,10 +39,17 @@ class GasReceiptPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Bukti Transaksi'),
+        title: const Text(
+          'Bukti Transaksi',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Theme.of(context).primaryColor,
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -61,7 +68,11 @@ class GasReceiptPage extends StatelessWidget {
                       Image.network(
                         'http://10.250.3.148:8000/assets/img/logo.png', // Fallback
                         height: 40,
-                        errorBuilder: (c, e, s) => const Icon(Icons.gas_meter, color: Colors.blue, size: 40),
+                        errorBuilder: (c, e, s) => const Icon(
+                          Icons.gas_meter,
+                          color: Colors.blue,
+                          size: 40,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       const Text(
@@ -87,10 +98,7 @@ class GasReceiptPage extends StatelessWidget {
                       ),
                       Text(
                         'Unit Pembelian Gas',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 10, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -147,19 +155,76 @@ class GasReceiptPage extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(flex: 2, child: Text('Keterangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  Expanded(flex: 1, child: Text('Jumlah', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  Expanded(flex: 2, child: Text('Satuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  Expanded(flex: 2, child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'Keterangan',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      'Jumlah',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'Satuan',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'Total',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const Divider(thickness: 1),
               Row(
                 children: [
-                  Expanded(flex: 2, child: Text(itemName, style: const TextStyle(fontSize: 12))),
-                  Expanded(flex: 1, child: Text('$quantity', style: const TextStyle(fontSize: 12))),
-                  Expanded(flex: 2, child: Text(_formatCurrency(price), style: const TextStyle(fontSize: 12))),
-                  Expanded(flex: 2, child: Text(_formatCurrency(total), style: const TextStyle(fontSize: 12))),
+                  Expanded(
+                    flex: 2,
+                    child: Text(itemName, style: const TextStyle(fontSize: 12)),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      '$quantity',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      _formatCurrency(price),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      _formatCurrency(total),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -170,16 +235,34 @@ class GasReceiptPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Pemesanan', style: TextStyle(fontSize: 12)),
-                        Text(_formatCurrency(total), style: const TextStyle(fontSize: 12)),
+                        const Text(
+                          'Total Pemesanan',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Text(
+                          _formatCurrency(total),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Dibayar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
-                        Text(_formatCurrency(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                        const Text(
+                          'Total Dibayar',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                        Text(
+                          _formatCurrency(total),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -194,13 +277,13 @@ class GasReceiptPage extends StatelessWidget {
                   children: [
                     Text(
                       'Bengkalis, $orderDate',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Hormat Kami',
-                      style: TextStyle(fontSize: 12),
-                    ),
+                    const Text('Hormat Kami', style: TextStyle(fontSize: 12)),
                     const SizedBox(height: 16),
                     QrImageView(
                       data: orderNumber,
@@ -242,10 +325,7 @@ class GasReceiptPage extends StatelessWidget {
           const Text(' : ', style: TextStyle(fontSize: 12)),
           Expanded(
             flex: 3,
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 12),
-            ),
+            child: Text(value, style: const TextStyle(fontSize: 12)),
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -333,7 +334,11 @@ class _GasBookingPageState extends State<GasBookingPage> {
     }
   }
 
-  Widget _buildPaymentLogo(String key, {double width = 46, double height = 26}) {
+  Widget _buildPaymentLogo(
+    String key, {
+    double width = 46,
+    double height = 26,
+  }) {
     String? assetPath;
     switch (key.toLowerCase()) {
       case 'bank_transfer_bca':
@@ -370,12 +375,30 @@ class _GasBookingPageState extends State<GasBookingPage> {
         child: Image.asset(
           assetPath,
           fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.account_balance, size: 16, color: Colors.blue),
         ),
       );
     }
 
-    // Default icon badge for QRIS or generic
+    if (key.toLowerCase().contains('qris')) {
+      return Container(
+        width: width,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.grey.shade300, width: 0.8),
+        ),
+        child: SvgPicture.asset(
+          'assets/images/banks/qris.svg',
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+
+    // Default icon badge for generic fallback
     return Container(
       width: width,
       height: height,
@@ -385,18 +408,8 @@ class _GasBookingPageState extends State<GasBookingPage> {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.grey.shade300, width: 0.8),
       ),
-      child: Center(
-        child: key.contains('qris')
-            ? const Text(
-                'QRIS',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 10.5,
-                  letterSpacing: 0.5,
-                  color: Color(0xFFE11D48),
-                ),
-              )
-            : const Icon(Icons.account_balance, size: 16, color: Colors.blue),
+      child: const Center(
+        child: Icon(Icons.account_balance, size: 16, color: Colors.blue),
       ),
     );
   }
@@ -415,7 +428,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
             return Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
               child: SafeArea(
@@ -461,7 +476,11 @@ class _GasBookingPageState extends State<GasBookingPage> {
                           color: primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(Icons.payments_outlined, color: primaryColor, size: 20),
+                        child: Icon(
+                          Icons.payments_outlined,
+                          color: primaryColor,
+                          size: 20,
+                        ),
                       ),
                       title: 'Bayar Tunai (COD)',
                       subtitle: 'Bayar uang pas saat tabung gas diterima',
@@ -486,13 +505,16 @@ class _GasBookingPageState extends State<GasBookingPage> {
                         border: Border.all(
                           color: _paymentCategory == 'bank'
                               ? primaryColor
-                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                              : (isDark
+                                    ? Colors.white10
+                                    : Colors.grey.withValues(alpha: 0.15)),
                           width: _paymentCategory == 'bank' ? 1.5 : 1,
                         ),
                       ),
                       child: ExpansionTile(
                         initiallyExpanded: _paymentCategory == 'bank',
-                        leading: _paymentCategory == 'bank' && _selectedBank != null
+                        leading:
+                            _paymentCategory == 'bank' && _selectedBank != null
                             ? _buildPaymentLogo(_selectedBank!)
                             : Container(
                                 padding: const EdgeInsets.all(6),
@@ -500,7 +522,11 @@ class _GasBookingPageState extends State<GasBookingPage> {
                                   color: primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(Icons.account_balance_outlined, color: primaryColor, size: 20),
+                                child: Icon(
+                                  Icons.account_balance_outlined,
+                                  color: primaryColor,
+                                  size: 20,
+                                ),
                               ),
                         title: Text(
                           _paymentCategory == 'bank' && _selectedBank != null
@@ -509,7 +535,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: _paymentCategory == 'bank' ? primaryColor : null,
+                            color: _paymentCategory == 'bank'
+                                ? primaryColor
+                                : null,
                           ),
                         ),
                         subtitle: Text(
@@ -520,20 +548,35 @@ class _GasBookingPageState extends State<GasBookingPage> {
                           ),
                         ),
                         children: _bankOptions.map((bank) {
-                          final isBankActive = _paymentCategory == 'bank' && _selectedBank == bank;
+                          final isBankActive =
+                              _paymentCategory == 'bank' &&
+                              _selectedBank == bank;
                           return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 2,
+                            ),
                             leading: _buildPaymentLogo(bank),
                             title: Text(
                               _formatBankName(bank),
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: isBankActive ? FontWeight.bold : FontWeight.w600,
-                                color: isBankActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                fontWeight: isBankActive
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: isBankActive
+                                    ? primaryColor
+                                    : (isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1E293B)),
                               ),
                             ),
                             trailing: isBankActive
-                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                ? Icon(
+                                    Icons.check_circle_rounded,
+                                    color: primaryColor,
+                                    size: 18,
+                                  )
                                 : null,
                             onTap: () {
                               setState(() {
@@ -558,13 +601,17 @@ class _GasBookingPageState extends State<GasBookingPage> {
                         border: Border.all(
                           color: _paymentCategory == 'ewallet'
                               ? primaryColor
-                              : (isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15)),
+                              : (isDark
+                                    ? Colors.white10
+                                    : Colors.grey.withValues(alpha: 0.15)),
                           width: _paymentCategory == 'ewallet' ? 1.5 : 1,
                         ),
                       ),
                       child: ExpansionTile(
                         initiallyExpanded: _paymentCategory == 'ewallet',
-                        leading: _paymentCategory == 'ewallet' && _selectedEWallet != null
+                        leading:
+                            _paymentCategory == 'ewallet' &&
+                                _selectedEWallet != null
                             ? _buildPaymentLogo(_selectedEWallet!)
                             : Container(
                                 padding: const EdgeInsets.all(6),
@@ -572,16 +619,23 @@ class _GasBookingPageState extends State<GasBookingPage> {
                                   color: primaryColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
+                                child: Icon(
+                                  Icons.qr_code_scanner_rounded,
+                                  color: primaryColor,
+                                  size: 20,
+                                ),
                               ),
                         title: Text(
-                          _paymentCategory == 'ewallet' && _selectedEWallet != null
+                          _paymentCategory == 'ewallet' &&
+                                  _selectedEWallet != null
                               ? _formatEWalletName(_selectedEWallet!)
                               : 'E-Wallet / QRIS',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: _paymentCategory == 'ewallet' ? primaryColor : null,
+                            color: _paymentCategory == 'ewallet'
+                                ? primaryColor
+                                : null,
                           ),
                         ),
                         subtitle: Text(
@@ -592,20 +646,35 @@ class _GasBookingPageState extends State<GasBookingPage> {
                           ),
                         ),
                         children: _eWalletOptions.map((wallet) {
-                          final isWalletActive = _paymentCategory == 'ewallet' && _selectedEWallet == wallet;
+                          final isWalletActive =
+                              _paymentCategory == 'ewallet' &&
+                              _selectedEWallet == wallet;
                           return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 2,
+                            ),
                             leading: _buildPaymentLogo(wallet),
                             title: Text(
                               _formatEWalletName(wallet),
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: isWalletActive ? FontWeight.bold : FontWeight.w600,
-                                color: isWalletActive ? primaryColor : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                fontWeight: isWalletActive
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: isWalletActive
+                                    ? primaryColor
+                                    : (isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1E293B)),
                               ),
                             ),
                             trailing: isWalletActive
-                                ? Icon(Icons.check_circle_rounded, color: primaryColor, size: 18)
+                                ? Icon(
+                                    Icons.check_circle_rounded,
+                                    color: primaryColor,
+                                    size: 18,
+                                  )
                                 : null,
                             onTap: () {
                               setState(() {
@@ -680,9 +749,13 @@ class _GasBookingPageState extends State<GasBookingPage> {
     if (_paymentCategory == 'tunai') {
       return 'Bayar Tunai (COD)';
     } else if (_paymentCategory == 'bank') {
-      return _selectedBank != null ? _formatBankName(_selectedBank!) : 'Pilih Bank Virtual Account';
+      return _selectedBank != null
+          ? _formatBankName(_selectedBank!)
+          : 'Pilih Bank Virtual Account';
     } else if (_paymentCategory == 'ewallet') {
-      return _selectedEWallet != null ? _formatEWalletName(_selectedEWallet!) : 'Pilih QRIS / E-Wallet';
+      return _selectedEWallet != null
+          ? _formatEWalletName(_selectedEWallet!)
+          : 'Pilih QRIS / E-Wallet';
     }
     return 'Pilih Metode Pembayaran';
   }
@@ -719,19 +792,24 @@ class _GasBookingPageState extends State<GasBookingPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).primaryColor;
 
-    final int price = double.tryParse(
-      widget.item['harga_satuan']?.toString() ??
-          widget.item['price']?.toString() ??
-          '0',
-    )?.toInt() ?? 0;
+    final int price =
+        double.tryParse(
+          widget.item['harga_satuan']?.toString() ??
+              widget.item['price']?.toString() ??
+              '0',
+        )?.toInt() ??
+        0;
     final int total = price * _quantity;
-    final int stock = int.tryParse(widget.item['stok']?.toString() ?? '10') ?? 10;
+    final int stock =
+        int.tryParse(widget.item['stok']?.toString() ?? '10') ?? 10;
 
-    final String imageUrl = widget.item['image_url'] ??
+    final String imageUrl =
+        widget.item['image_url'] ??
         widget.item['image'] ??
         widget.item['foto'] ??
         'assets/images/F2.png';
-    final String itemName = widget.item['jenis_gas'] ?? widget.item['name'] ?? 'Gas LPG';
+    final String itemName =
+        widget.item['jenis_gas'] ?? widget.item['name'] ?? 'Gas LPG';
 
     if (_isLoading) {
       return Scaffold(
@@ -760,9 +838,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         children: [
-
-
-          // 1. Delivery Method Section (Side-by-Side Cards)
+          // 1. Delivery Method Section (Side-by-Side Modern Feature Cards with Badges)
           _buildSectionHeader('Metode Pengambilan'),
           const SizedBox(height: 10),
           Row(
@@ -773,31 +849,40 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   onTap: () => setState(() => _deliveryMethod = 'antar'),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(13),
                     decoration: BoxDecoration(
                       color: _deliveryMethod == 'antar'
-                          ? (isDark ? primaryColor.withValues(alpha: 0.18) : const Color(0xFFEFF6FF))
+                          ? (isDark
+                                ? primaryColor.withValues(alpha: 0.18)
+                                : const Color(0xFFEFF6FF))
                           : (isDark ? const Color(0xFF1E293B) : Colors.white),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: _deliveryMethod == 'antar'
                             ? primaryColor
-                            : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
-                        width: _deliveryMethod == 'antar' ? 1.8 : 1,
+                            : (isDark
+                                  ? Colors.white12
+                                  : const Color(0xFFE2E8F0)),
+                        width: _deliveryMethod == 'antar' ? 2 : 1,
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: _deliveryMethod == 'antar'
-                              ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.12)
-                              : Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                              ? primaryColor.withValues(
+                                  alpha: isDark ? 0.25 : 0.15,
+                                )
+                              : Colors.black.withValues(
+                                  alpha: isDark ? 0.15 : 0.03,
+                                ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Top Header Row: Icon + Badge
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -806,43 +891,78 @@ class _GasBookingPageState extends State<GasBookingPage> {
                               decoration: BoxDecoration(
                                 color: _deliveryMethod == 'antar'
                                     ? primaryColor.withValues(alpha: 0.2)
-                                    : (isDark ? Colors.white10 : const Color(0xFFF1F5F9)),
-                                shape: BoxShape.circle,
+                                    : (isDark
+                                          ? Colors.white10
+                                          : const Color(0xFFF1F5F9)),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                Icons.local_shipping_rounded,
-                                size: 18,
+                                Icons.delivery_dining_rounded,
+                                size: 22,
                                 color: _deliveryMethod == 'antar'
                                     ? primaryColor
-                                    : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                                    : (isDark
+                                          ? Colors.white70
+                                          : const Color(0xFF64748B)),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Kurir Desa',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Diantar ke Rumah',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A),
+                                ),
                               ),
                             ),
                             Icon(
                               _deliveryMethod == 'antar'
                                   ? Icons.check_circle_rounded
                                   : Icons.radio_button_unchecked_rounded,
-                              size: 20,
+                              size: 18,
                               color: _deliveryMethod == 'antar'
                                   ? primaryColor
-                                  : (isDark ? Colors.white24 : Colors.grey[400]),
+                                  : (isDark
+                                        ? Colors.white24
+                                        : Colors.grey[400]),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 4),
                         Text(
-                          'Diantar ke Rumah',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Kurir antar ke alamat',
+                          'Kurir antar langsung ke alamat',
                           style: TextStyle(
                             fontSize: 11,
-                            color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                            color: isDark
+                                ? Colors.white54
+                                : const Color(0xFF64748B),
+                            height: 1.3,
                           ),
                         ),
                       ],
@@ -857,31 +977,42 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   onTap: () => setState(() => _deliveryMethod = 'jemput'),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(13),
                     decoration: BoxDecoration(
                       color: _deliveryMethod == 'jemput'
-                          ? (isDark ? primaryColor.withValues(alpha: 0.18) : const Color(0xFFEFF6FF))
+                          ? (isDark
+                                ? const Color(
+                                    0xFF10B981,
+                                  ).withValues(alpha: 0.15)
+                                : const Color(0xFFECFDF5))
                           : (isDark ? const Color(0xFF1E293B) : Colors.white),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: _deliveryMethod == 'jemput'
-                            ? primaryColor
-                            : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
-                        width: _deliveryMethod == 'jemput' ? 1.8 : 1,
+                            ? const Color(0xFF10B981)
+                            : (isDark
+                                  ? Colors.white12
+                                  : const Color(0xFFE2E8F0)),
+                        width: _deliveryMethod == 'jemput' ? 2 : 1,
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: _deliveryMethod == 'jemput'
-                              ? primaryColor.withValues(alpha: isDark ? 0.25 : 0.12)
-                              : Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
+                              ? const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: isDark ? 0.25 : 0.15)
+                              : Colors.black.withValues(
+                                  alpha: isDark ? 0.15 : 0.03,
+                                ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Top Header Row: Icon + Badge
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -889,44 +1020,83 @@ class _GasBookingPageState extends State<GasBookingPage> {
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: _deliveryMethod == 'jemput'
-                                    ? Colors.teal.withValues(alpha: 0.2)
-                                    : (isDark ? Colors.white10 : const Color(0xFFF1F5F9)),
-                                shape: BoxShape.circle,
+                                    ? const Color(
+                                        0xFF10B981,
+                                      ).withValues(alpha: 0.2)
+                                    : (isDark
+                                          ? Colors.white10
+                                          : const Color(0xFFF1F5F9)),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
                                 Icons.storefront_rounded,
-                                size: 18,
+                                size: 22,
                                 color: _deliveryMethod == 'jemput'
-                                    ? Colors.teal
-                                    : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                                    ? const Color(0xFF10B981)
+                                    : (isDark
+                                          ? Colors.white70
+                                          : const Color(0xFF64748B)),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'Gratis (Rp 0)',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF10B981),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Ambil Mandiri',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A),
+                                ),
                               ),
                             ),
                             Icon(
                               _deliveryMethod == 'jemput'
                                   ? Icons.check_circle_rounded
                                   : Icons.radio_button_unchecked_rounded,
-                              size: 20,
+                              size: 18,
                               color: _deliveryMethod == 'jemput'
-                                  ? primaryColor
-                                  : (isDark ? Colors.white24 : Colors.grey[400]),
+                                  ? const Color(0xFF10B981)
+                                  : (isDark
+                                        ? Colors.white24
+                                        : Colors.grey[400]),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 4),
                         Text(
-                          'Ambil Mandiri',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Ambil di Pangkalan',
+                          'Ambil di Pangkalan BUMDes',
                           style: TextStyle(
                             fontSize: 11,
-                            color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                            color: isDark
+                                ? Colors.white54
+                                : const Color(0xFF64748B),
+                            height: 1.3,
                           ),
                         ),
                       ],
@@ -949,7 +1119,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                  color: isDark
+                      ? Colors.white10
+                      : Colors.grey.withValues(alpha: 0.15),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -993,7 +1165,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                  color: isDark
+                      ? Colors.white10
+                      : Colors.grey.withValues(alpha: 0.15),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -1015,10 +1189,14 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                      color: isDark
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                        color: isDark
+                            ? Colors.white12
+                            : const Color(0xFFE2E8F0),
                       ),
                     ),
                     child: Column(
@@ -1032,7 +1210,11 @@ class _GasBookingPageState extends State<GasBookingPage> {
                                 color: Colors.teal.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.location_on_rounded, size: 20, color: Colors.teal),
+                              child: const Icon(
+                                Icons.location_on_rounded,
+                                size: 20,
+                                color: Colors.teal,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -1044,7 +1226,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
-                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0F172A),
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -1052,7 +1236,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                                     'Kantor BUMDes / Pangkalan Resmi Desa',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                                      color: isDark
+                                          ? Colors.white54
+                                          : const Color(0xFF64748B),
                                     ),
                                   ),
                                 ],
@@ -1066,14 +1252,20 @@ class _GasBookingPageState extends State<GasBookingPage> {
                         ),
                         Row(
                           children: [
-                            Icon(Icons.access_time_filled_rounded, size: 14, color: isDark ? Colors.white60 : Colors.grey[600]),
+                            Icon(
+                              Icons.access_time_filled_rounded,
+                              size: 14,
+                              color: isDark ? Colors.white60 : Colors.grey[600],
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'Jam Layanan: 08.00 - 16.00 WIB',
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w500,
-                                color: isDark ? Colors.white70 : const Color(0xFF334155),
+                                color: isDark
+                                    ? Colors.white70
+                                    : const Color(0xFF334155),
                               ),
                             ),
                           ],
@@ -1083,23 +1275,34 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: primaryColor.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: primaryColor.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.info_outline_rounded, size: 16, color: primaryColor),
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: primaryColor,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Silakan bawa tabung kosong (jika tukar) & tunjukkan bukti transaksi digital di aplikasi kepada petugas pangkalan.',
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? Colors.white70 : const Color(0xFF334155),
+                              color: isDark
+                                  ? Colors.white70
+                                  : const Color(0xFF334155),
                               height: 1.35,
                             ),
                           ),
@@ -1123,7 +1326,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.grey.withValues(alpha: 0.15),
               ),
               boxShadow: [
                 BoxShadow(
@@ -1139,21 +1344,31 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   width: 70,
                   height: 70,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: (imageUrl.startsWith('assets/') || imageUrl.contains('F2.png'))
+                    child:
+                        (imageUrl.startsWith('assets/') ||
+                            imageUrl.contains('F2.png'))
                         ? Image.asset(
                             'assets/images/F2.png',
                             fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) => Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
+                            errorBuilder: (_, _, _) => Icon(
+                              Icons.inventory_2_outlined,
+                              color: Colors.grey[400],
+                            ),
                           )
                         : Image.network(
                             imageUrl,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) => Icon(Icons.inventory_2_outlined, color: Colors.grey[400]),
+                            errorBuilder: (_, _, _) => Icon(
+                              Icons.inventory_2_outlined,
+                              color: Colors.grey[400],
+                            ),
                           ),
                   ),
                 ),
@@ -1167,7 +1382,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14.5,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -1193,7 +1410,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                 // Stepper Counter
                 Container(
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isDark ? Colors.white12 : Colors.grey.shade300,
@@ -1202,14 +1421,19 @@ class _GasBookingPageState extends State<GasBookingPage> {
                   child: Row(
                     children: [
                       InkWell(
-                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(20),
+                        ),
                         onTap: () {
                           if (_quantity > 1) {
                             setState(() => _quantity--);
                           }
                         },
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 5,
+                          ),
                           child: Icon(Icons.remove_rounded, size: 16),
                         ),
                       ),
@@ -1224,14 +1448,19 @@ class _GasBookingPageState extends State<GasBookingPage> {
                         ),
                       ),
                       InkWell(
-                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(20)),
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(20),
+                        ),
                         onTap: () {
                           if (_quantity < stock) {
                             setState(() => _quantity++);
                           }
                         },
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 5,
+                          ),
                           child: Icon(Icons.add_rounded, size: 16),
                         ),
                       ),
@@ -1252,7 +1481,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.grey.withValues(alpha: 0.15),
               ),
               boxShadow: [
                 BoxShadow(
@@ -1283,7 +1514,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
                               style: TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B),
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -1291,14 +1524,19 @@ class _GasBookingPageState extends State<GasBookingPage> {
                               'Ketuk untuk memilih metode lain',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: isDark ? Colors.white38 : Colors.grey[500],
+                                color: isDark
+                                    ? Colors.white38
+                                    : Colors.grey[500],
                               ),
                             ),
                           ],
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: primaryColor.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
@@ -1315,7 +1553,11 @@ class _GasBookingPageState extends State<GasBookingPage> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: primaryColor),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              size: 16,
+                              color: primaryColor,
+                            ),
                           ],
                         ),
                       ),
@@ -1337,7 +1579,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.grey.withValues(alpha: 0.15),
               ),
               boxShadow: [
                 BoxShadow(
@@ -1397,7 +1641,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
           color: Theme.of(context).cardColor,
           border: Border(
             top: BorderSide(
-              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.grey.withValues(alpha: 0.15),
             ),
           ),
           boxShadow: [
@@ -1508,7 +1754,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDark ? Colors.white10 : Colors.grey.shade300,
@@ -1530,7 +1778,10 @@ class _GasBookingPageState extends State<GasBookingPage> {
               ),
               prefixIcon: Icon(prefixIcon, size: 18, color: primaryColor),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
         ),
@@ -1559,7 +1810,9 @@ class _GasBookingPageState extends State<GasBookingPage> {
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.bold,
-            color: isFree ? Colors.green : (isDark ? Colors.white : const Color(0xFF1E293B)),
+            color: isFree
+                ? Colors.green
+                : (isDark ? Colors.white : const Color(0xFF1E293B)),
           ),
         ),
       ],

@@ -45,17 +45,18 @@ class AppTheme {
         surface: bgLight,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: bgLight,
+        backgroundColor: primaryLight,
         elevation: 0,
-        iconTheme: const IconThemeData(color: textDark),
+        iconTheme: const IconThemeData(color: Colors.white),
         titleTextStyle: GoogleFonts.inter(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: textDark,
+          color: Colors.white,
         ),
       ),
       actionIconTheme: ActionIconThemeData(
-        backButtonIconBuilder: (BuildContext context) => const Icon(Icons.arrow_back_ios_new_rounded),
+        backButtonIconBuilder: (BuildContext context) =>
+            const Icon(Icons.arrow_back_ios_new_rounded),
       ),
       textTheme: TextTheme(
         titleLarge: GoogleFonts.inter(
@@ -105,7 +106,8 @@ class AppTheme {
         ),
       ),
       actionIconTheme: ActionIconThemeData(
-        backButtonIconBuilder: (BuildContext context) => const Icon(Icons.arrow_back_ios_new_rounded),
+        backButtonIconBuilder: (BuildContext context) =>
+            const Icon(Icons.arrow_back_ios_new_rounded),
       ),
       textTheme: TextTheme(
         titleLarge: GoogleFonts.inter(
