@@ -89,19 +89,21 @@ class _ProfilePageState extends State<ProfilePage> {
           final user = data['data']['user'];
           final region = data['data']['region_info'] ?? {};
 
-          final isVerified = (user['verification_status'] == 'verified') ||
+          final isVerified =
+              (user['verification_status'] == 'verified') ||
               (user['nik'] != null && user['nik'].toString().isNotEmpty) ||
               (user['is_verified'] == true);
 
-          final userNik = user['nik']?.toString() ??
-              (isVerified ? '1403010101900001' : '');
-          final userAddress = (user['address'] != null &&
+          final userNik =
+              user['nik']?.toString() ?? (isVerified ? '1403010101900001' : '');
+          final userAddress =
+              (user['address'] != null &&
                   user['address'] != '-' &&
                   user['address'].toString().isNotEmpty)
               ? user['address']
               : (region['desa'] != null && region['desa'] != 'Belum ditentukan'
-                  ? 'RT ${user['rt'] ?? '01'} / RW ${user['rw'] ?? '02'}, ${region['desa']}'
-                  : 'RT ${user['rt'] ?? '01'} / RW ${user['rw'] ?? '02'}');
+                    ? 'RT ${user['rt'] ?? '01'} / RW ${user['rw'] ?? '02'}, ${region['desa']}'
+                    : 'RT ${user['rt'] ?? '01'} / RW ${user['rw'] ?? '02'}');
 
           await prefs.setString('profile_name', user['name'] ?? '');
           await prefs.setString('profile_email', user['email'] ?? '');
@@ -151,11 +153,11 @@ class _ProfilePageState extends State<ProfilePage> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const AnimatedSuccessDialog(
-          message: 'Sampai Jumpa!',
+          message: 'Berhasil Keluar',
           isLogout: true,
         ),
       );
-      await Future.delayed(const Duration(milliseconds: 1200));
+      await Future.delayed(const Duration(milliseconds: 1000));
       if (!context.mounted) return;
     }
 
@@ -167,8 +169,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   String _maskNik(String nik) {
-    final cleanNik =
-        (nik.isEmpty ? '1403010101900001' : nik).replaceAll(RegExp(r'\s+'), '');
+    final cleanNik = (nik.isEmpty ? '1403010101900001' : nik).replaceAll(
+      RegExp(r'\s+'),
+      '',
+    );
     if (cleanNik.length >= 8) {
       return '${cleanNik.substring(0, 4)}********${cleanNik.substring(cleanNik.length - 4)}';
     }
@@ -237,14 +241,18 @@ class _ProfilePageState extends State<ProfilePage> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
                             ),
                           ),
                           Text(
                             'Identitas Resmi Kependudukan',
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF64748B),
                             ),
                           ),
                         ],
@@ -275,8 +283,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                    foregroundColor: isDark ? Colors.white : const Color(0xFF334155),
+                    backgroundColor: isDark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFF1F5F9),
+                    foregroundColor: isDark
+                        ? Colors.white
+                        : const Color(0xFF334155),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -344,7 +356,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2563EB),
                     borderRadius: BorderRadius.circular(20),
@@ -408,20 +423,20 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           )
                         : (_imageUrl != null)
-                            ? Image.network(
-                                _imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(
-                                  Icons.person,
-                                  size: 40,
-                                  color: Colors.grey,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.person,
-                                size: 40,
-                                color: Colors.grey,
-                              ),
+                        ? Image.network(
+                            _imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => const Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
                   ),
                 ),
 
@@ -444,7 +459,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 2),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(40),
                           borderRadius: BorderRadius.circular(6),
@@ -574,7 +592,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: _isVerified ? const Color(0xFF2563EB) : Colors.grey[400]!,
+                          color: _isVerified
+                              ? const Color(0xFF2563EB)
+                              : Colors.grey[400]!,
                           width: 2,
                         ),
                       ),
@@ -583,15 +603,17 @@ class _ProfilePageState extends State<ProfilePage> {
                             ? Image.file(
                                 File(_imagePath!),
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => const Icon(Icons.person, size: 30),
+                                errorBuilder: (_, _, _) =>
+                                    const Icon(Icons.person, size: 30),
                               )
                             : (_imageUrl != null)
-                                ? Image.network(
-                                    _imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const Icon(Icons.person, size: 30),
-                                  )
-                                : const Icon(Icons.person, size: 30),
+                            ? Image.network(
+                                _imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) =>
+                                    const Icon(Icons.person, size: 30),
+                              )
+                            : const Icon(Icons.person, size: 30),
                       ),
                     ),
                     if (_isVerified)
@@ -601,7 +623,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Container(
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : Colors.white,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -629,7 +653,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -641,7 +667,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         _email,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                          color: isDark
+                              ? Colors.white60
+                              : const Color(0xFF64748B),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -650,7 +678,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       // Action Badge
                       if (_isVerified)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF2563EB).withAlpha(15),
                             borderRadius: BorderRadius.circular(20),
@@ -686,7 +717,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF59E0B).withAlpha(20),
                             borderRadius: BorderRadius.circular(20),
@@ -788,7 +822,9 @@ class _ProfilePageState extends State<ProfilePage> {
               20,
               topPadding + 16,
               20,
-              _isLoggedIn ? 80 : 24, // Extra space at bottom so card doesn't cover title
+              _isLoggedIn
+                  ? 80
+                  : 24, // Extra space at bottom so card doesn't cover title
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -818,7 +854,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(20),
@@ -880,7 +919,9 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             if (_isLoggedIn) ...[
-              const SizedBox(height: 55), // Space compensation for the positioned card
+              const SizedBox(
+                height: 55,
+              ), // Space compensation for the positioned card
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -889,8 +930,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       FutureBuilder<SharedPreferences>(
                         future: SharedPreferences.getInstance(),
                         builder: (context, snapshot) {
-                          final status =
-                              snapshot.data?.getString('transfer_status');
+                          final status = snapshot.data?.getString(
+                            'transfer_status',
+                          );
                           if (status == 'pending') {
                             return Container(
                               margin: const EdgeInsets.only(top: 10),
@@ -949,51 +991,48 @@ class _ProfilePageState extends State<ProfilePage> {
                     Colors.blue[600]!,
                   ),
                   const SizedBox(height: 12),
-                  _buildMenuGroup(
-                    context,
-                    [
+                  _buildMenuGroup(context, [
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.receipt_long_rounded,
+                      title: 'Riwayat Aktivitas',
+                      targetPage: const TransactionHistoryPage(),
+                      iconColor: Colors.blue[600],
+                      isFirst: true,
+                      isLast: false,
+                    ),
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.admin_panel_settings_rounded,
+                      title: 'Portal Pengurus RT / RW',
+                      subtitle: 'Layanan administrasi & pengurus wilayah',
+                      targetPage: const AdminPortalPage(),
+                      iconColor: Colors.teal[600],
+                      isFirst: false,
+                      isLast: false,
+                    ),
+                    if (_isVerified)
                       _buildMenuTile(
                         context,
-                        icon: Icons.receipt_long_rounded,
-                        title: 'Riwayat Aktivitas',
-                        targetPage: const TransactionHistoryPage(),
-                        iconColor: Colors.blue[600],
-                        isFirst: true,
-                        isLast: false,
+                        icon: Icons.swap_horiz_rounded,
+                        title: 'Mutasi Domisili & Tarik Warga',
+                        subtitle: 'Handshake data kependudukan',
+                        targetPage: const DomicileTransferPage(),
+                        iconColor: Colors.indigo[600],
+                        isFirst: false,
+                        isLast: true,
                       ),
+                    if (!_isVerified)
                       _buildMenuTile(
                         context,
-                        icon: Icons.admin_panel_settings_rounded,
-                        title: 'Portal Pengurus RT / RW',
-                        subtitle: 'Layanan administrasi & pengurus wilayah',
-                        targetPage: const AdminPortalPage(),
+                        icon: Icons.handshake_rounded,
+                        title: 'Gabung Kemitraan',
+                        targetPage: const PartnershipPage(),
                         iconColor: Colors.teal[600],
                         isFirst: false,
-                        isLast: false,
+                        isLast: true,
                       ),
-                      if (_isVerified)
-                        _buildMenuTile(
-                          context,
-                          icon: Icons.swap_horiz_rounded,
-                          title: 'Mutasi Domisili & Tarik Warga',
-                          subtitle: 'Handshake data kependudukan',
-                          targetPage: const DomicileTransferPage(),
-                          iconColor: Colors.indigo[600],
-                          isFirst: false,
-                          isLast: true,
-                        ),
-                      if (!_isVerified)
-                        _buildMenuTile(
-                          context,
-                          icon: Icons.handshake_rounded,
-                          title: 'Gabung Kemitraan',
-                          targetPage: const PartnershipPage(),
-                          iconColor: Colors.teal[600],
-                          isFirst: false,
-                          isLast: true,
-                        ),
-                    ],
-                  ),
+                  ]),
                   const SizedBox(height: 24),
                   _buildSectionHeader(
                     context,
@@ -1001,39 +1040,36 @@ class _ProfilePageState extends State<ProfilePage> {
                     Colors.green[600]!,
                   ),
                   const SizedBox(height: 14),
-                  _buildMenuGroup(
-                    context,
-                    [
-                      if (_isLoggedIn)
-                        _buildMenuTile(
-                          context,
-                          icon: Icons.manage_accounts_rounded,
-                          title: 'Edit Profil & PIN Keamanan',
-                          targetPage: const EditProfilePage(),
-                          iconColor: Colors.green,
-                          isFirst: true,
-                          isLast: false,
-                        ),
+                  _buildMenuGroup(context, [
+                    if (_isLoggedIn)
                       _buildMenuTile(
                         context,
-                        icon: Icons.help_outline_rounded,
-                        title: 'Pusat Bantuan & FAQ',
-                        targetPage: const HelpFaqPage(),
-                        iconColor: Colors.amber[800],
-                        isFirst: !_isLoggedIn,
+                        icon: Icons.manage_accounts_rounded,
+                        title: 'Edit Profil & PIN Keamanan',
+                        targetPage: const EditProfilePage(),
+                        iconColor: Colors.green,
+                        isFirst: true,
                         isLast: false,
                       ),
-                      _buildMenuTile(
-                        context,
-                        icon: Icons.info_outline_rounded,
-                        title: 'Tentang Sila-DesBeng',
-                        targetPage: const AboutPage(),
-                        iconColor: Colors.indigo[600],
-                        isFirst: false,
-                        isLast: true,
-                      ),
-                    ],
-                  ),
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.help_outline_rounded,
+                      title: 'Pusat Bantuan & FAQ',
+                      targetPage: const HelpFaqPage(),
+                      iconColor: Colors.amber[800],
+                      isFirst: !_isLoggedIn,
+                      isLast: false,
+                    ),
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.info_outline_rounded,
+                      title: 'Tentang Sila-DesBeng',
+                      targetPage: const AboutPage(),
+                      iconColor: Colors.indigo[600],
+                      isFirst: false,
+                      isLast: true,
+                    ),
+                  ]),
                   const SizedBox(height: 40),
 
                   Center(
@@ -1119,10 +1155,10 @@ class _ProfilePageState extends State<ProfilePage> {
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-                letterSpacing: 0.3,
-              ),
+            fontWeight: FontWeight.w800,
+            fontSize: 16,
+            letterSpacing: 0.3,
+          ),
         ),
       ],
     );
@@ -1133,10 +1169,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.withAlpha(30),
-          width: 1.2,
-        ),
+        border: Border.all(color: Colors.grey.withAlpha(30), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(10),
@@ -1145,9 +1178,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -1205,7 +1236,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text(
                           title,
-                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium!
+                              .copyWith(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1214,7 +1246,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           const SizedBox(height: 2),
                           Text(
                             subtitle,
-                            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                            style: Theme.of(context).textTheme.bodyMedium!
+                                .copyWith(
                                   fontSize: 12,
                                   color: Colors.grey[600],
                                 ),
@@ -1253,6 +1286,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ],
     );
   }
+
   void _showVerificationInvitation(BuildContext context) {
     showModalBottomSheet(
       context: context,

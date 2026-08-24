@@ -21,11 +21,7 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
   final TextEditingController _searchController = TextEditingController();
   final AdminWargaService _adminWargaService = AdminWargaService();
 
-  final List<String> _filters = [
-    'Semua',
-    'Menunggu Validasi',
-    'Terverifikasi',
-  ];
+  final List<String> _filters = ['Semua', 'Terverifikasi', 'Belum Verifikasi'];
 
   final List<String> _rtRegions = [
     'Seluruh RW 01',
@@ -70,13 +66,14 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
           if (verStatus == 'verified' || kycStatus == 'approved') {
             displayStatus = 'Terverifikasi';
           } else {
-            displayStatus = 'Menunggu Validasi';
+            displayStatus = 'Belum Verifikasi';
           }
 
           final String rawNik = (item['kyc_nik'] ?? '').toString();
           String maskedNik = 'Belum KYC';
           if (rawNik.isNotEmpty && rawNik.length >= 8) {
-            maskedNik = '${rawNik.substring(0, 4)}••••••••${rawNik.length > 12 ? rawNik.substring(12) : ''}';
+            maskedNik =
+                '${rawNik.substring(0, 4)}••••••••${rawNik.length > 12 ? rawNik.substring(12) : ''}';
           } else if (rawNik.isNotEmpty) {
             maskedNik = rawNik;
           }
@@ -88,7 +85,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
             'masked_nik': maskedNik,
             'email': item['email'] ?? '-',
             'address': item['address'] ?? '-',
-            'rt_rw': item['rt_rw'] ?? (widget.role == 'rt' ? 'RT 02 / RW 01' : 'RW 01'),
+            'rt_rw':
+                item['rt_rw'] ??
+                (widget.role == 'rt' ? 'RT 02 / RW 01' : 'RW 01'),
             'verification_status': displayStatus,
             'phone': item['phone'] ?? '-',
             'registered_date': item['registered_date'] ?? '-',
@@ -120,14 +119,18 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
           final id = warga['id'].toString().toLowerCase();
           final address = warga['address'].toString().toLowerCase();
           final nik = warga['masked_nik'].toString().toLowerCase();
-          if (!name.contains(query) && !id.contains(query) && !address.contains(query) && !nik.contains(query)) {
+          if (!name.contains(query) &&
+              !id.contains(query) &&
+              !address.contains(query) &&
+              !nik.contains(query)) {
             return false;
           }
         }
 
         // 3. Filter status
-        if (_selectedFilter == 'Menunggu Validasi') {
-          return warga['verification_status'] == 'Menunggu Validasi';
+        if (_selectedFilter == 'Belum Verifikasi') {
+          return warga['verification_status'] == 'Belum Verifikasi' ||
+              warga['verification_status'] == 'Menunggu Validasi';
         } else if (_selectedFilter == 'Terverifikasi') {
           return warga['verification_status'] == 'Terverifikasi';
         }
@@ -136,146 +139,28 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
     });
   }
 
-  Future<void> _approveVerification(int id, String name) async {
-    final response = await _adminWargaService.approveKyc(id);
-    if (!mounted) return;
-
-    if (response['status'] == 'success') {
-      await _loadWargaFromApi();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Verifikasi untuk $name berhasil disetujui.',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response['message'] ?? 'Gagal menyetujui verifikasi'),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
-    }
-  }
-
-  Future<void> _rejectVerification(int id, String name) async {
-    final TextEditingController reasonController = TextEditingController();
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withAlpha(25),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.cancel_rounded, color: Colors.red, size: 20),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Tolak Verifikasi',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Berikan alasan penolakan untuk warga "$name":',
-              style: const TextStyle(fontSize: 13, height: 1.3),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              decoration: InputDecoration(
-                hintText: 'Contoh: Foto KTP buram / NIK tidak cocok',
-                hintStyle: const TextStyle(fontSize: 12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Tolak Berkas'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      final response = await _adminWargaService.rejectKyc(
-        id,
-        notes: reasonController.text.trim().isNotEmpty ? reasonController.text.trim() : null,
-      );
-      if (!mounted) return;
-
-      if (response['status'] == 'success') {
-        await _loadWargaFromApi();
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Verifikasi untuk $name telah ditolak.'),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            margin: const EdgeInsets.all(16),
-          ),
-        );
-      }
-    }
-  }
-
   void _showResidentDetailModal(Map<String, dynamic> warga) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final bool isPending = warga['verification_status'] == 'Menunggu Validasi';
-    final int rawId = warga['raw_id'] ?? 0;
+    final bool isVerified = warga['verification_status'] == 'Terverifikasi';
+    final bool isPending = !isVerified;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        padding: EdgeInsets.fromLTRB(20, 14, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          14,
+          20,
+          MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0F172A) : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(color: isDark ? const Color(0xFF1E293B) : Colors.transparent),
+          border: Border.all(
+            color: isDark ? const Color(0xFF1E293B) : Colors.transparent,
+          ),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -304,12 +189,19 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                       gradient: LinearGradient(
                         colors: isPending
                             ? [const Color(0xFFD97706), const Color(0xFFF59E0B)]
-                            : [const Color(0xFF1D4ED8), const Color(0xFF3B82F6)],
+                            : [
+                                const Color(0xFF1D4ED8),
+                                const Color(0xFF3B82F6),
+                              ],
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: (isPending ? const Color(0xFFF59E0B) : const Color(0xFF2563EB)).withAlpha(80),
+                          color:
+                              (isPending
+                                      ? const Color(0xFFF59E0B)
+                                      : const Color(0xFF2563EB))
+                                  .withAlpha(80),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -317,7 +209,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                     ),
                     child: Center(
                       child: Text(
-                        warga['name'].isNotEmpty ? warga['name'][0].toUpperCase() : 'W',
+                        warga['name'].isNotEmpty
+                            ? warga['name'][0].toUpperCase()
+                            : 'W',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -336,7 +230,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -346,7 +242,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                           '${warga['rt_rw']} • ID: #${warga['id']}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B),
+                            color: isDark
+                                ? Colors.grey.shade400
+                                : const Color(0xFF64748B),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -354,14 +252,19 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: isPending
                           ? const Color(0xFFF59E0B).withAlpha(isDark ? 40 : 20)
                           : const Color(0xFF10B981).withAlpha(isDark ? 40 : 20),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isPending ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+                        color: isPending
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFF10B981),
                         width: 1,
                       ),
                     ),
@@ -370,7 +273,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.bold,
-                        color: isPending ? const Color(0xFFD97706) : const Color(0xFF059669),
+                        color: isPending
+                            ? const Color(0xFFD97706)
+                            : const Color(0xFF059669),
                       ),
                     ),
                   ),
@@ -383,70 +288,111 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF131C2E) : const Color(0xFFF8FAFC),
+                  color: isDark
+                      ? const Color(0xFF131C2E)
+                      : const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFE2E8F0),
+                  ),
                 ),
                 child: Column(
                   children: [
-                    _buildCompactDetailItem(isDark, 'Nomor Induk KTP (NIK)', warga['masked_nik'], Icons.badge_rounded),
+                    _buildCompactDetailItem(
+                      isDark,
+                      'Nomor Induk KTP (NIK)',
+                      warga['masked_nik'],
+                      Icons.badge_rounded,
+                    ),
                     const Divider(height: 16),
-                    _buildCompactDetailItem(isDark, 'Alamat Domisili', warga['address'], Icons.location_on_rounded),
+                    _buildCompactDetailItem(
+                      isDark,
+                      'Alamat Domisili',
+                      warga['address'],
+                      Icons.location_on_rounded,
+                    ),
                     const Divider(height: 16),
-                    _buildCompactDetailItem(isDark, 'Nomor Kontak', warga['phone'], Icons.phone_rounded),
+                    _buildCompactDetailItem(
+                      isDark,
+                      'Nomor Kontak',
+                      warga['phone'],
+                      Icons.phone_rounded,
+                    ),
                     const Divider(height: 16),
-                    _buildCompactDetailItem(isDark, 'Cakupan Wilayah', warga['rt_rw'], Icons.holiday_village_rounded),
+                    _buildCompactDetailItem(
+                      isDark,
+                      'Cakupan Wilayah',
+                      warga['rt_rw'],
+                      Icons.holiday_village_rounded,
+                    ),
                     const Divider(height: 16),
-                    _buildCompactDetailItem(isDark, 'Tanggal Registrasi', warga['registered_date'], Icons.calendar_month_rounded),
+                    _buildCompactDetailItem(
+                      isDark,
+                      'Tanggal Registrasi',
+                      warga['registered_date'],
+                      Icons.calendar_month_rounded,
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 18),
 
-              // Action Buttons
-              if (isPending) ...[
-                Row(
+              // Verification Status Banner
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+                decoration: BoxDecoration(
+                  color: isVerified
+                      ? const Color(
+                          0xFF10B981,
+                        ).withValues(alpha: isDark ? 0.2 : 0.1)
+                      : const Color(
+                          0xFFF59E0B,
+                        ).withValues(alpha: isDark ? 0.2 : 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isVerified
+                        ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                        : const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
                   children: [
-                    Expanded(
-                      flex: 4,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          _rejectVerification(rawId, warga['name']);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red.shade600,
-                          side: BorderSide(color: Colors.red.shade300),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Tolak Berkas', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5)),
-                      ),
+                    Icon(
+                      isVerified
+                          ? Icons.verified_user_rounded
+                          : Icons.info_outline_rounded,
+                      size: 20,
+                      color: isVerified
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF59E0B),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      flex: 6,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          _approveVerification(rawId, warga['name']);
-                        },
-                        icon: const Icon(Icons.check_circle_rounded, size: 16),
-                        label: const Text('Setujui Validasi', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Text(
+                        isVerified
+                            ? 'Status KTP telah Terverifikasi Resmi oleh Pemerintah Desa.'
+                            : 'Warga belum melakukan verifikasi / menunggu validasi Kantor Desa.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isVerified
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFD97706),
+                          height: 1.3,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-              ],
+              ),
+
+              const SizedBox(height: 12),
 
               SizedBox(
                 width: double.infinity,
@@ -455,7 +401,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                   child: Text(
                     'Tutup Detail',
                     style: TextStyle(
-                      color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B),
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : const Color(0xFF64748B),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -469,7 +417,12 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
     );
   }
 
-  Widget _buildCompactDetailItem(bool isDark, String label, String value, IconData icon) {
+  Widget _buildCompactDetailItem(
+    bool isDark,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Row(
       children: [
         Container(
@@ -516,11 +469,17 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
     final bool isRwMode = widget.role == 'rw';
 
     final int totalWarga = _allWarga.length;
-    final int verifiedWarga = _allWarga.where((w) => w['verification_status'] == 'Terverifikasi').length;
-    final int pendingWarga = _allWarga.where((w) => w['verification_status'] == 'Menunggu Validasi').length;
+    final int verifiedWarga = _allWarga
+        .where((w) => w['verification_status'] == 'Terverifikasi')
+        .length;
+    final int pendingWarga = _allWarga
+        .where((w) => w['verification_status'] == 'Menunggu Validasi')
+        .length;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF090D16) : const Color(0xFFF4F6FA),
+      backgroundColor: isDark
+          ? const Color(0xFF090D16)
+          : const Color(0xFFF4F6FA),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -530,7 +489,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
               floating: false,
               elevation: 0,
               scrolledUnderElevation: 2,
-              backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF1E3A8A),
+              backgroundColor: isDark
+                  ? const Color(0xFF0F172A)
+                  : const Color(0xFF1E3A8A),
               leading: IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(6),
@@ -614,7 +575,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                             decoration: BoxDecoration(
                               color: Colors.white.withAlpha(35),
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: Colors.white.withAlpha(40)),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(40),
+                              ),
                             ),
                             child: const Icon(
                               Icons.menu_book_rounded,
@@ -639,7 +602,10 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withAlpha(30),
                                     borderRadius: BorderRadius.circular(6),
@@ -647,10 +613,16 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.place_rounded, size: 12, color: Colors.white70),
+                                      const Icon(
+                                        Icons.place_rounded,
+                                        size: 12,
+                                        color: Colors.white70,
+                                      ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        isRwMode ? 'Cakupan: Seluruh RW 01' : 'Wilayah Kerja: RT 02 / RW 01',
+                                        isRwMode
+                                            ? 'Cakupan: Seluruh RW 01'
+                                            : 'Wilayah Kerja: RT 02 / RW 01',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -724,19 +696,19 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                       ),
                       const SizedBox(width: 8),
 
-                      // Menunggu Card
+                      // Belum Verifikasi Card
                       Expanded(
                         child: _buildInteractiveStatCard(
                           isDark: isDark,
-                          title: 'Menunggu',
+                          title: 'Belum Valid',
                           count: '$pendingWarga',
-                          subtitle: 'Perlu KYC',
+                          subtitle: 'Verif Desa',
                           color: const Color(0xFFF59E0B),
-                          icon: Icons.hourglass_top_rounded,
-                          isSelected: _selectedFilter == 'Menunggu Validasi',
+                          icon: Icons.pending_actions_rounded,
+                          isSelected: _selectedFilter == 'Belum Verifikasi',
                           onTap: () {
                             setState(() {
-                              _selectedFilter = 'Menunggu Validasi';
+                              _selectedFilter = 'Belum Verifikasi';
                               _applyFiltersAndSearch();
                             });
                           },
@@ -758,10 +730,14 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                       Container(
                         height: 44,
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF131C2E) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF131C2E)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFE2E8F0),
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -779,19 +755,30 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                           },
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
                             fontWeight: FontWeight.w500,
                           ),
                           decoration: InputDecoration(
                             hintText: 'Cari nama warga, NIK, atau alamat...',
                             hintStyle: TextStyle(
                               fontSize: 12.5,
-                              color: isDark ? Colors.grey.shade500 : const Color(0xFF94A3B8),
+                              color: isDark
+                                  ? Colors.grey.shade500
+                                  : const Color(0xFF94A3B8),
                             ),
-                            prefixIcon: const Icon(Icons.search_rounded, size: 20, color: _primaryBlue),
+                            prefixIcon: const Icon(
+                              Icons.search_rounded,
+                              size: 20,
+                              color: _primaryBlue,
+                            ),
                             suffixIcon: _searchController.text.isNotEmpty
                                 ? IconButton(
-                                    icon: const Icon(Icons.cancel_rounded, size: 18),
+                                    icon: const Icon(
+                                      Icons.cancel_rounded,
+                                      size: 18,
+                                    ),
                                     onPressed: () {
                                       _searchController.clear();
                                       _searchQuery = '';
@@ -800,7 +787,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                                   )
                                 : null,
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ),
@@ -821,26 +810,43 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                                 selected: isSelected,
                                 showCheckmark: false,
                                 avatar: isSelected
-                                    ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+                                    ? const Icon(
+                                        Icons.check_rounded,
+                                        size: 14,
+                                        color: Colors.white,
+                                      )
                                     : null,
                                 labelStyle: TextStyle(
                                   color: isSelected
                                       ? Colors.white
-                                      : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                                      : (isDark
+                                            ? Colors.white70
+                                            : const Color(0xFF475569)),
                                   fontSize: 11.5,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w600,
                                 ),
-                                backgroundColor: isDark ? const Color(0xFF131C2E) : Colors.white,
+                                backgroundColor: isDark
+                                    ? const Color(0xFF131C2E)
+                                    : Colors.white,
                                 selectedColor: _primaryBlue,
                                 side: BorderSide(
                                   color: isSelected
                                       ? _primaryBlue
-                                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                                      : (isDark
+                                            ? const Color(0xFF1E293B)
+                                            : const Color(0xFFE2E8F0)),
                                 ),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                                 elevation: isSelected ? 2 : 0,
                                 shadowColor: _primaryBlue.withAlpha(80),
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
                                 onSelected: (_) {
                                   setState(() {
                                     _selectedFilter = filter;
@@ -873,24 +879,39 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                                   },
                                   borderRadius: BorderRadius.circular(8),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? _primaryBlue.withAlpha(isDark ? 45 : 20)
-                                          : (isDark ? const Color(0xFF131C2E) : Colors.white),
+                                          ? _primaryBlue.withAlpha(
+                                              isDark ? 45 : 20,
+                                            )
+                                          : (isDark
+                                                ? const Color(0xFF131C2E)
+                                                : Colors.white),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: isSelected
                                             ? _primaryBlue
-                                            : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
+                                            : (isDark
+                                                  ? const Color(0xFF1E293B)
+                                                  : const Color(0xFFE2E8F0)),
                                       ),
                                     ),
                                     child: Text(
                                       rt,
                                       style: TextStyle(
                                         fontSize: 11,
-                                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                                        color: isSelected ? _primaryBlue : (isDark ? Colors.grey.shade400 : const Color(0xFF64748B)),
+                                        fontWeight: isSelected
+                                            ? FontWeight.w800
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? _primaryBlue
+                                            : (isDark
+                                                  ? Colors.grey.shade400
+                                                  : const Color(0xFF64748B)),
                                       ),
                                     ),
                                   ),
@@ -908,38 +929,47 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
               // ── 3. LIST CONTENT OR RICH EMPTY STATE ──
               if (_isLoading)
                 const SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Center(
                     child: CircularProgressIndicator(color: _primaryBlue),
                   ),
                 )
               else if (_filteredWarga.isEmpty)
                 SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(28),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // Rich civic empty illustration container
                           Container(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(18),
                             decoration: BoxDecoration(
                               color: _primaryBlue.withAlpha(isDark ? 25 : 15),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
                               Icons.folder_shared_rounded,
-                              size: 54,
+                              size: 46,
                               color: _primaryBlue,
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 14),
                           Text(
                             'Data Warga Belum Ditemukan',
                             style: TextStyle(
-                              fontSize: 16.5,
+                              fontSize: 15.5,
                               fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -949,30 +979,46 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                                 : 'Belum ada warga yang terdaftar pada filter "$_selectedFilter". Data pendaftar aplikasi akan otomatis masuk ke sini.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 12.5,
-                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                              height: 1.4,
+                              fontSize: 12,
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF64748B),
+                              height: 1.35,
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                                _selectedFilter = 'Semua';
-                                _selectedRtFilter = isRwMode ? 'Seluruh RW 01' : 'RT 02 / RW 01';
-                                _applyFiltersAndSearch();
-                              });
-                            },
-                            icon: const Icon(Icons.restart_alt_rounded, size: 16),
-                            label: const Text('Reset Filter Pencarian'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: _primaryBlue,
-                              side: const BorderSide(color: _primaryBlue),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          if (_searchQuery.isNotEmpty ||
+                              _selectedFilter != 'Semua') ...[
+                            const SizedBox(height: 14),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchQuery = '';
+                                  _selectedFilter = 'Semua';
+                                  _selectedRtFilter = isRwMode
+                                      ? 'Seluruh RW 01'
+                                      : 'RT 02 / RW 01';
+                                  _applyFiltersAndSearch();
+                                });
+                              },
+                              icon: const Icon(
+                                Icons.restart_alt_rounded,
+                                size: 16,
+                              ),
+                              label: const Text('Reset Filter Pencarian'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: _primaryBlue,
+                                side: const BorderSide(color: _primaryBlue),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -982,13 +1028,10 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 30),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final warga = _filteredWarga[index];
-                        return _buildCleanResidentCard(warga, isDark);
-                      },
-                      childCount: _filteredWarga.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final warga = _filteredWarga[index];
+                      return _buildCleanResidentCard(warga, isDark);
+                    }, childCount: _filteredWarga.length),
                   ),
                 ),
             ],
@@ -1074,7 +1117,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: isSelected ? color : (isDark ? Colors.white70 : const Color(0xFF334155)),
+                color: isSelected
+                    ? color
+                    : (isDark ? Colors.white70 : const Color(0xFF334155)),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1095,7 +1140,6 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
 
   Widget _buildCleanResidentCard(Map<String, dynamic> warga, bool isDark) {
     final bool isVerified = warga['verification_status'] == 'Terverifikasi';
-    final int rawId = warga['raw_id'] ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -1136,7 +1180,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                   ),
                   child: Center(
                     child: Text(
-                      warga['name'].isNotEmpty ? warga['name'][0].toUpperCase() : 'W',
+                      warga['name'].isNotEmpty
+                          ? warga['name'][0].toUpperCase()
+                          : 'W',
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -1161,7 +1207,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1169,12 +1217,21 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                           ),
                           const SizedBox(width: 6),
                           if (isVerified)
-                            const Icon(Icons.verified_rounded, size: 15, color: Color(0xFF10B981))
+                            const Icon(
+                              Icons.verified_rounded,
+                              size: 15,
+                              color: Color(0xFF10B981),
+                            )
                           else
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 1.5,
+                              ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF59E0B).withAlpha(isDark ? 35 : 20),
+                                color: const Color(
+                                  0xFFF59E0B,
+                                ).withAlpha(isDark ? 35 : 20),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
@@ -1191,13 +1248,21 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          Icon(Icons.badge_rounded, size: 12, color: isDark ? Colors.white38 : const Color(0xFF94A3B8)),
+                          Icon(
+                            Icons.badge_rounded,
+                            size: 12,
+                            color: isDark
+                                ? Colors.white38
+                                : const Color(0xFF94A3B8),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             warga['masked_nik'],
                             style: TextStyle(
                               fontSize: 11.5,
-                              color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B),
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : const Color(0xFF64748B),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1206,7 +1271,9 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                             '•  ${warga['rt_rw']}',
                             style: TextStyle(
                               fontSize: 11,
-                              color: isDark ? Colors.grey.shade500 : const Color(0xFF94A3B8),
+                              color: isDark
+                                  ? Colors.grey.shade500
+                                  : const Color(0xFF94A3B8),
                             ),
                           ),
                         ],
@@ -1217,30 +1284,12 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
 
                 const SizedBox(width: 6),
 
-                // Quick Action / Chevron
-                if (!isVerified)
-                  ElevatedButton(
-                    onPressed: () => _approveVerification(rawId, warga['name']),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: const Text(
-                      'Validasi',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                  )
-                else
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: isDark ? Colors.white30 : const Color(0xFFCBD5E1),
-                  ),
+                // Clean Detail Chevron
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: isDark ? Colors.white30 : const Color(0xFFCBD5E1),
+                ),
               ],
             ),
           ),
@@ -1249,4 +1298,3 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
     );
   }
 }
-

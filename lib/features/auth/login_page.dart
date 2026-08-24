@@ -89,12 +89,12 @@ class _LoginPageState extends State<LoginPage> {
           context: context,
           barrierDismissible: false,
           builder: (context) => const AnimatedSuccessDialog(
-            message: 'Berhasil Login!',
+            message: 'Berhasil Masuk',
             isLogout: false,
           ),
         );
 
-        await Future.delayed(const Duration(milliseconds: 1200));
+        await Future.delayed(const Duration(milliseconds: 1000));
         if (!mounted) return;
         Navigator.pop(context); // Close dialog
         Navigator.pop(
@@ -230,12 +230,12 @@ class _LoginPageState extends State<LoginPage> {
             context: context,
             barrierDismissible: false,
             builder: (context) => const AnimatedSuccessDialog(
-              message: 'Berhasil Login Google!',
+              message: 'Berhasil Masuk',
               isLogout: false,
             ),
           );
 
-          await Future.delayed(const Duration(milliseconds: 1200));
+          await Future.delayed(const Duration(milliseconds: 1000));
           if (!mounted) return;
           Navigator.pop(context); // Close dialog
           Navigator.pop(context, true); // Close login page

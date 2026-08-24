@@ -64,8 +64,11 @@ class _AdminReportPageState extends State<AdminReportPage> {
             if (mounted) {
               setState(() {
                 _allReports = fetchedData.map<Map<String, dynamic>>((e) {
-                  final userObj = e['user'] is Map ? e['user'] as Map<String, dynamic> : null;
-                  final String reporterName = userObj?['name'] ??
+                  final userObj = e['user'] is Map
+                      ? e['user'] as Map<String, dynamic>
+                      : null;
+                  final String reporterName =
+                      userObj?['name'] ??
                       (e['nama'] != null && e['nama'].toString().isNotEmpty
                           ? e['nama'].toString()
                           : 'Warga Desa');
@@ -78,7 +81,8 @@ class _AdminReportPageState extends State<AdminReportPage> {
                   final sLower = rawStatus.toLowerCase();
                   if (sLower == 'pending' || sLower == 'menunggu') {
                     normalizedStatus = 'Menunggu';
-                  } else if (sLower.contains('proses') || sLower.contains('teruskan')) {
+                  } else if (sLower.contains('proses') ||
+                      sLower.contains('teruskan')) {
                     normalizedStatus = 'Diproses';
                   } else if (sLower == 'selesai') {
                     normalizedStatus = 'Selesai';
@@ -90,14 +94,17 @@ class _AdminReportPageState extends State<AdminReportPage> {
                   if (e['created_at'] != null) {
                     try {
                       final dt = DateTime.parse(e['created_at'].toString());
-                      dateStr = '${dt.day.toString().padLeft(2, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.year}';
+                      dateStr =
+                          '${dt.day.toString().padLeft(2, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.year}';
                     } catch (_) {
                       dateStr = e['created_at'].toString().substring(0, 10);
                     }
                   }
 
                   // Debug: tampilkan data bukti mentah dari API
-                  debugPrint('📸 Laporan #${e['id']} bukti=${e['bukti']} | foto_bukti=${e['foto_bukti']} | foto=${e['foto']}');
+                  debugPrint(
+                    '📸 Laporan #${e['id']} bukti=${e['bukti']} | foto_bukti=${e['foto_bukti']} | foto=${e['foto']}',
+                  );
 
                   return {
                     'id': e['id'].toString(),
@@ -222,21 +229,32 @@ class _AdminReportPageState extends State<AdminReportPage> {
                           labelStyle: TextStyle(
                             color: isSelected
                                 ? Colors.white
-                                : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                                : (isDark
+                                      ? Colors.white70
+                                      : const Color(0xFF475569)),
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                           ),
-                          backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                          backgroundColor: isDark
+                              ? const Color(0xFF1E293B)
+                              : const Color(0xFFF1F5F9),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
                               color: isSelected
                                   ? const Color(0xFF2563EB)
-                                  : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                                  : (isDark
+                                        ? Colors.white12
+                                        : const Color(0xFFE2E8F0)),
                             ),
                           ),
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                         ),
                       );
                     }).toList(),
@@ -247,14 +265,15 @@ class _AdminReportPageState extends State<AdminReportPage> {
 
             if (_isLoading)
               const SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
               )
             else if (_filteredReports.isEmpty)
               SliverFillRemaining(
+                hasScrollBody: false,
                 child: Center(
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
@@ -273,7 +292,9 @@ class _AdminReportPageState extends State<AdminReportPage> {
                       Text(
                         'Tidak ada laporan ($_selectedFilter)',
                         style: TextStyle(
-                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF64748B),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -466,14 +487,17 @@ class _AdminReportPageState extends State<AdminReportPage> {
                         Text(
                           reporter,
                           style: TextStyle(
-                            color: isDark ? Colors.white70 : const Color(0xFF334155),
+                            color: isDark
+                                ? Colors.white70
+                                : const Color(0xFF334155),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
-                    if (report['date'] != null && report['date'].toString().isNotEmpty)
+                    if (report['date'] != null &&
+                        report['date'].toString().isNotEmpty)
                       Row(
                         children: [
                           Icon(

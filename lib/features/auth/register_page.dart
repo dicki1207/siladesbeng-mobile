@@ -106,10 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
+        SnackBar(content: Text('Gagal: $e'), backgroundColor: Colors.redAccent),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -147,7 +144,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     defaultPinTheme: PinTheme(
                       width: 50,
                       height: 50,
-                      textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                      textStyle: const TextStyle(
+                        fontSize: 22,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.blueGrey),
                         borderRadius: BorderRadius.circular(10),
@@ -156,9 +157,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     focusedPinTheme: PinTheme(
                       width: 50,
                       height: 50,
-                      textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold),
+                      textStyle: const TextStyle(
+                        fontSize: 22,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).primaryColor, width: 2),
+                        border: Border.all(
+                          color: Theme.of(context).primaryColor,
+                          width: 2,
+                        ),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -231,12 +239,14 @@ class _RegisterPageState extends State<RegisterPage> {
                                 barrierDismissible: false,
                                 builder: (successContext) =>
                                     const AnimatedSuccessDialog(
-                                      message: 'Berhasil Daftar!',
+                                      message: 'Akun Terdaftar',
                                       isLogout: false,
                                     ),
                               );
 
-                              await Future.delayed(const Duration(seconds: 2));
+                              await Future.delayed(
+                                const Duration(milliseconds: 1000),
+                              );
                               if (!mounted) return;
                               // ignore: use_build_context_synchronously
                               Navigator.pop(context); // Tutup dialog success
@@ -499,7 +509,9 @@ class _RegisterPageState extends State<RegisterPage> {
               obscureText: _obscurePasswordConfirm,
               suffixIcon: IconButton(
                 icon: Icon(
-                  _obscurePasswordConfirm ? Icons.visibility_off : Icons.visibility,
+                  _obscurePasswordConfirm
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                   color: Colors.blueGrey,
                 ),
                 onPressed: () {

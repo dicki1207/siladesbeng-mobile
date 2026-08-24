@@ -41,16 +41,41 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _unitPelayanan = [];
   List<dynamic> _availableServices = [];
   List<Map<String, dynamic>> _pasarDaerahProducts = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
   double _assistantX = -1;
   double _assistantY = -1;
   final TextEditingController _searchController = TextEditingController();
+
+  String _userName = 'Tamu';
+  String? _userImagePath;
+  String? _userImageUrl;
+  bool _isLoggedIn = false;
 
   @override
   void initState() {
     super.initState();
     _unitPelayanan = _getDefaultUnitPelayanan();
+    _loadProfileData();
     _fetchPublicData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final isLoggedIn = token != null;
+    final name = isLoggedIn
+        ? (prefs.getString('profile_name') ?? 'Pengguna')
+        : 'Tamu';
+    final imagePath = prefs.getString('profile_image');
+    final imageUrl = prefs.getString('profile_image_url');
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = isLoggedIn;
+        _userName = name;
+        _userImagePath = imagePath;
+        _userImageUrl = imageUrl;
+      });
+    }
   }
 
   List<Map<String, String>> _getDefaultUnitPelayanan() {
@@ -142,7 +167,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void didUpdateWidget(covariant HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    setState(() {});
+    _loadProfileData();
   }
 
   Future<void> _fetchPublicData() async {
@@ -520,36 +545,31 @@ class _HomePageState extends State<HomePage> {
             children: [
               SafeArea(
                 top: false, // Let PremiumHeader handle the top padding
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : RefreshIndicator(
-                        onRefresh: _fetchPublicData,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
+                child: RefreshIndicator(
+                  onRefresh: _fetchPublicData,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PremiumHeader(
+                          bottomPadding: 12.0,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              PremiumHeader(
-                                bottomPadding: 12.0,
-                                child: Column(
-                                  children: [
-                                    _buildTopProfile(),
-                                    _buildSearchBar(),
-                                  ],
-                                ),
-                              ),
-                              _buildHeroBanner(),
-                              _buildUnitPelayanan(),
-                              _buildBumdesStoreMini(),
-                              _buildAvailableServices(),
-                              _buildKabarDaerah(),
-                              const SizedBox(
-                                height: 120,
-                              ), // Spacing leluasa untuk clearing bottom nav & assistant
-                            ],
+                            children: [_buildTopProfile(), _buildSearchBar()],
                           ),
                         ),
-                      ),
+                        _buildHeroBanner(),
+                        _buildUnitPelayanan(),
+                        _buildBumdesStoreMini(),
+                        _buildAvailableServices(),
+                        _buildKabarDaerah(),
+                        const SizedBox(
+                          height: 120,
+                        ), // Spacing leluasa untuk clearing bottom nav & assistant
+                      ],
+                    ),
+                  ),
+                ),
               ),
 
               // Floating Tanya Assistant (Draggable)
@@ -699,159 +719,136 @@ class _HomePageState extends State<HomePage> {
   Widget _buildTopProfile() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: FutureBuilder<SharedPreferences>(
-        future: SharedPreferences.getInstance(),
-        builder: (context, snapshot) {
-          String name = 'Tamu';
-          String? imagePath;
-          String? imageUrl;
-          bool isLoggedIn = false;
-          if (snapshot.hasData) {
-            final prefs = snapshot.data!;
-            isLoggedIn = prefs.getString('auth_token') != null;
-            if (isLoggedIn) {
-              name = prefs.getString('profile_name') ?? 'Pengguna';
-              imagePath = prefs.getString('profile_image');
-              imageUrl = prefs.getString('profile_image_url');
-            }
-          }
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: widget.onNavigateToProfile,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withAlpha(80),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(20),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.white24,
+                child: ClipOval(
+                  child: (_isLoggedIn && _userImagePath != null)
+                      ? Image.file(
+                          File(_userImagePath!),
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        )
+                      : (_isLoggedIn && _userImageUrl != null)
+                      ? Image.network(
+                          _userImageUrl!,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        )
+                      : const Icon(Icons.person, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Halo, ${_getGreeting()}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11.5,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  _userName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
 
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: widget.onNavigateToProfile,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationPage(),
+                ),
+              );
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(35),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withAlpha(80),
-                      width: 1.5,
+                      color: Colors.white.withAlpha(45),
+                      width: 1,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(20),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
                   ),
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white24,
-                    child: ClipOval(
-                      child: (isLoggedIn && imagePath != null)
-                          ? Image.file(
-                              File(imagePath),
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => const Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                            )
-                          : (isLoggedIn && imageUrl != null)
-                          ? Image.network(
-                              imageUrl,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => const Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 22,
-                            ),
+                  child: const Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                Positioned(
+                  top: 1,
+                  right: 1,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF2563EB),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Halo, ${_getGreeting()}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 11.5,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        fontSize: 15,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NotificationPage(),
-                    ),
-                  );
-                },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(35),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withAlpha(45),
-                          width: 1,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_outlined,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    Positioned(
-                      top: 1,
-                      right: 1,
-                      child: Container(
-                        width: 9,
-                        height: 9,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF2563EB),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
