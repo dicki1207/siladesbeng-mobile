@@ -66,12 +66,15 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         _totalLaporan = statistik['total_laporan'] ?? 0;
         _laporanBaru = statistik['laporan_baru'] ?? 0;
         _laporanSelesai = statistik['laporan_selesai'] ?? 0;
-        _laporanDiproses = (_totalLaporan - _laporanBaru - _laporanSelesai).clamp(0, 999);
+        _laporanDiproses = (_totalLaporan - _laporanBaru - _laporanSelesai)
+            .clamp(0, 999);
 
-        if (pengurus['name'] != null && pengurus['name'].toString().isNotEmpty) {
+        if (pengurus['name'] != null &&
+            pengurus['name'].toString().isNotEmpty) {
           _adminName = pengurus['name'];
         }
-        if (pengurus['avatar_url'] != null && pengurus['avatar_url'].toString().isNotEmpty) {
+        if (pengurus['avatar_url'] != null &&
+            pengurus['avatar_url'].toString().isNotEmpty) {
           _adminAvatar = pengurus['avatar_url'];
         }
         if (pengurus['rt'] != null) _rt = pengurus['rt'].toString();
@@ -90,26 +93,73 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
+      backgroundColor: isDark
+          ? const Color(0xFF0B1120)
+          : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF0B1120) : Colors.white,
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2563EB),
         elevation: 0,
         scrolledUnderElevation: 1,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: Colors.white,
             size: 18,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
+        title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Portal Pengurus',
               style: TextStyle(
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                color: Colors.white,
                 fontWeight: FontWeight.w900,
                 fontSize: 16,
                 letterSpacing: -0.2,
@@ -118,7 +168,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             Text(
               'Panel Kendali Administrasi Lingkungan',
               style: TextStyle(
-                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                color: Colors.white70,
                 fontSize: 10.5,
                 fontWeight: FontWeight.w500,
               ),
@@ -130,10 +180,10 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             margin: const EdgeInsets.only(right: 14),
             padding: const EdgeInsets.all(2.5),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEEF2F6),
+              color: Colors.black.withAlpha(isDark ? 40 : 25),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                color: Colors.white.withAlpha(isDark ? 30 : 50),
               ),
             ),
             child: Row(
@@ -168,10 +218,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             const Color(0xFF1E3A8A).withAlpha(140),
                             const Color(0xFF1E293B),
                           ]
-                        : [
-                            const Color(0xFFEFF6FF),
-                            Colors.white,
-                          ],
+                        : [const Color(0xFFEFF6FF), Colors.white],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -216,30 +263,36 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             ],
                           ),
                           clipBehavior: Clip.antiAlias,
-                          child: (_adminAvatar != null && _adminAvatar!.trim().isNotEmpty)
+                          child:
+                              (_adminAvatar != null &&
+                                  _adminAvatar!.trim().isNotEmpty)
                               ? Image.network(
                                   _adminAvatar!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => const Center(
-                                    child: Icon(
-                                      Icons.security_rounded,
-                                      size: 22,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Center(
-                                      child: SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(
+                                        child: Icon(
+                                          Icons.security_rounded,
+                                          size: 22,
                                           color: Colors.white,
                                         ),
                                       ),
-                                    );
-                                  },
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return const Center(
+                                          child: SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                 )
                               : const Center(
                                   child: Icon(
@@ -259,7 +312,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                               color: const Color(0xFF10B981),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                                color: isDark
+                                    ? const Color(0xFF0F172A)
+                                    : Colors.white,
                                 width: 1.5,
                               ),
                             ),
@@ -280,7 +335,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                   style: TextStyle(
                                     fontSize: 14.5,
                                     fontWeight: FontWeight.w800,
-                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -302,7 +359,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF2563EB),
+                              color: isDark
+                                  ? const Color(0xFF93C5FD)
+                                  : const Color(0xFF2563EB),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -311,7 +370,10 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [_primaryBlue, _lightBlue],
@@ -345,12 +407,19 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
               if (_laporanBaru > 0) ...[
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 9,
+                  ),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
+                    color: isDark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFFEF3C7),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFFF59E0B).withAlpha(isDark ? 80 : 120),
+                      color: const Color(
+                        0xFFF59E0B,
+                      ).withAlpha(isDark ? 80 : 120),
                     ),
                   ),
                   child: Row(
@@ -374,7 +443,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E),
+                            color: isDark
+                                ? const Color(0xFFFDE68A)
+                                : const Color(0xFF92400E),
                           ),
                         ),
                       ),
@@ -382,12 +453,17 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const AdminReportPage()),
+                            MaterialPageRoute(
+                              builder: (_) => const AdminReportPage(),
+                            ),
                           );
                         },
                         borderRadius: BorderRadius.circular(6),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           child: const Text(
                             'Tinjau ›',
                             style: TextStyle(
@@ -464,7 +540,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
                           letterSpacing: -0.2,
                         ),
                       ),
@@ -488,9 +566,13 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                 isDark: isDark,
                 icon: Icons.mark_chat_unread_rounded,
                 title: 'Kelola Pengaduan Warga',
-                subtitle: 'Tindak lanjuti aspirasi & laporan masalah lingkungan',
+                subtitle:
+                    'Tindak lanjuti aspirasi & laporan masalah lingkungan',
                 tag: 'Aduan & Respon',
-                gradientColors: [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
+                gradientColors: [
+                  const Color(0xFF2563EB),
+                  const Color(0xFF3B82F6),
+                ],
                 badge: _laporanBaru > 0 ? '$_laporanBaru Baru' : null,
                 onTap: () {
                   Navigator.push(
@@ -505,14 +587,20 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                 isDark: isDark,
                 icon: Icons.campaign_rounded,
                 title: 'Pengumuman & Gotong Royong',
-                subtitle: 'Publikasi kerja bakti, iuran, dan agenda resmi RT/RW',
+                subtitle:
+                    'Publikasi kerja bakti, iuran, dan agenda resmi RT/RW',
                 tag: 'Agenda & Info',
-                gradientColors: [const Color(0xFF7C3AED), const Color(0xFF8B5CF6)],
+                gradientColors: [
+                  const Color(0xFF7C3AED),
+                  const Color(0xFF8B5CF6),
+                ],
                 badge: null,
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const EventGotongRoyongPage()),
+                    MaterialPageRoute(
+                      builder: (_) => const EventGotongRoyongPage(),
+                    ),
                   );
                 },
               ),
@@ -524,7 +612,10 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                 title: 'Buku Induk & Data Warga',
                 subtitle: 'Database kependudukan, domisili, & verifikasi KYC',
                 tag: 'Data Warga',
-                gradientColors: [const Color(0xFF0284C7), const Color(0xFF06B6D4)],
+                gradientColors: [
+                  const Color(0xFF0284C7),
+                  const Color(0xFF06B6D4),
+                ],
                 badge: null,
                 onTap: () {
                   Navigator.push(
@@ -567,7 +658,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                             Icon(
                               Icons.history_rounded,
                               size: 16,
-                              color: isDark ? Colors.white70 : const Color(0xFF334155),
+                              color: isDark
+                                  ? Colors.white70
+                                  : const Color(0xFF334155),
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -575,13 +668,18 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 13,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                               ),
                             ),
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: _primaryBlue.withAlpha(isDark ? 35 : 15),
                             borderRadius: BorderRadius.circular(6),
@@ -589,7 +687,10 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              CircleAvatar(radius: 3, backgroundColor: _primaryBlue),
+                              CircleAvatar(
+                                radius: 3,
+                                backgroundColor: _primaryBlue,
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'Realtime',
@@ -614,7 +715,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                                  color: isDark
+                                      ? const Color(0xFF0F172A)
+                                      : const Color(0xFFF1F5F9),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
@@ -629,7 +732,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                 style: TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                  color: isDark
+                                      ? Colors.white60
+                                      : const Color(0xFF64748B),
                                 ),
                               ),
                             ],
@@ -649,7 +754,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                 Container(
                                   padding: const EdgeInsets.all(7),
                                   decoration: BoxDecoration(
-                                    color: _primaryBlue.withAlpha(isDark ? 35 : 12),
+                                    color: _primaryBlue.withAlpha(
+                                      isDark ? 35 : 12,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
@@ -661,14 +768,19 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        item['kategori'] ?? item['deskripsi'] ?? 'Laporan Warga',
+                                        item['kategori'] ??
+                                            item['deskripsi'] ??
+                                            'Laporan Warga',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w700,
                                           fontSize: 12,
-                                          color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                          color: isDark
+                                              ? Colors.white
+                                              : const Color(0xFF1E293B),
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -677,7 +789,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                         'Pelapor: ${item['pelapor'] ?? 'Warga'} • $status',
                                         style: TextStyle(
                                           fontSize: 10.5,
-                                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                          color: isDark
+                                              ? Colors.white60
+                                              : const Color(0xFF64748B),
                                         ),
                                       ),
                                     ],
@@ -707,14 +821,14 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? _primaryBlue : Colors.transparent,
+          color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: _primaryBlue.withAlpha(60),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withAlpha(isDark ? 50 : 25),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1.5),
                   ),
                 ]
               : null,
@@ -722,9 +836,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : (isDark ? Colors.white70 : const Color(0xFF475569)),
+            color: isSelected ? _primaryBlue : Colors.white.withAlpha(200),
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
           ),
@@ -747,9 +859,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark
-              ? accentColor.withAlpha(35)
-              : accentColor.withAlpha(50),
+          color: isDark ? accentColor.withAlpha(35) : accentColor.withAlpha(50),
           width: 1,
         ),
         boxShadow: [
@@ -775,7 +885,10 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                 child: Icon(icon, color: accentColor, size: 14),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 5,
+                  vertical: 1.5,
+                ),
                 decoration: BoxDecoration(
                   color: accentColor.withAlpha(isDark ? 30 : 12),
                   borderRadius: BorderRadius.circular(4),
@@ -890,7 +1003,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -899,7 +1014,10 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                           if (badge != null) ...[
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 1,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFEF4444).withAlpha(20),
                                 borderRadius: BorderRadius.circular(4),
@@ -921,7 +1039,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                         subtitle,
                         style: TextStyle(
                           fontSize: 10.5,
-                          color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B),
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : const Color(0xFF64748B),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -937,7 +1057,9 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                   width: 26,
                   height: 26,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                    color: isDark
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFF1F5F9),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

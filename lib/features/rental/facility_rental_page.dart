@@ -57,7 +57,20 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
 
       if (!mounted) return;
 
-      final List<dynamic> combinedData = [...fasilitasData, ...mobilData];
+      // Extract public facility vehicles from Mobil data
+      final publicVehiclesFromMobil = mobilData.where((item) {
+        if (item is! Map) return false;
+        final name = (item['name'] ?? '').toString().toLowerCase();
+        final category = (item['category'] ?? '').toString().toLowerCase();
+        
+        return name.contains('ambulan') || 
+               name.contains('bus') ||
+               name.contains('jenazah') ||
+               category.contains('ambulan') || 
+               category.contains('fasilitas');
+      }).toList();
+
+      final List<dynamic> combinedData = [...fasilitasData, ...publicVehiclesFromMobil];
 
       if (combinedData.isNotEmpty) {
         final vehicles = combinedData

@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:siladesbeng_mobile/services/event_service.dart';
 
 class EventGotongRoyongPage extends StatefulWidget {
@@ -26,6 +28,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   final _scheduleController = TextEditingController();
   final _locationController = TextEditingController();
   final _noteController = TextEditingController();
+  File? _posterImage;
 
   final List<String> _scopeList = [
     'Seluruh Desa (Umum)',
@@ -120,6 +123,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
           'note': item['catatan'] ?? '',
           'participants': item['jumlah_peserta'] ?? 0,
           'isJoined': item['is_joined'] ?? false,
+          'isCreator': item['is_creator'] ?? false,
         };
       }).toList();
       _isLoading = false;
@@ -284,6 +288,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       jadwal: _scheduleController.text.trim(),
       lokasi: _locationController.text.trim(),
       catatan: _noteController.text.trim(),
+      posterPath: _posterImage?.path,
     );
 
     if (!mounted) return;
@@ -294,6 +299,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       _scheduleController.clear();
       _locationController.clear();
       _noteController.clear();
+      Navigator.pop(context);
       _tabController.animateTo(0);
       await _loadEvents();
 
@@ -449,98 +455,93 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                 ),
               ),
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(54),
+                preferredSize: const Size.fromHeight(52),
                 child: Container(
-                  height: 54,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  height: 52,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF090D16)
-                        : const Color(0xFFF4F6FA),
+                    color: isDark ? const Color(0xFF090D16) : Colors.white,
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(22),
+                      top: Radius.circular(24),
+                    ),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isDark
+                            ? Colors.white10
+                            : const Color(0xFFE2E8F0),
+                        width: 1.5,
+                      ),
                     ),
                   ),
-                  child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFFE2E8F0),
-                      borderRadius: BorderRadius.circular(14),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: UnderlineTabIndicator(
+                      borderSide: const BorderSide(
+                        width: 3.5,
+                        color: Color(0xFF2563EB),
+                      ),
+                      borderRadius: BorderRadius.circular(3),
+                      insets: const EdgeInsets.symmetric(horizontal: 16),
                     ),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                    indicatorSize: TabBarIndicatorSize.label,
+                    labelColor: const Color(0xFF2563EB),
+                    unselectedLabelColor: isDark
+                        ? Colors.white60
+                        : const Color(0xFF64748B),
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                      letterSpacing: 0.2,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13.5,
+                    ),
+                    dividerColor: Colors.transparent,
+                    tabs: [
+                      const Tab(
+                        height: 48,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.event_note_rounded, size: 18),
+                            SizedBox(width: 8),
+                            Text('Daftar Kegiatan'),
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(11),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF2563EB).withAlpha(80),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
-                      labelColor: Colors.white,
-                      unselectedLabelColor: isDark
-                          ? Colors.white60
-                          : const Color(0xFF64748B),
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.5,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12.5,
-                      ),
-                      dividerColor: Colors.transparent,
-                      tabs: [
-                        const Tab(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.event_note_rounded, size: 16),
-                              SizedBox(width: 6),
-                              Text('Daftar Kegiatan'),
-                            ],
-                          ),
-                        ),
-                        Tab(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.history_rounded, size: 16),
-                              const SizedBox(width: 6),
-                              const Text('Riwayat'),
-                              const SizedBox(width: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 1.5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withAlpha(50),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '${_events.where((e) => e['isJoined'] == true).length}',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      Tab(
+                        height: 48,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.history_rounded, size: 18),
+                            const SizedBox(width: 8),
+                            const Text('Riwayat'),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF2563EB,
+                                ).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${_events.where((e) => e['isJoined'] == true).length}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2563EB),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -749,20 +750,6 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      OutlinedButton.icon(
-                        onPressed: () =>
-                            _showCreateAgendaModal(context, isDark),
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        label: const Text('Buat Agenda Baru'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF2563EB),
-                          side: const BorderSide(color: Color(0xFF2563EB)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -846,46 +833,55 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                   fontSize: 12,
                                 ),
                               ),
-                              const Spacer(),
+                              const SizedBox(width: 8),
                               if (item['wilayah'].toString().isNotEmpty)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF1E293B)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: isDark
-                                          ? Colors.white10
-                                          : const Color(0xFFE2E8F0),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.place_rounded,
-                                        size: 12,
-                                        color: isDark
-                                            ? Colors.white54
-                                            : const Color(0xFF64748B),
+                                Flexible(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        item['wilayah'],
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? const Color(0xFF1E293B)
+                                            : Colors.white,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
                                           color: isDark
-                                              ? Colors.white70
-                                              : const Color(0xFF475569),
+                                              ? Colors.white10
+                                              : const Color(0xFFE2E8F0),
                                         ),
                                       ),
-                                    ],
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.place_rounded,
+                                            size: 12,
+                                            color: isDark
+                                                ? Colors.white54
+                                                : const Color(0xFF64748B),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              item['wilayah'],
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDark
+                                                    ? Colors.white70
+                                                    : const Color(0xFF475569),
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                             ],
@@ -1049,42 +1045,82 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                       ],
                                     ),
                                   ),
-                                  ElevatedButton.icon(
-                                    onPressed: () =>
-                                        _handleToggleJoin(realIndex),
-                                    icon: Icon(
-                                      isJoined
-                                          ? Icons.check_circle_rounded
-                                          : Icons.handshake_rounded,
-                                      size: 15,
-                                    ),
-                                    label: Text(
-                                      isJoined
-                                          ? 'Telah Terdaftar'
-                                          : 'Ikut Hadir',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: isJoined
-                                          ? const Color(0xFF10B981)
-                                          : const Color(0xFF2563EB),
-                                      foregroundColor: Colors.white,
-                                      elevation: isJoined ? 0 : 2,
-                                      shadowColor: const Color(
-                                        0xFF2563EB,
-                                      ).withAlpha(100),
+                                  if (item['isCreator'] == true)
+                                    Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 8,
+                                        horizontal: 10,
+                                        vertical: 6,
                                       ),
-                                      shape: RoundedRectangleBorder(
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF2563EB,
+                                        ).withAlpha(isDark ? 40 : 18),
                                         borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: const Color(
+                                            0xFF2563EB,
+                                          ).withAlpha(isDark ? 70 : 40),
+                                        ),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.verified_user_rounded,
+                                            size: 14,
+                                            color: Color(0xFF2563EB),
+                                          ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            'Anda Koordinator',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11.5,
+                                              color: Color(0xFF2563EB),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  else
+                                    ElevatedButton.icon(
+                                      onPressed: () =>
+                                          _handleToggleJoin(realIndex),
+                                      icon: Icon(
+                                        isJoined
+                                            ? Icons.check_circle_rounded
+                                            : Icons.handshake_rounded,
+                                        size: 15,
+                                      ),
+                                      label: Text(
+                                        isJoined
+                                            ? 'Telah Terdaftar'
+                                            : 'Ikut Hadir',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isJoined
+                                            ? const Color(0xFF10B981)
+                                            : const Color(0xFF2563EB),
+                                        foregroundColor: Colors.white,
+                                        elevation: isJoined ? 0 : 2,
+                                        shadowColor: const Color(
+                                          0xFF2563EB,
+                                        ).withAlpha(100),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 8,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ],
@@ -1410,6 +1446,24 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   // ═══════════════════════════════════════════════════════════════════
   // MODAL / SHEET: BUAT PENGUMUMAN & AGENDA BARU
   // ═══════════════════════════════════════════════════════════════════
+  Future<void> _pickImage(StateSetter setModalState) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (pickedFile != null) {
+        setModalState(() {
+          _posterImage = File(pickedFile.path);
+        });
+        setState(() {}); // update parent too just in case
+      }
+    } catch (e) {
+      debugPrint("Error picking image: $e");
+    }
+  }
+
   void _showCreateAgendaModal(BuildContext context, bool isDark) {
     showModalBottomSheet(
       context: context,
@@ -1419,12 +1473,14 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.88,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          expand: false,
-          builder: (_, scrollController) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.88,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              expand: false,
+              builder: (_, scrollController) {
             return Column(
               children: [
                 // Handle bar
@@ -1462,9 +1518,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   ),
                 ),
                 const Divider(height: 1),
-                Expanded(child: _buildRedesignedCreationForm(isDark)),
+                Expanded(child: _buildRedesignedCreationForm(isDark, setModalState)),
               ],
             );
+          },
+        );
           },
         );
       },
@@ -1474,7 +1532,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   // ═══════════════════════════════════════════════════════════════════
   // FORM COMPONENT FOR AGENDA CREATION
   // ═══════════════════════════════════════════════════════════════════
-  Widget _buildRedesignedCreationForm(bool isDark) {
+  Widget _buildRedesignedCreationForm(bool isDark, StateSetter setModalState) {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 50),
       physics: const BouncingScrollPhysics(),
@@ -1499,7 +1557,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: InkWell(
-                      onTap: () => setState(() => _formTipe = opt['label']),
+                      onTap: () {
+                        setModalState(() => _formTipe = opt['label']);
+                        setState(() {});
+                      },
                       borderRadius: BorderRadius.circular(14),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 220),
@@ -1664,7 +1725,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                         .toList(),
                     onChanged: (val) {
-                      if (val != null) setState(() => _targetScope = val);
+                      if (val != null) {
+                        setModalState(() => _targetScope = val);
+                        setState(() {});
+                      }
                     },
                   ),
 
@@ -1693,10 +1757,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           .toList(),
                       onChanged: (val) {
                         if (val != null) {
-                          setState(() {
+                          setModalState(() {
                             _selectedRw = val;
                             _selectedRt = _rtOptions[val]?.first ?? 'RT 01';
                           });
+                          setState(() {});
                         }
                       },
                     ),
@@ -1726,7 +1791,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           )
                           .toList(),
                       onChanged: (val) {
-                        if (val != null) setState(() => _selectedRt = val);
+                        if (val != null) {
+                          setModalState(() => _selectedRt = val);
+                          setState(() {});
+                        }
                       },
                     ),
                   ],
@@ -1821,8 +1889,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     runSpacing: 6,
                     children: _quickLocations.map((loc) {
                       return InkWell(
-                        onTap: () =>
-                            setState(() => _locationController.text = loc),
+                        onTap: () {
+                          setModalState(() => _locationController.text = loc);
+                          setState(() {});
+                        },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -1865,6 +1935,133 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                       );
                     }).toList(),
                   ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // ── 5. LAMPIRAN POSTER / GAMBAR ──
+            _buildCardWrapper(
+              isDark: isDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    title: 'Poster / Gambar Pendukung',
+                    subtitle: 'Opsional: Tambahkan foto untuk menarik perhatian warga',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 12),
+                  if (_posterImage == null)
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          // Gunakan StatefulBuilder setModalState
+                          _pickImage(setModalState);
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white10
+                                  : const Color(0xFFE2E8F0),
+                              style: BorderStyle.solid,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 36,
+                                color: isDark ? Colors.white60 : Colors.grey[500],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Klik untuk memilih gambar',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white70 : Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF2563EB).withAlpha(100),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              _posterImage!,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Gambar Terpilih',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _posterImage!.path.split('/').last,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? Colors.white70 : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              color: Colors.red,
+                              size: 22,
+                            ),
+                            onPressed: () {
+                              setModalState(() {
+                                _posterImage = null;
+                              });
+                              setState(() {});
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),

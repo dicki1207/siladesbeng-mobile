@@ -489,13 +489,13 @@ class _NewsPageState extends State<NewsPage> {
                       children: [
                         Image.network(
                           news['image']?.toString() ?? '',
-                          height: 100,
-                          width: 105,
+                          height: 95,
+                          width: 95,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              height: 100,
-                              width: 105,
+                              height: 95,
+                              width: 95,
                               color: isDark
                                   ? Colors.grey[800]
                                   : primaryColor.withValues(alpha: 0.08),
@@ -504,7 +504,7 @@ class _NewsPageState extends State<NewsPage> {
                                     ? Icons.newspaper_rounded
                                     : Icons.campaign_rounded,
                                 color: primaryColor.withValues(alpha: 0.5),
-                                size: 32,
+                                size: 30,
                               ),
                             );
                           },
@@ -523,59 +523,66 @@ class _NewsPageState extends State<NewsPage> {
                     children: [
                       // Category Badge & Date Row
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: badgeColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: badgeColor.withValues(alpha: 0.25),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: badgeColor.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: badgeColor.withValues(alpha: 0.25),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isBerita
+                                        ? Icons.newspaper_rounded
+                                        : _getCategoryIcon(categoryName),
+                                    size: 11,
+                                    color: badgeColor,
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Flexible(
+                                    child: Text(
+                                      categoryName,
+                                      style: TextStyle(
+                                        color: badgeColor,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isBerita
-                                      ? Icons.newspaper_rounded
-                                      : _getCategoryIcon(categoryName),
-                                  size: 11,
-                                  color: badgeColor,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  categoryName,
-                                  style: TextStyle(
-                                    color: badgeColor,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
+                          const SizedBox(width: 6),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.calendar_today_outlined,
-                                size: 11,
+                                size: 10,
                                 color: isDark
                                     ? Colors.white38
                                     : Colors.grey[500],
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: 3),
                               Text(
                                 formattedDate,
                                 style: TextStyle(
                                   color: isDark
                                       ? Colors.white38
                                       : Colors.grey[600],
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

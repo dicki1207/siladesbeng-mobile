@@ -26,8 +26,24 @@ class _CarRentalPageState extends State<CarRentalPage> {
   Future<void> _fetchRentals() async {
     final data = await _rentalService.getMobilItems();
     if (!mounted) return;
+
+    // Filter out public facility vehicles (like Ambulans, Bus) from rental cars
+    final filteredData = data.where((item) {
+      if (item is! Map) return false;
+      final name = (item['name'] ?? '').toString().toLowerCase();
+      final category = (item['category'] ?? '').toString().toLowerCase();
+      
+      bool isPublicFacility = name.contains('ambulan') || 
+                              name.contains('bus') ||
+                              name.contains('jenazah') ||
+                              category.contains('ambulan') || 
+                              category.contains('fasilitas');
+                              
+      return !isPublicFacility;
+    }).toList();
+
     setState(() {
-      _rentals = data;
+      _rentals = filteredData;
       _isLoading = false;
     });
   }

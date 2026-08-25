@@ -859,24 +859,69 @@ class _EditProfilePageState extends State<EditProfilePage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: isDark
+              ? const Color(0xFF0F172A)
+              : const Color(0xFF2563EB),
           elevation: 0,
           scrolledUnderElevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+          flexibleSpace: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                        : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                  ),
+                ),
+              ),
+              // Glowing circle 1 (Top Right)
+              Positioned(
+                top: -30,
+                right: -20,
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withAlpha(22),
+                  ),
+                ),
+              ),
+              // Glowing circle 2 (Bottom Left)
+              Positioned(
+                bottom: -25,
+                left: -15,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withAlpha(14),
+                  ),
+                ),
+              ),
+            ],
+          ),
           leading: IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: Colors.white,
               size: 18,
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Column(
+          title: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Edit Profil & Data Diri',
                 style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  color: Colors.white,
                   fontWeight: FontWeight.w800,
                   fontSize: 17,
                 ),
@@ -884,7 +929,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Text(
                 'Kelola identitas, domisili & keamanan akun',
                 style: TextStyle(
-                  color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                  color: Colors.white70,
                   fontSize: 11,
                   fontWeight: FontWeight.normal,
                 ),
@@ -895,78 +940,77 @@ class _EditProfilePageState extends State<EditProfilePage> {
             preferredSize: const Size.fromHeight(52),
             child: Container(
               height: 52,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF1E293B)
-                      : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF090D16) : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+                border: Border(
+                  bottom: BorderSide(
                     color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                    width: 1.5,
                   ),
                 ),
-                child: TabBar(
-                  indicator: BoxDecoration(
-                    color: isDark ? const Color(0xFF334155) : Colors.white,
-                    borderRadius: BorderRadius.circular(11),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(
-                          alpha: isDark ? 0.25 : 0.08,
-                        ),
-                        blurRadius: 4,
-                        offset: const Offset(0, 1.5),
-                      ),
-                    ],
+              ),
+              child: TabBar(
+                indicator: UnderlineTabIndicator(
+                  borderSide: const BorderSide(
+                    width: 3.5,
+                    color: Color(0xFF2563EB),
                   ),
-                  labelColor: isDark ? Colors.white : const Color(0xFF0F172A),
-                  unselectedLabelColor: isDark
-                      ? Colors.white54
-                      : const Color(0xFF64748B),
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12.5,
-                  ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12.5,
-                  ),
-                  dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.person_rounded, size: 14),
-                          SizedBox(width: 4),
-                          Text('Pribadi'),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.map_rounded, size: 14),
-                          SizedBox(width: 4),
-                          Text('Wilayah'),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shield_rounded, size: 14),
-                          SizedBox(width: 4),
-                          Text('Keamanan'),
-                        ],
-                      ),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(3),
+                  insets: const EdgeInsets.symmetric(horizontal: 16),
                 ),
+                indicatorSize: TabBarIndicatorSize.label,
+                labelColor: const Color(0xFF2563EB),
+                unselectedLabelColor: isDark
+                    ? Colors.white60
+                    : const Color(0xFF64748B),
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13.5,
+                  letterSpacing: 0.2,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(
+                    height: 48,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_rounded, size: 16),
+                        SizedBox(width: 6),
+                        Text('Pribadi'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    height: 48,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.map_rounded, size: 16),
+                        SizedBox(width: 6),
+                        Text('Wilayah'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    height: 48,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.shield_rounded, size: 16),
+                        SizedBox(width: 6),
+                        Text('Keamanan'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

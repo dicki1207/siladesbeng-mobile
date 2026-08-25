@@ -374,7 +374,9 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F8FF),
+      backgroundColor: isDark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF1F8FF),
       appBar: AppBar(
         title: const Text(
           'Notifikasi',
@@ -382,13 +384,58 @@ class _NotificationPageState extends State<NotificationPage> {
             fontWeight: FontWeight.bold,
             fontSize: 18,
             color: Colors.white,
+            letterSpacing: 0.3,
           ),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF2563EB),
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2563EB),
         foregroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -397,142 +444,37 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          if (_unreadCount > 0)
+            IconButton(
+              icon: const Icon(Icons.done_all_rounded, color: Colors.white),
+              tooltip: 'Tandai Semua Dibaca',
+              onPressed: _markAllAsRead,
+            ),
+          if (_notifications.isNotEmpty)
+            IconButton(
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                color: Colors.white,
+              ),
+              tooltip: 'Hapus Semua',
+              onPressed: _showDeleteConfirmDialog,
+            ),
+        ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+            )
           : RefreshIndicator(
               onRefresh: _fetchNotifications,
               color: const Color(0xFF2563EB),
               child: ListView(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 16,
+                  vertical: 14,
                 ),
                 children: [
-                  // Header Info Section (Matches Web Gradient & Subtitle)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2563EB).withAlpha(40),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(40),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.notifications_active_rounded,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Pusat Notifikasi',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                _unreadCount > 0
-                                    ? 'Ada $_unreadCount notifikasi baru belum dibaca'
-                                    : 'Semua notifikasi sudah dibaca',
-                                style: TextStyle(
-                                  color: Colors.white.withAlpha(220),
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // Action Buttons: Tandai Semua & Hapus Semua (Matches Web Action Buttons)
-                  Row(
-                    children: [
-                      if (_unreadCount > 0)
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _markAllAsRead,
-                            icon: const Icon(Icons.done_all_rounded, size: 16),
-                            label: const Text(
-                              'Tandai Semua Dibaca',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2563EB),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (_unreadCount > 0 && _notifications.isNotEmpty)
-                        const SizedBox(width: 8),
-                      if (_notifications.isNotEmpty)
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _showDeleteConfirmDialog,
-                            icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                            label: const Text(
-                              'Hapus Semua',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFEE2E2),
-                              foregroundColor: const Color(0xFFDC2626),
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 14),
-
                   // Filter Chips
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -884,7 +826,9 @@ class _NotificationPageState extends State<NotificationPage> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? const Color(0xFF0EA5E9).withValues(alpha: 0.2)
+                                      ? const Color(
+                                          0xFF0EA5E9,
+                                        ).withValues(alpha: 0.2)
                                       : const Color(0xFFE0F2FE),
                                   borderRadius: BorderRadius.circular(6),
                                 ),

@@ -103,29 +103,60 @@ class _TokoChatPageState extends State<TokoChatPage> {
   Future<void> _simulateTokoReply(String userQuery) async {
     setState(() => _isTokoTyping = true);
 
-    await Future.delayed(const Duration(milliseconds: 1500));
+    await Future.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
 
-    String replyText = 'Baik Kak! Terima kasih sudah menghubungi kami. ';
+    String replyText = 'Baik Kak! ';
     final q = userQuery.toLowerCase();
 
-    if (q.contains('stok') || q.contains('ready')) {
+    if (q.contains('berapa hari') ||
+        q.contains('berapa lama') ||
+        q.contains('kapan sampai') ||
+        q.contains('estimasi') ||
+        q.contains('sampai kapan') ||
+        q.contains('durasi')) {
       replyText +=
-          'Stok produk di toko BUMDes kami selalu ready dan siap dikemas hari ini.';
+          'Untuk pengiriman kurir lokal BUMDes antar-desa biasanya sampai di hari yang sama (*Sameday*) atau maksimal 1-2 hari kerja ya Kak, tergantung jarak desa.';
+    } else if (q.contains('tidak sesuai') ||
+        q.contains('rusak') ||
+        q.contains('cacat') ||
+        q.contains('retur') ||
+        q.contains('garansi') ||
+        q.contains('komplain') ||
+        q.contains('pengembalian') ||
+        q.contains('uang kembali') ||
+        q.contains('batal')) {
+      replyText +=
+          'Jika barang tidak sesuai atau terdapat kerusakan saat diterima, Kakak bisa langsung mengajukan "Komplain & Retur" melalui menu detail transaksi. Kami menjamin penggantian barang baru atau pengembalian dana 100% aman Kak.';
+    } else if (q.contains('stok') || q.contains('ready') || q.contains('ada')) {
+      replyText +=
+          'Stok produk di toko BUMDes kami selalu terpantau ready dan siap segera dikemas.';
     } else if (q.contains('kirim') ||
         q.contains('kecamatan') ||
-        q.contains('desa')) {
+        q.contains('desa') ||
+        q.contains('antar')) {
       replyText +=
-          'Tentu bisa! Kami melayani pengiriman antar-desa dan antar-kecamatan dengan kurir lokal BUMDes.';
-    } else if (q.contains('ongkir') || q.contains('biaya')) {
+          'Tentu bisa! Kami melayani pengiriman antar-desa dan antar-kecamatan se-Kabupaten Bengkalis dengan kurir resmi BUMDes.';
+    } else if (q.contains('ongkir') ||
+        q.contains('tarif') ||
+        q.contains('biaya')) {
       replyText +=
-          'Ongkir dalam satu desa gratis/flat Rp 5.000, untuk antar-kecamatan berkisar Rp 10.000 - Rp 15.000 sameday.';
-    } else if (q.contains('cod') || q.contains('bayar')) {
+          'Ongkir dalam satu desa flat Rp 5.000 (bahkan gratis promo tertentu). Untuk antar-kecamatan sekitar Rp 10.000 - Rp 15.000 sameday.';
+    } else if (q.contains('cod') ||
+        q.contains('bayar') ||
+        q.contains('transfer') ||
+        q.contains('qris')) {
       replyText +=
-          'Bisa COD kak! Kakak juga bisa bayar via QRIS atau Transfer Bank saat checkout.';
+          'Bisa bayar COD saat kurir tiba, atau lewat QRIS dan Transfer Bank Virtual Account saat checkout.';
+    } else if (q.contains('alamat') ||
+        q.contains('lokasi') ||
+        q.contains('toko') ||
+        q.contains('ambil')) {
+      replyText +=
+          'Kantor BUMDes kami berlokasi di ${widget.tokoDesa}, ${widget.tokoKecamatan}. Kakak juga bisa memilih opsi "Ambil Sendiri" saat checkout gratis tanpa ongkir.';
     } else {
       replyText +=
-          'Pesanan atau pertanyaan Kakak segera kami proses. Silakan lanjutkan pemesanan langsung di katalog toko kami ya Kak.';
+          'Terima kasih sudah menghubungi toko ${widget.tokoName}. Pertanyaan atau pesanan Kakak siap kami layani dengan senang hati!';
     }
 
     final timeStr = DateFormat('HH:mm').format(DateTime.now());
@@ -182,31 +213,84 @@ class _TokoChatPageState extends State<TokoChatPage> {
           ? const Color(0xFF0F172A)
           : const Color(0xFFF1F5F9),
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
-        elevation: 1,
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
         titleSpacing: 0,
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
             // Store Avatar with Online Dot
             Stack(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.15),
+                    color: Colors.white.withAlpha(25),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: primaryColor.withValues(alpha: 0.3),
+                      color: Colors.white.withAlpha(80),
                       width: 1.5,
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Icon(
                       Icons.storefront_rounded,
-                      color: primaryColor,
-                      size: 22,
+                      color: Colors.white,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -220,7 +304,9 @@ class _TokoChatPageState extends State<TokoChatPage> {
                       color: const Color(0xFF10B981),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFF2563EB),
                         width: 2,
                       ),
                     ),
@@ -242,6 +328,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                           style: const TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -254,7 +341,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                           vertical: 1.5,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withValues(alpha: 0.12),
+                          color: Colors.white.withAlpha(40),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -262,7 +349,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF0284C7),
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -271,10 +358,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                   const SizedBox(height: 1),
                   Text(
                     '${widget.tokoDesa} • ${widget.tokoKecamatan}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                    ),
+                    style: const TextStyle(fontSize: 11, color: Colors.white70),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -285,10 +369,9 @@ class _TokoChatPageState extends State<TokoChatPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline_rounded),
+            icon: const Icon(Icons.info_outline_rounded, color: Colors.white),
             tooltip: 'Profil Toko',
             onPressed: () {
-              // Navigasi ke profil toko
               Navigator.pop(context);
             },
           ),
@@ -518,12 +601,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
 
           // 5. Chat Input Bar
           Container(
-            padding: EdgeInsets.fromLTRB(
-              12,
-              8,
-              12,
-              MediaQuery.of(context).viewInsets.bottom + 10,
-            ),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1E293B) : Colors.white,
               border: Border(

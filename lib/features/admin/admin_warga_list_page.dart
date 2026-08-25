@@ -505,25 +505,7 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
-              actions: [
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(isDark ? 25 : 35),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.refresh_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                  tooltip: 'Segarkan Data',
-                  onPressed: _loadWargaFromApi,
-                ),
-                const SizedBox(width: 8),
-              ],
+
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,

@@ -166,12 +166,57 @@ class _AdminReportPageState extends State<AdminReportPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2563EB),
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: isDark ? Colors.white : const Color(0xFF1E293B),
+            color: Colors.white,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -179,19 +224,20 @@ class _AdminReportPageState extends State<AdminReportPage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Kelola Laporan Warga',
               style: TextStyle(
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                color: Colors.white,
                 fontWeight: FontWeight.w800,
                 fontSize: 17,
+                letterSpacing: 0.2,
               ),
             ),
             if (_profileName.isNotEmpty)
               Text(
                 '$_profileName • ${_role.toUpperCase()}',
-                style: TextStyle(
-                  color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                style: const TextStyle(
+                  color: Colors.white70,
                   fontSize: 11.5,
                   fontWeight: FontWeight.normal,
                 ),

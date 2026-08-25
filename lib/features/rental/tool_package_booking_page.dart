@@ -1026,120 +1026,27 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     );
   }
 
-  void _showCustomDurationDialog() {
-    final controller = TextEditingController(text: _durationDays.toString());
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Theme.of(context).cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.calendar_month_rounded, color: primaryColor, size: 22),
-            const SizedBox(width: 8),
-            Text(
-              'Atur Durasi Sewa',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF1E293B),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Masukkan jumlah hari sewa yang diinginkan:',
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.white60 : Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              autofocus: true,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              decoration: InputDecoration(
-                labelText: 'Jumlah Hari',
-                suffixText: 'Hari',
-                suffixStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: primaryColor, width: 2),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Batal',
-              style: TextStyle(
-                color: isDark ? Colors.white60 : Colors.grey[600],
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final val = int.tryParse(controller.text.trim());
-              if (val != null && val > 0) {
-                setState(() => _durationDays = val);
-              }
-              Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 0,
-            ),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildBottomBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).primaryColor;
     final int total = _getTotalPrice();
-    final List<int> quickPresets = [1, 2, 3, 7, 14, 30];
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 16,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+      ),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        border: Border(
-          top: BorderSide(
-            color: isDark
-                ? Colors.white10
-                : Colors.grey.withValues(alpha: 0.15),
-          ),
-        ),
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
@@ -1148,224 +1055,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row 1: Duration Header & Big Thumb Stepper
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Left: Label with Icon
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.calendar_today_rounded,
-                        color: primaryColor,
-                        size: 15,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Durasi Sewa',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF1E293B),
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Right: Big Thumb-Friendly Stepper
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Minus Button
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () {
-                            if (_durationDays > 1) {
-                              setState(() => _durationDays--);
-                            }
-                          },
-                          child: Container(
-                            width: 38,
-                            height: 36,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: _durationDays > 1
-                                  ? (isDark ? Colors.white10 : Colors.white)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: _durationDays > 1
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.05,
-                                        ),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 1),
-                                      ),
-                                    ]
-                                  : null,
-                            ),
-                            child: Icon(
-                              Icons.remove_rounded,
-                              size: 19,
-                              color: _durationDays > 1
-                                  ? (isDark
-                                        ? Colors.white
-                                        : const Color(0xFF1E293B))
-                                  : (isDark
-                                        ? Colors.white24
-                                        : Colors.grey[400]),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Duration Text & Tap to Custom
-                      GestureDetector(
-                        onTap: _showCustomDurationDialog,
-                        child: Container(
-                          constraints: const BoxConstraints(minWidth: 64),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          alignment: Alignment.center,
-                          child: Text(
-                            '$_durationDays Hari',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13.5,
-                              color: primaryColor,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Plus Button
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () {
-                            setState(() => _durationDays++);
-                          },
-                          child: Container(
-                            width: 38,
-                            height: 36,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: primaryColor,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primaryColor.withValues(alpha: 0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.add_rounded,
-                              size: 19,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            // Row 2: Quick Duration Chips
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: quickPresets.map((days) {
-                  final bool isSelected = _durationDays == days;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => setState(() => _durationDays = days),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? primaryColor
-                              : (isDark
-                                    ? Colors.white.withValues(alpha: 0.05)
-                                    : const Color(0xFFF1F5F9)),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected
-                                ? primaryColor
-                                : (isDark
-                                      ? Colors.white12
-                                      : const Color(0xFFE2E8F0)),
-                          ),
-                        ),
-                        child: Text(
-                          days == 7
-                              ? '1 Minggu'
-                              : (days == 14
-                                    ? '2 Minggu'
-                                    : (days == 30 ? '1 Bulan' : '$days Hari')),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w500,
-                            color: isSelected
-                                ? Colors.white
-                                : (isDark
-                                      ? Colors.white70
-                                      : const Color(0xFF475569)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: isDark
-                  ? Colors.white10
-                  : Colors.grey.withValues(alpha: 0.1),
-            ),
-            const SizedBox(height: 10),
-
-            // Row 3: Total Price & Checkout Button
+            // Row: Total Price & Checkout Button
             Row(
               children: [
                 Expanded(
@@ -1374,7 +1064,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Biaya ($_durationDays Hari)',
+                        'Total Biaya (per hari)',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,

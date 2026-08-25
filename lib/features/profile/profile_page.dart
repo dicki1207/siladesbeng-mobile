@@ -1015,7 +1015,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       _buildMenuTile(
                         context,
                         icon: Icons.swap_horiz_rounded,
-                        title: 'Mutasi Domisili & Tarik Warga',
+                        title: 'Mutasi Domisili',
                         subtitle: 'Handshake data kependudukan',
                         targetPage: const DomicileTransferPage(),
                         iconColor: Colors.indigo[600],
