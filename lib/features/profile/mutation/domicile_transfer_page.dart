@@ -394,12 +394,10 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                               ? [
                                   const Color(0xFF0F172A),
                                   const Color(0xFF1E293B),
-                                  const Color(0xFF1E3A8A).withAlpha(120),
                                 ]
                               : [
-                                  const Color(0xFF1E3A8A),
                                   const Color(0xFF2563EB),
-                                  const Color(0xFF3B82F6),
+                                  const Color(0xFF1D4ED8),
                                 ],
                         ),
                       ),

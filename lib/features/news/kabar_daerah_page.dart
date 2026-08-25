@@ -23,10 +23,54 @@ class KabarDaerahPage extends StatelessWidget {
               letterSpacing: 0.3,
             ),
           ),
-          backgroundColor: primaryColor,
+          backgroundColor: isDark
+              ? const Color(0xFF0F172A)
+              : const Color(0xFF2563EB),
           elevation: 0,
           centerTitle: true,
           iconTheme: const IconThemeData(color: Colors.white),
+          flexibleSpace: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                        : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                  ),
+                ),
+              ),
+              // Glowing circle 1 (Top Right)
+              Positioned(
+                top: -35,
+                right: -20,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withAlpha(22),
+                  ),
+                ),
+              ),
+              // Glowing circle 2 (Bottom Left)
+              Positioned(
+                bottom: -25,
+                left: -15,
+                child: Container(
+                  width: 85,
+                  height: 85,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withAlpha(14),
+                  ),
+                ),
+              ),
+            ],
+          ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(56),
             child: Container(

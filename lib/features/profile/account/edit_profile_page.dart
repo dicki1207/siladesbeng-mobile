@@ -859,79 +859,114 @@ class _EditProfilePageState extends State<EditProfilePage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
-            'Edit Profil & Data Diri',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-              color: Colors.white,
-            ),
-          ),
-          centerTitle: true,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
-          backgroundColor: primaryColor,
-          iconTheme: const IconThemeData(color: Colors.white),
-          foregroundColor: Colors.white,
+          scrolledUnderElevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              size: 18,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Edit Profil & Data Diri',
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 17,
+                ),
+              ),
+              Text(
+                'Kelola identitas, domisili & keamanan akun',
+                style: TextStyle(
+                  color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                  fontSize: 11,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(48),
+            preferredSize: const Size.fromHeight(52),
             child: Container(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              child: TabBar(
-                indicatorColor: primaryColor,
-                indicatorWeight: 3,
-                labelColor: primaryColor,
-                unselectedLabelColor: isDark
-                    ? Colors.white38
-                    : Colors.grey[500],
-                labelStyle: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+              height: 52,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                  ),
                 ),
-                unselectedLabelStyle: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-                tabs: const [
-                  Tab(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
+                child: TabBar(
+                  indicator: BoxDecoration(
+                    color: isDark ? const Color(0xFF334155) : Colors.white,
+                    borderRadius: BorderRadius.circular(11),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.25 : 0.08,
+                        ),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1.5),
+                      ),
+                    ],
+                  ),
+                  labelColor: isDark ? Colors.white : const Color(0xFF0F172A),
+                  unselectedLabelColor: isDark
+                      ? Colors.white54
+                      : const Color(0xFF64748B),
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12.5,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                  ),
+                  dividerColor: Colors.transparent,
+                  tabs: const [
+                    Tab(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.person_rounded, size: 15),
+                          Icon(Icons.person_rounded, size: 14),
                           SizedBox(width: 4),
                           Text('Pribadi'),
                         ],
                       ),
                     ),
-                  ),
-                  Tab(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
+                    Tab(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.map_rounded, size: 15),
+                          Icon(Icons.map_rounded, size: 14),
                           SizedBox(width: 4),
                           Text('Wilayah'),
                         ],
                       ),
                     ),
-                  ),
-                  Tab(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
+                    Tab(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.shield_rounded, size: 15),
+                          Icon(Icons.shield_rounded, size: 14),
                           SizedBox(width: 4),
                           Text('Keamanan'),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

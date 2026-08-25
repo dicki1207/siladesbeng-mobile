@@ -142,7 +142,11 @@ class _GasPageState extends State<GasPage> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close_rounded, size: 20, color: isDark ? Colors.white60 : Colors.grey[600]),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: isDark ? Colors.white60 : Colors.grey[600],
+                    ),
                     onPressed: () => Navigator.pop(ctx),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -161,20 +165,28 @@ class _GasPageState extends State<GasPage> {
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : (isDark ? Colors.white70 : const Color(0xFF475569)),
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            : (isDark
+                                  ? Colors.white70
+                                  : const Color(0xFF475569)),
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         fontSize: 13,
                       ),
                     ),
                     selected: isSelected,
                     selectedColor: primaryColor,
-                    backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                    backgroundColor: isDark
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFF1F5F9),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
                         color: isSelected
                             ? primaryColor
-                            : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                            : (isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFE2E8F0)),
                       ),
                     ),
                     onSelected: (selected) {
@@ -212,10 +224,54 @@ class _GasPageState extends State<GasPage> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        backgroundColor: const Color(0xFF2563EB),
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2563EB),
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -257,9 +313,7 @@ class _GasPageState extends State<GasPage> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 50),
                         child: Center(
-                          child: CircularProgressIndicator(
-                            color: primaryColor,
-                          ),
+                          child: CircularProgressIndicator(color: primaryColor),
                         ),
                       ),
                     )
@@ -274,7 +328,9 @@ class _GasPageState extends State<GasPage> {
                               Icon(
                                 Icons.inventory_2_outlined,
                                 size: 70,
-                                color: isDark ? Colors.white24 : Colors.grey[400],
+                                color: isDark
+                                    ? Colors.white24
+                                    : Colors.grey[400],
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -282,7 +338,9 @@ class _GasPageState extends State<GasPage> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1E293B),
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -291,7 +349,9 @@ class _GasPageState extends State<GasPage> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: isDark ? Colors.white54 : Colors.grey[500],
+                                  color: isDark
+                                      ? Colors.white54
+                                      : Colors.grey[500],
                                 ),
                               ),
                             ],
@@ -333,7 +393,8 @@ class _GasPageState extends State<GasPage> {
     }
 
     String imageUrl = item['image'] ?? 'assets/images/F2.png';
-    bool isAsset = imageUrl.startsWith('assets/') || imageUrl.contains('F2.png');
+    bool isAsset =
+        imageUrl.startsWith('assets/') || imageUrl.contains('F2.png');
     if (isAsset) imageUrl = 'assets/images/F2.png';
 
     // Ambil stok dan status

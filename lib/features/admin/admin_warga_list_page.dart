@@ -21,8 +21,6 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
   final TextEditingController _searchController = TextEditingController();
   final AdminWargaService _adminWargaService = AdminWargaService();
 
-  final List<String> _filters = ['Semua', 'Terverifikasi', 'Belum Verifikasi'];
-
   final List<String> _rtRegions = [
     'Seluruh RW 01',
     'RT 01 / RW 01',
@@ -540,17 +538,15 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                               ? [
                                   const Color(0xFF0F172A),
                                   const Color(0xFF1E293B),
-                                  const Color(0xFF1E3A8A).withAlpha(120),
                                 ]
                               : [
-                                  const Color(0xFF1E3A8A),
                                   const Color(0xFF2563EB),
-                                  const Color(0xFF3B82F6),
+                                  const Color(0xFF1D4ED8),
                                 ],
                         ),
                       ),
                     ),
-                    // Ambient light circle
+                    // Ambient light circle 1 (Top Right)
                     Positioned(
                       right: -25,
                       top: -25,
@@ -559,7 +555,20 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                         height: 140,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withAlpha(20),
+                          color: Colors.white.withAlpha(22),
+                        ),
+                      ),
+                    ),
+                    // Ambient light circle 2 (Bottom Left)
+                    Positioned(
+                      left: -20,
+                      bottom: -20,
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withAlpha(14),
                         ),
                       ),
                     ),
@@ -791,71 +800,6 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                               vertical: 12,
                             ),
                           ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // Filter Status Pills
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: _filters.map((filter) {
-                            final isSelected = _selectedFilter == filter;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: FilterChip(
-                                label: Text(filter),
-                                selected: isSelected,
-                                showCheckmark: false,
-                                avatar: isSelected
-                                    ? const Icon(
-                                        Icons.check_rounded,
-                                        size: 14,
-                                        color: Colors.white,
-                                      )
-                                    : null,
-                                labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : (isDark
-                                            ? Colors.white70
-                                            : const Color(0xFF475569)),
-                                  fontSize: 11.5,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.w600,
-                                ),
-                                backgroundColor: isDark
-                                    ? const Color(0xFF131C2E)
-                                    : Colors.white,
-                                selectedColor: _primaryBlue,
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? _primaryBlue
-                                      : (isDark
-                                            ? const Color(0xFF1E293B)
-                                            : const Color(0xFFE2E8F0)),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: isSelected ? 2 : 0,
-                                shadowColor: _primaryBlue.withAlpha(80),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 2,
-                                ),
-                                onSelected: (_) {
-                                  setState(() {
-                                    _selectedFilter = filter;
-                                    _applyFiltersAndSearch();
-                                  });
-                                },
-                              ),
-                            );
-                          }).toList(),
                         ),
                       ),
 

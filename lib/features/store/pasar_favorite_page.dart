@@ -117,24 +117,34 @@ class _PasarFavoritePageState extends State<PasarFavoritePage>
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF0284C7),
+        elevation: 0,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Favorit Saya',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17.5,
+                color: Colors.white,
+              ),
             ),
             Text(
               'Daftar produk & BUMDes tersimpan',
-              style: TextStyle(fontSize: 11, color: Colors.grey),
+              style: TextStyle(fontSize: 11, color: Colors.white70),
             ),
           ],
         ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: primaryColor,
-          unselectedLabelColor: isDark ? Colors.white54 : Colors.grey[600],
-          indicatorColor: primaryColor,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: Colors.white,
           indicatorWeight: 3,
           labelStyle: const TextStyle(
             fontWeight: FontWeight.bold,

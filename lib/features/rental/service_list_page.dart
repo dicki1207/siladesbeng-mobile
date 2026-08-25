@@ -35,6 +35,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -46,10 +47,54 @@ class _ServiceListPageState extends State<ServiceListPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2563EB),
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: _fetchRentals,
@@ -300,13 +345,14 @@ class _ServiceListPageState extends State<ServiceListPage> {
     }
 
     String imageUrl = item['image'] ?? 'assets/images/F1.png';
-    bool isAsset = imageUrl.startsWith('assets/') || imageUrl.contains('F1.png');
+    bool isAsset =
+        imageUrl.startsWith('assets/') || imageUrl.contains('F1.png');
     if (isAsset) imageUrl = 'assets/images/F1.png';
-    
+
     // Asumsikan status selalu tersedia untuk alat sementara
     String status = item['status'] ?? 'Tersedia';
     bool isAvailable = status.toLowerCase() == 'tersedia';
-    
+
     // Alat biasanya ada stok, kita coba ambil stok jika ada
     int stock = 0;
     if (item['stok'] != null) {

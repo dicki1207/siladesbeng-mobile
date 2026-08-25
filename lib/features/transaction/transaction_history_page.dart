@@ -131,7 +131,8 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
   String _formatDate(String? rawDate) {
     if (rawDate == null || rawDate.isEmpty || rawDate == '-') return '-';
     try {
-      if (rawDate.contains('T') || (rawDate.contains('-') && rawDate.length <= 19)) {
+      if (rawDate.contains('T') ||
+          (rawDate.contains('-') && rawDate.length <= 19)) {
         final parsed = DateTime.parse(rawDate.replaceAll(' WIB', ''));
         return '${DateFormat('d MMM yyyy, HH:mm').format(parsed)} WIB';
       }
@@ -224,9 +225,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
     if (_isLoadingAuth || _isLoadingData) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: Center(
-          child: CircularProgressIndicator(color: primaryColor),
-        ),
+        body: Center(child: CircularProgressIndicator(color: primaryColor)),
       );
     }
 
@@ -235,13 +234,18 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
           _selectedCategory == 'Semua' || item['category'] == _selectedCategory;
       bool statMatch =
           _selectedStatus == 'Semua' || item['status'] == _selectedStatus;
-      bool searchMatch = _searchQuery.isEmpty ||
-          (item['title']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+      bool searchMatch =
+          _searchQuery.isEmpty ||
+          (item['title']?.toString().toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ) ??
+              false);
       return catMatch && statMatch && searchMatch;
     }).toList();
 
-    List<Map<String, dynamic>> filteredList =
-        allFilteredList.take(_displayLimit).toList();
+    List<Map<String, dynamic>> filteredList = allFilteredList
+        .take(_displayLimit)
+        .toList();
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -358,8 +362,10 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                   color: hasActiveFilter
                                       ? primaryColor
                                       : (isDark
-                                          ? Colors.white12
-                                          : Colors.grey.withValues(alpha: 0.15)),
+                                            ? Colors.white12
+                                            : Colors.grey.withValues(
+                                                alpha: 0.15,
+                                              )),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
@@ -381,8 +387,8 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                     color: hasActiveFilter
                                         ? Colors.white
                                         : (isDark
-                                            ? Colors.white70
-                                            : primaryColor),
+                                              ? Colors.white70
+                                              : primaryColor),
                                     size: 22,
                                   ),
                                   if (hasActiveFilter)
@@ -498,11 +504,13 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
   }
 
   Widget _buildSliverAppBar() {
-    final primaryColor = Theme.of(context).primaryColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SliverAppBar(
       floating: true,
       pinned: true,
-      backgroundColor: primaryColor,
+      backgroundColor: isDark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFF2563EB),
       iconTheme: const IconThemeData(color: Colors.white),
       elevation: 0,
       title: const Text(
@@ -515,6 +523,48 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
         ),
       ),
       centerTitle: true,
+      flexibleSpace: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                    : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+              ),
+            ),
+          ),
+          // Glowing circle 1 (Top Right)
+          Positioned(
+            top: -30,
+            right: -20,
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withAlpha(22),
+              ),
+            ),
+          ),
+          // Glowing circle 2 (Bottom Left)
+          Positioned(
+            bottom: -25,
+            left: -15,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withAlpha(14),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -588,10 +638,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                   const SizedBox(height: 16),
                   const Text(
                     'Kategori Layanan',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -617,8 +664,9 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           color: isSelected
                               ? Colors.white
                               : (isDark ? Colors.white70 : Colors.black87),
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
                           fontSize: 12.5,
                         ),
                         shape: RoundedRectangleBorder(
@@ -627,8 +675,8 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                             color: isSelected
                                 ? primaryColor
                                 : (isDark
-                                    ? Colors.white12
-                                    : Colors.grey.withValues(alpha: 0.2)),
+                                      ? Colors.white12
+                                      : Colors.grey.withValues(alpha: 0.2)),
                           ),
                         ),
                       );
@@ -637,10 +685,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                   const SizedBox(height: 20),
                   const Text(
                     'Status Transaksi',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
@@ -666,8 +711,9 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           color: isSelected
                               ? Colors.white
                               : (isDark ? Colors.white70 : Colors.black87),
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
                           fontSize: 12.5,
                         ),
                         shape: RoundedRectangleBorder(
@@ -676,8 +722,8 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                             color: isSelected
                                 ? primaryColor
                                 : (isDark
-                                    ? Colors.white12
-                                    : Colors.grey.withValues(alpha: 0.2)),
+                                      ? Colors.white12
+                                      : Colors.grey.withValues(alpha: 0.2)),
                           ),
                         ),
                       );
@@ -726,7 +772,8 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).primaryColor;
     final formattedDate = _formatDate(item['date']?.toString());
-    final bool isLaporan = item['category'] == 'Laporan Warga' ||
+    final bool isLaporan =
+        item['category'] == 'Laporan Warga' ||
         (item['title']?.toString().toLowerCase().contains('lapor') ?? false);
 
     return Container(
@@ -775,38 +822,38 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                     padding: const EdgeInsets.all(8.0),
                     child: item['image'] != null
                         ? (item['image'].toString().startsWith('http')
-                            ? Image.network(
-                                item['image'],
-                                errorBuilder: (_, _, _) {
-                                  String fb = 'assets/images/F2.png';
-                                  final img = item['image'].toString();
-                                  if (img.contains('F1')) {
-                                    fb = 'assets/images/F1.png';
-                                  } else if (img.contains('mobil')) {
-                                    fb = 'assets/images/mobil.png';
-                                  } else if (img.contains('fasilitas')) {
-                                    fb = 'assets/images/fasilitas.png';
-                                  } else if (img.contains('lapor')) {
-                                    fb = 'assets/images/lapor.png';
-                                  }
-                                  return Image.asset(
-                                    fb,
-                                    errorBuilder: (_, _, _) => Icon(
-                                      Icons.apps_rounded,
-                                      color: primaryColor,
-                                      size: 24,
-                                    ),
-                                  );
-                                },
-                              )
-                            : Image.asset(
-                                item['image'],
-                                errorBuilder: (_, _, _) => Icon(
-                                  Icons.apps_rounded,
-                                  color: primaryColor,
-                                  size: 24,
-                                ),
-                              ))
+                              ? Image.network(
+                                  item['image'],
+                                  errorBuilder: (_, _, _) {
+                                    String fb = 'assets/images/F2.png';
+                                    final img = item['image'].toString();
+                                    if (img.contains('F1')) {
+                                      fb = 'assets/images/F1.png';
+                                    } else if (img.contains('mobil')) {
+                                      fb = 'assets/images/mobil.png';
+                                    } else if (img.contains('fasilitas')) {
+                                      fb = 'assets/images/fasilitas.png';
+                                    } else if (img.contains('lapor')) {
+                                      fb = 'assets/images/lapor.png';
+                                    }
+                                    return Image.asset(
+                                      fb,
+                                      errorBuilder: (_, _, _) => Icon(
+                                        Icons.apps_rounded,
+                                        color: primaryColor,
+                                        size: 24,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Image.asset(
+                                  item['image'],
+                                  errorBuilder: (_, _, _) => Icon(
+                                    Icons.apps_rounded,
+                                    color: primaryColor,
+                                    size: 24,
+                                  ),
+                                ))
                         : Icon(
                             Icons.apps_rounded,
                             color: primaryColor,
@@ -874,7 +921,8 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                item['price']?.toString() ?? 'Prioritas: Normal',
+                                item['price']?.toString() ??
+                                    'Prioritas: Normal',
                                 style: TextStyle(
                                   color: isDark
                                       ? Colors.white70

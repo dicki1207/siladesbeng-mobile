@@ -84,8 +84,32 @@ class _PasarDetailPageState extends State<PasarDetailPage>
       'tag': '🚚 Pengiriman Cepat',
       'comment':
           'Proses pesan mudah dan praktis. Sangat cocok buat yang sibuk dan mau dukung produk UMKM desa.',
-      'buyerPhotos': ['assets/images/PasarDaerah.png'],
+      'buyerPhotos': ['assets/images/F2.png'],
       'likes': 5,
+    },
+    {
+      'id': 'rev_5',
+      'name': 'Hj. Fatimah Zahra',
+      'origin': 'Warga Desa Senggoro',
+      'rating': 5,
+      'date': '3 minggu lalu',
+      'tag': '✨ Produk Asli Desa',
+      'comment':
+          'Sangat bangga ada produk lokal berkualitas tinggi seperti ini. Langganan terus untuk kebutuhan rumah tangga.',
+      'buyerPhotos': ['assets/images/F1.png'],
+      'likes': 8,
+    },
+    {
+      'id': 'rev_6',
+      'name': 'M. Danil Wahyudi',
+      'origin': 'Warga Desa Kelapapati',
+      'rating': 5,
+      'date': '1 bulan lalu',
+      'tag': '👍 Pelayanan Mantap',
+      'comment':
+          'Pengurus toko ramah dan cepat merespons chat. Barang sampai dengan kondisi sangat baik.',
+      'buyerPhotos': [],
+      'likes': 4,
     },
   ];
 
@@ -627,24 +651,22 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text(
+                            'BUMDes $regionName',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
                           Row(
                             children: [
-                              Flexible(
-                                child: Text(
-                                  'BUMDes $regionName',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14.5,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
+                                  horizontal: 5,
+                                  vertical: 1.5,
                                 ),
                                 decoration: BoxDecoration(
                                   color: Colors.blue.withValues(alpha: 0.15),
@@ -654,27 +676,21 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                                   'BUMDes Resmi',
                                   style: TextStyle(
                                     color: Color(0xFF0284C7),
-                                    fontSize: 9.5,
+                                    fontSize: 9,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.location_on_rounded,
-                                size: 12,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '$regionName • Antar-Desa',
-                                style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 12,
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  '• Antar-Desa',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -683,7 +699,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   OutlinedButton(
                     onPressed: () {
                       Navigator.push(
@@ -704,10 +720,11 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                         width: 1.2,
                       ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
+                        horizontal: 8,
+                        vertical: 6,
                       ),
                       minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -715,7 +732,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                     child: const Text(
                       'Kunjungi Toko',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

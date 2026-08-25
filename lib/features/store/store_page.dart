@@ -1,9 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'cart_page.dart';
 import 'pasar_detail_page.dart';
-import 'bumdes_store_profile_page.dart';
-import 'toko_chat_page.dart';
 import 'pasar_favorite_page.dart';
 import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
@@ -76,65 +75,6 @@ class _StorePageState extends State<StorePage> {
     'Kec. Rupat': ['Semua Desa', 'Batu Panjang', 'Tanjung Kapal'],
   };
 
-  // Curated BUMDes Stores list for Cross-Village/District Discovery
-  final List<Map<String, dynamic>> _featuredStores = [
-    {
-      'tokoName': 'BUMDes Senggoro Maju',
-      'desaName': 'Desa Senggoro',
-      'kecamatanName': 'Kec. Bengkalis',
-      'rating': 4.9,
-      'productCount': 12,
-      'address': 'Jl. Bantan No. 12, Senggoro',
-      'phone': '+62 812-7654-3210',
-      'badge': 'Unggulan',
-      'color': Color(0xFF0284C7),
-    },
-    {
-      'tokoName': 'BUMDes Wonosari Berkah',
-      'desaName': 'Desa Wonosari',
-      'kecamatanName': 'Kec. Bengkalis',
-      'rating': 4.8,
-      'productCount': 9,
-      'address': 'Jl. Wonosari Tengah, Bengkalis',
-      'phone': '+62 813-8899-1122',
-      'badge': 'Pangan',
-      'color': Color(0xFF10B981),
-    },
-    {
-      'tokoName': 'BUMDes Meskom Sejahtera',
-      'desaName': 'Desa Meskom',
-      'kecamatanName': 'Kec. Bengkalis',
-      'rating': 4.9,
-      'productCount': 15,
-      'address': 'Jl. Utama Meskom, Bengkalis',
-      'phone': '+62 822-4455-6677',
-      'badge': 'Kerajinan',
-      'color': Color(0xFFF59E0B),
-    },
-    {
-      'tokoName': 'BUMDes Selatbaru Bahari',
-      'desaName': 'Desa Selatbaru',
-      'kecamatanName': 'Kec. Bantan',
-      'rating': 4.7,
-      'productCount': 8,
-      'address': 'Kawasan Pantai Selatbaru, Bantan',
-      'phone': '+62 852-1122-3344',
-      'badge': 'Hasil Laut',
-      'color': Color(0xFF8B5CF6),
-    },
-    {
-      'tokoName': 'BUMDes Pakning Gemilang',
-      'desaName': 'Desa Sungai Pakning',
-      'kecamatanName': 'Kec. Bukit Batu',
-      'rating': 4.8,
-      'productCount': 11,
-      'address': 'Jl. Jenderal Sudirman, Sungai Pakning',
-      'phone': '+62 812-9988-7766',
-      'badge': 'Komoditas',
-      'color': Color(0xFFEC4899),
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -166,7 +106,7 @@ class _StorePageState extends State<StorePage> {
         sort: _selectedSort,
       );
 
-      // Client-side region filter jika dipilih spesifik
+      // Client-side region filter
       List<Map<String, dynamic>> filtered = products;
       if (_selectedDesa != 'Semua Desa') {
         filtered = filtered.where((p) {
@@ -203,310 +143,280 @@ class _StorePageState extends State<StorePage> {
     }
   }
 
-  void _showRegionFilterBottomSheet() {
+  // Unified Filter specifically for Wilayah & Urutkan Harga
+  void _showFilterBottomSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const primaryColor = Color(0xFF0EA5E9);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
         String tempKecamatan = _selectedKecamatan;
         String tempDesa = _selectedDesa;
+        String tempSort = _selectedSort;
 
         return StatefulBuilder(
           builder: (context, setModalState) {
             final List<String> currentDesaList =
                 _desaPerKecamatan[tempKecamatan] ?? ['Semua Desa'];
 
-            return Padding(
+            return Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
                 left: 20,
                 right: 20,
-                top: 24,
+                top: 16,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            color: Color(0xFF0EA5E9),
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Pilih Wilayah BUMDes',
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Handle Bar
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.4),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_rounded,
+                              color: primaryColor,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Filter Wilayah & Urutan',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setModalState(() {
+                              tempKecamatan = 'Semua Kecamatan';
+                              tempDesa = 'Semua Desa';
+                              tempSort = 'latest';
+                            });
+                          },
+                          child: const Text(
+                            'Reset',
                             style: TextStyle(
-                              fontSize: 18,
+                              color: Colors.redAccent,
                               fontWeight: FontWeight.bold,
+                              fontSize: 13,
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 16),
+
+                    // 1. Wilayah Kecamatan (Antar-Kecamatan)
+                    const Text(
+                      '1. Wilayah Kecamatan (Kab. Bengkalis)',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _kecamatanList.map((kec) {
+                        final isSelected = tempKecamatan == kec;
+                        return ChoiceChip(
+                          label: Text(kec),
+                          selected: isSelected,
+                          selectedColor: primaryColor.withValues(alpha: 0.18),
+                          backgroundColor: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF1F5F9),
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? primaryColor
+                                : (isDark ? Colors.white70 : Colors.grey[700]),
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            fontSize: 11.5,
+                          ),
+                          side: BorderSide(
+                            color: isSelected
+                                ? primaryColor
+                                : (isDark
+                                      ? Colors.white12
+                                      : const Color(0xFFCBD5E1)),
+                          ),
+                          onSelected: (selected) {
+                            if (selected) {
+                              setModalState(() {
+                                tempKecamatan = kec;
+                                tempDesa = 'Semua Desa';
+                              });
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    if (tempKecamatan != 'Semua Kecamatan') ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        'Desa di $tempKecamatan',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white70 : Colors.grey[800],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: currentDesaList.map((desa) {
+                          final isSelected = tempDesa == desa;
+                          return ChoiceChip(
+                            label: Text(desa),
+                            selected: isSelected,
+                            selectedColor: const Color(
+                              0xFF10B981,
+                            ).withValues(alpha: 0.18),
+                            backgroundColor: isDark
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFFF1F5F9),
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? const Color(0xFF10B981)
+                                  : (isDark
+                                        ? Colors.white70
+                                        : Colors.grey[700]),
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              fontSize: 11.5,
+                            ),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? const Color(0xFF10B981)
+                                  : (isDark
+                                        ? Colors.white12
+                                        : const Color(0xFFCBD5E1)),
+                            ),
+                            onSelected: (selected) {
+                              if (selected) {
+                                setModalState(() => tempDesa = desa);
+                              }
+                            },
+                          );
+                        }).toList(),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Kecamatan (Antar-Kecamatan)',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _kecamatanList.map((kec) {
-                      final isSelected = tempKecamatan == kec;
-                      return ChoiceChip(
-                        label: Text(kec),
-                        selected: isSelected,
-                        selectedColor: const Color(0xFF0EA5E9).withAlpha(40),
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? const Color(0xFF0EA5E9)
-                              : Theme.of(context).textTheme.bodyMedium?.color,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          fontSize: 12,
-                        ),
-                        side: BorderSide(
-                          color: isSelected
-                              ? const Color(0xFF0EA5E9)
-                              : Colors.grey.shade300,
-                        ),
-                        onSelected: (selected) {
-                          if (selected) {
-                            setModalState(() {
-                              tempKecamatan = kec;
-                              tempDesa = 'Semua Desa';
-                            });
-                          }
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Desa (Antar-Desa)',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: currentDesaList.map((desa) {
-                      final isSelected = tempDesa == desa;
-                      return ChoiceChip(
-                        label: Text(desa),
-                        selected: isSelected,
-                        selectedColor: const Color(0xFF10B981).withAlpha(40),
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? const Color(0xFF10B981)
-                              : Theme.of(context).textTheme.bodyMedium?.color,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          fontSize: 12,
-                        ),
-                        side: BorderSide(
-                          color: isSelected
-                              ? const Color(0xFF10B981)
-                              : Colors.grey.shade300,
-                        ),
-                        onSelected: (selected) {
-                          if (selected) {
-                            setModalState(() => tempDesa = desa);
-                          }
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedKecamatan = tempKecamatan;
-                          _selectedDesa = tempDesa;
-                        });
-                        Navigator.pop(context);
-                        _fetchData();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0EA5E9),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+
+                    const SizedBox(height: 18),
+
+                    // 2. Urutan Harga / Waktu
+                    const Text(
+                      '2. Urutan Produk',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: const Text(
-                        'Terapkan Wilayah',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildSortChip(
+                          'Terbaru',
+                          'latest',
+                          tempSort,
+                          (val) => setModalState(() => tempSort = val),
+                          isDark,
+                          primaryColor,
+                        ),
+                        _buildSortChip(
+                          'Harga Terendah',
+                          'price_asc',
+                          tempSort,
+                          (val) => setModalState(() => tempSort = val),
+                          isDark,
+                          primaryColor,
+                        ),
+                        _buildSortChip(
+                          'Harga Tertinggi',
+                          'price_desc',
+                          tempSort,
+                          (val) => setModalState(() => tempSort = val),
+                          isDark,
+                          primaryColor,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Apply Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedKecamatan = tempKecamatan;
+                            _selectedDesa = tempDesa;
+                            _selectedSort = tempSort;
+                          });
+                          Navigator.pop(context);
+                          _fetchData();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Terapkan Wilayah & Urutan',
+                          style: TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showFilterBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        String tempCategory = _selectedCategory;
-        String tempSort = _selectedSort;
-
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: 20,
-                right: 20,
-                top: 24,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Filter & Urutkan',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Urutkan',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildSortChip('Terbaru', 'latest', tempSort, (val) {
-                        setModalState(() => tempSort = val);
-                      }),
-                      _buildSortChip('Harga Terendah', 'price_asc', tempSort, (
-                        val,
-                      ) {
-                        setModalState(() => tempSort = val);
-                      }),
-                      _buildSortChip(
-                        'Harga Tertinggi',
-                        'price_desc',
-                        tempSort,
-                        (val) {
-                          setModalState(() => tempSort = val);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Kategori',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _categories.map((cat) {
-                      final isSelected = tempCategory == cat;
-                      return ChoiceChip(
-                        label: Text(cat),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          if (selected) {
-                            setModalState(() => tempCategory = cat);
-                          }
-                        },
-                        selectedColor: const Color(0xFF0EA5E9).withAlpha(40),
-                        backgroundColor: Theme.of(context).cardColor,
-                        labelStyle: TextStyle(
-                          color: isSelected
-                              ? const Color(0xFF0EA5E9)
-                              : Theme.of(context).textTheme.bodyMedium?.color,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                        side: BorderSide(
-                          color: isSelected
-                              ? const Color(0xFF0EA5E9)
-                              : Colors.grey.shade300,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedCategory = tempCategory;
-                          _selectedSort = tempSort;
-                        });
-                        Navigator.pop(context);
-                        _fetchData();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0EA5E9),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Terapkan',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -518,27 +428,34 @@ class _StorePageState extends State<StorePage> {
   Widget _buildSortChip(
     String label,
     String value,
-    String current,
-    Function(String) onSelected,
+    String groupValue,
+    ValueChanged<String> onChanged,
+    bool isDark,
+    Color primaryColor,
   ) {
-    final isSelected = current == value;
+    final isSelected = value == groupValue;
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      onSelected: (selected) {
-        if (selected) onSelected(value);
-      },
-      selectedColor: const Color(0xFF0EA5E9).withAlpha(40),
-      backgroundColor: Theme.of(context).cardColor,
+      selectedColor: primaryColor.withValues(alpha: 0.18),
+      backgroundColor: isDark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF1F5F9),
       labelStyle: TextStyle(
         color: isSelected
-            ? const Color(0xFF0EA5E9)
-            : Theme.of(context).textTheme.bodyMedium?.color,
+            ? primaryColor
+            : (isDark ? Colors.white70 : Colors.grey[700]),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        fontSize: 11.5,
       ),
       side: BorderSide(
-        color: isSelected ? const Color(0xFF0EA5E9) : Colors.grey.shade300,
+        color: isSelected
+            ? primaryColor
+            : (isDark ? Colors.white12 : const Color(0xFFCBD5E1)),
       ),
+      onSelected: (selected) {
+        if (selected) onChanged(value);
+      },
     );
   }
 
@@ -546,20 +463,23 @@ class _StorePageState extends State<StorePage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const primaryColor = Color(0xFF0EA5E9);
-    final bool hasActiveFilter =
-        _selectedCategory != 'Semua' ||
-        _selectedSort != 'latest' ||
+
+    final hasActiveRegionFilter =
         _selectedKecamatan != 'Semua Kecamatan' ||
         _selectedDesa != 'Semua Desa';
+    final hasActiveSortFilter = _selectedSort != 'latest';
+    final hasRegionOrSortFilter = hasActiveRegionFilter || hasActiveSortFilter;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark
+          ? const Color(0xFF090D16)
+          : const Color(0xFFF4F6FA),
       appBar: AppBar(
         title: const Text(
-          'Pasar Daerah BUMDes',
+          'Pasar Daerah',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 17.5,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -567,29 +487,22 @@ class _StorePageState extends State<StorePage> {
             ? const Color(0xFF0F172A)
             : const Color(0xFF0284C7),
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
-        actions: [
-          // Chat Toko Shortcut
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline_rounded),
-            tooltip: 'Layanan Chat BUMDes',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const TokoChatPage(
-                    tokoName: 'BUMDes Senggoro Maju',
-                    tokoDesa: 'Desa Senggoro',
-                    tokoKecamatan: 'Kec. Bengkalis',
-                  ),
-                ),
-              );
-            },
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 18,
           ),
-          // Favorit Saya Shortcut
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          // Favorit Saya
           IconButton(
-            icon: const Icon(Icons.favorite_outline_rounded),
+            icon: const Icon(
+              Icons.favorite_outline_rounded,
+              color: Colors.white,
+            ),
             tooltip: 'Favorit Saya',
             onPressed: () {
               Navigator.push(
@@ -606,7 +519,10 @@ class _StorePageState extends State<StorePage> {
             alignment: Alignment.center,
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_cart_outlined),
+                icon: const Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Colors.white,
+                ),
                 onPressed: () async {
                   await Navigator.push(
                     context,
@@ -618,22 +534,22 @@ class _StorePageState extends State<StorePage> {
               if (_cartCount > 0)
                 Positioned(
                   top: 8,
-                  right: 4,
+                  right: 6,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(3.5),
                     decoration: const BoxDecoration(
-                      color: Colors.red,
+                      color: Colors.redAccent,
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
+                      minWidth: 16,
+                      minHeight: 16,
                     ),
                     child: Text(
                       _cartCount > 99 ? '99+' : '$_cartCount',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 9.5,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -642,7 +558,50 @@ class _StorePageState extends State<StorePage> {
                 ),
             ],
           ),
+          const SizedBox(width: 4),
         ],
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -652,115 +611,70 @@ class _StorePageState extends State<StorePage> {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            // 1. Region Selector Pill Bar
-            SliverToBoxAdapter(
-              child: GestureDetector(
-                onTap: _showRegionFilterBottomSheet,
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1E293B)
-                        : const Color(0xFFE0F2FE),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isDark ? Colors.white12 : const Color(0xFFBAE6FD),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_rounded,
-                        color: Color(0xFF0284C7),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Lokasi Toko BUMDes Antar-Desa:',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark
-                                    ? Colors.white60
-                                    : const Color(0xFF0369A1),
-                              ),
-                            ),
-                            Text(
-                              '$_selectedKecamatan • $_selectedDesa',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF0F172A),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Row(
-                          children: [
-                            Text(
-                              'Ganti',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0284C7),
-                              ),
-                            ),
-                            Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 16,
-                              color: Color(0xFF0284C7),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // 2. Search Bar + Filter Icon
+            // 1. Search Bar with Filter Wilayah & Urutan Button
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Cari produk BUMDes, sembako, kerajinan...',
-                    hintStyle: const TextStyle(fontSize: 13),
+                    hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? Colors.white38 : Colors.grey[500],
+                    ),
                     prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        Icons.tune_rounded,
-                        color: hasActiveFilter ? const Color(0xFF0EA5E9) : null,
-                      ),
-                      onPressed: _showFilterBottomSheet,
+                    suffixIcon: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.tune_rounded,
+                            color: hasRegionOrSortFilter ? primaryColor : null,
+                          ),
+                          onPressed: _showFilterBottomSheet,
+                          tooltip: 'Filter Wilayah & Urutkan',
+                        ),
+                        if (hasRegionOrSortFilter)
+                          Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: primaryColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? Colors.white10
+                            : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? Colors.white10
+                            : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: primaryColor,
+                        width: 1.5,
+                      ),
                     ),
                     filled: true,
-                    fillColor: Theme.of(context).cardColor,
+                    fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   ),
                   onSubmitted: (value) {
@@ -771,67 +685,89 @@ class _StorePageState extends State<StorePage> {
               ),
             ),
 
-            // 3. Featured BUMDes Stores (Cross-Village Showcase)
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+            // 2. Active Filter Badges (Kecamatan / Desa / Urutan)
+            if (hasRegionOrSortFilter)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 4),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.storefront_rounded,
-                              size: 18,
-                              color: Color(0xFF0EA5E9),
+                        if (hasActiveRegionFilter)
+                          InputChip(
+                            avatar: const Icon(
+                              Icons.location_on_rounded,
+                              size: 14,
+                              color: Color(0xFF0284C7),
                             ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Toko BUMDes Antar-Desa',
-                              style: TextStyle(
-                                fontSize: 15,
+                            label: Text(
+                              _selectedDesa != 'Semua Desa'
+                                  ? '$_selectedDesa ($_selectedKecamatan)'
+                                  : _selectedKecamatan,
+                              style: const TextStyle(
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
+                                color: Color(0xFF0284C7),
                               ),
                             ),
-                          ],
-                        ),
-                        Text(
-                          '${_featuredStores.length} Desa',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? Colors.white54 : Colors.grey[600],
-                            fontWeight: FontWeight.w500,
+                            backgroundColor: const Color(
+                              0xFF0284C7,
+                            ).withValues(alpha: 0.12),
+                            side: BorderSide(
+                              color: const Color(
+                                0xFF0284C7,
+                              ).withValues(alpha: 0.3),
+                            ),
+                            onDeleted: () {
+                              setState(() {
+                                _selectedKecamatan = 'Semua Kecamatan';
+                                _selectedDesa = 'Semua Desa';
+                              });
+                              _fetchData();
+                            },
                           ),
-                        ),
+                        if (hasActiveSortFilter) ...[
+                          const SizedBox(width: 6),
+                          InputChip(
+                            avatar: const Icon(
+                              Icons.sort_rounded,
+                              size: 14,
+                              color: primaryColor,
+                            ),
+                            label: Text(
+                              _selectedSort == 'price_asc'
+                                  ? 'Termurah'
+                                  : 'Tertinggi',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
+                            ),
+                            backgroundColor: primaryColor.withValues(
+                              alpha: 0.12,
+                            ),
+                            side: BorderSide(
+                              color: primaryColor.withValues(alpha: 0.3),
+                            ),
+                            onDeleted: () {
+                              setState(() => _selectedSort = 'latest');
+                              _fetchData();
+                            },
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                  SizedBox(
-                    height: 135,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _featuredStores.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 12),
-                      itemBuilder: (context, i) {
-                        final store = _featuredStores[i];
-                        return _buildStoreCard(store, isDark);
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
 
-            // 4. Quick Category Filter Pills
+            // 3. Quick Category Horizontal Pills (Specifically for Kategori Produk)
             SliverToBoxAdapter(
               child: Container(
                 height: 38,
-                margin: const EdgeInsets.only(top: 14, bottom: 6),
+                margin: const EdgeInsets.only(top: 4, bottom: 8),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -844,19 +780,27 @@ class _StorePageState extends State<StorePage> {
                     return ChoiceChip(
                       label: Text(cat),
                       selected: isSelected,
-                      selectedColor: primaryColor.withAlpha(40),
-                      backgroundColor: Theme.of(context).cardColor,
+                      selectedColor: primaryColor.withValues(alpha: 0.18),
+                      backgroundColor: isDark
+                          ? const Color(0xFF1E293B)
+                          : Colors.white,
                       labelStyle: TextStyle(
                         color: isSelected
                             ? primaryColor
-                            : Theme.of(context).textTheme.bodyMedium?.color,
+                            : (isDark
+                                  ? Colors.white70
+                                  : const Color(0xFF475569)),
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.normal,
                         fontSize: 12,
                       ),
                       side: BorderSide(
-                        color: isSelected ? primaryColor : Colors.grey.shade300,
+                        color: isSelected
+                            ? primaryColor
+                            : (isDark
+                                  ? Colors.white12
+                                  : const Color(0xFFE2E8F0)),
                       ),
                       onSelected: (selected) {
                         if (selected) {
@@ -870,9 +814,7 @@ class _StorePageState extends State<StorePage> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
-
-            // 5. Products Grid
+            // 4. Products Grid Immediately at the Top!
             if (_isLoading)
               const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator()),
@@ -885,22 +827,27 @@ class _StorePageState extends State<StorePage> {
                     children: [
                       Icon(
                         Icons.storefront_outlined,
-                        size: 80,
-                        color: Colors.grey[300],
+                        size: 70,
+                        color: isDark ? Colors.white24 : Colors.grey[300],
                       ),
                       const SizedBox(height: 16),
                       Text(
                         'Belum ada produk',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         'Produk di kategori atau wilayah ini belum tersedia.',
-                        style: TextStyle(color: Colors.grey[500]),
+                        style: TextStyle(
+                          color: isDark ? Colors.white54 : Colors.grey[500],
+                          fontSize: 12.5,
+                        ),
                       ),
                     ],
                   ),
@@ -908,7 +855,7 @@ class _StorePageState extends State<StorePage> {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 30),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -922,135 +869,6 @@ class _StorePageState extends State<StorePage> {
                   }, childCount: _apiProducts.length),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStoreCard(Map<String, dynamic> store, bool isDark) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => BumdesStoreProfilePage(
-              tokoName: store['tokoName'],
-              desaName: store['desaName'],
-              kecamatanName: store['kecamatanName'],
-              address: store['address'],
-              phone: store['phone'],
-            ),
-          ),
-        ).then((_) => _fetchCartCount());
-      },
-      child: Container(
-        width: 175,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: (store['color'] as Color).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.storefront_rounded,
-                    color: store['color'],
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: (store['color'] as Color).withValues(
-                            alpha: 0.15,
-                          ),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          store['badge'] ?? 'BUMDes',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: store['color'],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.star_rounded,
-                            size: 13,
-                            color: Colors.amber,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${store['rating']}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  store['tokoName'],
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  '${store['desaName']} • ${store['kecamatanName']}',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    color: isDark ? Colors.white60 : Colors.grey[600],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -1076,7 +894,7 @@ class _StorePageState extends State<StorePage> {
             : null);
     final int productId = product['id'] is int
         ? product['id']
-        : int.tryParse(product['id'].toString()) ?? 0;
+        : int.tryParse(product['id']?.toString() ?? '0') ?? 0;
     final String lokasi = product['region'] is Map
         ? product['region']['name']?.toString() ?? ''
         : (product['lokasi']?.toString() ?? 'Bengkalis');
@@ -1108,7 +926,7 @@ class _StorePageState extends State<StorePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thumbnail Image + Village Tag
+            // Thumbnail Image + Village Tag + Heart Toggle
             Expanded(
               child: Stack(
                 children: [
@@ -1123,7 +941,9 @@ class _StorePageState extends State<StorePage> {
                             height: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => Container(
-                              color: Colors.grey[200],
+                              color: isDark
+                                  ? const Color(0xFF0F172A)
+                                  : Colors.grey[200],
                               child: const Icon(
                                 Icons.shopping_bag_outlined,
                                 color: Colors.grey,
@@ -1131,13 +951,16 @@ class _StorePageState extends State<StorePage> {
                             ),
                           )
                         : Container(
-                            color: Colors.grey[200],
+                            color: isDark
+                                ? const Color(0xFF0F172A)
+                                : Colors.grey[200],
                             child: const Icon(
                               Icons.shopping_bag_outlined,
                               color: Colors.grey,
                             ),
                           ),
                   ),
+                  // Village Tag
                   Positioned(
                     top: 6,
                     left: 6,
@@ -1171,6 +994,7 @@ class _StorePageState extends State<StorePage> {
                       ),
                     ),
                   ),
+                  // Heart Toggle Button
                   Positioned(
                     top: 6,
                     right: 6,
