@@ -845,12 +845,14 @@ class _PartnershipRegistrationPageState
                 child: Icon(icon, color: iconColor, size: 18),
               ),
               const SizedBox(width: 10),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF1E293B),
+                  ),
                 ),
               ),
             ],
@@ -876,7 +878,7 @@ class _PartnershipRegistrationPageState
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.grey[700],
+            color: isDark ? Colors.white70 : const Color(0xFF334155),
           ),
         ),
         const SizedBox(height: 6),
@@ -893,12 +895,14 @@ class _PartnershipRegistrationPageState
             children: [
               Icon(icon, color: const Color(0xFF2FA2F1), size: 18),
               const SizedBox(width: 10),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Expanded(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],

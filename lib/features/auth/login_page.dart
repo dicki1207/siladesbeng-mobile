@@ -666,10 +666,7 @@ class _LoginPageState extends State<LoginPage> {
                                 strokeWidth: 2.5,
                               ),
                             )
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
+                          : const Text(
                                   'Masuk Sekarang',
                                   style: TextStyle(
                                     fontSize: 15.5,
@@ -677,13 +674,6 @@ class _LoginPageState extends State<LoginPage> {
                                     letterSpacing: 0.3,
                                   ),
                                 ),
-                                SizedBox(width: 8),
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
                     ),
                   ),
 

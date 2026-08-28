@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _unitPelayanan = [];
   List<dynamic> _availableServices = [];
   List<Map<String, dynamic>> _pasarDaerahProducts = [];
-  bool _isLoading = false;
+  // _isLoading removed — fallback data renders instantly
   double _assistantX = -1;
   double _assistantY = -1;
   final TextEditingController _searchController = TextEditingController();
@@ -483,8 +483,6 @@ class _HomePageState extends State<HomePage> {
       await Future.delayed(const Duration(milliseconds: 200));
       if (!mounted) return;
       setState(() {
-        _isLoading = false;
-
         // Fallback untuk Announcement jika gagal loading
         if (_announcements.isEmpty) {
           _announcements = [
@@ -504,7 +502,6 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _isLoading = false;
         if (_announcements.isEmpty) {
           _announcements = [
             {
