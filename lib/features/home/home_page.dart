@@ -54,8 +54,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _unitPelayanan = _getDefaultUnitPelayanan();
-    _pasarDaerahProducts = _getDefaultPopularProducts();
-    _announcements = _getDefaultAnnouncements();
+    _pasarDaerahProducts = [];
+    _announcements = [];
     _loadProfileData();
     _fetchPublicData();
   }
@@ -120,100 +120,7 @@ class _HomePageState extends State<HomePage> {
     ];
   }
 
-  List<Map<String, dynamic>> _getDefaultPopularProducts() {
-    return [
-      {
-        'id': 101,
-        'nama_produk': 'Tanjak Songket Melayu',
-        'harga': 75000,
-        'satuan': 'pcs',
-        'image_url':
-            'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=400&q=80',
-      },
-      {
-        'id': 102,
-        'nama_produk': 'Tas Anyaman Pandan Desa',
-        'harga': 45000,
-        'satuan': 'pcs',
-        'image_url':
-            'https://images.unsplash.com/photo-1590736704728-f4730bb30770?auto=format&fit=crop&w=400&q=80',
-      },
-      {
-        'id': 103,
-        'nama_produk': 'Tikar Purun Motif Alami',
-        'harga': 60000,
-        'satuan': 'lembar',
-        'image_url':
-            'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80',
-      },
-      {
-        'id': 104,
-        'nama_produk': 'Kain Tenun Khas Bengkalis',
-        'harga': 185000,
-        'satuan': 'helai',
-        'image_url':
-            'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=400&q=80',
-      },
-      {
-        'id': 105,
-        'nama_produk': 'Kerajinan Batok Kelapa Set',
-        'harga': 25000,
-        'satuan': 'set',
-        'image_url':
-            'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80',
-      },
-    ];
-  }
 
-  List<Map<String, dynamic>> _getDefaultAnnouncements() {
-    return [
-      {
-        'id': 301,
-        'title': 'Jadwal Penyaluran BLT Desa Tahap III Tahun 2026',
-        'category': 'Pengumuman',
-        'type': 'Pengumuman',
-        'date': '2026-08-26',
-        'desc':
-            'Penyaluran Bantuan Langsung Tunai (BLT) dilaksanakan di Kantor Desa mulai pukul 08.30 WIB dengan membawa KTP dan KK asli.',
-        'content':
-            'Diberitahukan kepada seluruh warga penerima manfaat Bantuan Langsung Tunai Dana Desa bahwa pembagian tahap III akan dilaksanakan di Aula Kantor Desa.',
-        'image':
-            'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80',
-        'location': 'Kantor Kepala Desa',
-        'author': 'Sekretariat Desa',
-      },
-      {
-        'id': 302,
-        'title': 'Musyawarah Rencana Pembangunan Desa (Musrenbangdes)',
-        'category': 'Pengumuman',
-        'type': 'Pengumuman',
-        'date': '2026-08-24',
-        'desc':
-            'Undangan musyawarah terbuka bersama Ketua RT, RW, BPD, dan tokoh masyarakat untuk menetapkan prioritas pembangunan TA 2027.',
-        'content':
-            'Pemerintah Desa mengundang seluruh perwakilan kelembagaan desa untuk hadir dalam rangka Musyawarah Perencanaan Pembangunan Desa tahun anggaran mendatang.',
-        'image':
-            'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=600&q=80',
-        'location': 'Aula Pertemuan Desa',
-        'author': 'Badan Permusyawaratan Desa',
-      },
-      {
-        'id': 303,
-        'title': 'Layanan Perekaman KTP-el & Akta Kelahiran Keliling',
-        'category': 'Pengumuman',
-        'type': 'Pengumuman',
-        'date': '2026-08-20',
-        'desc':
-            'Pelayanan jemput bola dokumen kependudukan gratis oleh Disdukcapil bagi seluruh warga di Balai Desa.',
-        'content':
-            'Warga yang belum memiliki KTP elektronik atau ingin mengurus Akta Kelahiran dan Kartu Identitas Anak dapat langsung mendatangi loket pelayanan keliling.',
-        'image':
-            'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=80',
-        'location': 'Balai Desa Bengkalis',
-        'author': 'Disdukcapil & Pemdes',
-      },
-    ];
-  }
 
   Widget _buildElementImage(
     String path, {
@@ -350,20 +257,17 @@ class _HomePageState extends State<HomePage> {
                     }
                     return item;
                   }).toList();
-                  setState(() {
-                    _announcements = [
-                      ..._getDefaultAnnouncements(),
-                      ...validData,
-                    ];
+                    setState(() {
+                    _announcements = validData;
                   });
                 } else {
                   setState(() {
-                    _announcements = _getDefaultAnnouncements();
+                    _announcements = [];
                   });
                 }
               } catch (_) {
                 setState(() {
-                  _announcements = _getDefaultAnnouncements();
+                  _announcements = [];
                 });
               }
             }
@@ -371,7 +275,7 @@ class _HomePageState extends State<HomePage> {
           .catchError((_) {
             if (mounted) {
               setState(() {
-                _announcements = _getDefaultAnnouncements();
+                _announcements = [];
               });
             }
           });
@@ -443,7 +347,7 @@ class _HomePageState extends State<HomePage> {
             }
           });
 
-      // 5. Fetch Pasar Daerah (dengan fallback data mockup untuk poster)
+      // 5. Fetch Pasar Daerah
       http
           .get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products'))
           .then((res) {
@@ -456,15 +360,12 @@ class _HomePageState extends State<HomePage> {
                       .where((item) => !(item['nama_produk']?.toString().toLowerCase().contains('seman') ?? false))
                       .toList();
                   setState(() {
-                    _pasarDaerahProducts = [
-                      ..._getDefaultPopularProducts(),
-                      ...list,
-                    ];
+                    _pasarDaerahProducts = list;
                   });
                 }
               } catch (_) {
                 setState(() {
-                  _pasarDaerahProducts = _getDefaultPopularProducts();
+                  _pasarDaerahProducts = [];
                 });
               }
             }
@@ -472,48 +373,15 @@ class _HomePageState extends State<HomePage> {
           .catchError((_) {
             if (mounted) {
               setState(() {
-                _pasarDaerahProducts = _getDefaultPopularProducts();
+                _pasarDaerahProducts = [];
               });
             }
           });
 
-      // Matikan indikator loading skeleton utama dengan sangat cepat
-      // agar struktur UI tidak ter-block. List yang kosong akan di-handle oleh
-      // check if empty/shrink secara elegan di bagian build.
       await Future.delayed(const Duration(milliseconds: 200));
-      if (!mounted) return;
-      setState(() {
-        // Fallback untuk Announcement jika gagal loading
-        if (_announcements.isEmpty) {
-          _announcements = [
-            {
-              'title': 'Bantuan Sosial 2026',
-              'content':
-                  'Penyaluran bantuan sosial desa bulan ini untuk seluruh RT/RW...',
-            },
-            {
-              'title': 'Rapat Kerja Bakti Warga',
-              'content':
-                  'Diadakan di balai desa membahas kebersihan dan ketentraman...',
-            },
-          ];
-        }
-      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        if (_announcements.isEmpty) {
-          _announcements = [
-            {
-              'title': 'Bantuan Sosial 2026',
-              'content': 'Penyaluran bantuan sosial desa bulan ini...',
-            },
-            {
-              'title': 'Rapat Warga',
-              'content': 'Diadakan di balai desa membahas keamanan...',
-            },
-          ];
-        }
         _unitPelayanan = _getDefaultUnitPelayanan();
       });
     }

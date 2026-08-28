@@ -26,53 +26,16 @@ class PasarProductService {
           return List<Map<String, dynamic>>.from(data['data']);
         }
       }
-      return _getFallbackProducts();
+      return [];
     } catch (e) {
-      debugPrint('Error fetching products, using fallback: $e');
-      return _getFallbackProducts();
+      debugPrint('Error fetching products: $e');
+      return [];
     }
-  }
-
-  List<Map<String, dynamic>> _getFallbackProducts() {
-    return [
-      {
-        'id': 101,
-        'nama_produk': 'Kain Tenun Lejo Khas Bengkalis',
-        'kategori': 'Kerajinan',
-        'harga': 150000,
-        'image_url': 'assets/images/PasarDaerah.png',
-        'lokasi': 'Desa Sebauk, Kec. Bengkalis',
-      },
-      {
-        'id': 102,
-        'nama_produk': 'Lempuk Durian Asli Bantan',
-        'kategori': 'Makanan',
-        'harga': 45000,
-        'image_url': 'assets/images/PasarDaerah.png',
-        'lokasi': 'Desa Bantan Tua, Kec. Bantan',
-      },
-      {
-        'id': 103,
-        'nama_produk': 'Kopi Liberika Meranti',
-        'kategori': 'Minuman',
-        'harga': 35000,
-        'image_url': 'assets/images/PasarDaerah.png',
-        'lokasi': 'Desa Selatbaru, Kec. Bantan',
-      },
-      {
-        'id': 104,
-        'nama_produk': 'Tikar Pandan Anyaman',
-        'kategori': 'Kerajinan',
-        'harga': 80000,
-        'image_url': 'assets/images/PasarDaerah.png',
-        'lokasi': 'Desa Pematang Duku, Kec. Bengkalis',
-      }
-    ];
   }
 
   Future<List<String>> getCategories() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/pasar-daerah/categories')).timeout(const Duration(seconds: 3));
+      final response = await http.get(Uri.parse('$baseUrl/pasar-daerah/categories')).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -80,10 +43,10 @@ class PasarProductService {
           return List<String>.from(data['data']);
         }
       }
-      return ['Semua', 'Makanan', 'Minuman', 'Kerajinan', 'Pertanian'];
+      return ['Semua'];
     } catch (e) {
       debugPrint('Error fetching categories: $e');
-      return ['Semua', 'Makanan', 'Minuman', 'Kerajinan', 'Pertanian'];
+      return ['Semua'];
     }
   }
 

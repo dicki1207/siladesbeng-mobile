@@ -81,57 +81,12 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     'Lapangan Desa',
   ];
 
-  List<Map<String, dynamic>> _getDefaultEvents() {
-    return [
-      {
-        'id': 1,
-        'title': 'Gotong Royong Kebersihan Parit & Lingkungan',
-        'wilayah': 'RW 01 - RT 02',
-        'tipe': 'Gotong Royong',
-        'koordinator': 'Pak Suryanto (Ketua RT 02)',
-        'jadwal': 'Minggu, 30 Agustus 2026 • Pukul 07:30 WIB',
-        'lokasi': 'Sepanjang Jl. Utama Desa & Area Kantor Desa',
-        'note': 'Harap membawa cangkul, sapu lidi, dan karung sampah dari rumah masing-masing.',
-        'participants': 24,
-        'isJoined': true,
-        'isCreator': false,
-      },
-      {
-        'id': 2,
-        'title': 'Musyawarah Perencanaan Pembangunan Desa (Musrenbangdes)',
-        'wilayah': 'Semua Wilayah',
-        'tipe': 'Acara / Event',
-        'koordinator': 'Sekretaris Desa Bengkalis',
-        'jadwal': 'Rabu, 2 September 2026 • Pukul 09:00 WIB',
-        'lokasi': 'Aula Balai Pertemuan Desa',
-        'note': 'Dihadiri seluruh Ketua RW, RT, BPD, tokoh masyarakat, dan perwakilan pemuda.',
-        'participants': 18,
-        'isJoined': false,
-        'isCreator': false,
-      },
-      {
-        'id': 3,
-        'title': 'Penyaluran Bantuan Pangan Beras & Sembako Murah',
-        'wilayah': 'RW 02 - RT 01',
-        'tipe': 'Pengumuman',
-        'koordinator': 'Pengurus BUMDes Bersama',
-        'jadwal': 'Jumat, 4 September 2026 • Pukul 08:30 WIB',
-        'lokasi': 'Gedung BUMDes Mart Desa',
-        'note': 'Warga penerima manfaat wajib membawa fotokopi KK dan KTP asli saat pengambilan.',
-        'participants': 35,
-        'isJoined': false,
-        'isCreator': false,
-      },
-    ];
-  }
-
   List<Map<String, dynamic>> _events = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _events = _getDefaultEvents();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -142,6 +97,9 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   }
 
   Future<void> _loadEvents() async {
+    setState(() {
+      _isLoading = true;
+    });
     final data = await _eventService.getEvents();
     if (!mounted) return;
     if (data.isNotEmpty) {
@@ -175,6 +133,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       });
     } else {
       setState(() {
+        _events = [];
         _isLoading = false;
       });
     }

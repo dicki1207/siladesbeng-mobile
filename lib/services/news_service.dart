@@ -71,43 +71,11 @@ class NewsService {
         final items = data['data'] ?? [];
         return _fixImageUrls(items as List<dynamic>);
       }
-      return _getFallbackNews();
+      return [];
     } catch (e) {
-      debugPrint('Error fetching news, using fallback: $e');
-      return _getFallbackNews();
+      debugPrint('Error fetching news: $e');
+      return [];
     }
-  }
-
-  List<dynamic> _getFallbackNews() {
-    return [
-      {
-        'id': 1,
-        'title': 'Gotong Royong Membersihkan Parit dan Fasilitas Desa',
-        'content': 'Warga desa beramai-ramai membersihkan lingkungan untuk mencegah banjir di musim penghujan.',
-        'post_category': 'Agenda',
-        'published_at': '2026-08-25',
-        'image': 'assets/images/F2.png',
-        'views': 120,
-      },
-      {
-        'id': 2,
-        'title': 'Penyaluran Bantuan Sembako BUMDes',
-        'content': 'BUMDes menyalurkan bantuan sembako kepada warga kurang mampu di balai desa.',
-        'post_category': 'Berita',
-        'published_at': '2026-08-27',
-        'image': 'assets/images/F2.png',
-        'views': 85,
-      },
-      {
-        'id': 3,
-        'title': 'Pengumuman Musyawarah Perencanaan Pembangunan Desa (Musrenbangdes)',
-        'content': 'Diharapkan kehadiran seluruh RT dan RW pada acara Musrenbangdes tahun 2027.',
-        'post_category': 'Pengumuman',
-        'published_at': '2026-08-28',
-        'image': 'assets/images/F2.png',
-        'views': 250,
-      }
-    ];
   }
 
   /// Get specific news detail

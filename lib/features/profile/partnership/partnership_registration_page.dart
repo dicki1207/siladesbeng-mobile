@@ -41,90 +41,16 @@ class _PartnershipRegistrationPageState
   String? _filePath;
   String? _fileName;
 
-  List<Map<String, dynamic>> _getDefaultBengkalisRegions() {
-    return [
-      {
-        'id': 1,
-        'name': 'Kecamatan Bengkalis',
-        'type': 'kecamatan',
-        'children': [
-          {'id': 101, 'name': 'Desa Kelapapati', 'type': 'desa', 'has_admin': false},
-          {'id': 102, 'name': 'Desa Damon', 'type': 'desa', 'has_admin': true},
-          {'id': 103, 'name': 'Desa Rimba Sekampung', 'type': 'desa', 'has_admin': false},
-          {'id': 104, 'name': 'Desa Wonosari', 'type': 'desa', 'has_admin': false},
-          {'id': 105, 'name': 'Desa Senggoro', 'type': 'desa', 'has_admin': false},
-          {'id': 106, 'name': 'Desa Air Putih', 'type': 'desa', 'has_admin': false},
-          {'id': 107, 'name': 'Desa Pedekik', 'type': 'desa', 'has_admin': false},
-        ]
-      },
-      {
-        'id': 2,
-        'name': 'Kecamatan Bantan',
-        'type': 'kecamatan',
-        'children': [
-          {'id': 201, 'name': 'Desa Selat Baru', 'type': 'desa', 'has_admin': false},
-          {'id': 202, 'name': 'Desa Bantan Tua', 'type': 'desa', 'has_admin': false},
-          {'id': 203, 'name': 'Desa Bantan Air', 'type': 'desa', 'has_admin': false},
-          {'id': 204, 'name': 'Desa Teluk Pambang', 'type': 'desa', 'has_admin': false},
-          {'id': 205, 'name': 'Desa Muntai', 'type': 'desa', 'has_admin': false},
-        ]
-      },
-      {
-        'id': 3,
-        'name': 'Kecamatan Bukit Batu',
-        'type': 'kecamatan',
-        'children': [
-          {'id': 301, 'name': 'Desa Sungai Pakning', 'type': 'desa', 'has_admin': false},
-          {'id': 302, 'name': 'Desa Sejangat', 'type': 'desa', 'has_admin': false},
-          {'id': 303, 'name': 'Desa Dompas', 'type': 'desa', 'has_admin': false},
-          {'id': 304, 'name': 'Desa Pangkalan Jambi', 'type': 'desa', 'has_admin': false},
-        ]
-      },
-      {
-        'id': 4,
-        'name': 'Kecamatan Mandau',
-        'type': 'kecamatan',
-        'children': [
-          {'id': 401, 'name': 'Kelurahan Duri Barat', 'type': 'desa', 'has_admin': true},
-          {'id': 402, 'name': 'Kelurahan Duri Timur', 'type': 'desa', 'has_admin': false},
-          {'id': 403, 'name': 'Desa Bathin Betuah', 'type': 'desa', 'has_admin': false},
-          {'id': 404, 'name': 'Desa Harapan Baru', 'type': 'desa', 'has_admin': false},
-        ]
-      },
-      {
-        'id': 5,
-        'name': 'Kecamatan Rupat',
-        'type': 'kecamatan',
-        'children': [
-          {'id': 501, 'name': 'Kelurahan Batu Panjang', 'type': 'desa', 'has_admin': false},
-          {'id': 502, 'name': 'Desa Tanjung Kapal', 'type': 'desa', 'has_admin': false},
-          {'id': 503, 'name': 'Desa Teluk Lecah', 'type': 'desa', 'has_admin': false},
-        ]
-      },
-      {
-        'id': 6,
-        'name': 'Kecamatan Siak Kecil',
-        'type': 'kecamatan',
-        'children': [
-          {'id': 601, 'name': 'Desa Lubuk Muda', 'type': 'desa', 'has_admin': false},
-          {'id': 602, 'name': 'Desa Tanjung Belit', 'type': 'desa', 'has_admin': false},
-          {'id': 603, 'name': 'Desa Sepotong', 'type': 'desa', 'has_admin': false},
-        ]
-      },
-    ];
-  }
-
   @override
   void initState() {
     super.initState();
-    _kecamatans = _getDefaultBengkalisRegions();
-    _isLoadingRegions = false;
+    _isLoadingRegions = true;
     _fetchRegions();
   }
 
   Future<void> _fetchRegions() async {
     final regions = await _kemitraanService.getRegions();
-    if (mounted && regions.isNotEmpty) {
+    if (mounted) {
       setState(() {
         _kecamatans = regions;
         _isLoadingRegions = false;
