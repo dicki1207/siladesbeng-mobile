@@ -351,8 +351,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF090D16)
-          : const Color(0xFFF1F8FF),
+          ? const Color(0xFF0B1120)
+          : const Color(0xFFF8FAFC),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -364,7 +364,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               scrolledUnderElevation: 2,
               backgroundColor: isDark
                   ? const Color(0xFF0F172A)
-                  : const Color(0xFF1E3A8A),
+                  : const Color(0xFF2563EB),
               leading: IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(7),

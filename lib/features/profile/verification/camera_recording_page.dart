@@ -913,7 +913,7 @@ class FaceScanMaskPainter extends CustomPainter {
           endAngle: 3 * math.pi / 2,
           colors: isSuccess
               ? [const Color(0xFF34D399), const Color(0xFF10B981)]
-              : [const Color(0xFF60A5FA), const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+              : [const Color(0xFF60A5FA), const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
         ).createShader(ovalRect)
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round

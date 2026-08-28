@@ -375,8 +375,8 @@ class _NotificationPageState extends State<NotificationPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF0F172A)
-          : const Color(0xFFF1F8FF),
+          ? const Color(0xFF0B1120)
+          : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'Notifikasi',
@@ -404,7 +404,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   end: Alignment.bottomRight,
                   colors: isDark
                       ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                 ),
               ),
             ),

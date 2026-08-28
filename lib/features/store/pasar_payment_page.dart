@@ -353,18 +353,60 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Pembayaran',
             style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 17,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: Colors.white,
+              letterSpacing: 0.3,
             ),
           ),
-          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          backgroundColor: const Color(0xFF2563EB),
           elevation: 0,
           centerTitle: true,
           automaticallyImplyLeading: false,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                    : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: ClipRRect(
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: -30,
+                    right: -20,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withAlpha(22),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -20,
+                    left: -15,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withAlpha(14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
         body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),

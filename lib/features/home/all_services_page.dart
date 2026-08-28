@@ -285,6 +285,8 @@ class _AllServicesPageState extends State<AllServicesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -297,10 +299,52 @@ class _AllServicesPageState extends State<AllServicesPage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 17,
+            letterSpacing: 0.3,
           ),
         ),
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

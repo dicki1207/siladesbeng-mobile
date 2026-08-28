@@ -181,7 +181,7 @@ class _AdminReportPageState extends State<AdminReportPage> {
                   end: Alignment.bottomRight,
                   colors: isDark
                       ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                 ),
               ),
             ),

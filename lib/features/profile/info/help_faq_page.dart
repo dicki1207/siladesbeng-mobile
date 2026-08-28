@@ -45,6 +45,7 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final filteredFaqs = _faqs.where((faq) {
       return faq['question']!.toLowerCase().contains(
             _searchQuery.toLowerCase(),
@@ -53,19 +54,62 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
     }).toList();
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'Pusat Bantuan & FAQ',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
+            letterSpacing: 0.3,
           ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: const Color(0xFF2563EB),
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
         elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Column(
         children: [

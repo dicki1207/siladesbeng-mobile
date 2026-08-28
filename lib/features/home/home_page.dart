@@ -15,7 +15,6 @@ import 'package:siladesbeng_mobile/features/rental/facility_rental_page.dart';
 import 'package:siladesbeng_mobile/features/rental/car_rental_page.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/home/search_page.dart';
-import 'package:siladesbeng_mobile/features/home/all_services_page.dart';
 import 'package:siladesbeng_mobile/features/assistant/assistant_page.dart';
 import 'package:siladesbeng_mobile/widgets/premium_header.dart';
 import 'package:siladesbeng_mobile/features/store/store_page.dart';
@@ -55,6 +54,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _unitPelayanan = _getDefaultUnitPelayanan();
+    _pasarDaerahProducts = _getDefaultPopularProducts();
+    _announcements = _getDefaultAnnouncements();
     _loadProfileData();
     _fetchPublicData();
   }
@@ -115,6 +116,101 @@ class _HomePageState extends State<HomePage> {
         'imageUrl': 'assets/images/fasilitas.png',
         'color': 'purple',
         'title': 'Fasilitas Umum',
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> _getDefaultPopularProducts() {
+    return [
+      {
+        'id': 101,
+        'nama_produk': 'Tanjak Songket Melayu',
+        'harga': 75000,
+        'satuan': 'pcs',
+        'image_url':
+            'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        'id': 102,
+        'nama_produk': 'Tas Anyaman Pandan Desa',
+        'harga': 45000,
+        'satuan': 'pcs',
+        'image_url':
+            'https://images.unsplash.com/photo-1590736704728-f4730bb30770?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        'id': 103,
+        'nama_produk': 'Tikar Purun Motif Alami',
+        'harga': 60000,
+        'satuan': 'lembar',
+        'image_url':
+            'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        'id': 104,
+        'nama_produk': 'Kain Tenun Khas Bengkalis',
+        'harga': 185000,
+        'satuan': 'helai',
+        'image_url':
+            'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=400&q=80',
+      },
+      {
+        'id': 105,
+        'nama_produk': 'Kerajinan Batok Kelapa Set',
+        'harga': 25000,
+        'satuan': 'set',
+        'image_url':
+            'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80',
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> _getDefaultAnnouncements() {
+    return [
+      {
+        'id': 301,
+        'title': 'Jadwal Penyaluran BLT Desa Tahap III Tahun 2026',
+        'category': 'Pengumuman',
+        'type': 'Pengumuman',
+        'date': '2026-08-26',
+        'desc':
+            'Penyaluran Bantuan Langsung Tunai (BLT) dilaksanakan di Kantor Desa mulai pukul 08.30 WIB dengan membawa KTP dan KK asli.',
+        'content':
+            'Diberitahukan kepada seluruh warga penerima manfaat Bantuan Langsung Tunai Dana Desa bahwa pembagian tahap III akan dilaksanakan di Aula Kantor Desa.',
+        'image':
+            'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80',
+        'location': 'Kantor Kepala Desa',
+        'author': 'Sekretariat Desa',
+      },
+      {
+        'id': 302,
+        'title': 'Musyawarah Rencana Pembangunan Desa (Musrenbangdes)',
+        'category': 'Pengumuman',
+        'type': 'Pengumuman',
+        'date': '2026-08-24',
+        'desc':
+            'Undangan musyawarah terbuka bersama Ketua RT, RW, BPD, dan tokoh masyarakat untuk menetapkan prioritas pembangunan TA 2027.',
+        'content':
+            'Pemerintah Desa mengundang seluruh perwakilan kelembagaan desa untuk hadir dalam rangka Musyawarah Perencanaan Pembangunan Desa tahun anggaran mendatang.',
+        'image':
+            'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=600&q=80',
+        'location': 'Aula Pertemuan Desa',
+        'author': 'Badan Permusyawaratan Desa',
+      },
+      {
+        'id': 303,
+        'title': 'Layanan Perekaman KTP-el & Akta Kelahiran Keliling',
+        'category': 'Pengumuman',
+        'type': 'Pengumuman',
+        'date': '2026-08-20',
+        'desc':
+            'Pelayanan jemput bola dokumen kependudukan gratis oleh Disdukcapil bagi seluruh warga di Balai Desa.',
+        'content':
+            'Warga yang belum memiliki KTP elektronik atau ingin mengurus Akta Kelahiran dan Kartu Identitas Anak dapat langsung mendatangi loket pelayanan keliling.',
+        'image':
+            'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=80',
+        'location': 'Balai Desa Bengkalis',
+        'author': 'Disdukcapil & Pemdes',
       },
     ];
   }
@@ -228,37 +324,57 @@ class _HomePageState extends State<HomePage> {
               try {
                 final List data = json.decode(res.body)['data'] ?? [];
                 if (data.isNotEmpty) {
+                  final validData = data
+                      .where((item) => !(item['title']?.toString().toLowerCase().contains('testing') ?? false))
+                      .map((item) {
+                    if (item is Map<String, dynamic> &&
+                        item['image'] != null) {
+                      String img = item['image'].toString();
+                      img = img.replaceAll(
+                        'http://localhost:8000',
+                        ApiConfig.baseUrl,
+                      );
+                      img = img.replaceAll(
+                        'http://localhost',
+                        ApiConfig.baseUrl,
+                      );
+                      img = img.replaceAll(
+                        'http://127.0.0.1:8000',
+                        ApiConfig.baseUrl,
+                      );
+                      img = img.replaceAll(
+                        'http://127.0.0.1',
+                        ApiConfig.baseUrl,
+                      );
+                      item['image'] = img;
+                    }
+                    return item;
+                  }).toList();
                   setState(() {
-                    _announcements = data.map((item) {
-                      if (item is Map<String, dynamic> &&
-                          item['image'] != null) {
-                        String img = item['image'].toString();
-                        img = img.replaceAll(
-                          'http://localhost:8000',
-                          ApiConfig.baseUrl,
-                        );
-                        img = img.replaceAll(
-                          'http://localhost',
-                          ApiConfig.baseUrl,
-                        );
-                        img = img.replaceAll(
-                          'http://127.0.0.1:8000',
-                          ApiConfig.baseUrl,
-                        );
-                        img = img.replaceAll(
-                          'http://127.0.0.1',
-                          ApiConfig.baseUrl,
-                        );
-                        item['image'] = img;
-                      }
-                      return item;
-                    }).toList();
+                    _announcements = [
+                      ..._getDefaultAnnouncements(),
+                      ...validData,
+                    ];
+                  });
+                } else {
+                  setState(() {
+                    _announcements = _getDefaultAnnouncements();
                   });
                 }
-              } catch (_) {}
+              } catch (_) {
+                setState(() {
+                  _announcements = _getDefaultAnnouncements();
+                });
+              }
             }
           })
-          .catchError((_) {});
+          .catchError((_) {
+            if (mounted) {
+              setState(() {
+                _announcements = _getDefaultAnnouncements();
+              });
+            }
+          });
 
       // 3. Fetch Services
       http
@@ -327,7 +443,7 @@ class _HomePageState extends State<HomePage> {
             }
           });
 
-      // 5. Fetch Pasar Daerah
+      // 5. Fetch Pasar Daerah (dengan fallback data mockup untuk poster)
       http
           .get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products'))
           .then((res) {
@@ -336,16 +452,30 @@ class _HomePageState extends State<HomePage> {
               try {
                 final Map<String, dynamic> data = json.decode(res.body);
                 if (data['status'] == 'success') {
+                  final list = List<Map<String, dynamic>>.from(data['data'])
+                      .where((item) => !(item['nama_produk']?.toString().toLowerCase().contains('seman') ?? false))
+                      .toList();
                   setState(() {
-                    _pasarDaerahProducts = List<Map<String, dynamic>>.from(
-                      data['data'],
-                    );
+                    _pasarDaerahProducts = [
+                      ..._getDefaultPopularProducts(),
+                      ...list,
+                    ];
                   });
                 }
-              } catch (_) {}
+              } catch (_) {
+                setState(() {
+                  _pasarDaerahProducts = _getDefaultPopularProducts();
+                });
+              }
             }
           })
-          .catchError((_) {});
+          .catchError((_) {
+            if (mounted) {
+              setState(() {
+                _pasarDaerahProducts = _getDefaultPopularProducts();
+              });
+            }
+          });
 
       // Matikan indikator loading skeleton utama dengan sangat cepat
       // agar struktur UI tidak ter-block. List yang kosong akan di-handle oleh
@@ -511,16 +641,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _getGreeting() {
-    var hour = DateTime.now().hour;
-    if (hour < 11) {
-      return 'Selamat Pagi';
-    } else if (hour < 15) {
-      return 'Selamat Siang';
-    } else if (hour < 18) {
-      return 'Selamat Sore';
-    } else {
-      return 'Selamat Malam';
-    }
+    return 'Selamat Siang'; // Sementara untuk pengeditan poster
   }
 
   @override
@@ -561,7 +682,6 @@ class _HomePageState extends State<HomePage> {
                         _buildHeroBanner(),
                         _buildUnitPelayanan(),
                         _buildBumdesStoreMini(),
-                        _buildAvailableServices(),
                         _buildKabarDaerah(),
                         const SizedBox(
                           height: 120,
@@ -941,66 +1061,68 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeroBanner() {
+    // 2 banner statis dari web (sama seperti beranda web)
+    final List<String> staticBanners = [
+      '${ApiConfig.baseUrl}/User/img/elemen/kuncislide1r.png',
+      '${ApiConfig.baseUrl}/User/img/elemen/kuncislide2r.png',
+    ];
+
+    // Gabungkan: statis dulu, lalu dari API
+    final List<Map<String, dynamic>> allBanners = [
+      ...staticBanners.map((url) => {'image_url': url, 'is_static': true}),
+      ..._banners,
+    ];
+
     return Container(
-      margin: const EdgeInsets.only(top: 8, bottom: 4),
+      margin: const EdgeInsets.only(top: 10, bottom: 6),
       child: CarouselSlider(
         options: CarouselOptions(
-          height: 140.0,
+          height: 168.0,
           autoPlay: true,
+          autoPlayInterval: const Duration(seconds: 4),
+          autoPlayAnimationDuration: const Duration(milliseconds: 800),
+          autoPlayCurve: Curves.fastOutSlowIn,
           enlargeCenterPage: true,
-          viewportFraction: 0.9,
-          aspectRatio: 2.3,
+          enlargeFactor: 0.18,
+          viewportFraction: 0.94,
         ),
-        items: _banners.isEmpty
-            ? [
-                _isLoading
-                    ? Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.grey.withAlpha(40),
-                        ),
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 3),
-                        ),
-                      )
-                    : _buildFallbackBanner(),
-              ]
-            : _banners.map((banner) {
-                final imageUrl = banner['image_url'] != null
-                    ? banner['image_url'].toString()
-                    : banner['image'] != null
-                    ? '${ApiConfig.baseUrl}/storage/${banner['image']}'
-                    : '';
+        items: allBanners.map((banner) {
+          final imageUrl = banner['image_url'] != null
+              ? banner['image_url'].toString()
+              : banner['image'] != null
+                  ? '${ApiConfig.baseUrl}/storage/${banner['image']}'
+                  : '';
 
-                return Builder(
-                  builder: (BuildContext context) {
-                    return Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: Colors.grey.withAlpha(40),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (ctx, err, stack) =>
-                                  _buildFallbackBanner(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }).toList(),
+          return Builder(
+            builder: (BuildContext context) {
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.grey.withAlpha(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.fill,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (ctx, err, stack) => _buildFallbackBanner(),
+                  ),
+                ),
+              );
+            },
+          );
+        }).toList(),
       ),
     );
   }
@@ -1101,12 +1223,6 @@ class _HomePageState extends State<HomePage> {
             ), // Samakan margin dengan elemen lain
             child: Row(
               children: [
-                Icon(
-                  Icons.dashboard_rounded,
-                  color: Theme.of(context).primaryColor,
-                  size: 22,
-                ),
-                const SizedBox(width: 8),
                 Text(
                   'Unit Pelayanan',
                   style: Theme.of(context).textTheme.titleLarge!.copyWith(
@@ -1245,167 +1361,8 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.storefront,
-                      color: Theme.of(context).primaryColor,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Pasar Daerah',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () {
-                    _checkLoginAndProceed('Toko BUMDes');
-                  },
-                  child: Text(
-                    'Lihat Semua',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 165,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _pasarDaerahProducts.length > 5
-                  ? 5
-                  : _pasarDaerahProducts.length,
-              itemBuilder: (context, index) {
-                final product = _pasarDaerahProducts[index];
-
-                String name = product['nama_produk'] ?? 'Tanpa Nama';
-                dynamic rawPrice = product['harga'] ?? 0;
-                double price = (rawPrice is String)
-                    ? (double.tryParse(rawPrice) ?? 0)
-                    : (rawPrice as num).toDouble();
-                String imageUrl = product['image_url'] ?? '';
-
-                return GestureDetector(
-                  onTap: () => _checkLoginAndProceed('Toko BUMDes'),
-                  child: Container(
-                    width: 135,
-                    margin: const EdgeInsets.only(right: 12, bottom: 4),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(10),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 95,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          child: imageUrl.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(16),
-                                  ),
-                                  child: Image.network(
-                                    imageUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                              Icons.storefront,
-                                              color: Colors.grey,
-                                            ),
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.storefront,
-                                  color: Colors.grey,
-                                ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                NumberFormat.currency(
-                                  locale: 'id',
-                                  symbol: 'Rp',
-                                  decimalDigits: 0,
-                                ).format(price),
-                                style: const TextStyle(
-                                  color: Color(0xFF0EA5E9),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvailableServices() {
-    if (_availableServices.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      margin: const EdgeInsets.only(top: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
                 Text(
-                  'Layanan Tersedia',
+                  'Populer',
                   style: Theme.of(context).textTheme.titleLarge!.copyWith(
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,
@@ -1413,14 +1370,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AllServicesPage(
-                          initialServices: _availableServices,
-                        ),
-                      ),
-                    );
+                    _checkLoginAndProceed('Toko BUMDes');
                   },
                   child: Text(
                     'Lihat Semua',
@@ -1441,164 +1391,153 @@ class _HomePageState extends State<HomePage> {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _availableServices.length,
+              itemCount: _pasarDaerahProducts.length > 5
+                  ? 5
+                  : _pasarDaerahProducts.length,
               itemBuilder: (context, index) {
-                final item = _availableServices[index];
-                return _buildServiceCard(item);
+                final product = _pasarDaerahProducts[index];
+
+                String name = product['nama_produk'] ?? 'Tanpa Nama';
+                dynamic rawPrice = product['harga'] ?? 0;
+                double price = (rawPrice is String)
+                    ? (double.tryParse(rawPrice) ?? 0)
+                    : (rawPrice as num).toDouble();
+                String imageUrl = product['image_url'] ?? '';
+                String satuan = product['satuan'] != null ? '/ ${product['satuan']}' : '';
+
+                return GestureDetector(
+                  onTap: () => _checkLoginAndProceed('Toko BUMDes'),
+                  child: Container(
+                    width: 140,
+                    margin: const EdgeInsets.only(right: 12, bottom: 4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(10),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
+                          children: [
+                            Container(
+                              height: 100,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(16),
+                                ),
+                              ),
+                              child: imageUrl.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(16),
+                                      ),
+                                      child: Image.network(
+                                        imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(
+                                                  Icons.storefront,
+                                                  color: Colors.grey,
+                                                ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.storefront,
+                                      color: Colors.grey,
+                                    ),
+                            ),
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEF4444),
+                                  borderRadius: BorderRadius.circular(6),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(20),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.local_fire_department_rounded,
+                                      color: Colors.white,
+                                      size: 11,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      'HOT',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                '${NumberFormat.currency(
+                                  locale: 'id',
+                                  symbol: 'Rp',
+                                  decimalDigits: 0,
+                                ).format(price)} $satuan'.trim(),
+                                style: const TextStyle(
+                                  color: Color(0xFF0EA5E9),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildServiceCard(Map<String, dynamic> item) {
-    Color typeColor;
-    String typeLabel;
-    String actionName;
-
-    final bool isAmbulance =
-        item['is_ambulance'] == true ||
-        (item['name']?.toString().toLowerCase().contains('ambulan') ?? false);
-
-    switch (item['type']) {
-      case 'gas':
-        typeColor = Colors.green;
-        typeLabel = 'Gas';
-        actionName = 'Beli Gas';
-        break;
-      case 'mobil':
-        if (isAmbulance) {
-          typeColor = Colors.purple;
-          typeLabel = 'Fasilitas';
-          actionName = 'Sewa Fasilitas';
-        } else {
-          typeColor = Colors.blue;
-          typeLabel = 'Mobil';
-          actionName = 'Sewa Mobil';
-        }
-        break;
-      case 'fasilitas':
-        typeColor = Colors.purple;
-        typeLabel = 'Fasilitas';
-        actionName = 'Sewa Fasilitas';
-        break;
-      case 'rental':
-      default:
-        typeColor = Colors.orange;
-        typeLabel = 'Sewa Alat';
-        actionName = 'Sewa Alat';
-        break;
-    }
-
-    final formatCurrency = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
-
-    double priceVal = 0;
-    if (item['price'] != null) {
-      if (item['price'] is String) {
-        priceVal = double.tryParse(item['price'].toString()) ?? 0;
-      } else if (item['price'] is num) {
-        priceVal = (item['price'] as num).toDouble();
-      }
-    }
-
-    return GestureDetector(
-      onTap: () {
-        _checkLoginAndProceed(actionName);
-      },
-      child: Container(
-        width: 145,
-        margin: const EdgeInsets.only(right: 12, bottom: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Section
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
-                  child: Container(
-                    height: 95,
-                    width: double.infinity,
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(8),
-                    child: _buildElementImage(
-                      item['image'] ?? '',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: typeColor.withAlpha(200),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      typeLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // Details Section
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['name'] ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    priceVal == 0 ? 'Gratis' : formatCurrency.format(priceVal),
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

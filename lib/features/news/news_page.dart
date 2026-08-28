@@ -33,9 +33,117 @@ class _NewsPageState extends State<NewsPage> {
   bool _isLoading = true;
   final NewsService _newsService = NewsService();
 
+  List<Map<String, dynamic>> _getDefaultNews(String postCategory) {
+    if (postCategory == 'Berita') {
+      return [
+        {
+          'id': 201,
+          'title': 'Pemkab Bengkalis Resmikan Digitalisasi Layanan Desa Terpadu',
+          'category': 'Acara / Event',
+          'type': 'Acara / Event',
+          'post_category': 'Berita',
+          'date': '2026-08-25',
+          'desc':
+              'Peluncuran aplikasi SiladesBeng sebagai langkah strategis mempermudah akses administrasi desa, sewa fasilitas, dan pasar digital warga.',
+          'content':
+              'BENGKALIS - Pemerintah Kabupaten Bengkalis secara resmi meluncurkan platform digitalisasi desa terpadu. Langkah ini diharapkan mampu memangkas birokrasi dan meningkatkan transparansi layanan publik hingga ke pelosok desa.',
+          'image':
+              'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
+          'location': 'Balai Kerapatan Adat Bengkalis',
+          'author': 'Humas Pemkab Bengkalis',
+        },
+        {
+          'id': 202,
+          'title': 'Aksi Gotong Royong Massal Bersihkan Saluran Pesisir Pantai',
+          'category': 'Gotong Royong',
+          'type': 'Gotong Royong',
+          'post_category': 'Berita',
+          'date': '2026-08-22',
+          'desc':
+              'Ratusan warga dan pemuda antusias mengikuti kerja bakti rutin demi menjaga kelestarian lingkungan dan cegah abrasi pantai.',
+          'content':
+              'Kegiatan gotong royong terpadu melibatkan seluruh elemen masyarakat RT/RW bersama aparat desa dalam menjaga kebersihan lingkungan hidup desa pesisir.',
+          'image':
+              'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=600&q=80',
+          'location': 'Kawasan Pesisir Selat Baru',
+          'author': 'Karang Taruna Desa',
+        },
+        {
+          'id': 203,
+          'title': 'BUMDes Desa Raih Predikat Terbaik se-Provinsi Riau',
+          'category': 'Acara / Event',
+          'type': 'Acara / Event',
+          'post_category': 'Berita',
+          'date': '2026-08-18',
+          'desc':
+              'Inovasi unit pasar desa dan transparansi keuangan digital berhasil mengantarkan BUMDes meraih penghargaan percontohan nasional.',
+          'content':
+              'Pengelolaan unit usaha desa yang adaptif terhadap teknologi digital memberikan dampak ekonomi nyata bagi kesejahteraan masyarakat sekitar.',
+          'image':
+              'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80',
+          'location': 'Gedung Daerah Bengkalis',
+          'author': 'Pengurus BUMDes',
+        },
+      ];
+    } else {
+      // Pengumuman
+      return [
+        {
+          'id': 301,
+          'title': 'Jadwal Penyaluran BLT Desa Tahap III Tahun 2026',
+          'category': 'Pengumuman',
+          'type': 'Pengumuman',
+          'post_category': 'Pengumuman',
+          'date': '2026-08-26',
+          'desc':
+              'Penyaluran Bantuan Langsung Tunai (BLT) dilaksanakan di Kantor Desa mulai pukul 08.30 WIB dengan membawa KTP dan KK asli.',
+          'content':
+              'Diberitahukan kepada seluruh warga penerima manfaat Bantuan Langsung Tunai Dana Desa bahwa pembagian tahap III akan dilaksanakan di Aula Kantor Desa.',
+          'image':
+              'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=600&q=80',
+          'location': 'Kantor Kepala Desa',
+          'author': 'Sekretariat Desa',
+        },
+        {
+          'id': 302,
+          'title': 'Musyawarah Rencana Pembangunan Desa (Musrenbangdes)',
+          'category': 'Pengumuman',
+          'type': 'Pengumuman',
+          'post_category': 'Pengumuman',
+          'date': '2026-08-24',
+          'desc':
+              'Undangan musyawarah terbuka bersama Ketua RT, RW, BPD, dan tokoh masyarakat untuk menetapkan prioritas pembangunan TA 2027.',
+          'content':
+              'Pemerintah Desa mengundang seluruh perwakilan kelembagaan desa untuk hadir dalam rangka Musyawarah Perencanaan Pembangunan Desa tahun anggaran mendatang.',
+          'image':
+              'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=600&q=80',
+          'location': 'Aula Pertemuan Desa',
+          'author': 'Badan Permusyawaratan Desa',
+        },
+        {
+          'id': 303,
+          'title': 'Layanan Perekaman KTP-el & Akta Kelahiran Keliling',
+          'category': 'Pengumuman',
+          'type': 'Pengumuman',
+          'post_category': 'Pengumuman',
+          'date': '2026-08-20',
+          'desc':
+              'Pelayanan jemput bola dokumen kependudukan gratis oleh Disdukcapil bagi seluruh warga di Balai Desa.',
+          'content':
+              'Warga yang belum memiliki KTP elektronik atau ingin mengurus Akta Kelahiran dan Kartu Identitas Anak dapat langsung mendatangi loket pelayanan keliling.',
+          'image':
+              'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=600&q=80',
+          'location': 'Balai Desa Bengkalis',
+          'author': 'Disdukcapil & Pemdes',
+        },
+      ];
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _newsList = _getDefaultNews(widget.postCategory);
     _fetchNews();
   }
 
@@ -52,14 +160,24 @@ class _NewsPageState extends State<NewsPage> {
 
     if (!mounted) return;
 
+    final defaultItems = _getDefaultNews(widget.postCategory);
+
     if (data.isNotEmpty) {
+      final validData = data
+          .where((item) => !(item['title']?.toString().toLowerCase().contains('testing') ?? false))
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
       setState(() {
-        _newsList = List<Map<String, dynamic>>.from(data);
+        _newsList = [
+          ...defaultItems,
+          ...validData,
+        ];
         _isLoading = false;
       });
     } else {
       setState(() {
-        _newsList = [];
+        _newsList = defaultItems;
         _isLoading = false;
       });
     }
@@ -133,13 +251,55 @@ class _NewsPageState extends State<NewsPage> {
                 isBerita ? 'Berita Daerah' : 'Pengumuman',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
+                  letterSpacing: 0.3,
                 ),
               ),
-              backgroundColor: primaryColor,
+              backgroundColor: const Color(0xFF2563EB),
               elevation: 0,
               centerTitle: true,
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                        : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: ClipRRect(
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: -30,
+                        right: -20,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withAlpha(22),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -20,
+                        left: -15,
+                        child: Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withAlpha(14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               iconTheme: const IconThemeData(color: Colors.white),
             ),
       floatingActionButton: isBerita

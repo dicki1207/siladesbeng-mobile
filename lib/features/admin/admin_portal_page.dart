@@ -113,7 +113,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                   end: Alignment.bottomRight,
                   colors: isDark
                       ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                 ),
               ),
             ),
@@ -175,26 +175,6 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 14),
-            padding: const EdgeInsets.all(2.5),
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(isDark ? 40 : 25),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withAlpha(isDark ? 30 : 50),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildRolePill('rt', 'RT 02', isDark),
-                _buildRolePill('rw', 'RW 01', isDark),
-              ],
-            ),
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadDashboardStats,
@@ -807,38 +787,6 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRolePill(String roleKey, String label, bool isDark) {
-    final bool isSelected = _role == roleKey;
-    return GestureDetector(
-      onTap: () => setState(() => _role = roleKey),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(isDark ? 50 : 25),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1.5),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? _primaryBlue : Colors.white.withAlpha(200),
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
           ),
         ),
       ),

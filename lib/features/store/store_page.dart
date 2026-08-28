@@ -199,14 +199,21 @@ class _StorePageState extends State<StorePage> {
                       children: [
                         Row(
                           children: [
-                            const Icon(
-                              Icons.location_on_rounded,
-                              color: primaryColor,
-                              size: 22,
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.tune_rounded,
+                                color: primaryColor,
+                                size: 18,
+                              ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 10),
                             Text(
-                              'Filter Wilayah & Urutan',
+                              'Filter & Urutan Produk',
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
@@ -217,7 +224,7 @@ class _StorePageState extends State<StorePage> {
                             ),
                           ],
                         ),
-                        TextButton(
+                        TextButton.icon(
                           onPressed: () {
                             setModalState(() {
                               tempKecamatan = 'Semua Kecamatan';
@@ -225,7 +232,8 @@ class _StorePageState extends State<StorePage> {
                               tempSort = 'latest';
                             });
                           },
-                          child: const Text(
+                          icon: const Icon(Icons.refresh_rounded, size: 14, color: Colors.redAccent),
+                          label: const Text(
                             'Reset',
                             style: TextStyle(
                               color: Colors.redAccent,
@@ -239,34 +247,58 @@ class _StorePageState extends State<StorePage> {
                     const Divider(height: 16),
 
                     // 1. Wilayah Kecamatan (Antar-Kecamatan)
-                    const Text(
-                      '1. Wilayah Kecamatan (Kab. Bengkalis)',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_city_rounded,
+                          size: 18,
+                          color: primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          '1. Wilayah Kecamatan (Kab. Bengkalis)',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: _kecamatanList.map((kec) {
                         final isSelected = tempKecamatan == kec;
                         return ChoiceChip(
+                          avatar: isSelected
+                              ? const Icon(
+                                  Icons.check_rounded,
+                                  size: 15,
+                                  color: primaryColor,
+                                )
+                              : null,
                           label: Text(kec),
                           selected: isSelected,
-                          selectedColor: primaryColor.withValues(alpha: 0.18),
+                          selectedColor: primaryColor.withValues(
+                            alpha: isDark ? 0.25 : 0.15,
+                          ),
                           backgroundColor: isDark
                               ? const Color(0xFF0F172A)
                               : const Color(0xFFF1F5F9),
                           labelStyle: TextStyle(
                             color: isSelected
-                                ? primaryColor
-                                : (isDark ? Colors.white70 : Colors.grey[700]),
+                                ? (isDark ? Colors.white : primaryColor)
+                                : (isDark
+                                      ? Colors.white70
+                                      : const Color(0xFF475569)),
                             fontWeight: isSelected
                                 ? FontWeight.bold
-                                : FontWeight.normal,
-                            fontSize: 11.5,
+                                : FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           side: BorderSide(
                             color: isSelected
@@ -274,6 +306,7 @@ class _StorePageState extends State<StorePage> {
                                 : (isDark
                                       ? Colors.white12
                                       : const Color(0xFFCBD5E1)),
+                            width: isSelected ? 1.4 : 1,
                           ),
                           onSelected: (selected) {
                             if (selected) {
@@ -287,108 +320,192 @@ class _StorePageState extends State<StorePage> {
                       }).toList(),
                     ),
 
+                    // Sub-wilayah Desa (Muncul saat memilih kecamatan spesifik)
                     if (tempKecamatan != 'Semua Kecamatan') ...[
                       const SizedBox(height: 14),
-                      Text(
-                        'Desa di $tempKecamatan',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white70 : Colors.grey[800],
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF059669).withValues(alpha: 0.3)
+                                : const Color(0xFFA7F3D0),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: currentDesaList.map((desa) {
-                          final isSelected = tempDesa == desa;
-                          return ChoiceChip(
-                            label: Text(desa),
-                            selected: isSelected,
-                            selectedColor: const Color(
-                              0xFF10B981,
-                            ).withValues(alpha: 0.18),
-                            backgroundColor: isDark
-                                ? const Color(0xFF0F172A)
-                                : const Color(0xFFF1F5F9),
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFF10B981)
-                                  : (isDark
-                                        ? Colors.white70
-                                        : Colors.grey[700]),
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              fontSize: 11.5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.holiday_village_rounded,
+                                  size: 17,
+                                  color: Color(0xFF10B981),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    'Pilih Desa di $tempKecamatan',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? const Color(0xFF34D399)
+                                          : const Color(0xFF065F46),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFF10B981)
-                                  : (isDark
-                                        ? Colors.white12
-                                        : const Color(0xFFCBD5E1)),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: currentDesaList.map((desa) {
+                                final isSelected = tempDesa == desa;
+                                return ChoiceChip(
+                                  avatar: isSelected
+                                      ? const Icon(
+                                          Icons.check_rounded,
+                                          size: 15,
+                                          color: Color(0xFF10B981),
+                                        )
+                                      : null,
+                                  label: Text(desa),
+                                  selected: isSelected,
+                                  selectedColor: const Color(
+                                    0xFF10B981,
+                                  ).withValues(
+                                    alpha: isDark ? 0.28 : 0.18,
+                                  ),
+                                  backgroundColor: isDark
+                                      ? const Color(0xFF1E293B)
+                                      : Colors.white,
+                                  labelStyle: TextStyle(
+                                    color: isSelected
+                                        ? (isDark
+                                              ? Colors.white
+                                              : const Color(0xFF059669))
+                                        : (isDark
+                                              ? Colors.white70
+                                              : const Color(0xFF475569)),
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    fontSize: 11.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  side: BorderSide(
+                                    color: isSelected
+                                        ? const Color(0xFF10B981)
+                                        : (isDark
+                                              ? Colors.white12
+                                              : const Color(0xFFD1D5DB)),
+                                    width: isSelected ? 1.4 : 1,
+                                  ),
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setModalState(() => tempDesa = desa);
+                                    }
+                                  },
+                                );
+                              }).toList(),
                             ),
-                            onSelected: (selected) {
-                              if (selected) {
-                                setModalState(() => tempDesa = desa);
-                              }
-                            },
-                          );
-                        }).toList(),
+                          ],
+                        ),
                       ),
                     ],
 
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 20),
 
-                    // 2. Urutan Harga / Waktu
-                    const Text(
-                      '2. Urutan Produk',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                    // 2. Urutan Harga / Waktu (3 Equal Columns Card)
+                    Row(
                       children: [
-                        _buildSortChip(
-                          'Terbaru',
-                          'latest',
-                          tempSort,
-                          (val) => setModalState(() => tempSort = val),
-                          isDark,
-                          primaryColor,
+                        const Icon(
+                          Icons.swap_vert_rounded,
+                          size: 18,
+                          color: primaryColor,
                         ),
-                        _buildSortChip(
-                          'Harga Terendah',
-                          'price_asc',
-                          tempSort,
-                          (val) => setModalState(() => tempSort = val),
-                          isDark,
-                          primaryColor,
+                        const SizedBox(width: 6),
+                        const Text(
+                          '2. Urutkan Berdasarkan',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        _buildSortChip(
-                          'Harga Tertinggi',
-                          'price_desc',
-                          tempSort,
-                          (val) => setModalState(() => tempSort = val),
-                          isDark,
-                          primaryColor,
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildSortCard(
+                          label: 'Terbaru',
+                          sublabel: 'Rilis terbaru',
+                          icon: Icons.access_time_filled_rounded,
+                          value: 'latest',
+                          groupValue: tempSort,
+                          onChanged: (val) =>
+                              setModalState(() => tempSort = val),
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortCard(
+                          label: 'Termurah',
+                          sublabel: 'Harga terendah',
+                          icon: Icons.trending_down_rounded,
+                          value: 'price_asc',
+                          groupValue: tempSort,
+                          onChanged: (val) =>
+                              setModalState(() => tempSort = val),
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortCard(
+                          label: 'Termahal',
+                          sublabel: 'Harga tertinggi',
+                          icon: Icons.trending_up_rounded,
+                          value: 'price_desc',
+                          groupValue: tempSort,
+                          onChanged: (val) =>
+                              setModalState(() => tempSort = val),
+                          isDark: isDark,
+                          primaryColor: primaryColor,
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 26),
 
                     // Apply Button
-                    SizedBox(
+                    Container(
                       width: double.infinity,
-                      height: 46,
-                      child: ElevatedButton(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0284C7), Color(0xFF0EA5E9)],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0284C7).withValues(
+                              alpha: 0.3,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
                         onPressed: () {
                           setState(() {
                             _selectedKecamatan = tempKecamatan;
@@ -398,19 +515,23 @@ class _StorePageState extends State<StorePage> {
                           Navigator.pop(context);
                           _fetchData();
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
+                        icon: const Icon(
+                          Icons.check_circle_outline_rounded,
+                          size: 18,
                         ),
-                        child: const Text(
+                        label: const Text(
                           'Terapkan Wilayah & Urutan',
                           style: TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                       ),
@@ -425,37 +546,98 @@ class _StorePageState extends State<StorePage> {
     );
   }
 
-  Widget _buildSortChip(
-    String label,
-    String value,
-    String groupValue,
-    ValueChanged<String> onChanged,
-    bool isDark,
-    Color primaryColor,
-  ) {
+  Widget _buildSortCard({
+    required String label,
+    required String sublabel,
+    required IconData icon,
+    required String value,
+    required String groupValue,
+    required ValueChanged<String> onChanged,
+    required bool isDark,
+    required Color primaryColor,
+  }) {
     final isSelected = value == groupValue;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: primaryColor.withValues(alpha: 0.18),
-      backgroundColor: isDark
-          ? const Color(0xFF0F172A)
-          : const Color(0xFFF1F5F9),
-      labelStyle: TextStyle(
-        color: isSelected
-            ? primaryColor
-            : (isDark ? Colors.white70 : Colors.grey[700]),
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        fontSize: 11.5,
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => onChanged(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? primaryColor.withValues(alpha: isDark ? 0.22 : 0.1)
+                : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected
+                  ? primaryColor
+                  : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+              width: isSelected ? 1.6 : 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: primaryColor.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? primaryColor.withValues(alpha: isDark ? 0.35 : 0.2)
+                      : (isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : const Color(0xFFEDF2F7)),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: isSelected
+                      ? (isDark ? Colors.white : primaryColor)
+                      : (isDark ? Colors.white60 : const Color(0xFF64748B)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  color: isSelected
+                      ? (isDark ? Colors.white : primaryColor)
+                      : (isDark ? Colors.white70 : const Color(0xFF334155)),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                sublabel,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? (isDark
+                            ? primaryColor.withValues(alpha: 0.9)
+                            : primaryColor)
+                      : (isDark ? Colors.white38 : Colors.grey[500]),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      side: BorderSide(
-        color: isSelected
-            ? primaryColor
-            : (isDark ? Colors.white12 : const Color(0xFFCBD5E1)),
-      ),
-      onSelected: (selected) {
-        if (selected) onChanged(value);
-      },
     );
   }
 
@@ -472,20 +654,21 @@ class _StorePageState extends State<StorePage> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF090D16)
-          : const Color(0xFFF4F6FA),
+          ? const Color(0xFF0B1120)
+          : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'Pasar Daerah',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.3,
           ),
         ),
         backgroundColor: isDark
             ? const Color(0xFF0F172A)
-            : const Color(0xFF0284C7),
+            : const Color(0xFF2563EB),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -496,70 +679,6 @@ class _StorePageState extends State<StorePage> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          // Favorit Saya
-          IconButton(
-            icon: const Icon(
-              Icons.favorite_outline_rounded,
-              color: Colors.white,
-            ),
-            tooltip: 'Favorit Saya',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PasarFavoritePage()),
-              ).then((_) {
-                _fetchData();
-                _fetchCartCount();
-              });
-            },
-          ),
-          // Cart with Count
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.shopping_cart_outlined,
-                  color: Colors.white,
-                ),
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CartPage()),
-                  );
-                  _fetchCartCount();
-                },
-              ),
-              if (_cartCount > 0)
-                Positioned(
-                  top: 8,
-                  right: 6,
-                  child: Container(
-                    padding: const EdgeInsets.all(3.5),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      _cartCount > 99 ? '99+' : '$_cartCount',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 4),
-        ],
         flexibleSpace: Stack(
           fit: StackFit.expand,
           children: [
@@ -570,7 +689,7 @@ class _StorePageState extends State<StorePage> {
                   end: Alignment.bottomRight,
                   colors: isDark
                       ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                      : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                 ),
               ),
             ),
@@ -611,76 +730,209 @@ class _StorePageState extends State<StorePage> {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            // 1. Search Bar with Filter Wilayah & Urutan Button
+            // 1. Search Bar with Filter, Favorit, and Keranjang Buttons
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Cari produk BUMDes, sembako, kerajinan...',
-                    hintStyle: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white38 : Colors.grey[500],
-                    ),
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.tune_rounded,
-                            color: hasRegionOrSortFilter ? primaryColor : null,
+                child: Row(
+                  children: [
+                    // Search Input
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Cari produk BUMDes, sembako...',
+                          hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
                           ),
-                          onPressed: _showFilterBottomSheet,
-                          tooltip: 'Filter Wilayah & Urutkan',
-                        ),
-                        if (hasRegionOrSortFilter)
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: primaryColor,
-                                shape: BoxShape.circle,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          suffixIcon: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.tune_rounded,
+                                  color: hasRegionOrSortFilter ? primaryColor : null,
+                                ),
+                                onPressed: _showFilterBottomSheet,
+                                tooltip: 'Filter Wilayah & Urutkan',
                               ),
+                              if (hasRegionOrSortFilter)
+                                Positioned(
+                                  top: 10,
+                                  right: 10,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? Colors.white10
+                                  : const Color(0xFFE2E8F0),
                             ),
                           ),
-                      ],
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(
-                        color: isDark
-                            ? Colors.white10
-                            : const Color(0xFFE2E8F0),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? Colors.white10
+                                  : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: primaryColor,
+                              width: 1.5,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                        ),
+                        onSubmitted: (value) {
+                          setState(() => _searchQuery = value);
+                          _fetchData();
+                        },
                       ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(
-                        color: isDark
-                            ? Colors.white10
-                            : const Color(0xFFE2E8F0),
+                    const SizedBox(width: 8),
+
+                    // Favorit Button
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white10
+                              : const Color(0xFFE2E8F0),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.2 : 0.03,
+                            ),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const PasarFavoritePage(),
+                              ),
+                            ).then((_) {
+                              _fetchData();
+                              _fetchCartCount();
+                            });
+                          },
+                          child: Icon(
+                            Icons.favorite_outline_rounded,
+                            size: 22,
+                            color: isDark
+                                ? Colors.white70
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
                       ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                        color: primaryColor,
-                        width: 1.5,
+                    const SizedBox(width: 8),
+
+                    // Keranjang Button with Badge
+                    Container(
+                      height: 48,
+                      width: 48,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white10
+                              : const Color(0xFFE2E8F0),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.2 : 0.03,
+                            ),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CartPage(),
+                              ),
+                            );
+                            _fetchCartCount();
+                          },
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(
+                                Icons.shopping_cart_outlined,
+                                size: 22,
+                                color: isDark
+                                    ? Colors.white70
+                                    : const Color(0xFF64748B),
+                              ),
+                              if (_cartCount > 0)
+                                Positioned(
+                                  top: 6,
+                                  right: 6,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(3.5),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.redAccent,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    constraints: const BoxConstraints(
+                                      minWidth: 16,
+                                      minHeight: 16,
+                                    ),
+                                    child: Text(
+                                      _cartCount > 99 ? '99+' : '$_cartCount',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    filled: true,
-                    fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  ),
-                  onSubmitted: (value) {
-                    setState(() => _searchQuery = value);
-                    _fetchData();
-                  },
+                  ],
                 ),
               ),
             ),

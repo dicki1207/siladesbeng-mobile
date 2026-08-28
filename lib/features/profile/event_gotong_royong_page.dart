@@ -81,12 +81,57 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     'Lapangan Desa',
   ];
 
+  List<Map<String, dynamic>> _getDefaultEvents() {
+    return [
+      {
+        'id': 1,
+        'title': 'Gotong Royong Kebersihan Parit & Lingkungan',
+        'wilayah': 'RW 01 - RT 02',
+        'tipe': 'Gotong Royong',
+        'koordinator': 'Pak Suryanto (Ketua RT 02)',
+        'jadwal': 'Minggu, 30 Agustus 2026 • Pukul 07:30 WIB',
+        'lokasi': 'Sepanjang Jl. Utama Desa & Area Kantor Desa',
+        'note': 'Harap membawa cangkul, sapu lidi, dan karung sampah dari rumah masing-masing.',
+        'participants': 24,
+        'isJoined': true,
+        'isCreator': false,
+      },
+      {
+        'id': 2,
+        'title': 'Musyawarah Perencanaan Pembangunan Desa (Musrenbangdes)',
+        'wilayah': 'Semua Wilayah',
+        'tipe': 'Acara / Event',
+        'koordinator': 'Sekretaris Desa Bengkalis',
+        'jadwal': 'Rabu, 2 September 2026 • Pukul 09:00 WIB',
+        'lokasi': 'Aula Balai Pertemuan Desa',
+        'note': 'Dihadiri seluruh Ketua RW, RT, BPD, tokoh masyarakat, dan perwakilan pemuda.',
+        'participants': 18,
+        'isJoined': false,
+        'isCreator': false,
+      },
+      {
+        'id': 3,
+        'title': 'Penyaluran Bantuan Pangan Beras & Sembako Murah',
+        'wilayah': 'RW 02 - RT 01',
+        'tipe': 'Pengumuman',
+        'koordinator': 'Pengurus BUMDes Bersama',
+        'jadwal': 'Jumat, 4 September 2026 • Pukul 08:30 WIB',
+        'lokasi': 'Gedung BUMDes Mart Desa',
+        'note': 'Warga penerima manfaat wajib membawa fotokopi KK dan KTP asli saat pengambilan.',
+        'participants': 35,
+        'isJoined': false,
+        'isCreator': false,
+      },
+    ];
+  }
+
   List<Map<String, dynamic>> _events = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _events = _getDefaultEvents();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -97,37 +142,42 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   }
 
   Future<void> _loadEvents() async {
-    setState(() => _isLoading = true);
     final data = await _eventService.getEvents();
     if (!mounted) return;
-    setState(() {
-      _events = data.map<Map<String, dynamic>>((item) {
-        final String tipe = item['tipe'] ?? 'gotong_royong';
-        String tipeLabel = 'Gotong Royong';
-        if (tipe == 'rapat' || tipe == 'pengumuman') {
-          tipeLabel = 'Pengumuman';
-        } else if (tipe == 'kegiatan_sosial' || tipe == 'acara') {
-          tipeLabel = 'Acara / Event';
-        }
+    if (data.isNotEmpty) {
+      setState(() {
+        _events = data.map<Map<String, dynamic>>((item) {
+          final String tipe = item['tipe'] ?? 'gotong_royong';
+          String tipeLabel = 'Gotong Royong';
+          if (tipe == 'rapat' || tipe == 'pengumuman') {
+            tipeLabel = 'Pengumuman';
+          } else if (tipe == 'kegiatan_sosial' || tipe == 'acara') {
+            tipeLabel = 'Acara / Event';
+          }
 
-        return {
-          'id': item['id'],
-          'title': item['judul'] ?? '',
-          'wilayah':
-              '${item['rw'] ?? ''} ${item['rt'] != null ? '- ${item['rt']}' : ''}'
-                  .trim(),
-          'tipe': tipeLabel,
-          'koordinator': item['koordinator'] ?? '',
-          'jadwal': item['jadwal'] ?? '',
-          'lokasi': item['lokasi'] ?? '',
-          'note': item['catatan'] ?? '',
-          'participants': item['jumlah_peserta'] ?? 0,
-          'isJoined': item['is_joined'] ?? false,
-          'isCreator': item['is_creator'] ?? false,
-        };
-      }).toList();
-      _isLoading = false;
-    });
+          return {
+            'id': item['id'],
+            'title': item['judul'] ?? '',
+            'wilayah':
+                '${item['rw'] ?? ''} ${item['rt'] != null ? '- ${item['rt']}' : ''}'
+                    .trim(),
+            'tipe': tipeLabel,
+            'koordinator': item['koordinator'] ?? '',
+            'jadwal': item['jadwal'] ?? '',
+            'lokasi': item['lokasi'] ?? '',
+            'note': item['catatan'] ?? '',
+            'participants': item['jumlah_peserta'] ?? 0,
+            'isJoined': item['is_joined'] ?? false,
+            'isCreator': item['is_creator'] ?? false,
+          };
+        }).toList();
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -345,8 +395,8 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF090D16)
-          : const Color(0xFFF4F6FA),
+          ? const Color(0xFF0B1120)
+          : const Color(0xFFF8FAFC),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -358,7 +408,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               scrolledUnderElevation: 2,
               backgroundColor: isDark
                   ? const Color(0xFF0F172A)
-                  : const Color(0xFF1E3A8A),
+                  : const Color(0xFF2FA2F1),
               leading: IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(6),
@@ -390,8 +440,8 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                   const Color(0xFF1E293B),
                                 ]
                               : [
-                                  const Color(0xFF2563EB),
-                                  const Color(0xFF1D4ED8),
+                                  const Color(0xFF2FA2F1),
+                                  const Color(0xFF0284C7),
                                 ],
                         ),
                       ),
@@ -477,13 +527,13 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     indicator: UnderlineTabIndicator(
                       borderSide: const BorderSide(
                         width: 3.5,
-                        color: Color(0xFF2563EB),
+                        color: Color(0xFF2FA2F1),
                       ),
                       borderRadius: BorderRadius.circular(3),
                       insets: const EdgeInsets.symmetric(horizontal: 16),
                     ),
                     indicatorSize: TabBarIndicatorSize.label,
-                    labelColor: const Color(0xFF2563EB),
+                    labelColor: const Color(0xFF2FA2F1),
                     unselectedLabelColor: isDark
                         ? Colors.white60
                         : const Color(0xFF64748B),
@@ -525,8 +575,8 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(
-                                  0xFF2563EB,
-                                ).withValues(alpha: 0.12),
+                                  0xFF2FA2F1,
+                                ).withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
@@ -534,7 +584,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2563EB),
+                                  color: Color(0xFF2FA2F1),
                                 ),
                               ),
                             ),
@@ -558,7 +608,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateAgendaModal(context, isDark),
-        backgroundColor: const Color(0xFF2563EB),
+        backgroundColor: const Color(0xFF2FA2F1),
         foregroundColor: Colors.white,
         elevation: 4,
         icon: const Icon(Icons.add_rounded),
@@ -582,7 +632,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
 
     return RefreshIndicator(
       onRefresh: _loadEvents,
-      color: const Color(0xFF2563EB),
+      color: const Color(0xFF2FA2F1),
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -627,10 +677,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                 backgroundColor: isDark
                                     ? const Color(0xFF1E293B)
                                     : Colors.white,
-                                selectedColor: const Color(0xFF2563EB),
+                                selectedColor: const Color(0xFF2FA2F1),
                                 side: BorderSide(
                                   color: active
-                                      ? const Color(0xFF2563EB)
+                                      ? const Color(0xFF2FA2F1)
                                       : (isDark
                                             ? Colors.white10
                                             : const Color(0xFFE2E8F0)),
@@ -640,7 +690,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                 ),
                                 elevation: active ? 2 : 0,
                                 shadowColor: const Color(
-                                  0xFF2563EB,
+                                  0xFF2FA2F1,
                                 ).withAlpha(80),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
@@ -680,7 +730,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     ),
                     decoration: BoxDecoration(
                       color: const Color(
-                        0xFF2563EB,
+                        0xFF2FA2F1,
                       ).withAlpha(isDark ? 35 : 20),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -689,7 +739,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2563EB),
+                        color: Color(0xFF2FA2F1),
                       ),
                     ),
                   ),
@@ -2007,7 +2057,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                             : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF2563EB).withAlpha(100),
+                          color: const Color(0xFF2FA2F1).withAlpha(100),
                         ),
                       ),
                       child: Row(
@@ -2075,11 +2125,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                  colors: [Color(0xFF2FA2F1), Color(0xFF0284C7)],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2563EB).withAlpha(100),
+                    color: const Color(0xFF2FA2F1).withAlpha(100),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),

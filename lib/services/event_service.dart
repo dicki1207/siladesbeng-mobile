@@ -30,7 +30,7 @@ class EventService {
       final response = await http.get(
         Uri.parse('$baseUrl/events'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 4));
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);

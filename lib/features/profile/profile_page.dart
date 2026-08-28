@@ -259,14 +259,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ],
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: isDark ? Colors.white70 : Colors.grey[600],
-                      size: 22,
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 18),

@@ -179,9 +179,50 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
         ),
         title: const Text(
           'Bukti Transaksi',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.3),
         ),
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.share_rounded, color: Colors.white),

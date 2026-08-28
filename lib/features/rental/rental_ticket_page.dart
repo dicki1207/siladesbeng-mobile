@@ -38,20 +38,69 @@ class RentalTicketPage extends StatelessWidget {
     final textColor = isDark ? Colors.white : Colors.black87;
     final valueColor = isDark ? Colors.white : Colors.black;
     final labelColor = isDark ? Colors.grey[400]! : Colors.grey[700]!;
-    final bgColor = isDark ? Colors.grey[900]! : Colors.white;
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
 
     // Generate some mock data for the receipt
     final String currentDate = DateFormat('dd MMMM yyyy').format(DateTime.now());
     final String refNumber = 'RES/${DateTime.now().year}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-    
+
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('Unduh Bukti Transaksi', style: TextStyle(color: textColor, fontSize: 16)),
-        backgroundColor: bgColor,
+        title: const Text(
+          'Unduh Bukti Transaksi',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 17,
+            letterSpacing: 0.3,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF2563EB),
         elevation: 0,
-        iconTheme: IconThemeData(color: textColor),
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.share),

@@ -21,12 +21,11 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
-    final bgColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F8FF);
     final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final labelColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
@@ -36,11 +35,53 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
           'Lacak Pengantaran',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.3,
           ),
         ),
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline, color: Colors.white),

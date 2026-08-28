@@ -602,16 +602,57 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
     final buktiImages = _extractBuktiImages();
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F8FF),
+      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'Bukti Registrasi Laporan',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white, letterSpacing: 0.3),
         ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
@@ -657,7 +698,7 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
                       gradient: LinearGradient(
                         colors: isDark
                             ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                            : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+                            : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),

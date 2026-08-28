@@ -166,14 +166,15 @@ class NotificationDetailPage extends StatelessWidget {
     final imageUrl = notification.fullImageUrl;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F8FF),
+      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'Detail Pesan & Notifikasi',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 17,
             color: Colors.white,
+            letterSpacing: 0.3,
           ),
         ),
         centerTitle: true,
@@ -188,6 +189,47 @@ class NotificationDetailPage extends StatelessWidget {
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
       body: SingleChildScrollView(

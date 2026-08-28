@@ -82,6 +82,8 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
     final amountFormatted =
         'Rp ${amount.replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), '.')}';
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -89,22 +91,65 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
         widget.onFinish();
       },
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text(
             'Instruksi Pembayaran',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: 17,
+              letterSpacing: 0.3,
             ),
           ),
           centerTitle: true,
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: const Color(0xFF2563EB),
           iconTheme: const IconThemeData(color: Colors.white),
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close, color: Colors.white),
             onPressed: widget.onFinish,
+          ),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                    : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: ClipRRect(
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: -30,
+                    right: -20,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withAlpha(22),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -20,
+                    left: -15,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withAlpha(14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
         body: SingleChildScrollView(

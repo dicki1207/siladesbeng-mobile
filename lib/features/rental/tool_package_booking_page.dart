@@ -14,7 +14,7 @@ class ToolPackageBookingPage extends StatefulWidget {
 class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _durationDays = 1;
+  final int _durationDays = 1;
   final RentalService _rentalService = RentalService();
 
   // State for Tab 1: Paket Admin Desa
@@ -452,10 +452,51 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
             letterSpacing: 0.3,
           ),
         ),
-        backgroundColor: primaryColor,
+        backgroundColor: const Color(0xFF2563EB),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Container(

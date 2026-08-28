@@ -177,7 +177,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
             pinned: true,
             backgroundColor: isDark
                 ? const Color(0xFF0F172A)
-                : const Color(0xFF0284C7),
+                : const Color(0xFF2563EB),
             foregroundColor: Colors.white,
             actions: [
               // Cart with Badge
@@ -277,14 +277,36 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: isDark
-                            ? [const Color(0xFF0F172A), const Color(0xFF1E3A8A)]
-                            : [
-                                const Color(0xFF0284C7),
-                                const Color(0xFF0369A1),
-                                const Color(0xFF1E3A8A),
-                              ],
+                            ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                            : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                  // Glowing circle 1 (Top Right)
+                  Positioned(
+                    right: -25,
+                    top: -25,
+                    child: Container(
+                      width: 130,
+                      height: 130,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withAlpha(22),
+                      ),
+                    ),
+                  ),
+                  // Glowing circle 2 (Bottom Left)
+                  Positioned(
+                    left: -20,
+                    bottom: -20,
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withAlpha(14),
                       ),
                     ),
                   ),

@@ -151,19 +151,6 @@ class _SplashScreenState extends State<SplashScreen>
                               ).textTheme.titleLarge?.color,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          // Subjudul
-                          Text(
-                            'Sistem Layanan Desa Bengkalis',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.5,
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyMedium?.color,
-                            ),
-                          ),
                         ],
                       ),
                     ),
