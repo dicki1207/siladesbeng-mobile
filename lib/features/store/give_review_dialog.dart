@@ -3,7 +3,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
+import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
+
 class GiveReviewDialog extends StatefulWidget {
+  final int? productId;
   final String productName;
   final String tokoName;
   final String? productImage;
@@ -11,6 +14,7 @@ class GiveReviewDialog extends StatefulWidget {
 
   const GiveReviewDialog({
     super.key,
+    this.productId,
     required this.productName,
     required this.tokoName,
     this.productImage,
@@ -19,6 +23,7 @@ class GiveReviewDialog extends StatefulWidget {
 
   static Future<bool?> show(
     BuildContext context, {
+    int? productId,
     required String productName,
     required String tokoName,
     String? productImage,
@@ -29,6 +34,7 @@ class GiveReviewDialog extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => GiveReviewDialog(
+        productId: productId,
         productName: productName,
         tokoName: tokoName,
         productImage: productImage,
@@ -91,6 +97,13 @@ class _GiveReviewDialogState extends State<GiveReviewDialog> {
   }
 
   void _submitReview() async {
+    final comment = _commentController.text.trim();
+    if (widget.productId != null) {
+      final service = PasarProductService();
+      await service.submitReview(widget.productId!, _selectedRating, comment);
+    }
+
+    if (!mounted) return;
     Navigator.pop(context, true); // Close bottom sheet
 
     // Show modern Animated Success Dialog

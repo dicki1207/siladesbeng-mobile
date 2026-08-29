@@ -28,90 +28,16 @@ class _PasarDetailPageState extends State<PasarDetailPage>
   final PasarFavoriteService _favService = PasarFavoriteService();
 
   Map<String, dynamic>? _product;
+  Map<String, dynamic>? _seller;
+  List<Map<String, dynamic>> _apiReviews = [];
+  Map<String, dynamic>? _ratingSummary;
   List<Map<String, dynamic>> _storeOtherProducts = [];
   bool _isLoading = true;
   bool _isFavorite = false;
   int _quantity = 1;
   int _currentImageIndex = 0;
-  String _selectedReviewFilter = 'Semua';
   late TabController _tabController;
   final PageController _pageController = PageController();
-
-  // Mock list of rich customer reviews with buyer photos
-  final List<Map<String, dynamic>> _customerReviews = [
-    {
-      'id': 'rev_1',
-      'name': 'Pak Hendra Saputra',
-      'origin': 'Warga Desa Wonosari',
-      'rating': 5,
-      'date': '2 hari lalu',
-      'tag': '🥬 Kualitas Segar',
-      'comment':
-          'Barang yang dikirim dari BUMDes sesuai foto dan sangat segar! Pengiriman kurir lokal sampai tepat waktu dalam 45 menit ke rumah.',
-      'buyerPhotos': ['assets/images/PasarDaerah.png', 'assets/images/F2.png'],
-      'likes': 14,
-    },
-    {
-      'id': 'rev_2',
-      'name': 'Ibu Rina Marlina',
-      'origin': 'Warga Desa Bantan Tua',
-      'rating': 5,
-      'date': '4 hari lalu',
-      'tag': '📦 Kemasan Rapi & Higienis',
-      'comment':
-          'Kemasan rapi bersegel, kualitas produk asli lokal desa terjamin. Admin BUMDes juga sangat cepat membalas pesan di fitur chat.',
-      'buyerPhotos': ['assets/images/PasarDaerah.png'],
-      'likes': 9,
-    },
-    {
-      'id': 'rev_3',
-      'name': 'Ahmad Zulkarnain',
-      'origin': 'Warga Desa Damon',
-      'rating': 5,
-      'date': '1 minggu lalu',
-      'tag': '💰 Harga Pas & Transparan',
-      'comment':
-          'Harga sangat bersahabat dibanding pasar umum. Senang bisa belanja antar-desa sambil memajukan BUMDes lokal.',
-      'buyerPhotos': [],
-      'likes': 6,
-    },
-    {
-      'id': 'rev_4',
-      'name': 'Syarifah Aisyah',
-      'origin': 'Warga Desa Meskom',
-      'rating': 4,
-      'date': '2 minggu lalu',
-      'tag': '🚚 Pengiriman Cepat',
-      'comment':
-          'Proses pesan mudah dan praktis. Sangat cocok buat yang sibuk dan mau dukung produk UMKM desa.',
-      'buyerPhotos': ['assets/images/F2.png'],
-      'likes': 5,
-    },
-    {
-      'id': 'rev_5',
-      'name': 'Hj. Fatimah Zahra',
-      'origin': 'Warga Desa Senggoro',
-      'rating': 5,
-      'date': '3 minggu lalu',
-      'tag': '✨ Produk Asli Desa',
-      'comment':
-          'Sangat bangga ada produk lokal berkualitas tinggi seperti ini. Langganan terus untuk kebutuhan rumah tangga.',
-      'buyerPhotos': ['assets/images/F1.png'],
-      'likes': 8,
-    },
-    {
-      'id': 'rev_6',
-      'name': 'M. Danil Wahyudi',
-      'origin': 'Warga Desa Kelapapati',
-      'rating': 5,
-      'date': '1 bulan lalu',
-      'tag': '👍 Pelayanan Mantap',
-      'comment':
-          'Pengurus toko ramah dan cepat merespons chat. Barang sampai dengan kondisi sangat baik.',
-      'buyerPhotos': [],
-      'likes': 4,
-    },
-  ];
 
   @override
   void initState() {
@@ -133,6 +59,28 @@ class _PasarDetailPageState extends State<PasarDetailPage>
     final isFav = await _favService.isProductFavorite(widget.productId);
 
     if (mounted) {
+      Map<String, dynamic>? prodData;
+      Map<String, dynamic>? sellerData;
+      List<Map<String, dynamic>> revData = [];
+      Map<String, dynamic>? ratingSum;
+
+      if (detail != null) {
+        if (detail.containsKey('product') && detail['product'] is Map) {
+          prodData = Map<String, dynamic>.from(detail['product']);
+          if (detail['seller'] is Map) {
+            sellerData = Map<String, dynamic>.from(detail['seller']);
+          }
+          if (detail['reviews'] is List) {
+            revData = List<Map<String, dynamic>>.from(detail['reviews']);
+          }
+          if (detail['rating_summary'] is Map) {
+            ratingSum = Map<String, dynamic>.from(detail['rating_summary']);
+          }
+        } else {
+          prodData = detail;
+        }
+      }
+
       // Filter other products from the same store / region
       final otherProds = allProducts
           .where((p) {
@@ -145,7 +93,10 @@ class _PasarDetailPageState extends State<PasarDetailPage>
           .toList();
 
       setState(() {
-        _product = detail;
+        _product = prodData;
+        _seller = sellerData;
+        _apiReviews = revData;
+        _ratingSummary = ratingSum;
         _storeOtherProducts = otherProds;
         _isFavorite = isFav;
         _isLoading = false;
@@ -626,10 +577,23 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                           color: const Color(0xFF0EA5E9).withValues(alpha: 0.3),
                         ),
                       ),
-                      child: const Icon(
-                        Icons.storefront_rounded,
-                        color: Color(0xFF0EA5E9),
-                        size: 26,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(13),
+                        child: (_seller != null && _seller!['avatar'] != null && _seller!['avatar'].toString().isNotEmpty)
+                            ? Image.network(
+                                _seller!['avatar'],
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, err, stack) => const Icon(
+                                  Icons.storefront_rounded,
+                                  color: Color(0xFF0EA5E9),
+                                  size: 26,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.storefront_rounded,
+                                color: Color(0xFF0EA5E9),
+                                size: 26,
+                              ),
                       ),
                     ),
                   ),
@@ -637,13 +601,20 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
+                        final regId = _product?['region_id'] is int
+                            ? _product!['region_id']
+                            : int.tryParse(_product?['region_id']?.toString() ?? '0');
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => BumdesStoreProfilePage(
-                              tokoName: 'BUMDes $regionName',
+                              tokoName: _seller?['store_name'] ?? 'BUMDes $regionName',
                               desaName: regionName,
                               kecamatanName: 'Kec. Bengkalis',
+                              avatarUrl: _seller?['avatar'],
+                              bannerUrl: _seller?['store_banner'],
+                              description: _seller?['store_description'],
+                              regionId: regId,
                             ),
                           ),
                         );
@@ -652,7 +623,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'BUMDes $regionName',
+                            _seller?['store_name'] ?? 'BUMDes $regionName',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
@@ -702,13 +673,20 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                   const SizedBox(width: 6),
                   OutlinedButton(
                     onPressed: () {
+                      final regId = _product?['region_id'] is int
+                          ? _product!['region_id']
+                          : int.tryParse(_product?['region_id']?.toString() ?? '0');
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => BumdesStoreProfilePage(
-                            tokoName: 'BUMDes $regionName',
+                            tokoName: _seller?['store_name'] ?? 'BUMDes $regionName',
                             desaName: regionName,
                             kecamatanName: 'Kec. Bengkalis',
+                            avatarUrl: _seller?['avatar'],
+                            bannerUrl: _seller?['store_banner'],
+                            description: _seller?['store_description'],
+                            regionId: regId,
                           ),
                         ),
                       );
@@ -760,10 +738,10 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                     ),
-                    tabs: const [
-                      Tab(text: 'Deskripsi'),
-                      Tab(text: '⭐ Ulasan (48)'),
-                      Tab(text: 'Info Penting'),
+                    tabs: [
+                      const Tab(text: 'Deskripsi'),
+                      Tab(text: '⭐ Ulasan (${_apiReviews.length})'),
+                      const Tab(text: 'Info Penting'),
                     ],
                   ),
                 ],
@@ -790,15 +768,9 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                       ),
                     );
                   } else if (_tabController.index == 1) {
-                    // TAB 2: Ulasan Warga dengan Foto Barang
-                    final filteredReviews =
-                        _selectedReviewFilter == 'Dengan Foto'
-                        ? _customerReviews
-                              .where(
-                                (r) => (r['buyerPhotos'] as List).isNotEmpty,
-                              )
-                              .toList()
-                        : _customerReviews;
+                    // TAB 2: Ulasan Pembeli dari Backend
+                    final avgRating = _ratingSummary?['average']?.toString() ?? '5.0';
+                    final totalReviews = _ratingSummary?['total_reviews'] ?? _apiReviews.length;
 
                     return Padding(
                       padding: const EdgeInsets.all(16),
@@ -808,21 +780,21 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                           // Rating Score & Write Review Button
                           Row(
                             children: [
-                              const Column(
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
                                       Text(
-                                        '4.9',
-                                        style: TextStyle(
+                                        avgRating,
+                                        style: const TextStyle(
                                           fontSize: 28,
                                           fontWeight: FontWeight.w900,
                                           color: Color(0xFFF59E0B),
                                         ),
                                       ),
-                                      SizedBox(width: 6),
-                                      Icon(
+                                      const SizedBox(width: 6),
+                                      const Icon(
                                         Icons.star_rounded,
                                         color: Color(0xFFF59E0B),
                                         size: 24,
@@ -830,8 +802,8 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                                     ],
                                   ),
                                   Text(
-                                    '100% Pembeli Puas',
-                                    style: TextStyle(
+                                    '$totalReviews Ulasan Pembeli',
+                                    style: const TextStyle(
                                       fontSize: 11.5,
                                       color: Colors.grey,
                                       fontWeight: FontWeight.w500,
@@ -841,16 +813,20 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                               ),
                               const Spacer(),
                               ElevatedButton.icon(
-                                onPressed: () {
-                                  GiveReviewDialog.show(
+                                onPressed: () async {
+                                  final result = await GiveReviewDialog.show(
                                     context,
+                                    productId: widget.productId,
                                     productName: name,
-                                    tokoName: 'BUMDes $regionName',
+                                    tokoName: _seller?['store_name'] ?? 'BUMDes $regionName',
                                     desaName: regionName,
                                     productImage: _images.isNotEmpty
                                         ? _images[0]
                                         : null,
                                   );
+                                  if (result == true) {
+                                    _fetchDetail();
+                                  }
                                 },
                                 icon: const Icon(
                                   Icons.edit_note_rounded,
@@ -879,37 +855,47 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
-
-                          // Review Filter Chips
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                _buildReviewFilterChip(
-                                  'Semua (48)',
-                                  'Semua',
-                                  isDark,
-                                ),
-                                const SizedBox(width: 8),
-                                _buildReviewFilterChip(
-                                  '📷 Dengan Foto (18)',
-                                  'Dengan Foto',
-                                  isDark,
-                                ),
-                              ],
-                            ),
-                          ),
-
                           const Divider(height: 24),
 
                           // Customer Reviews List
-                          ...filteredReviews.map(
-                            (rev) => Padding(
-                              padding: const EdgeInsets.only(bottom: 14),
-                              child: _buildDetailedReviewCard(rev, isDark),
+                          if (_apiReviews.isEmpty)
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.rate_review_outlined,
+                                      size: 40,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Belum ada ulasan untuk produk ini.',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isDark ? Colors.white54 : Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Jadilah yang pertama memberikan ulasan!',
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: isDark ? Colors.white38 : Colors.grey[500],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else
+                            ..._apiReviews.map(
+                              (rev) => Padding(
+                                padding: const EdgeInsets.only(bottom: 14),
+                                child: _buildDetailedReviewCard(rev, isDark),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     );
@@ -1307,35 +1293,18 @@ class _PasarDetailPageState extends State<PasarDetailPage>
     );
   }
 
-  Widget _buildReviewFilterChip(String label, String value, bool isDark) {
-    final isSelected = _selectedReviewFilter == value;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: const Color(0xFFF59E0B).withValues(alpha: 0.18),
-      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.grey.shade100,
-      labelStyle: TextStyle(
-        fontSize: 11.5,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-        color: isSelected
-            ? const Color(0xFFD97706)
-            : (isDark ? Colors.white70 : Colors.grey[700]),
-      ),
-      side: BorderSide(
-        color: isSelected
-            ? const Color(0xFFF59E0B)
-            : (isDark ? Colors.white12 : Colors.grey.shade300),
-      ),
-      onSelected: (selected) {
-        if (selected) {
-          setState(() => _selectedReviewFilter = value);
-        }
-      },
-    );
-  }
+
 
   Widget _buildDetailedReviewCard(Map<String, dynamic> review, bool isDark) {
-    final photos = review['buyerPhotos'] as List;
+    final String name = review['user_name'] ?? review['name'] ?? 'Warga';
+    final String? avatarUrl = review['user_avatar'];
+    final int rating = review['rating'] is int
+        ? review['rating']
+        : int.tryParse(review['rating']?.toString() ?? '5') ?? 5;
+    final String dateStr = review['created_at'] ?? review['date'] ?? 'Baru saja';
+    final String comment = review['comment'] ?? '';
+    final String? reply = review['reply'];
+    final String? repliedAt = review['replied_at'];
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1349,7 +1318,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header (Avatar, Name, Village, Rating)
+          // Header (Avatar, Name, Date, Rating)
           Row(
             children: [
               CircleAvatar(
@@ -1357,16 +1326,19 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                 backgroundColor: const Color(
                   0xFF0EA5E9,
                 ).withValues(alpha: 0.15),
-                child: Text(
-                  (review['name'] as String).isNotEmpty
-                      ? (review['name'] as String)[0]
-                      : 'W',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0EA5E9),
-                  ),
-                ),
+                backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                    ? NetworkImage(avatarUrl)
+                    : null,
+                child: (avatarUrl == null || avatarUrl.isEmpty)
+                    ? Text(
+                        name.isNotEmpty ? name[0] : 'W',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0EA5E9),
+                        ),
+                      )
+                    : null,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1374,14 +1346,14 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review['name'],
+                      name,
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      '${review['origin']} • ${review['date']}',
+                      dateStr,
                       style: TextStyle(
                         fontSize: 10.5,
                         color: isDark ? Colors.white54 : Colors.grey[600],
@@ -1392,7 +1364,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
               ),
               Row(
                 children: List.generate(
-                  review['rating'],
+                  rating,
                   (index) => const Icon(
                     Icons.star_rounded,
                     size: 14,
@@ -1403,74 +1375,79 @@ class _PasarDetailPageState extends State<PasarDetailPage>
             ],
           ),
 
-          const SizedBox(height: 8),
-
-          // Tag
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              review['tag'],
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFD97706),
+          if (comment.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              comment,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.4,
+                color: isDark ? Colors.white70 : const Color(0xFF334155),
               ),
             ),
-          ),
+          ],
 
-          const SizedBox(height: 6),
-
-          // Comment Text
-          Text(
-            review['comment'],
-            style: TextStyle(
-              fontSize: 12.5,
-              height: 1.4,
-              color: isDark ? Colors.white70 : const Color(0xFF334155),
-            ),
-          ),
-
-          // Buyer Photos Thumbnails
-          if (photos.isNotEmpty) ...[
+          // Admin Desa Reply Section
+          if (reply != null && reply.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Row(
-              children: photos.map((photo) {
-                return GestureDetector(
-                  onTap: () => _showImageZoomDialog(photo),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isDark ? Colors.white12 : Colors.grey.shade300,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF0F172A)
+                    : const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isDark ? Colors.white12 : const Color(0xFFBBF7D0),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.storefront_rounded,
+                        size: 14,
+                        color: Color(0xFF16A34A),
                       ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(7),
-                      child: photo.startsWith('assets/')
-                          ? Image.asset(photo, fit: BoxFit.cover)
-                          : Image.network(
-                              photo,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
-                                color: Colors.grey[300],
-                                child: const Icon(
-                                  Icons.image,
-                                  size: 20,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Respon Penjual (Admin Desa)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? const Color(0xFF4ADE80)
+                              : const Color(0xFF15803D),
+                        ),
+                      ),
+                      if (repliedAt != null) ...[
+                        const Spacer(),
+                        Text(
+                          repliedAt,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    reply,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.35,
+                      color: isDark
+                          ? Colors.white70
+                          : const Color(0xFF166534),
                     ),
                   ),
-                );
-              }).toList(),
+                ],
+              ),
             ),
           ],
         ],

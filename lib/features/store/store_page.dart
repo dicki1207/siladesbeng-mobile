@@ -25,7 +25,14 @@ class _StorePageState extends State<StorePage> {
   String _selectedKecamatan = 'Semua Kecamatan';
   String _selectedDesa = 'Semua Desa';
   String _searchQuery = '';
-  List<String> _categories = ['Semua'];
+  List<String> _categories = [
+    'Semua',
+    'Hasil Tani & Bumi',
+    'Pangan & Olahan',
+    'Material & Bangunan',
+    'Kerajinan & Kesenian',
+    'Lainnya',
+  ];
   bool _isLoading = true;
   List<Map<String, dynamic>> _apiProducts = [];
   List<int> _favProductIds = [];
@@ -156,6 +163,7 @@ class _StorePageState extends State<StorePage> {
         String tempKecamatan = _selectedKecamatan;
         String tempDesa = _selectedDesa;
         String tempSort = _selectedSort;
+        String tempCategory = _selectedCategory;
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -227,6 +235,7 @@ class _StorePageState extends State<StorePage> {
                         TextButton.icon(
                           onPressed: () {
                             setModalState(() {
+                              tempCategory = 'Semua';
                               tempKecamatan = 'Semua Kecamatan';
                               tempDesa = 'Semua Desa';
                               tempSort = 'latest';
@@ -246,7 +255,79 @@ class _StorePageState extends State<StorePage> {
                     ),
                     const Divider(height: 16),
 
-                    // 1. Wilayah Kecamatan (Antar-Kecamatan)
+                    // 1. Kategori Produk
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.category_rounded,
+                          size: 18,
+                          color: primaryColor,
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          '1. Kategori Produk',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _categories.map((cat) {
+                        final isSelected = tempCategory == cat;
+                        return ChoiceChip(
+                          avatar: isSelected
+                              ? const Icon(
+                                  Icons.check_rounded,
+                                  size: 15,
+                                  color: primaryColor,
+                                )
+                              : null,
+                          label: Text(cat),
+                          selected: isSelected,
+                          selectedColor: primaryColor.withValues(
+                            alpha: isDark ? 0.25 : 0.15,
+                          ),
+                          backgroundColor: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF1F5F9),
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? (isDark ? Colors.white : primaryColor)
+                                : (isDark
+                                      ? Colors.white70
+                                      : const Color(0xFF475569)),
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(
+                            color: isSelected
+                                ? primaryColor
+                                : (isDark
+                                      ? Colors.white12
+                                      : const Color(0xFFCBD5E1)),
+                            width: isSelected ? 1.4 : 1,
+                          ),
+                          onSelected: (selected) {
+                            if (selected) {
+                              setModalState(() => tempCategory = cat);
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // 2. Wilayah Kecamatan (Antar-Kecamatan)
                     Row(
                       children: [
                         const Icon(
@@ -256,7 +337,7 @@ class _StorePageState extends State<StorePage> {
                         ),
                         const SizedBox(width: 6),
                         const Text(
-                          '1. Wilayah Kecamatan (Kab. Bengkalis)',
+                          '2. Wilayah Kecamatan (Kab. Bengkalis)',
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.bold,
@@ -425,7 +506,7 @@ class _StorePageState extends State<StorePage> {
 
                     const SizedBox(height: 20),
 
-                    // 2. Urutan Harga / Waktu (3 Equal Columns Card)
+                    // 3. Urutan Harga / Waktu (3 Equal Columns Card)
                     Row(
                       children: [
                         const Icon(
@@ -435,7 +516,7 @@ class _StorePageState extends State<StorePage> {
                         ),
                         const SizedBox(width: 6),
                         const Text(
-                          '2. Urutkan Berdasarkan',
+                          '3. Urutkan Berdasarkan',
                           style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.bold,
@@ -508,6 +589,7 @@ class _StorePageState extends State<StorePage> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           setState(() {
+                            _selectedCategory = tempCategory;
                             _selectedKecamatan = tempKecamatan;
                             _selectedDesa = tempDesa;
                             _selectedSort = tempSort;
@@ -520,7 +602,7 @@ class _StorePageState extends State<StorePage> {
                           size: 18,
                         ),
                         label: const Text(
-                          'Terapkan Wilayah & Urutan',
+                          'Terapkan Filter & Urutan',
                           style: TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.bold,

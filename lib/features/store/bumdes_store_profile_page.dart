@@ -17,6 +17,9 @@ class BumdesStoreProfilePage extends StatefulWidget {
   final String? address;
   final String? phone;
   final String? avatarUrl;
+  final String? bannerUrl;
+  final String? description;
+  final int? regionId;
   final List<Map<String, dynamic>>? initialProducts;
 
   const BumdesStoreProfilePage({
@@ -27,6 +30,9 @@ class BumdesStoreProfilePage extends StatefulWidget {
     this.address,
     this.phone,
     this.avatarUrl,
+    this.bannerUrl,
+    this.description,
+    this.regionId,
     this.initialProducts,
   });
 
@@ -44,6 +50,9 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
   bool _isStoreFavorite = false;
   int _cartCount = 0;
   String _selectedReviewFilter = 'Semua';
+  String? _avatarUrl;
+  String? _bannerUrl;
+  String? _description;
 
   final List<Map<String, dynamic>> _reviews = [
     {
@@ -111,6 +120,9 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
   @override
   void initState() {
     super.initState();
+    _avatarUrl = widget.avatarUrl;
+    _bannerUrl = widget.bannerUrl;
+    _description = widget.description;
     _loadStoreData();
   }
 
@@ -118,6 +130,17 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
     setState(() => _isLoading = true);
 
     try {
+      if (widget.regionId != null) {
+        final sellerProfile = await _productService.getSellerProfile(widget.regionId!);
+        if (sellerProfile != null && mounted) {
+          setState(() {
+            if (sellerProfile['avatar'] != null) _avatarUrl = sellerProfile['avatar'];
+            if (sellerProfile['store_banner'] != null) _bannerUrl = sellerProfile['store_banner'];
+            if (sellerProfile['store_description'] != null) _description = sellerProfile['store_description'];
+          });
+        }
+      }
+
       final cartCount = await _productService.getCartCount();
       final allProducts = await _productService.getProducts();
 
@@ -284,6 +307,30 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
                       ),
                     ),
                   ),
+                  if (_bannerUrl != null && _bannerUrl!.isNotEmpty) ...[
+                    Positioned.fill(
+                      child: Image.network(
+                        _bannerUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withValues(alpha: 0.65),
+                              Colors.black.withValues(alpha: 0.25),
+                              Colors.black.withValues(alpha: 0.8),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   // Glowing circle 1 (Top Right)
                   Positioned(
                     right: -25,
@@ -333,12 +380,26 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
                               ),
                             ],
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.storefront_rounded,
-                              size: 32,
-                              color: Color(0xFF0284C7),
-                            ),
+                          child: ClipOval(
+                            child: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                                ? Image.network(
+                                    _avatarUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (ctx, err, stack) => const Center(
+                                      child: Icon(
+                                        Icons.storefront_rounded,
+                                        size: 32,
+                                        color: Color(0xFF0284C7),
+                                      ),
+                                    ),
+                                  )
+                                : const Center(
+                                    child: Icon(
+                                      Icons.storefront_rounded,
+                                      size: 32,
+                                      color: Color(0xFF0284C7),
+                                    ),
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -604,7 +665,9 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Unit usaha ekonomi desa resmi ${widget.desaName}, ${widget.kecamatanName}. Menyediakan produk pangan lokal, sembako, dan hasil tani berkualitas dengan pengiriman kurir lokal antar-desa se-Kabupaten Bengkalis.',
+                              _description != null && _description!.isNotEmpty
+                                  ? _description!
+                                  : 'Unit usaha ekonomi desa resmi ${widget.desaName}, ${widget.kecamatanName}. Menyediakan produk pangan lokal, sembako, dan hasil tani berkualitas dengan pengiriman kurir lokal antar-desa se-Kabupaten Bengkalis.',
                               style: TextStyle(
                                 fontSize: 11.5,
                                 height: 1.4,

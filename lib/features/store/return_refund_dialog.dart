@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
 class ReturnRefundDialog extends StatefulWidget {
+  final int? orderId;
   final String productName;
   final String tokoName;
   final String? orderNumber;
@@ -12,6 +14,7 @@ class ReturnRefundDialog extends StatefulWidget {
 
   const ReturnRefundDialog({
     super.key,
+    this.orderId,
     required this.productName,
     required this.tokoName,
     this.orderNumber,
@@ -21,6 +24,7 @@ class ReturnRefundDialog extends StatefulWidget {
 
   static Future<bool?> show(
     BuildContext context, {
+    int? orderId,
     required String productName,
     required String tokoName,
     String? orderNumber,
@@ -32,6 +36,7 @@ class ReturnRefundDialog extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => ReturnRefundDialog(
+        orderId: orderId,
         productName: productName,
         tokoName: tokoName,
         orderNumber: orderNumber,
@@ -52,6 +57,7 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
   final TextEditingController _bankAccountController = TextEditingController();
   String _selectedBank = 'Transfer Bank (BRI)';
   final List<String> _evidencePhotos = [];
+  bool _isSubmitting = false;
 
   final List<String> _reasons = [
     'Barang rusak / busuk / basi',
@@ -109,21 +115,66 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
       return;
     }
 
-    Navigator.pop(context, true); // Close bottom sheet
+    if (_selectedSolution == 'refund' && _bankAccountController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mohon isi nomor rekening untuk tujuan refund.'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    if (widget.orderId != null) {
+      final result = await PasarProductService().submitComplaint(
+        orderId: widget.orderId!,
+        reason: _selectedReason,
+        solutionRequested: _selectedSolution,
+        description: _descController.text.trim(),
+        bankName: _selectedSolution == 'refund' ? _selectedBank : null,
+        bankAccountNumber: _selectedSolution == 'refund' ? _bankAccountController.text.trim() : null,
+        bankAccountName: _selectedSolution == 'refund' ? 'Pembeli' : null,
+        evidencePhotoPaths: _evidencePhotos,
+      );
+
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+
+      if (result['success'] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Gagal mengajukan komplain.'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    } else {
+      setState(() => _isSubmitting = false);
+    }
+
+    if (!mounted) return;
+
+    final nav = Navigator.of(context);
+    nav.pop(true); // Close bottom sheet
 
     // Show Animated Success Dialog
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const AnimatedSuccessDialog(
-        message: 'Komplain Terkirim',
+      builder: (ctx) => const AnimatedSuccessDialog(
+        message: 'Komplain Berhasil Diajukan!',
         isLogout: false,
       ),
     );
 
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future.delayed(const Duration(milliseconds: 1400));
     if (mounted) {
-      Navigator.pop(context); // Close success dialog
+      nav.pop(); // Close success dialog
     }
   }
 
@@ -667,21 +718,8 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
             SizedBox(
               width: double.infinity,
               height: 48,
-              child: ElevatedButton.icon(
-                onPressed: _submitComplaint,
-                icon: const Icon(
-                  Icons.send_rounded,
-                  size: 18,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  'Kirim Pengajuan Komplain',
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _submitComplaint,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   shape: RoundedRectangleBorder(
@@ -689,6 +727,34 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
                   ),
                   elevation: 0,
                 ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.send_rounded,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Kirim Pengajuan Komplain',
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ],
