@@ -65,7 +65,18 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
 
   // Consecutive frames needed to confirm dynamic motion
   int _confirmationFrames = 0;
-  static const int _requiredFrames = 3;
+  int? _firstTurnSign; // Track direction of first head turn for opposite check
+
+  // Dynamic required frames per step — blink is very fast so 1 frame is enough
+  int get _requiredFramesForStep {
+    switch (_livenessStep) {
+      case 0: return 3;  // Center face — need stability
+      case 1: return 2;  // Turn head — moderate
+      case 2: return 2;  // Opposite turn — moderate
+      case 3: return 1;  // Blink — very fast (~150ms), 1 frame is enough
+      default: return 2;
+    }
+  }
 
   // Real-time Guidance Warnings
   bool _faceDetected = false;
@@ -173,6 +184,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       _livenessStep = 0;
       _isFaceInstructionSuccess = false;
       _confirmationFrames = 0;
+      _firstTurnSign = null;
       _faceDetected = false;
       _facePositionWarning = null;
     });
@@ -305,48 +317,54 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       final double? headY = face.headEulerAngleY;
       final double? headZ = face.headEulerAngleZ;
       if (headY != null && headZ != null) {
-        // Head must be straight facing camera
-        if (headY.abs() < 10 && headZ.abs() < 12) {
+        // More tolerant: allow up to 15° tilt in both axes
+        if (headY.abs() < 15 && headZ.abs() < 15) {
           conditionMet = true;
         }
       } else {
         conditionMet = true;
       }
     }
-    // ── STAGE 1: Tengok Perlahan ke Kanan (Turn Right) ──
+    // ── STAGE 1: Gerakkan Kepala ke Samping (First Turn — any direction) ──
     else if (_livenessStep == 1) {
       final double? headY = face.headEulerAngleY;
-      if (headY != null) {
-        // Front camera: turning right typically produces negative or positive angle > 13
-        if (headY < -13 || headY > 13) {
-          conditionMet = true;
-        }
+      if (headY != null && headY.abs() > 12) {
+        // Record which direction user turned first
+        _firstTurnSign = headY > 0 ? 1 : -1;
+        conditionMet = true;
       }
     }
-    // ── STAGE 2: Tengok Perlahan ke Kiri (Turn Left) ──
+    // ── STAGE 2: Gerakkan ke Arah Sebaliknya (Opposite direction) ──
     else if (_livenessStep == 2) {
       final double? headY = face.headEulerAngleY;
-      if (headY != null) {
-        // Opposite turn motion
-        if (headY.abs() > 13) {
+      if (headY != null && headY.abs() > 12) {
+        final int currentSign = headY > 0 ? 1 : -1;
+        // Must be opposite direction from stage 1
+        if (_firstTurnSign == null || currentSign != _firstTurnSign) {
           conditionMet = true;
         }
       }
     }
-    // ── STAGE 3: Kedipkan Kedua Mata (Blink Detection) ──
+    // ── STAGE 3: Kedipkan Mata (Blink — more lenient threshold) ──
     else if (_livenessStep == 3) {
       final double? leftEye = face.leftEyeOpenProbability;
       final double? rightEye = face.rightEyeOpenProbability;
       if (leftEye != null && rightEye != null) {
-        if (leftEye < 0.32 && rightEye < 0.32) {
+        // Average of both eyes, threshold 0.45 (was 0.32 — way too strict)
+        if ((leftEye + rightEye) / 2 < 0.45) {
           conditionMet = true;
         }
+      } else if (leftEye != null && leftEye < 0.45) {
+        // Fallback: single eye detection
+        conditionMet = true;
+      } else if (rightEye != null && rightEye < 0.45) {
+        conditionMet = true;
       }
     }
 
     if (conditionMet) {
       _confirmationFrames++;
-      if (_confirmationFrames >= _requiredFrames && !_isFaceInstructionSuccess) {
+      if (_confirmationFrames >= _requiredFramesForStep && !_isFaceInstructionSuccess) {
         HapticFeedback.mediumImpact();
 
         setState(() {
@@ -446,9 +464,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       case 0:
         return 'Tatap Lurus ke Depan';
       case 1:
-        return 'Tengok Perlahan ke Kanan';
+        return 'Tolehkan Kepala ke Samping';
       case 2:
-        return 'Tengok Perlahan ke Kiri';
+        return 'Tolehkan ke Arah Sebaliknya';
       case 3:
         return 'Kedipkan Kedua Mata';
       default:
@@ -464,9 +482,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       case 0:
         return 'Pastikan wajah berada di tengah lingkaran';
       case 1:
-        return 'Tolehkan kepala perlahan ke arah kanan';
+        return 'Tolehkan kepala perlahan ke kanan atau kiri';
       case 2:
-        return 'Tolehkan kepala perlahan ke arah kiri';
+        return 'Sekarang tolehkan ke arah yang berlawanan';
       case 3:
         return 'Tutup kedua mata sebentar lalu buka kembali';
       default:
@@ -604,9 +622,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                     children: [
                       _buildStepPill('1. Posisi', 0),
                       const SizedBox(width: 6),
-                      _buildStepPill('2. Kanan', 1),
+                      _buildStepPill('2. Toleh', 1),
                       const SizedBox(width: 6),
-                      _buildStepPill('3. Kiri', 2),
+                      _buildStepPill('3. Balik', 2),
                       const SizedBox(width: 6),
                       _buildStepPill('4. Kedip', 3),
                     ],
