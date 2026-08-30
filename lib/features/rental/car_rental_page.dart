@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
@@ -13,6 +15,9 @@ class CarRentalPage extends StatefulWidget {
 }
 
 class _CarRentalPageState extends State<CarRentalPage> {
+  late final ShowcaseView _showcaseView;
+  final GlobalKey _keyCarItem = GlobalKey();
+
   List<dynamic> _rentals = [];
   bool _isLoading = true;
   final RentalService _rentalService = RentalService();
@@ -20,7 +25,36 @@ class _CarRentalPageState extends State<CarRentalPage> {
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _fetchRentals();
+  }
+
+  @override
+  void dispose() {
+    _showcaseView.unregister();
+    super.dispose();
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_car_rental_tour') ?? false;
+      if (!hasSeenTour && mounted && _rentals.isNotEmpty) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          _showcaseView.startShowCase([_keyCarItem]);
+          await prefs.setBool('has_seen_car_rental_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Car showcase error: $e');
+    }
+  }
+
+  void _replayCarTour() {
+    if (_rentals.isNotEmpty) {
+      _showcaseView.startShowCase([_keyCarItem]);
+    }
   }
 
   Future<void> _fetchRentals() async {
@@ -45,6 +79,10 @@ class _CarRentalPageState extends State<CarRentalPage> {
     setState(() {
       _rentals = filteredData;
       _isLoading = false;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
     });
   }
 
@@ -109,6 +147,13 @@ class _CarRentalPageState extends State<CarRentalPage> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
+            tooltip: 'Panduan Sewa Kendaraan',
+            onPressed: _replayCarTour,
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchRentals,
@@ -274,7 +319,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
       stock = int.tryParse(item['stock'].toString()) ?? 0;
     }
 
-    return TweenAnimationBuilder(
+    final cardWidget = TweenAnimationBuilder(
       tween: Tween<double>(begin: 0, end: 1),
       duration: Duration(milliseconds: 400 + (index * 100)),
       curve: Curves.easeOutQuart,
@@ -314,5 +359,17 @@ class _CarRentalPageState extends State<CarRentalPage> {
         );
       },
     );
+
+    if (index == 0) {
+      return Showcase(
+        key: _keyCarItem,
+        title: 'Pilih Mobil BUMDes',
+        description: 'Ketuk pada mobil untuk melihat spesifikasi kapasitas, tarif sewa harian, opsi sopir, dan pesan langsung.',
+        targetBorderRadius: BorderRadius.circular(20),
+        child: cardWidget,
+      );
+    }
+
+    return cardWidget;
   }
 }

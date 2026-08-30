@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart'; // Import Full Screen Login Page
@@ -35,6 +36,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late final ShowcaseView _showcaseView;
+
+  // Showcase Tour Keys
+  final GlobalKey _keyNotif = GlobalKey();
+  final GlobalKey _keySearch = GlobalKey();
+  final GlobalKey _keyUnitPelayanan = GlobalKey();
+  final GlobalKey _keyAsisten = GlobalKey();
+
   List<dynamic> _banners = [];
   List<dynamic> _announcements = [];
   List<dynamic> _unitPelayanan = [];
@@ -53,11 +62,46 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _unitPelayanan = _getDefaultUnitPelayanan();
     _pasarDaerahProducts = [];
     _announcements = [];
     _loadProfileData();
     _fetchPublicData();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
+    });
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_home_tour') ?? false;
+      if (!hasSeenTour && mounted) {
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (mounted) {
+          _showcaseView.startShowCase([
+            _keySearch,
+            _keyNotif,
+            _keyUnitPelayanan,
+            _keyAsisten,
+          ]);
+          await prefs.setBool('has_seen_home_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Home showcase error: $e');
+    }
+  }
+
+  void _replayHomeTour() {
+    _showcaseView.startShowCase([
+      _keySearch,
+      _keyNotif,
+      _keyUnitPelayanan,
+      _keyAsisten,
+    ]);
   }
 
   Future<void> _loadProfileData() async {
@@ -511,6 +555,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _showcaseView.unregister();
     _searchController.dispose();
     super.dispose();
   }
@@ -561,7 +606,12 @@ class _HomePageState extends State<HomePage> {
               Positioned(
                 left: _assistantX,
                 top: _assistantY,
-                child: GestureDetector(
+                child: Showcase(
+                  key: _keyAsisten,
+                  title: 'Tanya Asisten AI',
+                  description: 'Butuh bantuan seputar layanan desa? Ketuk asisten pintar ini untuk bertanya apa saja.',
+                  targetShapeBorder: const CircleBorder(),
+                  child: GestureDetector(
                   onPanUpdate: (details) {
                     setState(() {
                       _assistantX += details.delta.dx;
@@ -694,9 +744,10 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        );
+      },
       ),
     );
   }
@@ -786,51 +837,77 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationPage(),
-                ),
-              );
-            },
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(35),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withAlpha(45),
-                      width: 1,
-                    ),
+          Showcase(
+            key: _keyNotif,
+            title: 'Notifikasi & Info Masuk',
+            description: 'Lihat info pengumuman desa, pembaruan laporan, dan status pesanan Pasar Daerah Anda di sini.',
+            targetShapeBorder: const CircleBorder(),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPage(),
                   ),
-                  child: const Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                Positioned(
-                  top: 1,
-                  right: 1,
-                  child: Container(
-                    width: 9,
-                    height: 9,
+                );
+              },
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
+                      color: Colors.white.withAlpha(35),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFF2563EB),
-                        width: 1.5,
+                        color: Colors.white.withAlpha(45),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.notifications_outlined,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  Positioned(
+                    top: 1,
+                    right: 1,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF2563EB),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: _replayHomeTour,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(35),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withAlpha(45),
+                  width: 1,
                 ),
-              ],
+              ),
+              child: const Icon(
+                Icons.help_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -993,50 +1070,56 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      height: 38,
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(35),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withAlpha(50), width: 1),
-      ),
-      child: TextField(
-        controller: _searchController,
-        style: const TextStyle(color: Colors.white, fontSize: 12.5),
-        cursorColor: Colors.white,
-        onSubmitted: (value) {
-          _performSearch(value);
-        },
-        decoration: InputDecoration(
-          hintText: 'Cari layanan desa, pasar, kabar...',
-          hintStyle: TextStyle(
-            color: Colors.white.withAlpha(180),
-            fontSize: 12,
+    return Showcase(
+      key: _keySearch,
+      title: 'Pencarian Cepat',
+      description: 'Ketik nama layanan desa, barang Pasar Daerah, atau kabar desa untuk mencari langsung.',
+      targetBorderRadius: BorderRadius.circular(20),
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(35),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withAlpha(50), width: 1),
+        ),
+        child: TextField(
+          controller: _searchController,
+          style: const TextStyle(color: Colors.white, fontSize: 12.5),
+          cursorColor: Colors.white,
+          onSubmitted: (value) {
+            _performSearch(value);
+          },
+          decoration: InputDecoration(
+            hintText: 'Cari layanan desa, pasar, kabar...',
+            hintStyle: TextStyle(
+              color: Colors.white.withAlpha(180),
+              fontSize: 12,
+            ),
+            border: InputBorder.none,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 9,
+            ),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: Colors.white.withAlpha(200),
+              size: 18,
+            ),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.clear_rounded,
+                      color: Colors.white70,
+                      size: 16,
+                    ),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {});
+                    },
+                  )
+                : null,
           ),
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 9,
-          ),
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            color: Colors.white.withAlpha(200),
-            size: 18,
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(
-                    Icons.clear_rounded,
-                    color: Colors.white70,
-                    size: 16,
-                  ),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {});
-                  },
-                )
-              : null,
         ),
       ),
     );
@@ -1075,10 +1158,15 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.only(
-        top: 10,
-      ), // Jarak atas diperkecil agar lebih dekat dengan banner
+    return Showcase(
+      key: _keyUnitPelayanan,
+      title: 'Layanan Desa & BUMDes',
+      description: 'Pusat layanan digital desa: Pelaporan warga, belanja Pasar Daerah, beli Gas, hingga sewa alat/mobil.',
+      targetBorderRadius: BorderRadius.circular(20),
+      child: Container(
+        margin: const EdgeInsets.only(
+          top: 10,
+        ), // Jarak atas diperkecil agar lebih dekat dengan banner
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1208,6 +1296,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    ),
     );
   }
 

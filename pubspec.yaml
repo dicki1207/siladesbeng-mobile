@@ -42,6 +42,7 @@ dependencies:
   pinput: ^6.0.2
   pdf: ^3.12.0
   flutter_svg: ^2.0.17
+  showcaseview: ^5.1.0
 
 dev_dependencies:
   flutter_test:

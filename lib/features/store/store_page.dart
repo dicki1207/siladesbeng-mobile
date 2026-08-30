@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'cart_page.dart';
 import 'pasar_detail_page.dart';
 import 'pasar_favorite_page.dart';
@@ -16,6 +18,11 @@ class StorePage extends StatefulWidget {
 }
 
 class _StorePageState extends State<StorePage> {
+  late final ShowcaseView _showcaseView;
+  final GlobalKey _searchKey = GlobalKey();
+  final GlobalKey _categoryKey = GlobalKey();
+  final GlobalKey _cartKey = GlobalKey();
+
   final PasarProductService _pasarProductService = PasarProductService();
   final PasarCartService _pasarCartService = PasarCartService();
   final PasarFavoriteService _pasarFavService = PasarFavoriteService();
@@ -85,12 +92,46 @@ class _StorePageState extends State<StorePage> {
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _fetchData();
     _fetchCartCount();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
+    });
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_store_tour') ?? false;
+
+      if (!hasSeenTour && mounted) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          _showcaseView.startShowCase([
+            _searchKey,
+            _categoryKey,
+            _cartKey,
+          ]);
+          await prefs.setBool('has_seen_store_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Showcase error: $e');
+    }
+  }
+
+  void _replayTour() {
+    _showcaseView.startShowCase([
+      _searchKey,
+      _categoryKey,
+      _cartKey,
+    ]);
   }
 
   @override
   void dispose() {
+    _showcaseView.unregister();
     _searchController.dispose();
     super.dispose();
   }
@@ -753,6 +794,17 @@ class _StorePageState extends State<StorePage> {
             : const Color(0xFF2563EB),
         elevation: 0,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.help_outline_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+            tooltip: 'Panduan Halaman',
+            onPressed: _replayTour,
+          ),
+        ],
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
@@ -820,72 +872,78 @@ class _StorePageState extends State<StorePage> {
                   children: [
                     // Search Input
                     Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Cari produk BUMDes, sembako...',
-                          hintStyle: TextStyle(
-                            fontSize: 13,
-                            color: isDark ? Colors.white38 : Colors.grey[500],
-                          ),
-                          prefixIcon: const Icon(Icons.search_rounded),
-                          suffixIcon: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.tune_rounded,
-                                  color: hasRegionOrSortFilter ? primaryColor : null,
+                      child: Showcase(
+                        key: _searchKey,
+                        title: 'Pencarian & Filter Wilayah',
+                        description:
+                            'Cari produk BUMDes, sembako, dan gunakan tombol filter untuk memilih Kecamatan/Desa.',
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Cari produk BUMDes, sembako...',
+                            hintStyle: TextStyle(
+                              fontSize: 13,
+                              color: isDark ? Colors.white38 : Colors.grey[500],
+                            ),
+                            prefixIcon: const Icon(Icons.search_rounded),
+                            suffixIcon: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.tune_rounded,
+                                    color: hasRegionOrSortFilter ? primaryColor : null,
+                                  ),
+                                  onPressed: _showFilterBottomSheet,
+                                  tooltip: 'Filter Wilayah & Urutkan',
                                 ),
-                                onPressed: _showFilterBottomSheet,
-                                tooltip: 'Filter Wilayah & Urutkan',
-                              ),
-                              if (hasRegionOrSortFilter)
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: primaryColor,
-                                      shape: BoxShape.circle,
+                                if (hasRegionOrSortFilter)
+                                  Positioned(
+                                    top: 10,
+                                    right: 10,
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: primaryColor,
+                                        shape: BoxShape.circle,
+                                      ),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                              color: isDark
-                                  ? Colors.white10
-                                  : const Color(0xFFE2E8F0),
+                              ],
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                              color: isDark
-                                  ? Colors.white10
-                                  : const Color(0xFFE2E8F0),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: isDark
+                                    ? Colors.white10
+                                    : const Color(0xFFE2E8F0),
+                              ),
                             ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: primaryColor,
-                              width: 1.5,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: isDark
+                                    ? Colors.white10
+                                    : const Color(0xFFE2E8F0),
+                              ),
                             ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: primaryColor,
+                                width: 1.5,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0),
                           ),
-                          filled: true,
-                          fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                          onSubmitted: (value) {
+                            setState(() => _searchQuery = value);
+                            _fetchData();
+                          },
                         ),
-                        onSubmitted: (value) {
-                          setState(() => _searchQuery = value);
-                          _fetchData();
-                        },
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -940,76 +998,82 @@ class _StorePageState extends State<StorePage> {
                     const SizedBox(width: 8),
 
                     // Keranjang Button with Badge
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white10
-                              : const Color(0xFFE2E8F0),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(
-                              alpha: isDark ? 0.2 : 0.03,
-                            ),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
+                    Showcase(
+                      key: _cartKey,
+                      title: 'Keranjang Belanja',
+                      description:
+                          'Periksa barang belanjaan Anda dan lanjutkan ke proses pemesanan & pembayaran.',
+                      child: Container(
+                        height: 48,
+                        width: 48,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
                           borderRadius: BorderRadius.circular(14),
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const CartPage(),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white10
+                                : const Color(0xFFE2E8F0),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(
+                                alpha: isDark ? 0.2 : 0.03,
                               ),
-                            );
-                            _fetchCartCount();
-                          },
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(
-                                Icons.shopping_cart_outlined,
-                                size: 22,
-                                color: isDark
-                                    ? Colors.white70
-                                    : const Color(0xFF64748B),
-                              ),
-                              if (_cartCount > 0)
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(3.5),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.redAccent,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 16,
-                                      minHeight: 16,
-                                    ),
-                                    child: Text(
-                                      _cartCount > 99 ? '99+' : '$_cartCount',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(14),
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CartPage(),
+                                ),
+                              );
+                              _fetchCartCount();
+                            },
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Icon(
+                                  Icons.shopping_cart_outlined,
+                                  size: 22,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : const Color(0xFF64748B),
+                                ),
+                                if (_cartCount > 0)
+                                  Positioned(
+                                    top: 6,
+                                    right: 6,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(3.5),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.redAccent,
+                                        shape: BoxShape.circle,
                                       ),
-                                      textAlign: TextAlign.center,
+                                      constraints: const BoxConstraints(
+                                        minWidth: 16,
+                                        minHeight: 16,
+                                      ),
+                                      child: Text(
+                                        _cartCount > 99 ? '99+' : '$_cartCount',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -1099,16 +1163,21 @@ class _StorePageState extends State<StorePage> {
 
             // 3. Quick Category Horizontal Pills (Specifically for Kategori Produk)
             SliverToBoxAdapter(
-              child: Container(
-                height: 38,
-                margin: const EdgeInsets.only(top: 4, bottom: 8),
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _categories.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 8),
-                  itemBuilder: (context, i) {
+              child: Showcase(
+                key: _categoryKey,
+                title: 'Kategori Produk',
+                description:
+                    'Pilih kategori produk BUMDes seperti Hasil Tani, Pangan, Kerajinan, dll.',
+                child: Container(
+                  height: 38,
+                  margin: const EdgeInsets.only(top: 4, bottom: 8),
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _categories.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 8),
+                    itemBuilder: (context, i) {
                     final cat = _categories[i];
                     final isSelected = _selectedCategory == cat;
                     return ChoiceChip(
@@ -1147,6 +1216,7 @@ class _StorePageState extends State<StorePage> {
                 ),
               ),
             ),
+          ),
 
             // 4. Products Grid Immediately at the Top!
             if (_isLoading)

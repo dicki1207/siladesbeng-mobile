@@ -1,6 +1,8 @@
 import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_booking_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 
@@ -13,6 +15,13 @@ class ToolPackageBookingPage extends StatefulWidget {
 
 class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     with SingleTickerProviderStateMixin {
+  late final ShowcaseView _showcaseView;
+
+  // Showcase Tour Keys
+  final GlobalKey _keyTabs = GlobalKey();
+  final GlobalKey _keyItem = GlobalKey();
+  final GlobalKey _keyBottomBar = GlobalKey();
+
   late TabController _tabController;
   final int _durationDays = 1;
   final RentalService _rentalService = RentalService();
@@ -46,6 +55,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
@@ -53,10 +63,43 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       }
     });
     _fetchItems();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
+    });
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_tool_rental_tour') ?? false;
+      if (!hasSeenTour && mounted) {
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (mounted) {
+          _showcaseView.startShowCase([
+            _keyTabs,
+            _keyItem,
+            _keyBottomBar,
+          ]);
+          await prefs.setBool('has_seen_tool_rental_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Tool rental showcase error: $e');
+    }
+  }
+
+  void _replayRentalTour() {
+    _showcaseView.startShowCase([
+      _keyTabs,
+      _keyItem,
+      _keyBottomBar,
+    ]);
   }
 
   @override
   void dispose() {
+    _showcaseView.unregister();
     _tabController.dispose();
     super.dispose();
   }
@@ -454,6 +497,13 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         ),
         backgroundColor: const Color(0xFF2563EB),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
+            tooltip: 'Panduan Sewa',
+            onPressed: _replayRentalTour,
+          ),
+        ],
         elevation: 0,
         centerTitle: true,
         flexibleSpace: Container(
@@ -499,14 +549,19 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: TabBar(
+          child: Showcase(
+            key: _keyTabs,
+            title: 'Pilihan Mode Sewa',
+            description: 'Pilih "Paket Alat Desa" untuk paket lengkap hemat, atau "Buat Paket Sendiri" untuk memilih alat satuan sesuai kebutuhan.',
+            targetBorderRadius: BorderRadius.circular(25),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: TabBar(
               controller: _tabController,
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
@@ -562,6 +617,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
               ],
             ),
           ),
+          ),
         ),
       ),
       body: Column(
@@ -612,7 +668,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         final isSelected = _selectedPackageIndex == idx;
         final int itemPrice = _parseInt(item['price']);
 
-        return GestureDetector(
+        final cardWidget = GestureDetector(
           onTap: () {
             setState(() => _selectedPackageIndex = idx);
           },
@@ -783,6 +839,18 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
             ),
           ),
         );
+
+        if (idx == 0) {
+          return Showcase(
+            key: _keyItem,
+            title: 'Pilih Paket Sewa',
+            description: 'Ketuk pada kartu paket untuk memilih paket perlengkapan yang ingin disewa.',
+            targetBorderRadius: BorderRadius.circular(16),
+            child: cardWidget,
+          );
+        }
+
+        return cardWidget;
       },
     );
   }
@@ -1073,88 +1141,94 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     final primaryColor = Theme.of(context).primaryColor;
     final int total = _getTotalPrice();
 
-    return Container(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 16,
-        bottom: MediaQuery.of(context).padding.bottom + 16,
-      ),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row: Total Price & Checkout Button
-            Row(
-              children: [
-                Expanded(
-                  flex: 48,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Total Biaya (per hari)',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? Colors.white38 : Colors.grey[500],
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _currencyFormat.format(total),
-                          style: TextStyle(
-                            fontSize: 18.5,
-                            fontWeight: FontWeight.w900,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 52,
-                  child: ElevatedButton.icon(
-                    onPressed: _handleBooking,
-                    icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                    label: const Text(
-                      'Lanjutkan Sewa',
-                      style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
-                    ),
-                  ),
-                ),
-              ],
+    return Showcase(
+      key: _keyBottomBar,
+      title: 'Total & Lanjutkan Pemesanan',
+      description: 'Periksa estimasi biaya sewa harian dan ketuk tombol "Lanjutkan Sewa" untuk melengkapi formulir jadwal dan pengantaran.',
+      targetBorderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 16,
+          bottom: MediaQuery.of(context).padding.bottom + 16,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, -5),
             ),
           ],
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Row: Total Price & Checkout Button
+              Row(
+                children: [
+                  Expanded(
+                    flex: 48,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Total Biaya (per hari)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _currencyFormat.format(total),
+                            style: TextStyle(
+                              fontSize: 18.5,
+                              fontWeight: FontWeight.w900,
+                              color: primaryColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: _handleBooking,
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                      label: const Text(
+                        'Lanjutkan Sewa',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

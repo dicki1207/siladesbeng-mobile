@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import '../../core/api_config.dart';
 import '../../widgets/product_card_widget.dart';
 import '../rental/item_detail_page.dart';
@@ -15,6 +16,9 @@ class GasPage extends StatefulWidget {
 }
 
 class _GasPageState extends State<GasPage> {
+  late final ShowcaseView _showcaseView;
+  final GlobalKey _keyGasItem = GlobalKey();
+
   List<dynamic> _allGasItems = [];
   List<String> _categories = ['Semua'];
   String _selectedCategory = 'Semua';
@@ -35,7 +39,36 @@ class _GasPageState extends State<GasPage> {
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _fetchGas();
+  }
+
+  @override
+  void dispose() {
+    _showcaseView.unregister();
+    super.dispose();
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_gas_tour') ?? false;
+      if (!hasSeenTour && mounted && _filteredGasItems.isNotEmpty) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          _showcaseView.startShowCase([_keyGasItem]);
+          await prefs.setBool('has_seen_gas_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Gas showcase error: $e');
+    }
+  }
+
+  void _replayTour() {
+    if (_filteredGasItems.isNotEmpty) {
+      _showcaseView.startShowCase([_keyGasItem]);
+    }
   }
 
   Future<void> _fetchGas() async {
@@ -86,6 +119,7 @@ class _GasPageState extends State<GasPage> {
             _categories = ['Semua', ...uniqueCategories];
             _isLoading = false;
           });
+          _checkAndStartShowcase();
           return;
         }
       }
@@ -281,6 +315,15 @@ class _GasPageState extends State<GasPage> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.help_outline_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            tooltip: 'Panduan Halaman',
+            onPressed: _replayTour,
+          ),
           if (_categories.length > 1)
             IconButton(
               icon: const Icon(
@@ -371,7 +414,17 @@ class _GasPageState extends State<GasPage> {
                         BuildContext context,
                         int index,
                       ) {
-                        return _buildPremiumGasCard(_filteredGasItems[index]);
+                        final card = _buildPremiumGasCard(_filteredGasItems[index]);
+                        if (index == 0) {
+                          return Showcase(
+                            key: _keyGasItem,
+                            title: 'Pilihan Gas LPG BUMDes',
+                            description:
+                                'Pilih jenis gas (3kg, 5.5kg, 12kg) untuk melihat detail harga, sisa stok, dan melakukan pemesanan.',
+                            child: card,
+                          );
+                        }
+                        return card;
                       }, childCount: _filteredGasItems.length),
                     ),
             ),

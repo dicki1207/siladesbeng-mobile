@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:siladesbeng_mobile/main_wrapper.dart';
 import 'package:siladesbeng_mobile/features/profile/account/edit_profile_page.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_history_page.dart';
@@ -23,6 +24,12 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  late final ShowcaseView _showcaseView;
+  final GlobalKey _keyVerification = GlobalKey();
+  final GlobalKey _keyActivity = GlobalKey();
+  final GlobalKey _keyRtRw = GlobalKey();
+  final GlobalKey _keyEditProfile = GlobalKey();
+
   bool _isLoggedIn = false;
   String _name = 'Warga Desa';
   String _email = 'warga@desa.id';
@@ -35,7 +42,45 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _loadProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
+    });
+  }
+
+  @override
+  void dispose() {
+    _showcaseView.unregister();
+    super.dispose();
+  }
+
+  List<GlobalKey> get _activeShowcaseKeys {
+    if (_isLoggedIn) {
+      return [_keyVerification, _keyActivity, _keyRtRw, _keyEditProfile];
+    } else {
+      return [_keyActivity, _keyRtRw];
+    }
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_profile_tour') ?? false;
+      if (!hasSeenTour && mounted) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          _showcaseView.startShowCase(_activeShowcaseKeys);
+          await prefs.setBool('has_seen_profile_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Profile showcase error: $e');
+    }
+  }
+
+  void _replayTour() {
+    _showcaseView.startShowCase(_activeShowcaseKeys);
   }
 
   Future<void> _loadProfile() async {
@@ -845,39 +890,54 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _isVerified
-                            ? Icons.verified_rounded
-                            : Icons.person_outline_rounded,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.help_outline_rounded,
                         color: Colors.white,
-                        size: 15,
+                        size: 22,
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        _isVerified ? 'Terverifikasi' : 'Warga',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                      tooltip: 'Panduan Halaman',
+                      onPressed: _replayTour,
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
                         ),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _isVerified
+                                ? Icons.verified_rounded
+                                : Icons.person_outline_rounded,
+                            color: Colors.white,
+                            size: 15,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            _isVerified ? 'Terverifikasi' : 'Warga',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -905,7 +965,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     bottom: -45,
                     left: 20,
                     right: 20,
-                    child: _buildProfileHeaderCard(margin: EdgeInsets.zero),
+                    child: Showcase(
+                      key: _keyVerification,
+                      title: 'Verifikasi & KTP Digital',
+                      description:
+                          'Lengkapi data NIK untuk verifikasi akun, membuka fitur RT/RW, serta mengakses KTP Digital resmi.',
+                      child: _buildProfileHeaderCard(margin: EdgeInsets.zero),
+                    ),
                   ),
               ],
             ),
@@ -984,24 +1050,36 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 12),
                   _buildMenuGroup(context, [
-                    _buildMenuTile(
-                      context,
-                      icon: Icons.receipt_long_rounded,
+                    Showcase(
+                      key: _keyActivity,
                       title: 'Riwayat Aktivitas',
-                      targetPage: const TransactionHistoryPage(),
-                      iconColor: Colors.blue[600],
-                      isFirst: true,
-                      isLast: false,
+                      description:
+                          'Cek status pelaporan pengaduan, penyewaan fasilitas/alat BUMDes, serta riwayat belanja Anda.',
+                      child: _buildMenuTile(
+                        context,
+                        icon: Icons.receipt_long_rounded,
+                        title: 'Riwayat Aktivitas',
+                        targetPage: const TransactionHistoryPage(),
+                        iconColor: Colors.blue[600],
+                        isFirst: true,
+                        isLast: false,
+                      ),
                     ),
-                    _buildMenuTile(
-                      context,
-                      icon: Icons.admin_panel_settings_rounded,
+                    Showcase(
+                      key: _keyRtRw,
                       title: 'Portal Pengurus RT / RW',
-                      subtitle: 'Layanan administrasi & pengurus wilayah',
-                      targetPage: const AdminPortalPage(),
-                      iconColor: Colors.teal[600],
-                      isFirst: false,
-                      isLast: false,
+                      description:
+                          'Layanan administrasi dan persetujuan permohonan warga bagi pengurus RT dan RW.',
+                      child: _buildMenuTile(
+                        context,
+                        icon: Icons.admin_panel_settings_rounded,
+                        title: 'Portal Pengurus RT / RW',
+                        subtitle: 'Layanan administrasi & pengurus wilayah',
+                        targetPage: const AdminPortalPage(),
+                        iconColor: Colors.teal[600],
+                        isFirst: false,
+                        isLast: false,
+                      ),
                     ),
                     if (_isVerified)
                       _buildMenuTile(
@@ -1034,14 +1112,20 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 14),
                   _buildMenuGroup(context, [
                     if (_isLoggedIn)
-                      _buildMenuTile(
-                        context,
-                        icon: Icons.manage_accounts_rounded,
-                        title: 'Edit Profil & PIN Keamanan',
-                        targetPage: const EditProfilePage(),
-                        iconColor: Colors.green,
-                        isFirst: true,
-                        isLast: false,
+                      Showcase(
+                        key: _keyEditProfile,
+                        title: 'Edit Profil & Keamanan',
+                        description:
+                            'Ubah data profil, kata sandi (password), serta atur PIN keamanan akun Anda.',
+                        child: _buildMenuTile(
+                          context,
+                          icon: Icons.manage_accounts_rounded,
+                          title: 'Edit Profil & PIN Keamanan',
+                          targetPage: const EditProfilePage(),
+                          iconColor: Colors.green,
+                          isFirst: true,
+                          isLast: false,
+                        ),
                       ),
                     _buildMenuTile(
                       context,

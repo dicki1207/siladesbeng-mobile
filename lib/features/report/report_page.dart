@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:http/http.dart' as http;
 import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/report/report_camera_page.dart';
@@ -17,6 +18,14 @@ class ReportPage extends StatefulWidget {
 }
 
 class _ReportPageState extends State<ReportPage> {
+  late final ShowcaseView _showcaseView;
+
+  // Showcase Tour Keys
+  final GlobalKey _keyTujuan = GlobalKey();
+  final GlobalKey _keyKategori = GlobalKey();
+  final GlobalKey _keyLokasi = GlobalKey();
+  final GlobalKey _keyFoto = GlobalKey();
+
   // User profile data
   String _userName = '';
   String _userEmail = '';
@@ -46,9 +55,44 @@ class _ReportPageState extends State<ReportPage> {
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _loadProfileData();
     _namaController.addListener(_calculateProgress);
     _deskripsiController.addListener(_calculateProgress);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
+    });
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_report_tour') ?? false;
+      if (!hasSeenTour && mounted) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          _showcaseView.startShowCase([
+            _keyTujuan,
+            _keyKategori,
+            _keyLokasi,
+            _keyFoto,
+          ]);
+          await prefs.setBool('has_seen_report_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Showcase error: $e');
+    }
+  }
+
+  void _replayTour() {
+    _showcaseView.startShowCase([
+      _keyTujuan,
+      _keyKategori,
+      _keyLokasi,
+      _keyFoto,
+    ]);
   }
 
   void _calculateProgress() {
@@ -66,6 +110,7 @@ class _ReportPageState extends State<ReportPage> {
 
   @override
   void dispose() {
+    _showcaseView.unregister();
     _namaController.dispose();
     _deskripsiController.dispose();
     super.dispose();
@@ -571,6 +616,13 @@ class _ReportPageState extends State<ReportPage> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
+            tooltip: 'Panduan Halaman',
+            onPressed: _replayTour,
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
@@ -629,20 +681,26 @@ class _ReportPageState extends State<ReportPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildLabel('Kategori *', icon: Icons.category_outlined),
-                    _buildDropdown(
-                      value: _selectedCategory,
-                      hint: 'Pilih kategori',
-                      items: [
-                        'Infrastruktur',
-                        'Kesehatan',
-                        'Keamanan',
-                        'Kebersihan',
-                        'Lainnya',
-                      ],
-                      onChanged: (val) {
-                        setState(() => _selectedCategory = val);
-                        _calculateProgress();
-                      },
+                    Showcase(
+                      key: _keyKategori,
+                      title: 'Pilih Kategori Laporan',
+                      description: 'Pilih jenis masalah (Infrastruktur, Kebersihan, Keamanan, dll) agar langsung ditangani petugas yang tepat.',
+                      targetBorderRadius: BorderRadius.circular(12),
+                      child: _buildDropdown(
+                        value: _selectedCategory,
+                        hint: 'Pilih kategori',
+                        items: [
+                          'Infrastruktur',
+                          'Kesehatan',
+                          'Keamanan',
+                          'Kebersihan',
+                          'Lainnya',
+                        ],
+                        onChanged: (val) {
+                          setState(() => _selectedCategory = val);
+                          _calculateProgress();
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -651,24 +709,35 @@ class _ReportPageState extends State<ReportPage> {
           ),
 
           _buildLabel('Tujuan Pelaporan *', icon: Icons.send_outlined),
-          _buildDropdown(
-            value: _selectedTujuan,
-            hint: 'Pilih tujuan laporan',
-            items: ['rt', 'rw', 'desa'],
-            onChanged: (val) {
-              setState(() => _selectedTujuan = val);
-              _calculateProgress();
-            },
-            displayNames: const {
-              'rt': 'Pengurus RT Setempat',
-              'rw': 'Pengurus RW Setempat',
-              'desa': 'Pemerintah Desa',
-            },
+          Showcase(
+            key: _keyTujuan,
+            title: 'Tentukan Tujuan Laporan',
+            description: 'Tujukan laporan ke RT (lingkungan tetangga), RW (lingkup kampung), atau Pemerintah Desa (fasilitas umum desa).',
+            targetBorderRadius: BorderRadius.circular(12),
+            child: _buildDropdown(
+              value: _selectedTujuan,
+              hint: 'Pilih tujuan laporan',
+              items: ['rt', 'rw', 'desa'],
+              onChanged: (val) {
+                setState(() => _selectedTujuan = val);
+                _calculateProgress();
+              },
+              displayNames: const {
+                'rt': 'Pengurus RT Setempat',
+                'rw': 'Pengurus RW Setempat',
+                'desa': 'Pemerintah Desa',
+              },
+            ),
           ),
 
           // 2. Interactive Full-Screen Capable Map Section
           _buildLabel('Lokasi Kejadian *', icon: Icons.map_outlined),
-          Container(
+          Showcase(
+            key: _keyLokasi,
+            title: 'Tandai Titik Lokasi Kejadian',
+            description: 'Ketuk peta untuk menentukan koordinat lokasi secara presisi agar petugas mudah menuju tempat kejadian.',
+            targetBorderRadius: BorderRadius.circular(16),
+            child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
@@ -843,6 +912,7 @@ class _ReportPageState extends State<ReportPage> {
               ],
             ),
           ),
+          ),
 
           // 4. Deskripsi
           _buildLabel('Deskripsi Laporan *', icon: Icons.description_outlined),
@@ -883,7 +953,13 @@ class _ReportPageState extends State<ReportPage> {
 
           // 5. Dual-Action Compact Photo Upload Section
           _buildLabel('Unggah Bukti Foto (Opsional)', icon: Icons.photo_camera_back_outlined),
-          _buildPhotoUploadSection(isDark, primaryColor),
+          Showcase(
+            key: _keyFoto,
+            title: 'Unggah Bukti Foto',
+            description: 'Lampirkan foto bukti kejadian langsung dari kamera atau galeri untuk memperjelas dan memperkuat laporan Anda.',
+            targetBorderRadius: BorderRadius.circular(16),
+            child: _buildPhotoUploadSection(isDark, primaryColor),
+          ),
 
           const SizedBox(height: 18),
 

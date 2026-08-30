@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
@@ -14,6 +16,10 @@ class FacilityRentalPage extends StatefulWidget {
 
 class _FacilityRentalPageState extends State<FacilityRentalPage>
     with SingleTickerProviderStateMixin {
+  late final ShowcaseView _showcaseView;
+  final GlobalKey _keyFacilityTabs = GlobalKey();
+  final GlobalKey _keyFacilityItem = GlobalKey();
+
   late TabController _tabController;
   List<dynamic> _vehicles = [];
   List<dynamic> _buildings = [];
@@ -29,6 +35,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register();
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -44,8 +51,29 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
 
   @override
   void dispose() {
+    _showcaseView.unregister();
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_facility_tour') ?? false;
+      if (!hasSeenTour && mounted) {
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (mounted) {
+          _showcaseView.startShowCase([_keyFacilityTabs, _keyFacilityItem]);
+          await prefs.setBool('has_seen_facility_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Facility showcase error: $e');
+    }
+  }
+
+  void _replayFacilityTour() {
+    _showcaseView.startShowCase([_keyFacilityTabs, _keyFacilityItem]);
   }
 
   Future<void> _fetchFacilities() async {
@@ -117,6 +145,10 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
         _vehicles = [];
         _buildings = [];
         _isLoading = false;
+      });
+    } finally {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkAndStartShowcase();
       });
     }
   }
@@ -625,69 +657,82 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
+            tooltip: 'Panduan Fasilitas',
+            onPressed: _replayFacilityTour,
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-              indicator: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+          child: Showcase(
+            key: _keyFacilityTabs,
+            title: 'Kategori Fasilitas Desa',
+            description: 'Pilih tab "Kendaraan & Ambulans" untuk transportasi warga atau siaga medis darurat, atau "Gedung & Lapangan" untuk tempat acara warga.',
+            targetBorderRadius: BorderRadius.circular(25),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                indicator: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                labelColor: isDark ? Colors.white : primaryColor,
+                unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
+                labelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12.5,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12.5,
+                ),
+                tabs: const [
+                  Tab(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.airport_shuttle_rounded, size: 15),
+                          SizedBox(width: 5),
+                          Text('Kendaraan & Ambulans'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.domain_rounded, size: 15),
+                          SizedBox(width: 5),
+                          Text('Gedung & Lapangan'),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-              labelColor: isDark ? Colors.white : primaryColor,
-              unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12.5,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 12.5,
-              ),
-              tabs: const [
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.airport_shuttle_rounded, size: 15),
-                        SizedBox(width: 5),
-                        Text('Kendaraan & Ambulans'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.domain_rounded, size: 15),
-                        SizedBox(width: 5),
-                        Text('Gedung & Lapangan'),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         ),
@@ -850,7 +895,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
         ? Colors.red
         : const Color(0xFF10B981);
 
-    return GestureDetector(
+    final cardWidget = GestureDetector(
       onTap: () {
         if (isAmbulance) {
           _showAmbulanceEmergencyModal(item as Map<String, dynamic>);
@@ -1062,6 +1107,18 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
         ),
       ),
     );
+
+    if (index == 0) {
+      return Showcase(
+        key: _keyFacilityItem,
+        title: 'Pilih Fasilitas / Ambulans',
+        description: 'Ketuk untuk melihat informasi fasilitas desa atau langsung ajukan pinjam / panggil Ambulans Siaga 24 Jam.',
+        targetBorderRadius: BorderRadius.circular(16),
+        child: cardWidget,
+      );
+    }
+
+    return cardWidget;
   }
 
   Widget _buildFallbackIcon(bool isAmbulance, Color primaryColor) {
