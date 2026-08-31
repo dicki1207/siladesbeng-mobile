@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -172,7 +173,7 @@ class _AssistantPageState extends State<AssistantPage> {
         title: Text(
           'SiladesBeng Assistant',
           style: GoogleFonts.inter(
-            fontSize: 17,
+            fontSize: 17.sp,
             fontWeight: FontWeight.w600,
             color: Colors.white,
             letterSpacing: 0.3,
@@ -229,7 +230,7 @@ class _AssistantPageState extends State<AssistantPage> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
@@ -246,7 +247,7 @@ class _AssistantPageState extends State<AssistantPage> {
 
   Widget _buildTypingIndicator(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, bottom: 8),
+      padding: EdgeInsets.only(left: 16.w, bottom: 8.h),
       child: Row(
         children: [
           const CircleAvatar(
@@ -254,12 +255,12 @@ class _AssistantPageState extends State<AssistantPage> {
             backgroundImage: AssetImage('logodomain.png'),
             backgroundColor: Colors.transparent,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: isDark ? AppTheme.cardDark : Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               border: Border.all(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.08)
@@ -277,7 +278,7 @@ class _AssistantPageState extends State<AssistantPage> {
               'Mengetik...',
               style: GoogleFonts.inter(
                 color: isDark ? AppTheme.textGrayDark : Colors.grey,
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -291,7 +292,7 @@ class _AssistantPageState extends State<AssistantPage> {
     final isUser = msg['isUser'] as bool;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
         mainAxisAlignment: isUser
             ? MainAxisAlignment.end
@@ -304,18 +305,18 @@ class _AssistantPageState extends State<AssistantPage> {
               backgroundImage: AssetImage('logodomain.png'),
               backgroundColor: Colors.transparent,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
           ],
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: isUser
                     ? (isDark ? AppTheme.primaryDark : AppTheme.primaryLight)
                     : (isDark ? AppTheme.cardDark : Colors.white),
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
+                  topLeft: Radius.circular(18.r),
+                  topRight: Radius.circular(18.r),
                   bottomLeft: Radius.circular(isUser ? 18 : 2),
                   bottomRight: Radius.circular(isUser ? 2 : 18),
                 ),
@@ -345,11 +346,11 @@ class _AssistantPageState extends State<AssistantPage> {
                       color: isUser
                           ? Colors.white
                           : (isDark ? AppTheme.textLight : AppTheme.textDark),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  SizedBox(height: 5.h),
                   Text(
                     msg['time'],
                     style: GoogleFonts.inter(
@@ -358,15 +359,15 @@ class _AssistantPageState extends State<AssistantPage> {
                           : (isDark
                                 ? AppTheme.textGrayDark
                                 : AppTheme.textGrayLight),
-                      fontSize: 10,
+                      fontSize: 10.sp,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          if (isUser) const SizedBox(width: 24),
-          if (!isUser) const SizedBox(width: 24),
+          if (isUser) SizedBox(width: 24.w),
+          if (!isUser) SizedBox(width: 24.w),
         ],
       ),
     );
@@ -374,7 +375,7 @@ class _AssistantPageState extends State<AssistantPage> {
 
   Widget _buildMessageInput(bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.cardDark : Colors.white,
         border: Border(
@@ -399,7 +400,7 @@ class _AssistantPageState extends State<AssistantPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.bgDark : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.r),
                   border: Border.all(
                     color: isDark
                         ? Colors.white.withValues(alpha: 0.1)
@@ -410,7 +411,7 @@ class _AssistantPageState extends State<AssistantPage> {
                   controller: _messageController,
                   style: GoogleFonts.inter(
                     color: isDark ? AppTheme.textLight : AppTheme.textDark,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                   cursorColor: isDark
                       ? AppTheme.primaryDark
@@ -419,31 +420,31 @@ class _AssistantPageState extends State<AssistantPage> {
                     hintText: 'Ketik pesan Anda...',
                     hintStyle: GoogleFonts.inter(
                       color: isDark ? AppTheme.textGrayDark : Colors.black45,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 18.w,
+                      vertical: 12.h,
                     ),
                   ),
                   onSubmitted: (_) => _sendMessage(),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             GestureDetector(
               onTap: () => _sendMessage(),
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.primaryDark : AppTheme.primaryLight,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.send_rounded,
                   color: Colors.white,
-                  size: 20,
+                  size: 20.sp,
                 ),
               ),
             ),

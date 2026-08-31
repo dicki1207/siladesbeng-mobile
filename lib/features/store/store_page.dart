@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
@@ -96,11 +97,13 @@ class _StorePageState extends State<StorePage> {
     _fetchData();
     _fetchCartCount();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndStartShowcase();
+      _checkAndStartShowcase(
+);
     });
   }
 
-  Future<void> _checkAndStartShowcase() async {
+  Future<void> _checkAndStartShowcase(
+) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTour = prefs.getBool('has_seen_store_tour') ?? false;
@@ -214,15 +217,15 @@ class _StorePageState extends State<StorePage> {
             return Container(
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(24.r),
                 ),
               ),
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                left: 20,
-                right: 20,
-                top: 16,
+                left: 20.w,
+                right: 20.w,
+                top: 16.h,
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -236,11 +239,11 @@ class _StorePageState extends State<StorePage> {
                         height: 4,
                         decoration: BoxDecoration(
                           color: Colors.grey.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Header
                     Row(
@@ -249,22 +252,22 @@ class _StorePageState extends State<StorePage> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(7),
+                              padding: EdgeInsets.all(7.w),
                               decoration: BoxDecoration(
                                 color: primaryColor.withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.tune_rounded,
                                 color: primaryColor,
-                                size: 18,
+                                size: 18.sp,
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: 10.w),
                             Text(
                               'Filter & Urutan Produk',
                               style: TextStyle(
-                                fontSize: 17,
+                                fontSize: 17.sp,
                                 fontWeight: FontWeight.bold,
                                 color: isDark
                                     ? Colors.white
@@ -282,13 +285,13 @@ class _StorePageState extends State<StorePage> {
                               tempSort = 'latest';
                             });
                           },
-                          icon: const Icon(Icons.refresh_rounded, size: 14, color: Colors.redAccent),
-                          label: const Text(
+                          icon: Icon(Icons.refresh_rounded, size: 14.sp, color: Colors.redAccent),
+                          label: Text(
                             'Reset',
                             style: TextStyle(
                               color: Colors.redAccent,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 13.sp,
                             ),
                           ),
                         ),
@@ -299,35 +302,30 @@ class _StorePageState extends State<StorePage> {
                     // 1. Kategori Produk
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.category_rounded,
-                          size: 18,
+                          size: 18.sp,
                           color: primaryColor,
                         ),
-                        const SizedBox(width: 6),
-                        const Text(
+                        SizedBox(width: 6.w),
+                        Text(
                           '1. Kategori Produk',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 13.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: _categories.map((cat) {
                         final isSelected = tempCategory == cat;
                         return ChoiceChip(
-                          avatar: isSelected
-                              ? const Icon(
-                                  Icons.check_rounded,
-                                  size: 15,
-                                  color: primaryColor,
-                                )
-                              : null,
+                          showCheckmark: false,
+                          avatar: null,
                           label: Text(cat),
                           selected: isSelected,
                           selectedColor: primaryColor.withValues(
@@ -345,10 +343,10 @@ class _StorePageState extends State<StorePage> {
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.w500,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                           side: BorderSide(
                             color: isSelected
@@ -366,40 +364,35 @@ class _StorePageState extends State<StorePage> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18.h),
 
                     // 2. Wilayah Kecamatan (Antar-Kecamatan)
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.location_city_rounded,
-                          size: 18,
+                          size: 18.sp,
                           color: primaryColor,
                         ),
-                        const SizedBox(width: 6),
-                        const Text(
+                        SizedBox(width: 6.w),
+                        Text(
                           '2. Wilayah Kecamatan (Kab. Bengkalis)',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 13.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: _kecamatanList.map((kec) {
                         final isSelected = tempKecamatan == kec;
                         return ChoiceChip(
-                          avatar: isSelected
-                              ? const Icon(
-                                  Icons.check_rounded,
-                                  size: 15,
-                                  color: primaryColor,
-                                )
-                              : null,
+                          showCheckmark: false,
+                          avatar: null,
                           label: Text(kec),
                           selected: isSelected,
                           selectedColor: primaryColor.withValues(
@@ -417,10 +410,10 @@ class _StorePageState extends State<StorePage> {
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.w500,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                           side: BorderSide(
                             color: isSelected
@@ -444,15 +437,15 @@ class _StorePageState extends State<StorePage> {
 
                     // Sub-wilayah Desa (Muncul saat memilih kecamatan spesifik)
                     if (tempKecamatan != 'Semua Kecamatan') ...[
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14.h),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(14),
+                        padding: EdgeInsets.all(14.w),
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF0F172A)
                               : const Color(0xFFF0FDF4),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                           border: Border.all(
                             color: isDark
                                 ? const Color(0xFF059669).withValues(alpha: 0.3)
@@ -464,17 +457,17 @@ class _StorePageState extends State<StorePage> {
                           children: [
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.holiday_village_rounded,
-                                  size: 17,
+                                  size: 17.sp,
                                   color: Color(0xFF10B981),
                                 ),
-                                const SizedBox(width: 6),
+                                SizedBox(width: 6.w),
                                 Expanded(
                                   child: Text(
                                     'Pilih Desa di $tempKecamatan',
                                     style: TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 13.sp,
                                       fontWeight: FontWeight.bold,
                                       color: isDark
                                           ? const Color(0xFF34D399)
@@ -484,20 +477,15 @@ class _StorePageState extends State<StorePage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 10),
+                            SizedBox(height: 10.h),
                             Wrap(
                               spacing: 8,
                               runSpacing: 8,
                               children: currentDesaList.map((desa) {
                                 final isSelected = tempDesa == desa;
                                 return ChoiceChip(
-                                  avatar: isSelected
-                                      ? const Icon(
-                                          Icons.check_rounded,
-                                          size: 15,
-                                          color: Color(0xFF10B981),
-                                        )
-                                      : null,
+                                  showCheckmark: false,
+                                  avatar: null,
                                   label: Text(desa),
                                   selected: isSelected,
                                   selectedColor: const Color(
@@ -519,10 +507,10 @@ class _StorePageState extends State<StorePage> {
                                     fontWeight: isSelected
                                         ? FontWeight.bold
                                         : FontWeight.w500,
-                                    fontSize: 11.5,
+                                    fontSize: 11.5.sp,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(12.r),
                                   ),
                                   side: BorderSide(
                                     color: isSelected
@@ -545,27 +533,27 @@ class _StorePageState extends State<StorePage> {
                       ),
                     ],
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
 
                     // 3. Urutan Harga / Waktu (3 Equal Columns Card)
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.swap_vert_rounded,
-                          size: 18,
+                          size: 18.sp,
                           color: primaryColor,
                         ),
-                        const SizedBox(width: 6),
-                        const Text(
+                        SizedBox(width: 6.w),
+                        Text(
                           '3. Urutkan Berdasarkan',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 13.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Row(
                       children: [
                         _buildSortCard(
@@ -579,7 +567,7 @@ class _StorePageState extends State<StorePage> {
                           isDark: isDark,
                           primaryColor: primaryColor,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         _buildSortCard(
                           label: 'Termurah',
                           sublabel: 'Harga terendah',
@@ -591,7 +579,7 @@ class _StorePageState extends State<StorePage> {
                           isDark: isDark,
                           primaryColor: primaryColor,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         _buildSortCard(
                           label: 'Termahal',
                           sublabel: 'Harga tertinggi',
@@ -606,14 +594,14 @@ class _StorePageState extends State<StorePage> {
                       ],
                     ),
 
-                    const SizedBox(height: 26),
+                    SizedBox(height: 26.h),
 
                     // Apply Button
                     Container(
                       width: double.infinity,
                       height: 48,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                         gradient: const LinearGradient(
                           colors: [Color(0xFF0284C7), Color(0xFF0EA5E9)],
                         ),
@@ -638,14 +626,14 @@ class _StorePageState extends State<StorePage> {
                           Navigator.pop(context);
                           _fetchData();
                         },
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.check_circle_outline_rounded,
-                          size: 18,
+                          size: 18.sp,
                         ),
-                        label: const Text(
+                        label: Text(
                           'Terapkan Filter & Urutan',
                           style: TextStyle(
-                            fontSize: 14.5,
+                            fontSize: 14.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -654,7 +642,7 @@ class _StorePageState extends State<StorePage> {
                           shadowColor: Colors.transparent,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                         ),
                       ),
@@ -682,16 +670,16 @@ class _StorePageState extends State<StorePage> {
     final isSelected = value == groupValue;
     return Expanded(
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         onTap: () => onChanged(value),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 4.w),
           decoration: BoxDecoration(
             color: isSelected
                 ? primaryColor.withValues(alpha: isDark ? 0.22 : 0.1)
                 : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(
               color: isSelected
                   ? primaryColor
@@ -712,7 +700,7 @@ class _StorePageState extends State<StorePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(7),
+                padding: EdgeInsets.all(7.w),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? primaryColor.withValues(alpha: isDark ? 0.35 : 0.2)
@@ -723,32 +711,32 @@ class _StorePageState extends State<StorePage> {
                 ),
                 child: Icon(
                   icon,
-                  size: 18,
+                  size: 18.sp,
                   color: isSelected
                       ? (isDark ? Colors.white : primaryColor)
                       : (isDark ? Colors.white60 : const Color(0xFF64748B)),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                   color: isSelected
                       ? (isDark ? Colors.white : primaryColor)
                       : (isDark ? Colors.white70 : const Color(0xFF334155)),
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 sublabel,
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 9.5,
+                  fontSize: 9.5.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   color: isSelected
                       ? (isDark
@@ -780,11 +768,11 @@ class _StorePageState extends State<StorePage> {
           ? const Color(0xFF0B1120)
           : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Pasar Daerah',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 17,
+            fontSize: 17.sp,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.3,
           ),
@@ -796,20 +784,20 @@ class _StorePageState extends State<StorePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.help_outline_rounded,
               color: Colors.white,
-              size: 22,
+              size: 22.sp,
             ),
             tooltip: 'Panduan Halaman',
             onPressed: _replayTour,
           ),
         ],
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.white,
-            size: 18,
+            size: 18.sp,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -873,6 +861,8 @@ class _StorePageState extends State<StorePage> {
                     // Search Input
                     Expanded(
                       child: Showcase(
+                        titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                        descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                         key: _searchKey,
                         title: 'Pencarian & Filter Wilayah',
                         description:
@@ -882,7 +872,7 @@ class _StorePageState extends State<StorePage> {
                           decoration: InputDecoration(
                             hintText: 'Cari produk BUMDes, sembako...',
                             hintStyle: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: isDark ? Colors.white38 : Colors.grey[500],
                             ),
                             prefixIcon: const Icon(Icons.search_rounded),
@@ -899,8 +889,8 @@ class _StorePageState extends State<StorePage> {
                                 ),
                                 if (hasRegionOrSortFilter)
                                   Positioned(
-                                    top: 10,
-                                    right: 10,
+                                    top: 10.h,
+                                    right: 10.w,
                                     child: Container(
                                       width: 8,
                                       height: 8,
@@ -913,7 +903,7 @@ class _StorePageState extends State<StorePage> {
                               ],
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14.r),
                               borderSide: BorderSide(
                                 color: isDark
                                     ? Colors.white10
@@ -921,7 +911,7 @@ class _StorePageState extends State<StorePage> {
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14.r),
                               borderSide: BorderSide(
                                 color: isDark
                                     ? Colors.white10
@@ -929,7 +919,7 @@ class _StorePageState extends State<StorePage> {
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14.r),
                               borderSide: const BorderSide(
                                 color: primaryColor,
                                 width: 1.5,
@@ -937,7 +927,7 @@ class _StorePageState extends State<StorePage> {
                             ),
                             filled: true,
                             fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                            contentPadding: EdgeInsets.symmetric(vertical: 0.h),
                           ),
                           onSubmitted: (value) {
                             setState(() => _searchQuery = value);
@@ -946,7 +936,7 @@ class _StorePageState extends State<StorePage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
 
                     // Favorit Button
                     Container(
@@ -954,7 +944,7 @@ class _StorePageState extends State<StorePage> {
                       width: 48,
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14.r),
                         border: Border.all(
                           color: isDark
                               ? Colors.white10
@@ -973,7 +963,7 @@ class _StorePageState extends State<StorePage> {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14.r),
                           onTap: () {
                             Navigator.push(
                               context,
@@ -987,7 +977,7 @@ class _StorePageState extends State<StorePage> {
                           },
                           child: Icon(
                             Icons.favorite_outline_rounded,
-                            size: 22,
+                            size: 22.sp,
                             color: isDark
                                 ? Colors.white70
                                 : const Color(0xFF64748B),
@@ -995,10 +985,12 @@ class _StorePageState extends State<StorePage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
 
                     // Keranjang Button with Badge
                     Showcase(
+                      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                       key: _cartKey,
                       title: 'Keranjang Belanja',
                       description:
@@ -1008,7 +1000,7 @@ class _StorePageState extends State<StorePage> {
                         width: 48,
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14.r),
                           border: Border.all(
                             color: isDark
                                 ? Colors.white10
@@ -1027,7 +1019,7 @@ class _StorePageState extends State<StorePage> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                             onTap: () async {
                               await Navigator.push(
                                 context,
@@ -1042,17 +1034,17 @@ class _StorePageState extends State<StorePage> {
                               children: [
                                 Icon(
                                   Icons.shopping_cart_outlined,
-                                  size: 22,
+                                  size: 22.sp,
                                   color: isDark
                                       ? Colors.white70
                                       : const Color(0xFF64748B),
                                 ),
                                 if (_cartCount > 0)
                                   Positioned(
-                                    top: 6,
-                                    right: 6,
+                                    top: 6.h,
+                                    right: 6.w,
                                     child: Container(
-                                      padding: const EdgeInsets.all(3.5),
+                                      padding: EdgeInsets.all(3.5.w),
                                       decoration: const BoxDecoration(
                                         color: Colors.redAccent,
                                         shape: BoxShape.circle,
@@ -1063,9 +1055,9 @@ class _StorePageState extends State<StorePage> {
                                       ),
                                       child: Text(
                                         _cartCount > 99 ? '99+' : '$_cartCount',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 9,
+                                          fontSize: 9.sp,
                                           fontWeight: FontWeight.bold,
                                         ),
                                         textAlign: TextAlign.center,
@@ -1094,17 +1086,17 @@ class _StorePageState extends State<StorePage> {
                       children: [
                         if (hasActiveRegionFilter)
                           InputChip(
-                            avatar: const Icon(
+                            avatar: Icon(
                               Icons.location_on_rounded,
-                              size: 14,
+                              size: 14.sp,
                               color: Color(0xFF0284C7),
                             ),
                             label: Text(
                               _selectedDesa != 'Semua Desa'
                                   ? '$_selectedDesa ($_selectedKecamatan)'
                                   : _selectedKecamatan,
-                              style: const TextStyle(
-                                fontSize: 11,
+                              style: TextStyle(
+                                fontSize: 11.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF0284C7),
                               ),
@@ -1126,19 +1118,19 @@ class _StorePageState extends State<StorePage> {
                             },
                           ),
                         if (hasActiveSortFilter) ...[
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6.w),
                           InputChip(
-                            avatar: const Icon(
+                            avatar: Icon(
                               Icons.sort_rounded,
-                              size: 14,
+                              size: 14.sp,
                               color: primaryColor,
                             ),
                             label: Text(
                               _selectedSort == 'price_asc'
                                   ? 'Termurah'
                                   : 'Tertinggi',
-                              style: const TextStyle(
-                                fontSize: 11,
+                              style: TextStyle(
+                                fontSize: 11.sp,
                                 fontWeight: FontWeight.bold,
                                 color: primaryColor,
                               ),
@@ -1164,25 +1156,29 @@ class _StorePageState extends State<StorePage> {
             // 3. Quick Category Horizontal Pills (Specifically for Kategori Produk)
             SliverToBoxAdapter(
               child: Showcase(
+                titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                 key: _categoryKey,
                 title: 'Kategori Produk',
                 description:
                     'Pilih kategori produk BUMDes seperti Hasil Tani, Pangan, Kerajinan, dll.',
                 child: Container(
                   height: 38,
-                  margin: const EdgeInsets.only(top: 4, bottom: 8),
+                  margin: EdgeInsets.only(top: 4.h, bottom: 8.h),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
                     itemCount: _categories.length,
                     separatorBuilder: (context, index) =>
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                     itemBuilder: (context, i) {
                     final cat = _categories[i];
                     final isSelected = _selectedCategory == cat;
                     return ChoiceChip(
                       label: Text(cat),
                       selected: isSelected,
+                      showCheckmark: false,
+                      avatar: null,
                       selectedColor: primaryColor.withValues(alpha: 0.18),
                       backgroundColor: isDark
                           ? const Color(0xFF1E293B)
@@ -1196,7 +1192,10 @@ class _StorePageState extends State<StorePage> {
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.normal,
-                        fontSize: 12,
+                        fontSize: 12.sp,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20.r),
                       ),
                       side: BorderSide(
                         color: isSelected
@@ -1231,26 +1230,26 @@ class _StorePageState extends State<StorePage> {
                     children: [
                       Icon(
                         Icons.storefront_outlined,
-                        size: 70,
+                        size: 70.sp,
                         color: isDark ? Colors.white24 : Colors.grey[300],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         'Belum ada produk',
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 17.sp,
                           fontWeight: FontWeight.bold,
                           color: isDark
                               ? Colors.white
                               : const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       Text(
                         'Produk di kategori atau wilayah ini belum tersedia.',
                         style: TextStyle(
                           color: isDark ? Colors.white54 : Colors.grey[500],
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                         ),
                       ),
                     ],
@@ -1315,7 +1314,7 @@ class _StorePageState extends State<StorePage> {
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
           ),
@@ -1335,8 +1334,8 @@ class _StorePageState extends State<StorePage> {
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16.r),
                     ),
                     child: imageUrl != null
                         ? Image.network(
@@ -1366,31 +1365,31 @@ class _StorePageState extends State<StorePage> {
                   ),
                   // Village Tag
                   Positioned(
-                    top: 6,
-                    left: 6,
+                    top: 6.h,
+                    left: 6.w,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6.w,
+                        vertical: 2.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.store_rounded,
                             color: Colors.white,
-                            size: 10,
+                            size: 10.sp,
                           ),
-                          const SizedBox(width: 3),
+                          SizedBox(width: 3.w),
                           Text(
                             lokasi,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 9,
+                              fontSize: 9.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -1400,8 +1399,8 @@ class _StorePageState extends State<StorePage> {
                   ),
                   // Heart Toggle Button
                   Positioned(
-                    top: 6,
-                    right: 6,
+                    top: 6.h,
+                    right: 6.w,
                     child: GestureDetector(
                       onTap: () async {
                         final isNowFav = await _pasarFavService
@@ -1428,7 +1427,7 @@ class _StorePageState extends State<StorePage> {
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(5),
+                        padding: EdgeInsets.all(5.w),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.45),
                           shape: BoxShape.circle,
@@ -1437,7 +1436,7 @@ class _StorePageState extends State<StorePage> {
                           _favProductIds.contains(productId)
                               ? Icons.favorite_rounded
                               : Icons.favorite_border_rounded,
-                          size: 15,
+                          size: 15.sp,
                           color: _favProductIds.contains(productId)
                               ? Colors.redAccent
                               : Colors.white,
@@ -1450,58 +1449,58 @@ class _StorePageState extends State<StorePage> {
             ),
             // Info Content
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
-                      fontSize: 13,
+                    style: TextStyle(
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: 3.h),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.star_rounded,
-                        size: 13,
+                        size: 13.sp,
                         color: Color(0xFFF59E0B),
                       ),
-                      const SizedBox(width: 2),
+                      SizedBox(width: 2.w),
                       Text(
                         '4.9',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
                           color: isDark
                               ? Colors.white70
                               : const Color(0xFF334155),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Text(
                         '(48)',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 10.sp,
                           color: isDark ? Colors.white38 : Colors.grey[500],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     currencyFormat.format(price),
-                    style: const TextStyle(
-                      fontSize: 13.5,
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF0EA5E9),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   SizedBox(
                     width: double.infinity,
                     height: 32,
@@ -1523,11 +1522,11 @@ class _StorePageState extends State<StorePage> {
                           );
                         }
                       },
-                      icon: const Icon(Icons.add_shopping_cart, size: 14),
-                      label: const Text(
+                      icon: Icon(Icons.add_shopping_cart, size: 14.sp),
+                      label: Text(
                         '+ Keranjang',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1539,7 +1538,7 @@ class _StorePageState extends State<StorePage> {
                         ),
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                         ),
                       ),
                     ),

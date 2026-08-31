@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HelpFaqPage extends StatefulWidget {
   const HelpFaqPage({super.key});
@@ -56,12 +57,12 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Pusat Bantuan & FAQ',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: 17.sp,
             letterSpacing: 0.3,
           ),
         ),
@@ -114,12 +115,12 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
       body: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30.r),
+                bottomRight: Radius.circular(30.r),
               ),
               boxShadow: [
                 BoxShadow(
@@ -132,15 +133,15 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Halo, ada yang bisa kami bantu?',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(15.r),
                   ),
                   child: TextField(
                     onChanged: (val) => setState(() => _searchQuery = val),
@@ -149,9 +150,9 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
                       hintStyle: TextStyle(color: Colors.grey[500]),
                       prefixIcon: const Icon(Icons.search, color: Colors.grey),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 15,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 15.h,
                       ),
                     ),
                   ),
@@ -159,7 +160,7 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Expanded(
             child: filteredFaqs.isEmpty
                 ? Center(
@@ -168,10 +169,10 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
                       children: [
                         Icon(
                           Icons.search_off_rounded,
-                          size: 60,
+                          size: 60.sp,
                           color: Colors.grey[300],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         Text(
                           'Pertanyaan tidak ditemukan',
                           style: TextStyle(color: Colors.grey[500]),
@@ -180,7 +181,7 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     physics: const BouncingScrollPhysics(),
                     itemCount: filteredFaqs.length,
                     itemBuilder: (context, index) {
@@ -189,12 +190,12 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
                           'Hubungi Bantuan Teknis';
 
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: EdgeInsets.only(bottom: 12.h),
                         decoration: BoxDecoration(
                           color: isContactInfo
                               ? Theme.of(context).primaryColor.withAlpha(20)
                               : Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(15.r),
                           border: Border.all(
                             color: isContactInfo
                                 ? Theme.of(context).primaryColor.withAlpha(50)
@@ -224,7 +225,7 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
                               filteredFaqs[index]['question']!,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 15.sp,
                                 color: isContactInfo
                                     ? Theme.of(context).primaryColor
                                     : null,
@@ -243,7 +244,7 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
                                   style: TextStyle(
                                     height: 1.5,
                                     color: Colors.grey[700],
-                                    fontSize: 14,
+                                    fontSize: 14.sp,
                                   ),
                                 ),
                               ),

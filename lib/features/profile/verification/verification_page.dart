@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/camera_recording_page.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/ktp_camera_scanner_page.dart';
@@ -174,12 +175,12 @@ class _VerificationPageState extends State<VerificationPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Lengkapi Data Diri (e-KYC)',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: 17.sp,
             letterSpacing: 0.3,
           ),
         ),
@@ -246,11 +247,11 @@ class _VerificationPageState extends State<VerificationPage> {
         children: [
           if (_ktpPath != null) ...[
             ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: const Color(0xFF2563EB), width: 2),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Image.file(
                   File(_ktpPath!),
@@ -260,18 +261,18 @@ class _VerificationPageState extends State<VerificationPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
           ],
           const CircularProgressIndicator(color: Color(0xFF2563EB)),
-          const SizedBox(height: 18),
-          const Text(
+          SizedBox(height: 18.h),
+          Text(
             'Membaca Data e-KTP (OCR)...',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 4),
-          const Text(
+          SizedBox(height: 4.h),
+          Text(
             'Mengekstrak NIK, Nama, dan Alamat secara otomatis',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey),
           ),
         ],
       ),
@@ -283,13 +284,13 @@ class _VerificationPageState extends State<VerificationPage> {
     final primaryColor = const Color(0xFF0EA5E9);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+      padding: EdgeInsets.symmetric(horizontal: 20.0.w, vertical: 16.0.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Banner / Instruksi Atas
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
@@ -298,7 +299,7 @@ class _VerificationPageState extends State<VerificationPage> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: isDark ? Colors.white12 : const Color(0xFFBAE6FD),
               ),
@@ -306,7 +307,7 @@ class _VerificationPageState extends State<VerificationPage> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
                     color: primaryColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
@@ -314,10 +315,10 @@ class _VerificationPageState extends State<VerificationPage> {
                   child: Icon(
                     Icons.document_scanner_rounded,
                     color: primaryColor,
-                    size: 24,
+                    size: 24.sp,
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,17 +327,17 @@ class _VerificationPageState extends State<VerificationPage> {
                         'Pindai e-KTP Asli',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14.5,
+                          fontSize: 14.5.sp,
                           color: isDark
                               ? Colors.white
                               : const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3.h),
                       Text(
                         'Posisikan e-KTP Anda di dalam bingkai kamera untuk verifikasi data otomatis.',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: isDark
                               ? Colors.white70
                               : const Color(0xFF64748B),
@@ -350,7 +351,7 @@ class _VerificationPageState extends State<VerificationPage> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           // Interactive KTP Scanner Preview Card
           GestureDetector(
@@ -360,7 +361,7 @@ class _VerificationPageState extends State<VerificationPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(
                     color: primaryColor.withValues(alpha: isDark ? 0.6 : 0.8),
                     width: 1.5,
@@ -379,8 +380,8 @@ class _VerificationPageState extends State<VerificationPage> {
                   children: [
                     // Corner HUD Brackets
                     Positioned(
-                      top: 14,
-                      left: 14,
+                      top: 14.h,
+                      left: 14.w,
                       child: Container(
                         width: 22,
                         height: 22,
@@ -393,8 +394,8 @@ class _VerificationPageState extends State<VerificationPage> {
                       ),
                     ),
                     Positioned(
-                      top: 14,
-                      right: 14,
+                      top: 14.h,
+                      right: 14.w,
                       child: Container(
                         width: 22,
                         height: 22,
@@ -407,8 +408,8 @@ class _VerificationPageState extends State<VerificationPage> {
                       ),
                     ),
                     Positioned(
-                      bottom: 14,
-                      left: 14,
+                      bottom: 14.h,
+                      left: 14.w,
                       child: Container(
                         width: 22,
                         height: 22,
@@ -421,8 +422,8 @@ class _VerificationPageState extends State<VerificationPage> {
                       ),
                     ),
                     Positioned(
-                      bottom: 14,
-                      right: 14,
+                      bottom: 14.h,
+                      right: 14.w,
                       child: Container(
                         width: 22,
                         height: 22,
@@ -441,7 +442,7 @@ class _VerificationPageState extends State<VerificationPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(16.w),
                             decoration: BoxDecoration(
                               color: primaryColor.withValues(alpha: 0.12),
                               shape: BoxShape.circle,
@@ -449,25 +450,25 @@ class _VerificationPageState extends State<VerificationPage> {
                             child: Icon(
                               Icons.camera_enhance_rounded,
                               color: primaryColor,
-                              size: 38,
+                              size: 38.sp,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12.h),
                           Text(
                             'Ketuk untuk Membuka Kamera',
                             style: TextStyle(
-                              fontSize: 13.5,
+                              fontSize: 13.5.sp,
                               fontWeight: FontWeight.bold,
                               color: isDark
                                   ? Colors.white
                                   : const Color(0xFF1E293B),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             'Mendukung deteksi NIK & Nama otomatis',
                             style: TextStyle(
-                              fontSize: 11.5,
+                              fontSize: 11.5.sp,
                               color: isDark
                                   ? Colors.white60
                                   : const Color(0xFF64748B),
@@ -482,7 +483,7 @@ class _VerificationPageState extends State<VerificationPage> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           // Action Buttons
           SizedBox(
@@ -490,23 +491,23 @@ class _VerificationPageState extends State<VerificationPage> {
             height: 48,
             child: ElevatedButton.icon(
               onPressed: _scanKtp,
-              icon: const Icon(Icons.camera_alt_rounded, size: 18),
-              label: const Text(
+              icon: Icon(Icons.camera_alt_rounded, size: 18.sp),
+              label: Text(
                 'Buka Scanner e-KTP',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.sp),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 elevation: 0,
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
 
           SizedBox(
             width: double.infinity,
@@ -515,14 +516,14 @@ class _VerificationPageState extends State<VerificationPage> {
               onPressed: _pickKtpFromGallery,
               icon: Icon(
                 Icons.photo_library_outlined,
-                size: 18,
+                size: 18.sp,
                 color: isDark ? Colors.white70 : const Color(0xFF475569),
               ),
               label: Text(
                 'Unggah Foto KTP dari Galeri',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 13.5,
+                  fontSize: 13.5.sp,
                   color: isDark ? Colors.white70 : const Color(0xFF475569),
                 ),
               ),
@@ -531,20 +532,20 @@ class _VerificationPageState extends State<VerificationPage> {
                   color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           // Tips & Ketentuan Card
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
               ),
@@ -557,26 +558,26 @@ class _VerificationPageState extends State<VerificationPage> {
                     Icon(
                       Icons.lightbulb_outline_rounded,
                       color: Colors.amber[700],
-                      size: 18,
+                      size: 18.sp,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       'Panduan Pemindaian e-KTP:',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: isDark ? Colors.white : const Color(0xFF1E293B),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 _buildTipRow('Gunakan e-KTP fisik asli (bukan fotokopi).'),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 _buildTipRow(
                   'Pastikan seluruh bagian KTP masuk ke dalam bingkai.',
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 _buildTipRow(
                   'Pastikan tulisan NIK & Nama jelas serta tidak terkena pantulan cahaya.',
                 ),
@@ -595,15 +596,15 @@ class _VerificationPageState extends State<VerificationPage> {
       children: [
         Icon(
           Icons.check_circle_outline_rounded,
-          size: 15,
+          size: 15.sp,
           color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Expanded(
           child: Text(
             tip,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: isDark ? Colors.white70 : const Color(0xFF64748B),
               height: 1.35,
             ),
@@ -615,22 +616,22 @@ class _VerificationPageState extends State<VerificationPage> {
 
   Widget _buildFormState() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(24.0.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Banner/Header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: Colors.green.withAlpha(20),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(15.r),
               border: Border.all(color: Colors.green.withAlpha(50)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 40),
-                const SizedBox(width: 16),
+                Icon(Icons.check_circle, color: Colors.green, size: 40.sp),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -642,11 +643,11 @@ class _VerificationPageState extends State<VerificationPage> {
                           color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         'Silakan periksa kembali dan lengkapi data yang belum terisi sebelum lanjut verifikasi wajah.',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Theme.of(
                             context,
                           ).textTheme.bodyMedium?.color?.withAlpha(180),
@@ -659,7 +660,7 @@ class _VerificationPageState extends State<VerificationPage> {
             ),
           ),
 
-          const SizedBox(height: 30),
+          SizedBox(height: 30.h),
 
           _buildTextField(
             controller: _nameController,
@@ -676,7 +677,7 @@ class _VerificationPageState extends State<VerificationPage> {
 
           // Kecamatan Dropdown
           Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: 16.h),
             child: DropdownButtonFormField<String>(
               isExpanded: true,
               initialValue: _selectedKecamatanId,
@@ -693,7 +694,7 @@ class _VerificationPageState extends State<VerificationPage> {
                     ? const Color(0xFF1E1E1E)
                     : Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(15.r),
                   borderSide: BorderSide(
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.grey[800]!
@@ -701,7 +702,7 @@ class _VerificationPageState extends State<VerificationPage> {
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(15.r),
                   borderSide: BorderSide(
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.grey[800]!
@@ -731,7 +732,7 @@ class _VerificationPageState extends State<VerificationPage> {
 
           // Desa Dropdown
           Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: 16.h),
             child: DropdownButtonFormField<String>(
               isExpanded: true,
               initialValue: _selectedDesa,
@@ -748,7 +749,7 @@ class _VerificationPageState extends State<VerificationPage> {
                     ? const Color(0xFF1E1E1E)
                     : Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(15.r),
                   borderSide: BorderSide(
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.grey[800]!
@@ -756,7 +757,7 @@ class _VerificationPageState extends State<VerificationPage> {
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(15.r),
                   borderSide: BorderSide(
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.grey[800]!
@@ -792,7 +793,7 @@ class _VerificationPageState extends State<VerificationPage> {
             icon: Icons.home_outlined,
           ),
 
-          const SizedBox(height: 30),
+          SizedBox(height: 30.h),
           ElevatedButton.icon(
             onPressed: _proceedToCamera,
             icon: const Icon(Icons.face),
@@ -801,9 +802,9 @@ class _VerificationPageState extends State<VerificationPage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(15.r),
               ),
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
@@ -822,7 +823,7 @@ class _VerificationPageState extends State<VerificationPage> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16.h),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
@@ -834,20 +835,20 @@ class _VerificationPageState extends State<VerificationPage> {
           filled: true,
           fillColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(15.r),
             borderSide: BorderSide(
               color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
             ),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(15.r),
             borderSide: BorderSide(
               color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
             ),
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 16,
-            horizontal: 20,
+          contentPadding: EdgeInsets.symmetric(
+            vertical: 16.h,
+            horizontal: 20.w,
           ),
         ),
       ),

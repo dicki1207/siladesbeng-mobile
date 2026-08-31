@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/ktp_camera_scanner_page.dart';
 import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
@@ -265,10 +266,10 @@ class _PartnershipRegistrationPageState
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: AppBar(
-          title: const Text(
+          title: Text(
             'Pengajuan Kemitraan Desa',
             style: TextStyle(
-              fontSize: 16.5,
+              fontSize: 16.5.sp,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.3,
@@ -330,11 +331,11 @@ class _PartnershipRegistrationPageState
                 children: [
                   // 1. KTP Auto Scan Card
                   _buildKtpAutoFillCard(isDark),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // 2. Status Wilayah Banner
                   if (_selectedDesaData != null) _buildAdminDesaStatusCard(isDark),
-                  if (_selectedDesaData != null) const SizedBox(height: 16),
+                  if (_selectedDesaData != null) SizedBox(height: 16.h),
 
                   // 3. Form Section 1: Informasi Wilayah
                   _buildSectionCard(
@@ -350,7 +351,7 @@ class _PartnershipRegistrationPageState
                         icon: Icons.account_balance_rounded,
                         isDark: isDark,
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
 
                       // Dropdown Kecamatan
                       _buildDropdownField(
@@ -366,7 +367,7 @@ class _PartnershipRegistrationPageState
                         onChanged: _onKecamatanChanged,
                         isDark: isDark,
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
 
                       // Dropdown Desa / Kelurahan
                       _buildDropdownField(
@@ -388,20 +389,20 @@ class _PartnershipRegistrationPageState
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 6.w,
+                                    vertical: 2.h,
                                   ),
                                   decoration: BoxDecoration(
                                     color: hasAdmin
                                         ? const Color(0xFF10B981).withAlpha(25)
                                         : Colors.grey.withAlpha(25),
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(6.r),
                                   ),
                                   child: Text(
                                     hasAdmin ? 'Sudah Bermitra' : 'Belum Terdaftar',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 10.sp,
                                       fontWeight: FontWeight.bold,
                                       color: hasAdmin
                                           ? const Color(0xFF10B981)
@@ -418,7 +419,7 @@ class _PartnershipRegistrationPageState
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // 4. Form Section 2: Data Pemohon
                   _buildSectionCard(
@@ -436,7 +437,7 @@ class _PartnershipRegistrationPageState
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Nama penanggung jawab wajib diisi' : null,
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       _buildTextFormField(
                         controller: _nikController,
                         label: 'Nomor Induk Kependudukan (NIK)',
@@ -450,7 +451,7 @@ class _PartnershipRegistrationPageState
                           return null;
                         },
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       _buildTextFormField(
                         controller: _jabatanController,
                         label: 'Jabatan / Posisi di Desa',
@@ -460,7 +461,7 @@ class _PartnershipRegistrationPageState
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Jabatan wajib diisi' : null,
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       _buildTextFormField(
                         controller: _noHpController,
                         label: 'Nomor WhatsApp Aktif',
@@ -471,7 +472,7 @@ class _PartnershipRegistrationPageState
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Nomor WhatsApp wajib diisi' : null,
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       _buildTextFormField(
                         controller: _emailController,
                         label: 'Email Kontak Resmi',
@@ -487,7 +488,7 @@ class _PartnershipRegistrationPageState
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // 5. Form Section 3: Unggah Dokumen Legalitas
                   _buildSectionCard(
@@ -499,20 +500,20 @@ class _PartnershipRegistrationPageState
                       Text(
                         'Unggah SK Pengangkatan Kepala Desa, SK Pendirian BUMDes, atau Surat Tugas resmi pemerintahan desa (PDF/JPG maks 5MB).',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: isDark ? Colors.white60 : Colors.grey[600],
                           height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       InkWell(
                         onTap: _pickFile,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                         child: Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
                             color: isDark ? Colors.white.withAlpha(5) : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
                               color: _filePath != null
                                   ? const Color(0xFF10B981)
@@ -523,7 +524,7 @@ class _PartnershipRegistrationPageState
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(10),
+                                padding: EdgeInsets.all(10.w),
                                 decoration: BoxDecoration(
                                   color: _filePath != null
                                       ? const Color(0xFF10B981).withAlpha(25)
@@ -537,10 +538,10 @@ class _PartnershipRegistrationPageState
                                   color: _filePath != null
                                       ? const Color(0xFF10B981)
                                       : primaryBlue,
-                                  size: 22,
+                                  size: 22.sp,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12.w),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,7 +549,7 @@ class _PartnershipRegistrationPageState
                                     Text(
                                       _fileName ?? 'Pilih Dokumen SK / Surat Tugas',
                                       style: TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 13.sp,
                                         fontWeight: FontWeight.bold,
                                         color: _filePath != null
                                             ? const Color(0xFF10B981)
@@ -557,13 +558,13 @@ class _PartnershipRegistrationPageState
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 2),
+                                    SizedBox(height: 2.h),
                                     Text(
                                       _filePath != null
                                           ? 'Dokumen siap diunggah'
                                           : 'Format: PDF, PNG, JPG (Maks. 5MB)',
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 11.sp,
                                         color: isDark ? Colors.white38 : Colors.grey[500],
                                       ),
                                     ),
@@ -574,7 +575,7 @@ class _PartnershipRegistrationPageState
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       _buildTextFormField(
                         controller: _pesanController,
                         label: 'Catatan / Pesan Pengajuan (Opsional)',
@@ -596,7 +597,7 @@ class _PartnershipRegistrationPageState
     const Color primaryBlue = Color(0xFF2FA2F1);
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
@@ -605,7 +606,7 @@ class _PartnershipRegistrationPageState
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: primaryBlue.withAlpha(60),
         ),
@@ -613,18 +614,18 @@ class _PartnershipRegistrationPageState
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
               color: primaryBlue.withAlpha(25),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.document_scanner_rounded,
               color: primaryBlue,
-              size: 22,
+              size: 22.sp,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,36 +633,36 @@ class _PartnershipRegistrationPageState
                 Text(
                   'Pindai KTP (Isi Otomatis)',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : const Color(0xFF1E293B),
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   'Pindai e-KTP untuk mengisi Nama, NIK & Wilayah otomatis',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: isDark ? Colors.white60 : Colors.grey[600],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           ElevatedButton(
             onPressed: _isScanningKtp ? null : _scanKtpForAutofill,
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryBlue,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               elevation: 0,
             ),
             child: _isScanningKtp
-                ? const SizedBox(
+                ? SizedBox(
                     width: 14,
                     height: 14,
                     child: CircularProgressIndicator(
@@ -669,9 +670,9 @@ class _PartnershipRegistrationPageState
                       color: Colors.white,
                     ),
                   )
-                : const Text(
+                : Text(
                     'Pindai',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
                   ),
           ),
         ],
@@ -685,21 +686,21 @@ class _PartnershipRegistrationPageState
 
     if (hasAdmin) {
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: const Color(0xFF10B981).withAlpha(15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF10B981).withAlpha(40)),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Color(0xFF10B981).withAlpha(40)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.verified_rounded, color: Color(0xFF10B981), size: 20),
-            const SizedBox(width: 10),
+            Icon(Icons.verified_rounded, color: Color(0xFF10B981), size: 20.sp),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 '$desaName sudah memiliki akun kemitraan aktif di SilaDesBeng.',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: isDark ? Colors.white70 : const Color(0xFF047857),
                 ),
               ),
@@ -710,21 +711,21 @@ class _PartnershipRegistrationPageState
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: const Color(0xFF2FA2F1).withAlpha(15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2FA2F1).withAlpha(40)),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Color(0xFF2FA2F1).withAlpha(40)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline_rounded, color: Color(0xFF2FA2F1), size: 20),
-          const SizedBox(width: 10),
+          Icon(Icons.info_outline_rounded, color: Color(0xFF2FA2F1), size: 20.sp),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               'Permohonan kemitraan $desaName akan langsung diverifikasi oleh Admin Kabupaten Bengkalis.',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: isDark ? Colors.white70 : const Color(0xFF0284C7),
               ),
             ),
@@ -742,10 +743,10 @@ class _PartnershipRegistrationPageState
     required List<Widget> children,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark ? Colors.white10 : Colors.grey.shade200,
         ),
@@ -763,19 +764,19 @@ class _PartnershipRegistrationPageState
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: EdgeInsets.all(6.w),
                 decoration: BoxDecoration(
                   color: iconColor.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: Icon(icon, color: iconColor, size: 18),
+                child: Icon(icon, color: iconColor, size: 18.sp),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : const Color(0xFF1E293B),
                   ),
@@ -783,7 +784,7 @@ class _PartnershipRegistrationPageState
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           ...children,
         ],
       ),
@@ -802,30 +803,30 @@ class _PartnershipRegistrationPageState
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w600,
             color: isDark ? Colors.white70 : const Color(0xFF334155),
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: isDark ? Colors.white.withAlpha(8) : const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: isDark ? Colors.white12 : Colors.grey.shade300,
             ),
           ),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF2FA2F1), size: 18),
-              const SizedBox(width: 10),
+              Icon(icon, color: const Color(0xFF2FA2F1), size: 18.sp),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   value,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
@@ -852,17 +853,17 @@ class _PartnershipRegistrationPageState
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w600,
             color: isDark ? Colors.white70 : Colors.grey[700],
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0F172A) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: isDark ? Colors.white12 : Colors.grey.shade300,
             ),
@@ -874,7 +875,7 @@ class _PartnershipRegistrationPageState
               hint: Text(
                 hint,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   color: isDark ? Colors.white38 : Colors.grey[500],
                 ),
               ),
@@ -905,18 +906,18 @@ class _PartnershipRegistrationPageState
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w600,
             color: isDark ? Colors.white70 : Colors.grey[700],
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 13.sp,
             color: isDark ? Colors.white : const Color(0xFF0F172A),
           ),
           onChanged: onChanged,
@@ -924,28 +925,28 @@ class _PartnershipRegistrationPageState
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               color: isDark ? Colors.white38 : Colors.grey[400],
             ),
-            prefixIcon: Icon(icon, size: 18, color: const Color(0xFF2FA2F1)),
+            prefixIcon: Icon(icon, size: 18.sp, color: const Color(0xFF2FA2F1)),
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
             filled: true,
             fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: isDark ? Colors.white12 : Colors.grey.shade300,
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: isDark ? Colors.white12 : Colors.grey.shade300,
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Color(0xFF2FA2F1), width: 1.5),
             ),
           ),
@@ -956,10 +957,10 @@ class _PartnershipRegistrationPageState
 
   Widget _buildBottomSubmitBar(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(20),
@@ -979,12 +980,12 @@ class _PartnershipRegistrationPageState
               disabledBackgroundColor: Colors.grey.shade400,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
               ),
               elevation: 0,
             ),
             child: _isSubmitting
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
@@ -992,9 +993,9 @@ class _PartnershipRegistrationPageState
                       color: Colors.white,
                     ),
                   )
-                : const Text(
+                : Text(
                     'Kirim Pengajuan Kemitraan Desa',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.bold),
                   ),
           ),
         ),

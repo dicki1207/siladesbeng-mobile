@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -82,7 +83,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Row(
           children: [
             SizedBox(
@@ -90,7 +91,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
               height: 18,
               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
             ),
-            SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Text('Sedang membuat gambar Bukti Transaksi (PNG)...'),
           ],
         ),
@@ -164,22 +165,22 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
         elevation: 0,
         leading: IconButton(
           icon: Container(
-            padding: const EdgeInsets.all(6),
+            padding: EdgeInsets.all(6.w),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(isDark ? 25 : 35),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_ios_new_rounded,
               color: Colors.white,
-              size: 16,
+              size: 16.sp,
             ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Bukti Transaksi',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.3),
+          style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.3),
         ),
         centerTitle: true,
         flexibleSpace: Container(
@@ -246,7 +247,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -256,7 +257,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white, // Always pure white paper for export
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(
                       color: const Color(0xFFE2E8F0),
                       width: 1.2,
@@ -270,7 +271,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     child: Stack(
                       children: [
                         // Watermark Logo SiladesBeng di tengah halaman
@@ -291,7 +292,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
 
                         // Content
                         Padding(
-                          padding: const EdgeInsets.all(22.0),
+                          padding: EdgeInsets.all(22.0.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
@@ -305,13 +306,13 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     width: 44,
                                     fit: BoxFit.contain,
                                     errorBuilder: (context, error, stackTrace) =>
-                                        const Icon(Icons.business_rounded, size: 44, color: Color(0xFF2563EB)),
+                                        Icon(Icons.business_rounded, size: 44.sp, color: Color(0xFF2563EB)),
                                   ),
-                                  const SizedBox(width: 10),
-                                  const Text(
+                                  SizedBox(width: 10.w),
+                                  Text(
                                     'SiladesBeng',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 18.sp,
                                       fontWeight: FontWeight.w900,
                                       color: Color(0xFF0F172A),
                                       letterSpacing: -0.2,
@@ -321,19 +322,19 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Bukti Transaksi',
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 16.sp,
                                           fontWeight: FontWeight.w900,
                                           color: Color(0xFF2563EB),
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
+                                      SizedBox(height: 2.h),
                                       Text(
                                         _receiptSubtitle,
-                                        style: const TextStyle(
-                                          fontSize: 11.5,
+                                        style: TextStyle(
+                                          fontSize: 11.5.sp,
                                           fontWeight: FontWeight.w600,
                                           color: Color(0xFF64748B),
                                         ),
@@ -343,9 +344,9 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                 ],
                               ),
 
-                              const SizedBox(height: 14),
+                              SizedBox(height: 14.h),
                               const Divider(thickness: 1.2, color: Color(0xFF0F172A)),
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10.h),
 
                               // ===== 2. INFORMASI PESANAN =====
                               _buildReceiptRow('No. Pesanan', widget.orderNumber, isBold: true),
@@ -353,20 +354,20 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                               _buildReceiptRow('Nama Akun Pemesan', widget.accountName),
                               _buildReceiptRow('NIK', '-'),
 
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               const Divider(thickness: 1, color: Color(0xFFE2E8F0)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
 
                               // ===== 3. INFORMASI PENGIRIMAN =====
-                              const Text(
+                              Text(
                                 'Informasi Pengiriman',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: Color(0xFF0F172A),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               _buildReceiptRow('Nama Penerima', widget.recipientName.isNotEmpty ? widget.recipientName : widget.accountName),
                               _buildReceiptRow('No. Handphone', '-'),
                               _buildReceiptRow('Alamat', widget.address.isNotEmpty ? widget.address : '-'),
@@ -374,43 +375,43 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                               if (widget.rentalPurpose != null && widget.rentalPurpose!.isNotEmpty)
                                 _buildReceiptRow('Tujuan / Kegiatan', widget.rentalPurpose!),
 
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               const Divider(thickness: 1, color: Color(0xFFE2E8F0)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
 
                               // ===== 4. INFORMASI PEMBAYARAN =====
-                              const Text(
+                              Text(
                                 'Informasi Pembayaran',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: Color(0xFF0F172A),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               _buildReceiptRow(
                                 'Metode Pembayaran',
                                 widget.paymentMethod.toUpperCase().replaceAll('_', ' '),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
+                                padding: EdgeInsets.only(bottom: 8.h),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const SizedBox(
+                                    SizedBox(
                                       width: 140,
                                       child: Text(
                                         'Status Pesanan',
-                                        style: TextStyle(fontSize: 12.5, color: Color(0xFF0F172A)),
+                                        style: TextStyle(fontSize: 12.5.sp, color: Color(0xFF0F172A)),
                                       ),
                                     ),
-                                    const Text(':', style: TextStyle(fontSize: 12.5, color: Color(0xFF0F172A))),
-                                    const SizedBox(width: 8),
+                                    Text(':', style: TextStyle(fontSize: 12.5.sp, color: Color(0xFF0F172A))),
+                                    SizedBox(width: 8.w),
                                     Expanded(
                                       child: Text(
                                         ': ${widget.status.toUpperCase()}',
-                                        style: const TextStyle(
-                                          fontSize: 12.5,
+                                        style: TextStyle(
+                                          fontSize: 12.5.sp,
                                           fontWeight: FontWeight.w900,
                                           color: Color(0xFF10B981), // Green confirmed badge
                                         ),
@@ -420,29 +421,29 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                 ),
                               ),
 
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               const Divider(thickness: 1, color: Color(0xFFE2E8F0)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
 
                               // ===== 5. DETAIL PESANAN (TABEL) =====
-                              const Text(
+                              Text(
                                 'Detail Pesanan',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: Color(0xFF0F172A),
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10.h),
 
                               // Table Header
-                              const Row(
+                              Row(
                                 children: [
                                   Expanded(
                                     flex: 5,
                                     child: Text(
                                       'Nama Produk',
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, color: Color(0xFF0F172A)),
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5.sp, color: Color(0xFF0F172A)),
                                     ),
                                   ),
                                   Expanded(
@@ -450,7 +451,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     child: Text(
                                       'Jumlah',
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, color: Color(0xFF0F172A)),
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5.sp, color: Color(0xFF0F172A)),
                                     ),
                                   ),
                                   Expanded(
@@ -458,7 +459,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     child: Text(
                                       'Harga Satuan',
                                       textAlign: TextAlign.right,
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, color: Color(0xFF0F172A)),
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5.sp, color: Color(0xFF0F172A)),
                                     ),
                                   ),
                                   Expanded(
@@ -466,14 +467,14 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     child: Text(
                                       'Total',
                                       textAlign: TextAlign.right,
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, color: Color(0xFF0F172A)),
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5.sp, color: Color(0xFF0F172A)),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4.h),
                               const Divider(thickness: 1, color: Color(0xFF0F172A)),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6.h),
 
                               // Table Row Item
                               Row(
@@ -483,7 +484,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     flex: 5,
                                     child: Text(
                                       widget.itemName,
-                                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF0F172A)),
+                                      style: TextStyle(fontSize: 11.5.sp, color: Color(0xFF0F172A)),
                                     ),
                                   ),
                                   Expanded(
@@ -491,7 +492,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     child: Text(
                                       '${widget.qty}',
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF0F172A)),
+                                      style: TextStyle(fontSize: 11.5.sp, color: Color(0xFF0F172A)),
                                     ),
                                   ),
                                   Expanded(
@@ -499,7 +500,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     child: Text(
                                       widget.pricePerItem,
                                       textAlign: TextAlign.right,
-                                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF0F172A)),
+                                      style: TextStyle(fontSize: 11.5.sp, color: Color(0xFF0F172A)),
                                     ),
                                   ),
                                   Expanded(
@@ -507,8 +508,8 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     child: Text(
                                       widget.totalPayment,
                                       textAlign: TextAlign.right,
-                                      style: const TextStyle(
-                                        fontSize: 11.5,
+                                      style: TextStyle(
+                                        fontSize: 11.5.sp,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFF0F172A),
                                       ),
@@ -517,43 +518,43 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                 ],
                               ),
 
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               const Divider(thickness: 1, color: Color(0xFF0F172A)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
 
                               // Subtotal Box
                               Padding(
-                                padding: const EdgeInsets.only(left: 80),
+                                padding: EdgeInsets.only(left: 80.w),
                                 child: Column(
                                   children: [
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text('Total Harga Produk', style: TextStyle(fontSize: 12, color: Color(0xFF475569))),
-                                        Text(widget.totalPayment, style: const TextStyle(fontSize: 12, color: Color(0xFF0F172A))),
+                                        Text('Total Harga Produk', style: TextStyle(fontSize: 12.sp, color: Color(0xFF475569))),
+                                        Text(widget.totalPayment, style: TextStyle(fontSize: 12.sp, color: Color(0xFF0F172A))),
                                       ],
                                     ),
-                                    const SizedBox(height: 4),
-                                    const Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('Ongkos Kirim', style: TextStyle(fontSize: 12, color: Color(0xFF475569))),
-                                        Text('Rp. 0', style: TextStyle(fontSize: 12, color: Color(0xFF0F172A))),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: 4.h),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text(
+                                        Text('Ongkos Kirim', style: TextStyle(fontSize: 12.sp, color: Color(0xFF475569))),
+                                        Text('Rp. 0', style: TextStyle(fontSize: 12.sp, color: Color(0xFF0F172A))),
+                                      ],
+                                    ),
+                                    SizedBox(height: 6.h),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
                                           'Total Pembayaran',
-                                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF0F172A)),
+                                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.sp, color: Color(0xFF0F172A)),
                                         ),
                                         Text(
                                           widget.totalPayment,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.w900,
-                                            fontSize: 14,
+                                            fontSize: 14.sp,
                                             color: Color(0xFF0F172A),
                                           ),
                                         ),
@@ -563,7 +564,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                 ),
                               ),
 
-                              const SizedBox(height: 24),
+                              SizedBox(height: 24.h),
 
                               // ===== 6. SIGNATURE & QR CODE SECTION =====
                               Row(
@@ -574,39 +575,39 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                     children: [
                                       Text(
                                         'Bengkalis, ${widget.orderTime.split(' ').take(3).join(' ')}',
-                                        style: const TextStyle(
-                                          fontSize: 11,
+                                        style: TextStyle(
+                                          fontSize: 11.sp,
                                           fontWeight: FontWeight.w800,
                                           color: Color(0xFF0F172A),
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
-                                      const Text(
+                                      SizedBox(height: 2.h),
+                                      Text(
                                         'Hormat Kami',
-                                        style: TextStyle(fontSize: 11, color: Color(0xFF475569)),
+                                        style: TextStyle(fontSize: 11.sp, color: Color(0xFF475569)),
                                       ),
                                     ],
                                   ),
                                 ],
                               ),
 
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10.h),
 
                               // Centered QR Code
                               Center(
                                 child: Column(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.all(8),
+                                      padding: EdgeInsets.all(8.w),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12.r),
                                         border: Border.all(color: const Color(0xFFCBD5E1)),
                                       ),
                                       child: QrImageView(
                                         data: widget.orderNumber,
                                         version: QrVersions.auto,
-                                        size: 110.0,
+                                        size: 110.0.sp,
                                         backgroundColor: Colors.white,
                                         embeddedImage: const AssetImage('logodomain.png'),
                                         embeddedImageStyle: const QrEmbeddedImageStyle(
@@ -614,25 +615,25 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    const Row(
+                                    SizedBox(height: 8.h),
+                                    Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           'SiladesBeng',
                                           style: TextStyle(
-                                            fontSize: 13,
+                                            fontSize: 13.sp,
                                             fontWeight: FontWeight.w900,
                                             color: Color(0xFF0F172A),
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 2),
-                                    const Text(
+                                    SizedBox(height: 2.h),
+                                    Text(
                                       'Platform E-Government Kab. Bengkalis',
                                       style: TextStyle(
-                                        fontSize: 10.5,
+                                        fontSize: 10.5.sp,
                                         color: Color(0xFF64748B),
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -641,17 +642,17 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                 ),
                               ),
 
-                              const SizedBox(height: 16),
+                              SizedBox(height: 16.h),
                               const Divider(thickness: 1.2, color: Color(0xFF0F172A)),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6.h),
 
                               // Footer tagline
-                              const Center(
+                              Center(
                                 child: Text(
                                   'SiladesBeng - Sistem Sinergi Layanan dan Aspirasi Desa di Kabupaten Bengkalis',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 9.5,
+                                    fontSize: 9.5.sp,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF0F172A),
                                   ),
@@ -666,7 +667,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
 
               // ===== TOMBOL UNDUH GAMBAR PNG BUKTI TRANSAKSI =====
               SizedBox(
@@ -675,21 +676,21 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                 child: ElevatedButton.icon(
                   onPressed: _isGeneratingImage ? null : () => _generateAndDownloadPng(),
                   icon: _isGeneratingImage
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
-                      : const Icon(Icons.image_outlined, size: 20),
+                      : Icon(Icons.image_outlined, size: 20.sp),
                   label: Text(
                     _isGeneratingImage ? 'Menyiapkan Gambar...' : 'Unduh Bukti Transaksi (PNG)',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5.sp),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                     ),
                     elevation: 2,
                     shadowColor: const Color(0xFF2563EB).withAlpha(100),
@@ -702,7 +703,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                   widget.type == 'Sewa Mobil' ||
                   widget.type == 'Ambulans')
                 Padding(
-                  padding: const EdgeInsets.only(top: 12),
+                  padding: EdgeInsets.only(top: 12.h),
                   child: SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -719,16 +720,16 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.local_shipping_outlined, size: 20),
+                      icon: Icon(Icons.local_shipping_outlined, size: 20.sp),
                       label: Text(
                         widget.type == 'Ambulans' ? 'Lacak Posisi Ambulans' : 'Lacak Pengantaran',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5.sp),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange[800],
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
                         elevation: 2,
                       ),
@@ -736,7 +737,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                   ),
                 ),
 
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
             ],
           ),
         ),
@@ -746,7 +747,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
 
   Widget _buildReceiptRow(String label, String value, {bool isBold = false}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -754,16 +755,16 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
             width: 140,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 12.5, color: Color(0xFF0F172A)),
+              style: TextStyle(fontSize: 12.5.sp, color: Color(0xFF0F172A)),
             ),
           ),
-          const Text(':', style: TextStyle(fontSize: 12.5, color: Color(0xFF0F172A))),
-          const SizedBox(width: 8),
+          Text(':', style: TextStyle(fontSize: 12.5.sp, color: Color(0xFF0F172A))),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
               value,
               style: TextStyle(
-                fontSize: 12.5,
+                fontSize: 12.5.sp,
                 fontWeight: isBold ? FontWeight.w800 : FontWeight.w500,
                 color: const Color(0xFF0F172A),
               ),

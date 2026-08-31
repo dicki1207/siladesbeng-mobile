@@ -313,6 +313,11 @@ class _GiveReviewDialogState extends State<GiveReviewDialog> {
                 return FilterChip(
                   label: Text(tag),
                   selected: isSelected,
+                  showCheckmark: false,
+                  avatar: null,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   selectedColor: const Color(
                     0xFFF59E0B,
                   ).withValues(alpha: 0.18),

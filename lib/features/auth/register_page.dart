@@ -40,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoadingRegions = true);
     try {
       final res = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/kemitraan/regions'),
+        Uri.parse('http://10.121.197.148:8000/api/kemitraan/regions'),
       );
       final data = json.decode(res.body);
       if (data['status'] == 'success') {
@@ -61,7 +61,7 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse('http://10.250.3.148:8000/api/register');
+      final url = Uri.parse('http://10.121.197.148:8000/api/register');
       final body = {
         'email': _emailController.text,
         'password': _passwordController.text,
@@ -194,7 +194,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           try {
                             final res = await http.post(
                               Uri.parse(
-                                'http://10.250.3.148:8000/api/register/verify-otp',
+                                'http://10.121.197.148:8000/api/register/verify-otp',
                               ),
                               body: {
                                 'email': email,

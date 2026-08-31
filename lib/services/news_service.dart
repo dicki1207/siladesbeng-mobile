@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewsService {
-  static const String baseUrl = 'http://10.250.3.148:8000/api';
+  static const String baseUrl = 'http://10.121.197.148:8000/api';
 
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
@@ -26,10 +26,10 @@ class NewsService {
     if (url == null || url.isEmpty) return '';
     String fixedUrl = url;
     // Replace all localhost variants with the actual server IP
-    fixedUrl = fixedUrl.replaceAll('http://localhost:8000', 'http://10.250.3.148:8000');
-    fixedUrl = fixedUrl.replaceAll('http://localhost', 'http://10.250.3.148:8000');
-    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1:8000', 'http://10.250.3.148:8000');
-    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1', 'http://10.250.3.148:8000');
+    fixedUrl = fixedUrl.replaceAll('http://localhost:8000', 'http://10.121.197.148:8000');
+    fixedUrl = fixedUrl.replaceAll('http://localhost', 'http://10.121.197.148:8000');
+    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1:8000', 'http://10.121.197.148:8000');
+    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1', 'http://10.121.197.148:8000');
     return fixedUrl;
   }
 

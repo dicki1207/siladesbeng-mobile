@@ -61,11 +61,13 @@ class _ReportPageState extends State<ReportPage> {
     _deskripsiController.addListener(_calculateProgress);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndStartShowcase();
+      _checkAndStartShowcase(
+);
     });
   }
 
-  Future<void> _checkAndStartShowcase() async {
+  Future<void> _checkAndStartShowcase(
+) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTour = prefs.getBool('has_seen_report_tour') ?? false;
@@ -682,10 +684,12 @@ class _ReportPageState extends State<ReportPage> {
                   children: [
                     _buildLabel('Kategori *', icon: Icons.category_outlined),
                     Showcase(
+                      titleTextStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                      descTextStyle: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                       key: _keyKategori,
                       title: 'Pilih Kategori Laporan',
                       description: 'Pilih jenis masalah (Infrastruktur, Kebersihan, Keamanan, dll) agar langsung ditangani petugas yang tepat.',
-                      targetBorderRadius: BorderRadius.circular(12),
+            targetBorderRadius: BorderRadius.circular(12),
                       child: _buildDropdown(
                         value: _selectedCategory,
                         hint: 'Pilih kategori',
@@ -710,6 +714,8 @@ class _ReportPageState extends State<ReportPage> {
 
           _buildLabel('Tujuan Pelaporan *', icon: Icons.send_outlined),
           Showcase(
+            titleTextStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+            descTextStyle: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
             key: _keyTujuan,
             title: 'Tentukan Tujuan Laporan',
             description: 'Tujukan laporan ke RT (lingkungan tetangga), RW (lingkup kampung), atau Pemerintah Desa (fasilitas umum desa).',
@@ -733,6 +739,8 @@ class _ReportPageState extends State<ReportPage> {
           // 2. Interactive Full-Screen Capable Map Section
           _buildLabel('Lokasi Kejadian *', icon: Icons.map_outlined),
           Showcase(
+            titleTextStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+            descTextStyle: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
             key: _keyLokasi,
             title: 'Tandai Titik Lokasi Kejadian',
             description: 'Ketuk peta untuk menentukan koordinat lokasi secara presisi agar petugas mudah menuju tempat kejadian.',
@@ -954,6 +962,8 @@ class _ReportPageState extends State<ReportPage> {
           // 5. Dual-Action Compact Photo Upload Section
           _buildLabel('Unggah Bukti Foto (Opsional)', icon: Icons.photo_camera_back_outlined),
           Showcase(
+            titleTextStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+            descTextStyle: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
             key: _keyFoto,
             title: 'Unggah Bukti Foto',
             description: 'Lampirkan foto bukti kejadian langsung dari kamera atau galeri untuk memperjelas dan memperkuat laporan Anda.',

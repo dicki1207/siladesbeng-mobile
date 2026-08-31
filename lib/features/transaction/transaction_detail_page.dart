@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_receipt_page.dart';
 import 'package:siladesbeng_mobile/features/report/report_receipt_page.dart';
 
@@ -36,18 +37,18 @@ class TransactionDetailPage extends StatelessWidget {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.white,
-            size: 20,
+            size: 20.sp,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Detail Aktivitas',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 17,
+            fontSize: 17.sp,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.3,
           ),
@@ -102,12 +103,12 @@ class TransactionDetailPage extends StatelessWidget {
             // Status Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(32.r),
+                  bottomRight: Radius.circular(32.r),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -127,29 +128,29 @@ class TransactionDetailPage extends StatelessWidget {
                       children: [
                         Text(
                           transaction['title']?.toString() ?? 'Tidak ada judul',
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           transaction['price']?.toString() ?? '-',
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).primaryColor,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 6.h,
                           ),
                           decoration: BoxDecoration(
                             color: statusColor.withAlpha(20),
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(30.r),
                             border: Border.all(
                               color: statusColor.withAlpha(50),
                             ),
@@ -171,13 +172,13 @@ class TransactionDetailPage extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              SizedBox(width: 10.w),
                               Text(
                                 transaction['status']?.toString() ?? 'Menunggu',
                                 style: TextStyle(
                                   color: statusColor,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                 ),
                               ),
                             ],
@@ -187,11 +188,11 @@ class TransactionDetailPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
 
                   // Right side (Image)
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: Theme.of(context).scaffoldBackgroundColor,
                       shape: BoxShape.circle,
@@ -212,9 +213,9 @@ class TransactionDetailPage extends StatelessWidget {
                       height: 72,
                       width: 72,
                       fit: BoxFit.contain,
-                      errorBuilder: (ctx, err, stack) => const Icon(
+                      errorBuilder: (ctx, err, stack) => Icon(
                         Icons.shopping_bag,
-                        size: 72,
+                        size: 72.sp,
                         color: Colors.grey,
                       ),
                     ),
@@ -225,15 +226,15 @@ class TransactionDetailPage extends StatelessWidget {
 
             // Detail Information
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(24.0.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Rincian Pesanan',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   _buildDetailRow(
                     context,
                     'Kategori',
@@ -255,18 +256,18 @@ class TransactionDetailPage extends StatelessWidget {
                       Icons.payment_outlined,
                     ),
 
-                  const SizedBox(height: 32),
-                  const Text(
+                  SizedBox(height: 32.h),
+                  Text(
                     'Catatan',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.r),
                       border: Border.all(color: Colors.white.withAlpha(10)),
                     ),
                     child: Row(
@@ -275,23 +276,23 @@ class TransactionDetailPage extends StatelessWidget {
                         Icon(
                           Icons.info_outline,
                           color: Theme.of(context).primaryColor,
-                          size: 24,
+                          size: 24.sp,
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Expanded(
                           child: Text(
                             'Terima kasih telah menggunakan layanan kami. Simpan rincian aktivitas ini sebagai bukti pemesanan yang sah. Jika Anda mengalami kendala, hubungi pengelola BUMDes.',
                             style: TextStyle(
                               color: Colors.grey[400],
                               height: 1.6,
-                              fontSize: 13,
+                              fontSize: 13.sp,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -352,9 +353,9 @@ class TransactionDetailPage extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
                         elevation: 0,
                       ),
@@ -362,15 +363,15 @@ class TransactionDetailPage extends StatelessWidget {
                         transaction['category'] == 'Laporan Warga'
                             ? 'Lihat Bukti Laporan'
                             : 'Unduh Struk Digital',
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                 ],
               ),
             ),
@@ -387,15 +388,15 @@ class TransactionDetailPage extends StatelessWidget {
     IconData icon,
   ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: EdgeInsets.only(bottom: 20.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
               border: Border.all(color: Colors.white.withAlpha(10)),
               boxShadow: [
                 BoxShadow(
@@ -405,25 +406,25 @@ class TransactionDetailPage extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(icon, color: Theme.of(context).primaryColor, size: 22),
+            child: Icon(icon, color: Theme.of(context).primaryColor, size: 22.sp),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   title,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 13.sp),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                   ),
                 ),
               ],

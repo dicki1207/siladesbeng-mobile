@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,11 +71,13 @@ class _HomePageState extends State<HomePage> {
     _fetchPublicData();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndStartShowcase();
+      _checkAndStartShowcase(
+);
     });
   }
 
-  Future<void> _checkAndStartShowcase() async {
+  Future<void> _checkAndStartShowcase(
+) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTour = prefs.getBool('has_seen_home_tour') ?? false;
@@ -444,12 +447,12 @@ class _HomePageState extends State<HomePage> {
           context: context,
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
             ),
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.block, color: Colors.red, size: 30),
-                SizedBox(width: 10),
+                Icon(Icons.block, color: Colors.red, size: 30.sp),
+                SizedBox(width: 10.w),
                 Text(
                   'Akses Dibatasi!',
                   style: TextStyle(
@@ -459,9 +462,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            content: const Text(
+            content: Text(
               'Anda terdeteksi telah pindah domisili, silakan ajukan mutasi terlebih dahulu.',
-              style: TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 15.sp),
             ),
             actions: [
               TextButton(
@@ -607,6 +610,8 @@ class _HomePageState extends State<HomePage> {
                 left: _assistantX,
                 top: _assistantY,
                 child: Showcase(
+                  titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                  descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                   key: _keyAsisten,
                   title: 'Tanya Asisten AI',
                   description: 'Butuh bantuan seputar layanan desa? Ketuk asisten pintar ini untuk bertanya apa saja.',
@@ -646,7 +651,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       // Text Bubble outside the icon bounds
                       Positioned(
-                        bottom: 65,
+                        bottom: 65.h,
                         right: (_assistantX > constraints.maxWidth / 2)
                             ? 0
                             : null,
@@ -654,18 +659,18 @@ class _HomePageState extends State<HomePage> {
                             ? 0
                             : null,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 6.h,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.blueAccent,
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(15.r),
                           ),
                           child: DefaultTextStyle(
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.bold,
                             ),
                             child: AnimatedTextKit(
@@ -688,7 +693,7 @@ class _HomePageState extends State<HomePage> {
                         clipBehavior: Clip.none,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(4),
+                            padding: EdgeInsets.all(4.w),
                             decoration: const BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
@@ -705,9 +710,9 @@ class _HomePageState extends State<HomePage> {
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, stack) => const Icon(
+                                errorBuilder: (ctx, err, stack) => Icon(
                                   Icons.smart_toy,
-                                  size: 50,
+                                  size: 50.sp,
                                   color: Colors.blueAccent,
                                 ),
                               ),
@@ -717,7 +722,7 @@ class _HomePageState extends State<HomePage> {
                             top: -2,
                             right: -2,
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: EdgeInsets.all(6.w),
                               decoration: BoxDecoration(
                                 color: const Color(
                                   0xFFEF4444,
@@ -728,11 +733,11 @@ class _HomePageState extends State<HomePage> {
                                   width: 2,
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 '1',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 10,
+                                  fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -754,14 +759,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTopProfile() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
             onTap: widget.onNavigateToProfile,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              padding: EdgeInsets.all(2.w),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -786,10 +791,10 @@ class _HomePageState extends State<HomePage> {
                           width: 40,
                           height: 40,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const Icon(
+                          errorBuilder: (_, _, _) => Icon(
                             Icons.person,
                             color: Colors.white,
-                            size: 22,
+                            size: 22.sp,
                           ),
                         )
                       : (_isLoggedIn && _userImageUrl != null)
@@ -798,37 +803,37 @@ class _HomePageState extends State<HomePage> {
                           width: 40,
                           height: 40,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const Icon(
+                          errorBuilder: (_, _, _) => Icon(
                             Icons.person,
                             color: Colors.white,
-                            size: 22,
+                            size: 22.sp,
                           ),
                         )
-                      : const Icon(Icons.person, color: Colors.white, size: 22),
+                      : Icon(Icons.person, color: Colors.white, size: 22.sp),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Halo, ${_getGreeting()}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
-                    fontSize: 11.5,
+                    fontSize: 11.5.sp,
                   ),
                 ),
-                const SizedBox(height: 1),
+                SizedBox(height: 1.h),
                 Text(
                   _userName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -838,6 +843,8 @@ class _HomePageState extends State<HomePage> {
           ),
 
           Showcase(
+            titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+            descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
             key: _keyNotif,
             title: 'Notifikasi & Info Masuk',
             description: 'Lihat info pengumuman desa, pembaruan laporan, dan status pesanan Pasar Daerah Anda di sini.',
@@ -855,7 +862,7 @@ class _HomePageState extends State<HomePage> {
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(35),
                       shape: BoxShape.circle,
@@ -864,15 +871,15 @@ class _HomePageState extends State<HomePage> {
                         width: 1,
                       ),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.notifications_outlined,
                       color: Colors.white,
-                      size: 20,
+                      size: 20.sp,
                     ),
                   ),
                   Positioned(
-                    top: 1,
-                    right: 1,
+                    top: 1.h,
+                    right: 1.w,
                     child: Container(
                       width: 9,
                       height: 9,
@@ -890,11 +897,11 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           GestureDetector(
             onTap: _replayHomeTour,
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(35),
                 shape: BoxShape.circle,
@@ -903,10 +910,10 @@ class _HomePageState extends State<HomePage> {
                   width: 1,
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.help_outline_rounded,
                 color: Colors.white,
-                size: 20,
+                size: 20.sp,
               ),
             ),
           ),
@@ -919,13 +926,13 @@ class _HomePageState extends State<HomePage> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 5.0),
+      margin: EdgeInsets.symmetric(horizontal: 5.0.w),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         gradient: LinearGradient(
           colors: isDark
               ? [const Color(0xFF1E3A8A), const Color(0xFF0F172A)]
-              : [Theme.of(context).primaryColor, const Color(0xFF2563EB)],
+              : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -944,52 +951,52 @@ class _HomePageState extends State<HomePage> {
             bottom: -20,
             child: Icon(
               Icons.account_balance_rounded,
-              size: 130,
+              size: 130.sp,
               color: Colors.white.withAlpha(30),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(18.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 4.h,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(40),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.r),
                   ),
-                  child: const Text(
+                  child: Text(
                     'PORTAL LAYANAN DESA',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 10.sp,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.8,
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8.h),
+                Text(
                   'Sila DesBeng Digital',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   'Pelayanan administrasi cepat, transparan & terpadu.',
                   style: TextStyle(
                     color: Colors.white.withAlpha(220),
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -1016,7 +1023,7 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Container(
-      margin: const EdgeInsets.only(top: 10, bottom: 6),
+      margin: EdgeInsets.only(top: 10.h, bottom: 6.h),
       child: CarouselSlider(
         options: CarouselOptions(
           height: 168.0,
@@ -1039,9 +1046,9 @@ class _HomePageState extends State<HomePage> {
             builder: (BuildContext context) {
               return Container(
                 width: MediaQuery.of(context).size.width,
-                margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                margin: EdgeInsets.symmetric(horizontal: 4.0.w),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                   color: Colors.grey.withAlpha(25),
                   boxShadow: [
                     BoxShadow(
@@ -1052,7 +1059,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                   child: Image.network(
                     imageUrl,
                     fit: BoxFit.fill,
@@ -1071,20 +1078,22 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchBar() {
     return Showcase(
+      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
       key: _keySearch,
       title: 'Pencarian Cepat',
       description: 'Ketik nama layanan desa, barang Pasar Daerah, atau kabar desa untuk mencari langsung.',
-      targetBorderRadius: BorderRadius.circular(20),
+      targetBorderRadius: BorderRadius.circular(20.r),
       child: Container(
         height: 38,
         decoration: BoxDecoration(
           color: Colors.white.withAlpha(35),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(color: Colors.white.withAlpha(50), width: 1),
         ),
         child: TextField(
           controller: _searchController,
-          style: const TextStyle(color: Colors.white, fontSize: 12.5),
+          style: TextStyle(color: Colors.white, fontSize: 12.5.sp),
           cursorColor: Colors.white,
           onSubmitted: (value) {
             _performSearch(value);
@@ -1093,25 +1102,25 @@ class _HomePageState extends State<HomePage> {
             hintText: 'Cari layanan desa, pasar, kabar...',
             hintStyle: TextStyle(
               color: Colors.white.withAlpha(180),
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
             border: InputBorder.none,
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 9,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 9.h,
             ),
             prefixIcon: Icon(
               Icons.search_rounded,
               color: Colors.white.withAlpha(200),
-              size: 18,
+              size: 18.sp,
             ),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.clear_rounded,
                       color: Colors.white70,
-                      size: 16,
+                      size: 16.sp,
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -1153,26 +1162,28 @@ class _HomePageState extends State<HomePage> {
     // Data Unit Pelayanan diambil dari API di _unitPelayanan
     if (_unitPelayanan.isEmpty) {
       return Container(
-        margin: const EdgeInsets.only(top: 30),
+        margin: EdgeInsets.only(top: 30.h),
         child: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Showcase(
+      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
       key: _keyUnitPelayanan,
       title: 'Layanan Desa & BUMDes',
       description: 'Pusat layanan digital desa: Pelaporan warga, belanja Pasar Daerah, beli Gas, hingga sewa alat/mobil.',
-      targetBorderRadius: BorderRadius.circular(20),
+      targetBorderRadius: BorderRadius.circular(20.r),
       child: Container(
-        margin: const EdgeInsets.only(
-          top: 10,
+        margin: EdgeInsets.only(
+          top: 10.h,
         ), // Jarak atas diperkecil agar lebih dekat dengan banner
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
+            padding: EdgeInsets.symmetric(
+              horizontal: 24.w,
             ), // Samakan margin dengan elemen lain
             child: Row(
               children: [
@@ -1186,9 +1197,9 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: GridView.builder(
               padding: EdgeInsets.zero,
               shrinkWrap: true,
@@ -1248,10 +1259,10 @@ class _HomePageState extends State<HomePage> {
                       Container(
                         height: 56,
                         width: 56,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.w),
                         decoration: BoxDecoration(
                           color: cardColor.withAlpha(20),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                           border: Border.all(color: cardColor.withAlpha(50)),
                         ),
                         child: imgPath.startsWith('http')
@@ -1276,14 +1287,14 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         item['title'],
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
@@ -1306,12 +1317,12 @@ class _HomePageState extends State<HomePage> {
     if (_pasarDaerahProducts.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.only(top: 24),
+      margin: EdgeInsets.only(top: 24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1330,7 +1341,7 @@ class _HomePageState extends State<HomePage> {
                     'Lihat Semua',
                     style: TextStyle(
                       color: Theme.of(context).primaryColor,
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -1338,13 +1349,13 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           SizedBox(
             height: 175,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               itemCount: _pasarDaerahProducts.length > 5
                   ? 5
                   : _pasarDaerahProducts.length,
@@ -1363,10 +1374,10 @@ class _HomePageState extends State<HomePage> {
                   onTap: () => _checkLoginAndProceed('Toko BUMDes'),
                   child: Container(
                     width: 140,
-                    margin: const EdgeInsets.only(right: 12, bottom: 4),
+                    margin: EdgeInsets.only(right: 12.w, bottom: 4.h),
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withAlpha(10),
@@ -1385,14 +1396,14 @@ class _HomePageState extends State<HomePage> {
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 color: Colors.grey[200],
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(16),
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(16.r),
                                 ),
                               ),
                               child: imageUrl.isNotEmpty
                                   ? ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(16),
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16.r),
                                       ),
                                       child: Image.network(
                                         imageUrl,
@@ -1411,16 +1422,16 @@ class _HomePageState extends State<HomePage> {
                                     ),
                             ),
                             Positioned(
-                              top: 6,
-                              right: 6,
+                              top: 6.h,
+                              right: 6.w,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 6.w,
+                                  vertical: 2.h,
                                 ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFEF4444),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(6.r),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withAlpha(20),
@@ -1428,20 +1439,20 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ],
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
                                       Icons.local_fire_department_rounded,
                                       color: Colors.white,
-                                      size: 11,
+                                      size: 11.sp,
                                     ),
-                                    SizedBox(width: 2),
+                                    SizedBox(width: 2.w),
                                     Text(
                                       'HOT',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 9,
+                                        fontSize: 9.sp,
                                         fontWeight: FontWeight.w900,
                                         letterSpacing: 0.3,
                                       ),
@@ -1453,30 +1464,30 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: EdgeInsets.all(8.0.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 3),
+                              SizedBox(height: 3.h),
                               Text(
                                 '${NumberFormat.currency(
                                   locale: 'id',
                                   symbol: 'Rp',
                                   decimalDigits: 0,
                                 ).format(price)} $satuan'.trim(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Color(0xFF0EA5E9),
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 11.5,
+                                  fontSize: 11.5.sp,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1498,8 +1509,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildKabarDaerah() {
     return Container(
-      margin: const EdgeInsets.only(top: 30),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.only(top: 30.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1514,14 +1525,14 @@ class _HomePageState extends State<HomePage> {
                       'Kabar dan Informasi Daerah',
                       style: Theme.of(context).textTheme.titleLarge!.copyWith(
                         color: Theme.of(context).primaryColor,
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       'Pengumuman dan agenda terbaru',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -1531,13 +1542,13 @@ class _HomePageState extends State<HomePage> {
                   widget.onNavigateToNews();
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor.withAlpha(20),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1547,13 +1558,13 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Icon(
                         Icons.arrow_forward_ios,
-                        size: 10,
+                        size: 10.sp,
                         color: Theme.of(context).primaryColor,
                       ),
                     ],
@@ -1562,7 +1573,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           SizedBox(
             height: 220,
             child: _announcements.isEmpty
@@ -1601,10 +1612,10 @@ class _HomePageState extends State<HomePage> {
   Widget _buildTerbaruCard(String title, String imageUrl) {
     return Container(
       width: 280,
-      margin: const EdgeInsets.only(right: 16, bottom: 8),
+      margin: EdgeInsets.only(right: 16.w, bottom: 8.h),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: const [
           BoxShadow(
             color: Colors.black12,
@@ -1617,7 +1628,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
             child: _buildElementImage(
               imageUrl,
               width: double.infinity,
@@ -1627,7 +1638,7 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1639,21 +1650,21 @@ class _HomePageState extends State<HomePage> {
                         'Hari ini',
                         style: Theme.of(
                           context,
-                        ).textTheme.bodyMedium!.copyWith(fontSize: 10),
+                        ).textTheme.bodyMedium!.copyWith(fontSize: 10.sp),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6.w,
+                          vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.amber,
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(5.r),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Baru',
                           style: TextStyle(
-                            fontSize: 8,
+                            fontSize: 8.sp,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1661,11 +1672,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 2,

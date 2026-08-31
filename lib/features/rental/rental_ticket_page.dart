@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -47,12 +48,12 @@ class RentalTicketPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Unduh Bukti Transaksi',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: 17.sp,
             letterSpacing: 0.3,
           ),
         ),
@@ -147,16 +148,16 @@ class RentalTicketPage extends StatelessWidget {
               
               // Content
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
                 child: Container(
                   decoration: BoxDecoration(
                     color: cardColor.withAlpha(isDark ? 230 : 245),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
                     ),
                   ),
-                  padding: const EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(20.0.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -170,14 +171,14 @@ class RentalTicketPage extends StatelessWidget {
                             height: 50,
                             width: 50,
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, size: 50, color: Colors.blue),
+                            errorBuilder: (context, error, stackTrace) => Icon(Icons.business, size: 50.sp, color: Colors.blue),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10.w),
                           // Nama SiladesBeng
                           Text(
                             'SiladesBeng',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                               color: valueColor,
                             ),
@@ -187,19 +188,19 @@ class RentalTicketPage extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text(
+                              Text(
                                 'Bukti Transaksi',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.w800,
                                   color: Color(0xFF1976D2),
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              SizedBox(height: 2.h),
                               Text(
                                 'Unit Penyewaan Alat',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                   color: labelColor,
                                 ),
                               ),
@@ -208,9 +209,9 @@ class RentalTicketPage extends StatelessWidget {
                         ],
                       ),
                       
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       Divider(thickness: 1, color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
 
                       // ===== INFO PESANAN =====
                       _buildTableRow('No. Pesanan', refNumber, labelColor, valueColor),
@@ -218,83 +219,83 @@ class RentalTicketPage extends StatelessWidget {
                       _buildTableRow('Akun Pemesan', renterName, labelColor, valueColor),
                       _buildTableRow('Email Akun', '${renterName.toLowerCase().replaceAll(' ', '')}@example.com', labelColor, valueColor),
                       
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Divider(thickness: 1, color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
 
                       // ===== NAMA DAN ALAMAT =====
-                      Text('Nama dan Alamat Penyewa', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valueColor)),
-                      const SizedBox(height: 10),
+                      Text('Nama dan Alamat Penyewa', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: valueColor)),
+                      SizedBox(height: 10.h),
                       _buildTableRow('Nama Lengkap', renterName, labelColor, valueColor),
                       _buildTableRow('Alamat', 'Jl. Pemuda No. 4, Bengkalis', labelColor, valueColor),
                       _buildTableRow('Pengiriman', needsLogistics ? 'Diantar' : 'Ambil Sendiri', labelColor, valueColor),
 
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Divider(thickness: 1, color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                         
                       // ===== DETAIL PESANAN (Tabel) =====
-                      Text('Detail Pesanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valueColor)),
-                      const SizedBox(height: 12),
+                      Text('Detail Pesanan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: valueColor)),
+                      SizedBox(height: 12.h),
                       
                       Row(
                         children: [
-                          Expanded(flex: 4, child: Text('Keterangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: labelColor))),
-                          Expanded(flex: 1, child: Text('Jml', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: labelColor))),
-                          Expanded(flex: 3, child: Text('Satuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: labelColor))),
-                          Expanded(flex: 3, child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: labelColor))),
+                          Expanded(flex: 4, child: Text('Keterangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.sp, color: labelColor))),
+                          Expanded(flex: 1, child: Text('Jml', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.sp, color: labelColor))),
+                          Expanded(flex: 3, child: Text('Satuan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.sp, color: labelColor))),
+                          Expanded(flex: 3, child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.sp, color: labelColor))),
                         ],
                       ),
                       Divider(thickness: 1, color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
 
                       Row(
                         children: [
-                          Expanded(flex: 4, child: Text('Sewa $itemName ($durationDays hari)', style: TextStyle(fontSize: 11, color: textColor))),
-                          Expanded(flex: 1, child: Text('1', style: TextStyle(fontSize: 11, color: textColor))),
-                          Expanded(flex: 3, child: Text('Rp $totalPrice', style: TextStyle(fontSize: 11, color: textColor), overflow: TextOverflow.ellipsis, maxLines: 1)),
-                          Expanded(flex: 3, child: Text('Rp $totalPrice', style: TextStyle(fontSize: 11, color: textColor), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                          Expanded(flex: 4, child: Text('Sewa $itemName ($durationDays hari)', style: TextStyle(fontSize: 11.sp, color: textColor))),
+                          Expanded(flex: 1, child: Text('1', style: TextStyle(fontSize: 11.sp, color: textColor))),
+                          Expanded(flex: 3, child: Text('Rp $totalPrice', style: TextStyle(fontSize: 11.sp, color: textColor), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                          Expanded(flex: 3, child: Text('Rp $totalPrice', style: TextStyle(fontSize: 11.sp, color: textColor), overflow: TextOverflow.ellipsis, maxLines: 1)),
                         ],
                       ),
                       
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Divider(thickness: 1, color: isDark ? Colors.grey[700] : Colors.grey[300]),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
 
                       // ===== INFO PEMBAYARAN =====
-                      Text('Informasi Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: valueColor)),
-                      const SizedBox(height: 10),
+                      Text('Informasi Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp, color: valueColor)),
+                      SizedBox(height: 10.h),
                       _buildTableRow('Waktu Bayar', currentDate, labelColor, valueColor),
                       _buildTableRow('Metode', 'TUNAI', labelColor, valueColor),
                       _buildTableRow('Total Bayar', 'Rp $totalPrice', labelColor, valueColor),
                       
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
+                        padding: EdgeInsets.only(bottom: 10.h),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
                               width: 130,
-                              child: Text('Status', style: TextStyle(fontSize: 13, color: labelColor)),
+                              child: Text('Status', style: TextStyle(fontSize: 13.sp, color: labelColor)),
                             ),
-                            Text(':', style: TextStyle(fontSize: 13, color: labelColor)),
-                            const SizedBox(width: 8),
-                            const Expanded(
-                              child: Text('Menunggu', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.orange)),
+                            Text(':', style: TextStyle(fontSize: 13.sp, color: labelColor)),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text('Menunggu', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold, color: Colors.orange)),
                             ),
                           ],
                         ),
                       ),
                       
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40.h),
                       
                       // ===== QR CODE dengan Logo SiladesBeng =====
                       Center(
                         child: Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: EdgeInsets.all(10.w),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(color: Colors.grey.withAlpha(50)),
                             boxShadow: [
                               BoxShadow(
@@ -307,7 +308,7 @@ class RentalTicketPage extends StatelessWidget {
                           child: QrImageView(
                             data: refNumber,
                             version: QrVersions.auto,
-                            size: 120.0,
+                            size: 120.0.sp,
                             backgroundColor: Colors.white,
                             embeddedImage: const AssetImage('logodomain.png'),
                             embeddedImageStyle: const QrEmbeddedImageStyle(
@@ -316,7 +317,7 @@ class RentalTicketPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       
                       // ===== BRANDING SiladesBeng di bawah QR =====
                       Center(
@@ -325,16 +326,16 @@ class RentalTicketPage extends StatelessWidget {
                             Text(
                               'SiladesBeng',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
                                 color: valueColor,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2.h),
                             Text(
                               'Platform E-Government Kab. Bengkalis',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 11.sp,
                                 color: labelColor,
                               ),
                             ),
@@ -342,28 +343,28 @@ class RentalTicketPage extends StatelessWidget {
                         ),
                       ),
                       
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       Divider(thickness: 1.5, color: isDark ? Colors.grey[600] : Colors.grey[400]),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       
                       // ===== FOOTER TAGLINE =====
                       Center(
                         child: Text(
                           'SiladesBeng - Sistem Sinergi Layanan dan Aspirasi Desa di Kabupaten Bengkalis',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: labelColor),
+                          style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w600, color: labelColor),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       Center(
                         child: Text(
                           'Dokumen ini dicetak otomatis oleh Sistem SilaDesBeng\ndan sah tanpa tanda tangan basah.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 9, color: labelColor.withAlpha(180)),
+                          style: TextStyle(fontSize: 9.sp, color: labelColor.withAlpha(180)),
                         ),
                       ),
                       
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       
                       // ===== HUBUNGI PENGURUS BUTTON =====
                       SizedBox(
@@ -371,12 +372,12 @@ class RentalTicketPage extends StatelessWidget {
                         height: 50,
                         child: ElevatedButton.icon(
                           onPressed: () => _simulateWhatsApp(context),
-                          icon: const Icon(Icons.wechat, size: 24),
-                          label: const Text('Hubungi Pengurus BUMDes', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                          icon: Icon(Icons.wechat, size: 24.sp),
+                          label: Text('Hubungi Pengurus BUMDes', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green[600],
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                           ),
                         ),
                       ),
@@ -393,18 +394,18 @@ class RentalTicketPage extends StatelessWidget {
 
   Widget _buildTableRow(String label, String value, Color labelColor, Color valueColor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 130,
-            child: Text(label, style: TextStyle(fontSize: 13, color: labelColor)),
+            child: Text(label, style: TextStyle(fontSize: 13.sp, color: labelColor)),
           ),
-          Text(':', style: TextStyle(fontSize: 13, color: labelColor)),
-          const SizedBox(width: 8),
+          Text(':', style: TextStyle(fontSize: 13.sp, color: labelColor)),
+          SizedBox(width: 8.w),
           Expanded(
-            child: Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: valueColor)),
+            child: Text(value, style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600, color: valueColor)),
           ),
         ],
       ),

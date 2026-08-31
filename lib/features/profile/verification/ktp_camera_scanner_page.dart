@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 
@@ -198,8 +199,8 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF0F172A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
       ),
       builder: (context) {
         return SafeArea(
@@ -214,40 +215,40 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 20),
-                    SizedBox(width: 8),
+                    Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 20.sp),
+                    SizedBox(width: 8.w),
                     Text(
                       'Pratinjau Foto e-KTP',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                const Text(
+                SizedBox(height: 6.h),
+                Text(
                   'Pastikan NIK & seluruh teks KTP terbaca jelas dan tidak silau.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
+                  style: TextStyle(color: Colors.white60, fontSize: 12.sp),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
 
                 // KTP Image Card with Aspect Ratio
                 AspectRatio(
                   aspectRatio: 1.58,
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(color: const Color(0xFF2563EB), width: 2),
                       boxShadow: [
                         BoxShadow(
@@ -257,7 +258,7 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                       ],
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                       child: Image.file(
                         File(imagePath),
                         fit: BoxFit.cover,
@@ -266,7 +267,7 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // Action buttons
                 Row(
@@ -277,16 +278,16 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                         icon: const Icon(Icons.refresh_rounded, color: Colors.white70),
                         label: const Text('Foto Ulang', style: TextStyle(color: Colors.white70)),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
                           side: const BorderSide(color: Colors.white24),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                         ),
                         onPressed: () => Navigator.pop(context, false),
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14.w),
 
                     // Use Photo
                     Expanded(
@@ -297,10 +298,10 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
                           backgroundColor: const Color(0xFF2563EB),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                           elevation: 4,
                         ),
@@ -333,10 +334,10 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
           if (_errorMessage != null)
             Center(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24.0.w),
                 child: Text(
                   _errorMessage!,
-                  style: const TextStyle(color: Colors.redAccent),
+                  style: TextStyle(color: Colors.redAccent),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -369,43 +370,43 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
                         icon: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
                             color: Colors.black.withAlpha(120),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white24),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_back_ios_new_rounded,
                             color: Colors.white,
-                            size: 16,
+                            size: 16.sp,
                           ),
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(150),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                           border: Border.all(color: Colors.white12),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.badge_rounded, color: Color(0xFF60A5FA), size: 16),
-                            SizedBox(width: 6),
+                            Icon(Icons.badge_rounded, color: Color(0xFF60A5FA), size: 16.sp),
+                            SizedBox(width: 6.w),
                             Text(
                               'Pindai e-KTP Asli',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 12.5,
+                                fontSize: 12.5.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -415,7 +416,7 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                       // Flash Toggle
                       IconButton(
                         icon: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
                             color: _flashMode != FlashMode.off
                                 ? const Color(0xFF2563EB)
@@ -430,7 +431,7 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                           child: Icon(
                             _getFlashIcon(),
                             color: Colors.white,
-                            size: 18,
+                            size: 18.sp,
                           ),
                         ),
                         tooltip: _getFlashLabel(),
@@ -442,12 +443,12 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
 
                 // Top Instruction Pill
                 Padding(
-                  padding: const EdgeInsets.only(top: 12),
+                  padding: EdgeInsets.only(top: 12.h),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0F172A).withAlpha(220),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.r),
                       border: Border.all(color: const Color(0xFF2563EB).withAlpha(100)),
                       boxShadow: [
                         BoxShadow(
@@ -457,16 +458,16 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.crop_free_rounded, color: Color(0xFF60A5FA), size: 16),
-                        SizedBox(width: 8),
+                        Icon(Icons.crop_free_rounded, color: Color(0xFF60A5FA), size: 16.sp),
+                        SizedBox(width: 8.w),
                         Text(
                           'Posisikan e-KTP tepat di dalam bingkai kotak',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -480,31 +481,31 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
 
           // ── 4. BOTTOM CONTROLS & SHUTTER BUTTON ──
           Positioned(
-            bottom: 36,
-            left: 20,
-            right: 20,
+            bottom: 36.h,
+            left: 20.w,
+            right: 20.w,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Guidance Subtitle
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: Colors.black.withAlpha(140),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
-                  child: const Text(
+                  child: Text(
                     '💡 Pastikan tulisan NIK & Nama jelas, tidak terpotong atau silau pantulan cahaya',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 11.5,
+                      fontSize: 11.5.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
 
                 // Shutter Camera Button
                 GestureDetector(
@@ -537,10 +538,10 @@ class _KtpCameraScannerPageState extends State<KtpCameraScannerPage>
                               ),
                             ),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.camera_alt_rounded,
                             color: Colors.white,
-                            size: 36,
+                            size: 36.sp,
                           ),
                   ),
                 ),
@@ -574,7 +575,7 @@ class KtpBoxMaskPainter extends CustomPainter {
 
     final RRect ktpRRect = RRect.fromRectAndRadius(
       Rect.fromCenter(center: center, width: boxWidth, height: boxHeight),
-      const Radius.circular(16),
+      Radius.circular(16.r),
     );
 
     // ── 1. DARK BACKGROUND WITH TRANSPARENT KTP BOX CUTOUT ──
@@ -666,7 +667,7 @@ class KtpBoxMaskPainter extends CustomPainter {
     );
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(photoRect, const Radius.circular(8)),
+      RRect.fromRectAndRadius(photoRect, Radius.circular(8.r)),
       guidePaint,
     );
 
@@ -675,7 +676,7 @@ class KtpBoxMaskPainter extends CustomPainter {
       text: TextSpan(
         text: String.fromCharCode(Icons.person_outline_rounded.codePoint),
         style: TextStyle(
-          fontSize: 20,
+          fontSize: 20.sp,
           fontFamily: Icons.person_outline_rounded.fontFamily,
           package: Icons.person_outline_rounded.fontPackage,
           color: Colors.white.withAlpha(40),

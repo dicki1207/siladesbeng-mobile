@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PasarProductService {
-  final String baseUrl = 'http://10.250.3.148:8000/api';
+  final String baseUrl = 'http://10.121.197.148:8000/api';
 
   Future<List<Map<String, dynamic>>> getProducts({
     String category = 'Semua',

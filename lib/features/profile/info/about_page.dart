@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -15,10 +16,10 @@ class AboutPage extends StatelessWidget {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: AppBar(
-          title: const Text(
+          title: Text(
             'Tentang SiladesBeng',
             style: TextStyle(
-              fontSize: 17,
+              fontSize: 17.sp,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.3,
@@ -70,15 +71,15 @@ class AboutPage extends StatelessWidget {
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 20.h),
         children: [
           // 1. Profil / Brand Card
           _buildBrandCard(isDark),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           // 2. Cerita Kami (Visi Singkat)
           _buildCeritaCard(isDark),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 3. Nilai-Nilai Kami (5 Nilai Sesuai Web)
           _buildSectionTitle(
@@ -87,9 +88,9 @@ class AboutPage extends StatelessWidget {
             Icons.verified_rounded,
             isDark,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildNilaiKami(isDark),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 4. Misi SiladesBeng (4 Poin)
           _buildSectionTitle(
@@ -98,9 +99,9 @@ class AboutPage extends StatelessWidget {
             Icons.flag_rounded,
             isDark,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildMisiCard(isDark),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 5. Penyelenggara & Dukungan Resmi
           _buildSectionTitle(
@@ -109,13 +110,13 @@ class AboutPage extends StatelessWidget {
             Icons.account_balance_rounded,
             isDark,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildOfficialInstitutionCard(isDark),
-          const SizedBox(height: 28),
+          SizedBox(height: 28.h),
 
           // 6. Footer & Kontak
           _buildFooterCard(isDark),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
         ],
       ),
     );
@@ -124,10 +125,10 @@ class AboutPage extends StatelessWidget {
   Widget _buildBrandCard(bool isDark) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
@@ -142,7 +143,7 @@ class AboutPage extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(14.w),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF0F172A) : const Color(0xFFEFF6FF),
               shape: BoxShape.circle,
@@ -155,37 +156,37 @@ class AboutPage extends StatelessWidget {
               fit: BoxFit.contain,
             ),
           ),
-          const SizedBox(height: 12),
-          const Text(
+          SizedBox(height: 12.h),
+          Text(
             'SiladesBeng',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.w900,
               color: _primaryBlue,
               letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
             decoration: BoxDecoration(
               color: _primaryBlue.withAlpha(15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
-            child: const Text(
+            child: Text(
               'Sistem Sinergi Layanan & Aspirasi Desa',
               style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 11.5.sp,
                 fontWeight: FontWeight.w600,
                 color: _primaryBlue,
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             'Kabupaten Bengkalis, Riau',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: isDark ? Colors.white60 : Colors.grey.shade600,
             ),
           ),
@@ -196,10 +197,10 @@ class AboutPage extends StatelessWidget {
 
   Widget _buildCeritaCard(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
@@ -217,29 +218,29 @@ class AboutPage extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: EdgeInsets.all(6.w),
                 decoration: BoxDecoration(
                   color: _primaryBlue.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: const Icon(Icons.auto_stories_rounded, size: 18, color: _primaryBlue),
+                child: Icon(Icons.auto_stories_rounded, size: 18.sp, color: _primaryBlue),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Text(
                 'Cerita Kami',
                 style: TextStyle(
-                  fontSize: 14.5,
+                  fontSize: 14.5.sp,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             'SiladesBeng bermula dari visi besar untuk mempercepat digitalisasi pelayanan publik di Kabupaten Bengkalis. Platform ini hadir menghubungkan seluruh jaringan desa ke dalam satu ekosistem digital yang terpadu, transparan, dan mudah diakses oleh seluruh warga.',
             style: TextStyle(
-              fontSize: 12.5,
+              fontSize: 12.5.sp,
               height: 1.5,
               color: isDark ? Colors.white70 : const Color(0xFF475569),
             ),
@@ -254,14 +255,14 @@ class AboutPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: EdgeInsets.all(6.w),
           decoration: BoxDecoration(
             color: _primaryBlue.withAlpha(20),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, size: 18, color: _primaryBlue),
+          child: Icon(icon, size: 18.sp, color: _primaryBlue),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,16 +270,16 @@ class AboutPage extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
-              const SizedBox(height: 1),
+              SizedBox(height: 1.h),
               Text(
                 subtitle,
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 11.5.sp,
                   color: isDark ? Colors.white54 : Colors.grey.shade600,
                 ),
               ),
@@ -299,10 +300,10 @@ class AboutPage extends StatelessWidget {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
@@ -319,7 +320,7 @@ class AboutPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: const EdgeInsets.only(top: 3),
+                  margin: EdgeInsets.only(top: 3.h),
                   width: 8,
                   height: 8,
                   decoration: const BoxDecoration(
@@ -327,12 +328,12 @@ class AboutPage extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: RichText(
                     text: TextSpan(
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 12.5.sp,
                         height: 1.4,
                         color: isDark ? Colors.white70 : const Color(0xFF334155),
                       ),
@@ -366,10 +367,10 @@ class AboutPage extends StatelessWidget {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
@@ -386,20 +387,20 @@ class AboutPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: const EdgeInsets.only(top: 2),
-                  padding: const EdgeInsets.all(3),
-                  decoration: const BoxDecoration(
+                  margin: EdgeInsets.only(top: 2.h),
+                  padding: EdgeInsets.all(3.w),
+                  decoration: BoxDecoration(
                     color: Color(0xFF10B981),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check, size: 10, color: Colors.white),
+                  child: Icon(Icons.check, size: 10.sp, color: Colors.white),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     misi,
                     style: TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 12.5.sp,
                       color: isDark ? Colors.white70 : const Color(0xFF334155),
                       height: 1.4,
                     ),
@@ -433,11 +434,11 @@ class AboutPage extends StatelessWidget {
       children: institutions.map((item) {
         final col = item['color'] as Color;
         return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
+          margin: EdgeInsets.only(bottom: 10.h),
+          padding: EdgeInsets.all(14.w),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
             ),
@@ -452,14 +453,14 @@ class AboutPage extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
                   color: col.withAlpha(20),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(item['icon'] as IconData, size: 22, color: col),
+                child: Icon(item['icon'] as IconData, size: 22.sp, color: col),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 14.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,15 +469,15 @@ class AboutPage extends StatelessWidget {
                       item['title'] as String,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 13.5,
+                        fontSize: 13.5.sp,
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       item['sub'] as String,
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 11.5.sp,
                         color: isDark ? Colors.white60 : Colors.grey.shade600,
                       ),
                     ),
@@ -484,15 +485,15 @@ class AboutPage extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: col.withAlpha(15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   'Resmi',
                   style: TextStyle(
-                    fontSize: 10.5,
+                    fontSize: 10.5.sp,
                     fontWeight: FontWeight.bold,
                     color: col,
                   ),
@@ -507,55 +508,55 @@ class AboutPage extends StatelessWidget {
 
   Widget _buildFooterCard(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
-          color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+          color: isDark ? Colors.white10 : Color(0xFFE2E8F0),
         ),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const Icon(Icons.location_on_rounded, size: 15, color: _primaryBlue),
-              const SizedBox(width: 8),
+              Icon(Icons.location_on_rounded, size: 15.sp, color: _primaryBlue),
+              SizedBox(width: 8.w),
               Text(
                 'Bengkalis, Riau, Indonesia',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : const Color(0xFF334155),
+                  color: isDark ? Colors.white70 : Color(0xFF334155),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Row(
             children: [
-              const Icon(Icons.email_rounded, size: 15, color: _primaryBlue),
-              const SizedBox(width: 8),
+              Icon(Icons.email_rounded, size: 15.sp, color: _primaryBlue),
+              SizedBox(width: 8.w),
               Text(
                 'siladesbengdigital@gmail.com',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: isDark ? Colors.white70 : const Color(0xFF334155),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Divider(
             height: 1,
             color: isDark ? Colors.white10 : Colors.grey.withAlpha(50),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             '© 2026 SiladesBeng • Sistem Sinergi Layanan & Aspirasi Desa',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 10.5,
+              fontSize: 10.5.sp,
               color: isDark ? Colors.white38 : Colors.grey.shade500,
             ),
           ),

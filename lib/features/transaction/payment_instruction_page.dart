@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 
 class PaymentInstructionPage extends StatefulWidget {
@@ -93,12 +94,12 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'Instruksi Pembayaran',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 17,
+              fontSize: 17.sp,
               letterSpacing: 0.3,
             ),
           ),
@@ -153,18 +154,18 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Timer
               if (widget.paymentData['expiry_time'] != null && !_isExpired)
                 Container(
-                  margin: const EdgeInsets.only(bottom: 24),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  margin: EdgeInsets.only(bottom: 24.h),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(color: Colors.red[200]!),
                   ),
                   child: Column(
@@ -175,25 +176,25 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                           Icon(
                             Icons.timer_outlined,
                             color: Colors.red[700],
-                            size: 20,
+                            size: 20.sp,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Text(
                             'SELESAIKAN PEMBAYARAN DALAM',
                             style: TextStyle(
                               color: Colors.red[700],
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         _formatDuration(_remainingTime),
                         style: TextStyle(
                           color: Colors.red[700],
-                          fontSize: 32,
+                          fontSize: 32.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -202,18 +203,18 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                 ),
               if (_isExpired)
                 Container(
-                  margin: const EdgeInsets.only(bottom: 24),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  margin: EdgeInsets.only(bottom: 24.h),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'WAKTU PEMBAYARAN HABIS',
                       style: TextStyle(
                         color: Colors.grey,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -224,7 +225,7 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -233,18 +234,18 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 child: Column(
                   children: [
                     Text(
                       'Total Pembayaran',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Text(
                       amountFormatted,
-                      style: const TextStyle(
-                        fontSize: 28,
+                      style: TextStyle(
+                        fontSize: 28.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.blueAccent,
                       ),
@@ -265,7 +266,7 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
 
                     // Jika metode QRIS
                     if (qrUrl.isNotEmpty && qrUrl != 'DUMMY_QR_CODE') ...[
@@ -273,19 +274,19 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                         'Scan QR Code ini',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       Image.network(
                         qrUrl,
                         height: 200,
                         width: 200,
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.qr_code, size: 200),
+                            Icon(Icons.qr_code, size: 200.sp),
                       ),
-                      const SizedBox(height: 10),
-                      const Text(
+                      SizedBox(height: 10.h),
+                      Text(
                         'Buka aplikasi e-Wallet atau M-Banking Anda, lalu scan QR di atas.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                       ),
                     ]
                     // Jika metode Virtual Account (Bank Transfer)
@@ -294,15 +295,15 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                         'Nomor Virtual Account',
                         style: TextStyle(color: Colors.grey[600]),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                           border: Border.all(color: Colors.grey[300]!),
                         ),
                         child: Row(
@@ -310,8 +311,8 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                           children: [
                             Text(
                               vaNumber,
-                              style: const TextStyle(
-                                fontSize: 18,
+                              style: TextStyle(
+                                fontSize: 18.sp,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 2,
                               ),
@@ -348,21 +349,21 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               ElevatedButton(
                 onPressed: widget.onFinish,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(15.r),
                   ),
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text(
+                child: Text(
                   'Selesai & Kembali ke Beranda',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

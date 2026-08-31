@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/services/mutasi_service.dart';
@@ -10,10 +11,7 @@ class DomicileTransferPage extends StatefulWidget {
   State<DomicileTransferPage> createState() => _DomicileTransferPageState();
 }
 
-class _DomicileTransferPageState extends State<DomicileTransferPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  String _selectedFilter = 'Semua';
+class _DomicileTransferPageState extends State<DomicileTransferPage> {
   bool _isLoading = false;
   bool _isFetching = true;
 
@@ -79,15 +77,21 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     }
   }
 
+  Map<String, dynamic>? get _lastCompletedMutasi {
+    try {
+      return _mutationList.firstWhere((m) {
+        final s = (m['status'] ?? '').toString().toLowerCase();
+        final tab = (m['tabType'] ?? '').toString().toLowerCase();
+        return s == 'completed' || s == 'selesai' || tab == 'selesai';
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {});
-      }
-    });
     _loadUserData();
     _loadMutations();
   }
@@ -132,7 +136,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
             badgeCol = const Color(0xFF10B981);
             bgCol = const Color(0xFF10B981).withAlpha(25);
             isLocked = false;
-            lockStatus = 'Gembok Terbuka • NIK Resmi Aktif di Desa Tujuan';
+            lockStatus = 'Status NIK Resmi Aktif di Desa Tujuan';
             stepIndex = 3;
           } else if (status == 'cancelled' ||
               status == 'batal' ||
@@ -142,8 +146,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
             badgeCol = const Color(0xFFEF4444);
             bgCol = const Color(0xFFEF4444).withAlpha(25);
             isLocked = false;
-            lockStatus =
-                'Pengajuan ditolak/dibatalkan • NIK tetap di desa asal';
+            lockStatus = 'Pengajuan dibatalkan. NIK tetap aktif di desa asal.';
             stepIndex = 0;
           } else if (tipe == 'keluar') {
             tabType = 'Keluar';
@@ -151,17 +154,15 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
             badgeCol = const Color(0xFFF59E0B);
             bgCol = const Color(0xFFF59E0B).withAlpha(25);
             isLocked = true;
-            lockStatus =
-                'Gembok NIK Terkunci • Menunggu persetujuan Admin Desa Asal';
+            lockStatus = 'Menunggu persetujuan dan pelepasan Kades Asal';
             stepIndex = 1;
           } else {
             tabType = 'Masuk';
             statusTitle = 'Menunggu Aktivasi (Kades Tujuan)';
-            badgeCol = const Color(0xFF3B82F6);
-            bgCol = const Color(0xFF3B82F6).withAlpha(25);
+            badgeCol = const Color(0xFF0EA5E9);
+            bgCol = const Color(0xFF0EA5E9).withAlpha(25);
             isLocked = true;
-            lockStatus =
-                'Menunggu Admin Desa Tujuan mengaktifkan data NIK Anda';
+            lockStatus = 'Menunggu aktivasi data NIK oleh Kades Tujuan';
             stepIndex = 2;
           }
 
@@ -197,7 +198,6 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _reasonController.dispose();
     _customDesaTujuanController.dispose();
     super.dispose();
@@ -283,28 +283,30 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Row(
           children: [
             Icon(
               Icons.warning_amber_rounded,
               color: Colors.redAccent,
-              size: 28,
+              size: 26.sp,
             ),
-            SizedBox(width: 10),
-            Text(
-              'Batalkan Pengajuan?',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                'Batalkan Pengajuan?',
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Apakah Anda yakin ingin membatalkan permohonan pindah domisili ini? Data Anda akan tetap aktif di desa asal.',
-          style: TextStyle(fontSize: 13.5, height: 1.4),
+          style: TextStyle(fontSize: 13.sp, height: 1.4),
         ),
-        actionsPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+        actionsPadding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 12.h,
         ),
         actions: [
           TextButton(
@@ -317,7 +319,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
             onPressed: () async {
@@ -357,25 +359,25 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
-              expandedHeight: 180,
+              expandedHeight: 145.h,
               pinned: true,
               floating: false,
               elevation: 0,
               scrolledUnderElevation: 2,
               backgroundColor: isDark
                   ? const Color(0xFF0F172A)
-                  : const Color(0xFF2563EB),
+                  : const Color(0xFF2FA2F1),
               leading: IconButton(
                 icon: Container(
-                  padding: const EdgeInsets.all(7),
+                  padding: EdgeInsets.all(7.w),
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(isDark ? 25 : 35),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new_rounded,
                     color: Colors.white,
-                    size: 16,
+                    size: 16.sp,
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
@@ -396,19 +398,19 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                                   const Color(0xFF1E293B),
                                 ]
                               : [
-                                  const Color(0xFF2563EB),
-                                  const Color(0xFF1D4ED8),
+                                  const Color(0xFF2FA2F1),
+                                  const Color(0xFF0284C7),
                                 ],
                         ),
                       ),
                     ),
-                    // Ambient light circle
+                    // Ambient light circles
                     Positioned(
                       right: -25,
                       top: -25,
                       child: Container(
-                        width: 140,
-                        height: 140,
+                        width: 130.w,
+                        height: 130.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withAlpha(20),
@@ -419,8 +421,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       left: -20,
                       bottom: -20,
                       child: Container(
-                        width: 90,
-                        height: 90,
+                        width: 80.w,
+                        height: 80.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white.withAlpha(15),
@@ -429,37 +431,40 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                     ),
                     // Title info in header
                     Positioned(
-                      left: 20,
-                      right: 20,
-                      top: MediaQuery.of(context).padding.top + 50,
-                      child: const Column(
+                      left: 20.w,
+                      right: 20.w,
+                      bottom: 20.h,
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
                             children: [
                               Icon(
                                 Icons.swap_horiz_rounded,
                                 color: Colors.white,
-                                size: 24,
+                                size: 22.sp,
                               ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Mutasi Domisili (Handshake)',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18.5,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.3,
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  'Mutasi Domisili (Handshake)',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17.5.sp,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.3,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 4),
+                          SizedBox(height: 3.h),
                           Text(
                             'Pindah desa mandiri dengan integrasi NIK resmi antar Kepala Desa',
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 11.5,
+                              fontSize: 11.5.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -469,127 +474,18 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                   ],
                 ),
               ),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(52),
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF090D16) : Colors.white,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isDark
-                            ? Colors.white10
-                            : const Color(0xFFE2E8F0),
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicator: UnderlineTabIndicator(
-                      borderSide: const BorderSide(
-                        width: 3.5,
-                        color: Color(0xFF2563EB),
-                      ),
-                      borderRadius: BorderRadius.circular(3),
-                      insets: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    indicatorSize: TabBarIndicatorSize.label,
-                    labelColor: const Color(0xFF2563EB),
-                    unselectedLabelColor: isDark
-                        ? Colors.white60
-                        : const Color(0xFF64748B),
-                    labelStyle: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
-                      letterSpacing: 0.2,
-                    ),
-                    unselectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13.5,
-                    ),
-                    dividerColor: Colors.transparent,
-                    tabs: [
-                      Tab(
-                        height: 48,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              _hasPendingMutasi
-                                  ? Icons.hourglass_top_rounded
-                                  : Icons.edit_document,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _hasPendingMutasi
-                                  ? 'Status Pengajuan'
-                                  : 'Ajukan Pindah',
-                            ),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        height: 48,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.history_rounded, size: 18),
-                            const SizedBox(width: 8),
-                            const Text('Riwayat'),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFF2563EB,
-                                ).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '${_mutationList.length}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2563EB),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
           ];
         },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildCreationFormTab(isDark),
-            _buildStatusListTab(isDark),
-          ],
-        ),
+        body: _buildBodyContent(isDark),
       ),
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  // TAB 1: FORM PENGAJUAN PINDAH ATAU STATUS PENDING (BEAUTIFIED)
-  // ═══════════════════════════════════════════════════════════════════
-  Widget _buildCreationFormTab(bool isDark) {
+  Widget _buildBodyContent(bool isDark) {
     if (_isFetching) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+        child: CircularProgressIndicator(color: Color(0xFF0EA5E9)),
       );
     }
 
@@ -600,7 +496,9 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     return _buildActiveFormView(isDark);
   }
 
-  // ── VIEW 1: STATUS SEDANG DIPROSES (HANDSHAKE TIMELINE) ──
+  // ═══════════════════════════════════════════════════════════════════
+  // 1. STATUS SEDANG DIPROSES (HANDSHAKE TIMELINE TRACKER)
+  // ═══════════════════════════════════════════════════════════════════
   Widget _buildPendingStatusView(bool isDark) {
     final pending = _pendingMutasi;
     final String desaTujuan = pending?['desaTujuan'] ?? _selectedDesaTujuan;
@@ -611,18 +509,18 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
     return RefreshIndicator(
       onRefresh: _loadMutations,
-      color: const Color(0xFF2563EB),
+      color: const Color(0xFF0EA5E9),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 40.h),
         child: Column(
           children: [
             // Status Hero Card (Glow Amber)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -631,7 +529,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
                       : [Colors.white, const Color(0xFFFFFBEB)],
                 ),
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
                   color: const Color(0xFFF59E0B).withAlpha(isDark ? 80 : 120),
                   width: 1.5,
@@ -646,67 +544,66 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
               child: Column(
                 children: [
-                  // Animated pulsing icon
                   Container(
-                    width: 68,
-                    height: 68,
+                    width: 60.w,
+                    height: 60.w,
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withAlpha(30),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Container(
-                        width: 52,
-                        height: 52,
+                        width: 46.w,
+                        height: 46.w,
                         decoration: const BoxDecoration(
                           color: Color(0xFFF59E0B),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.sync_rounded,
-                          size: 28,
+                          size: 26.sp,
                           color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 12.h),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF59E0B).withAlpha(35),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.r),
                     ),
-                    child: const Text(
+                    child: Text(
                       'STATUS: SEDANG DIPROSES',
                       style: TextStyle(
-                        color: Color(0xFFD97706),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
+                        color: const Color(0xFFD97706),
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Text(
                     'Menunggu Persetujuan Handshake',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 6.h),
                   Text(
-                    'Pengajuan pindah Anda dari $desaAsal ke $desaTujuan sedang menunggu persetujuan dari Kepala Desa saat ini.',
+                    'Pengajuan pindah Anda dari $desaAsal ke $desaTujuan sedang diproses dalam tahapan Handshake.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
-                      height: 1.45,
+                      fontSize: 12.5.sp,
+                      height: 1.4,
                       color: isDark ? Colors.white70 : const Color(0xFF475569),
                     ),
                   ),
@@ -714,7 +611,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 18),
+            SizedBox(height: 16.h),
 
             // Stepper Visual Timeline Card
             _buildCardWrapper(
@@ -724,16 +621,16 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.alt_route_rounded,
-                        color: Color(0xFF2563EB),
-                        size: 20,
+                        color: const Color(0xFF0EA5E9),
+                        size: 20.sp,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text(
                         'Tahapan Handshake Protocol',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           fontWeight: FontWeight.w800,
                           color: isDark
                               ? Colors.white
@@ -742,12 +639,11 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   _buildTimelineStep(
                     stepNumber: 1,
                     title: 'Formulir Pindah Dikirim',
-                    subtitle:
-                        'Warga mandiri mengajukan kepindahan via aplikasi',
+                    subtitle: 'Permohonan berhasil dicatat di sistem',
                     isDone: true,
                     isActive: false,
                     isDark: isDark,
@@ -755,8 +651,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                   _buildTimelineStep(
                     stepNumber: 2,
                     title: 'Pelepasan NIK (Kades Asal)',
-                    subtitle:
-                        'Kades asal memvalidasi & membuka kunci gembok NIK',
+                    subtitle: 'Kades asal memvalidasi dan melepaskan data NIK',
                     isDone: step > 1,
                     isActive: step == 1,
                     isDark: isDark,
@@ -764,7 +659,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                   _buildTimelineStep(
                     stepNumber: 3,
                     title: 'Aktivasi Data (Kades Tujuan)',
-                    subtitle: 'Data resmi dialihkan dan aktif di desa tujuan',
+                    subtitle: 'Kades tujuan mengaktifkan NIK di wilayah baru',
                     isDone: step >= 3,
                     isActive: step == 2,
                     isLast: true,
@@ -774,7 +669,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // Summary Information Card
             _buildCardWrapper(
@@ -785,12 +680,12 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                   Text(
                     'Ringkasan Data Pengajuan',
                     style: TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   _buildSummaryRow('Nama Pemohon', _userName, isDark),
                   _buildSummaryRow(
                     'NIK Warga',
@@ -811,30 +706,32 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // Notice Box
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.blue.withAlpha(isDark ? 25 : 15),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.blue.withAlpha(40)),
+                color: const Color(0xFF0EA5E9).withAlpha(isDark ? 25 : 15),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(
+                  color: const Color(0xFF0EA5E9).withAlpha(40),
+                ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(
-                    Icons.shield_outlined,
-                    color: Color(0xFF2563EB),
-                    size: 20,
+                    Icons.info_outline_rounded,
+                    color: const Color(0xFF0EA5E9),
+                    size: 20.sp,
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      'Pemesanan fasilitas di desa asal ditangguhkan sementara hingga proses mutasi ini selesai.',
+                      'Pemesanan fasilitas di desa asal ditangguhkan sementara hingga proses mutasi ini selesai disetujui.',
                       style: TextStyle(
-                        fontSize: 11.5,
-                        color: Color(0xFF2563EB),
+                        fontSize: 11.5.sp,
+                        color: const Color(0xFF0284C7),
                         fontWeight: FontWeight.w600,
                         height: 1.35,
                       ),
@@ -844,7 +741,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 22),
+            SizedBox(height: 22.h),
 
             // Action Buttons
             Row(
@@ -852,31 +749,31 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _showCancelDialog(pending ?? {}),
-                    icon: const Icon(Icons.close_rounded, size: 16),
-                    label: const Text('Batalkan Pengajuan'),
+                    icon: Icon(Icons.close_rounded, size: 16.sp),
+                    label: const Text('Batalkan'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.redAccent,
                       side: const BorderSide(color: Colors.redAccent),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _loadMutations,
-                    icon: const Icon(Icons.refresh_rounded, size: 16),
-                    label: const Text('Cek Status'),
+                    icon: Icon(Icons.refresh_rounded, size: 16.sp),
+                    label: const Text('Perbarui Status'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
+                      backgroundColor: const Color(0xFF0EA5E9),
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
                   ),
@@ -889,11 +786,15 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     );
   }
 
-  // ── VIEW 2: ACTIVE FORMULIR PENGAJUAN PINDAH (CLEAN & MODERN) ──
+  // ═══════════════════════════════════════════════════════════════════
+  // 2. ACTIVE FORMULIR PENGAJUAN PINDAH (CLEAN & MODERN)
+  // ═══════════════════════════════════════════════════════════════════
   Widget _buildActiveFormView(bool isDark) {
+    final completed = _lastCompletedMutasi;
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 50),
+      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 50.h),
       child: Form(
         key: _formKey,
         child: Column(
@@ -902,17 +803,17 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
             // Top Hero Banner
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                  colors: [Color(0xFF2FA2F1), Color(0xFF0284C7)],
                 ),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(18.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2563EB).withAlpha(50),
+                    color: const Color(0xFF0284C7).withAlpha(40),
                     blurRadius: 14,
                     offset: const Offset(0, 4),
                   ),
@@ -921,19 +822,19 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(35),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.handshake_rounded,
+                    child: Icon(
+                      Icons.sync_alt_rounded,
                       color: Colors.white,
-                      size: 24,
+                      size: 24.sp,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  SizedBox(width: 12.w),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -941,16 +842,16 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                           'Sistem Handshake Digital',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 13.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         Text(
                           'Data NIK Anda akan otomatis dialihkan ke desa tujuan setelah disetujui Kepala Desa.',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 11.5,
+                            fontSize: 11.sp,
                             height: 1.3,
                           ),
                         ),
@@ -961,14 +862,94 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 20),
+            if (completed != null) ...[
+              SizedBox(height: 14.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withAlpha(isDark ? 25 : 15),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withAlpha(50),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.verified_rounded,
+                      color: const Color(0xFF10B981),
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Status Kependudukan Resmi',
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF10B981),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            'Mutasi sebelumnya telah selesai. Anda tercatat aktif di ${completed['desaTujuan']}.',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: isDark ? Colors.white70 : const Color(0xFF334155),
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            SizedBox(height: 20.h),
+
+            // Identitas Pemohon Section
+            _buildSectionHeader(
+              title: 'Data Identitas Pemohon',
+              subtitle: 'Data resmi terverifikasi dari profil Anda',
+              isDark: isDark,
+            ),
+            SizedBox(height: 10.h),
+
+            _buildCardWrapper(
+              isDark: isDark,
+              child: Column(
+                children: [
+                  _buildReadOnlyField(
+                    label: 'Nama Lengkap Warga',
+                    value: _userName,
+                    icon: Icons.person_outline_rounded,
+                    isDark: isDark,
+                  ),
+                  SizedBox(height: 10.h),
+                  _buildReadOnlyField(
+                    label: 'Nomor Induk Kependudukan (NIK)',
+                    value: _userNik,
+                    icon: Icons.badge_outlined,
+                    isMonospace: true,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 20.h),
 
             _buildSectionHeader(
               title: 'Arah Perpindahan Domisili',
               subtitle: 'Tentukan desa asal pelepasan dan desa tujuan baru',
               isDark: isDark,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
 
             // Route Card
             _buildCardWrapper(
@@ -986,43 +967,41 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
 
                   // Directional Connector
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 16,
+                    padding: EdgeInsets.symmetric(
+                      vertical: 6.h,
+                      horizontal: 16.w,
                     ),
                     child: Row(
                       children: [
                         Container(
                           width: 2,
-                          height: 20,
-                          color: const Color(0xFF2563EB).withAlpha(80),
+                          height: 18.h,
+                          color: const Color(0xFF0EA5E9).withAlpha(80),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 3.h,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF2563EB,
-                            ).withAlpha(isDark ? 30 : 15),
-                            borderRadius: BorderRadius.circular(10),
+                            color: const Color(0xFF0EA5E9).withAlpha(isDark ? 30 : 15),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(
                                 Icons.arrow_downward_rounded,
-                                size: 12,
-                                color: Color(0xFF2563EB),
+                                size: 12.sp,
+                                color: const Color(0xFF0EA5E9),
                               ),
-                              SizedBox(width: 4),
+                              SizedBox(width: 4.w),
                               Text(
                                 'Dialihkan ke',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2563EB),
+                                  color: const Color(0xFF0EA5E9),
                                 ),
                               ),
                             ],
@@ -1048,10 +1027,10 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                   ),
 
                   if (_selectedDesaTujuan.contains('Luar Daerah')) ...[
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     TextFormField(
                       controller: _customDesaTujuanController,
-                      style: const TextStyle(fontSize: 13),
+                      style: TextStyle(fontSize: 13.sp),
                       decoration: _inputDecoration(
                         hintText: 'Tuliskan Nama Desa & Kecamatan Tujuan...',
                         isDark: isDark,
@@ -1071,14 +1050,14 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
 
             _buildSectionHeader(
               title: 'Alasan Kepindahan',
               subtitle: 'Pilih opsi cepat atau tuliskan alasan Anda',
               isDark: isDark,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
 
             _buildCardWrapper(
               isDark: isDark,
@@ -1096,32 +1075,30 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                       return ActionChip(
                         label: Text(reason),
                         labelStyle: TextStyle(
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: isSelected
                               ? FontWeight.bold
                               : FontWeight.w600,
                           color: isSelected
-                              ? const Color(0xFF2563EB)
+                              ? const Color(0xFF0EA5E9)
                               : (isDark
                                     ? Colors.white70
                                     : const Color(0xFF475569)),
                         ),
                         backgroundColor: isSelected
-                            ? const Color(
-                                0xFF2563EB,
-                              ).withAlpha(isDark ? 40 : 20)
+                            ? const Color(0xFF0EA5E9).withAlpha(isDark ? 40 : 20)
                             : (isDark
                                   ? const Color(0xFF0F172A)
                                   : const Color(0xFFF1F5F9)),
                         side: BorderSide(
                           color: isSelected
-                              ? const Color(0xFF2563EB)
+                              ? const Color(0xFF0EA5E9)
                               : (isDark
                                     ? const Color(0xFF1E293B)
                                     : const Color(0xFFE2E8F0)),
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
                         onPressed: () {
                           setState(() {
@@ -1132,15 +1109,14 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                     }).toList(),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   TextFormField(
                     controller: _reasonController,
                     maxLines: 3,
-                    style: const TextStyle(fontSize: 13),
+                    style: TextStyle(fontSize: 13.sp),
                     decoration: _inputDecoration(
-                      hintText:
-                          'Contoh: Ikut suami, pindah domisili kerja, dll',
+                      hintText: 'Contoh: Ikut suami, pindah domisili kerja, dll',
                       label: 'Tuliskan Alasan Lengkap',
                       isDark: isDark,
                       icon: Icons.chat_bubble_outline_rounded,
@@ -1153,41 +1129,41 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
               ),
             ),
 
-            const SizedBox(height: 28),
+            SizedBox(height: 26.h),
 
             // Submit Button
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 48.h,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleSubmitMutation,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
+                  backgroundColor: const Color(0xFF0EA5E9),
                   foregroundColor: Colors.white,
                   elevation: 2,
-                  shadowColor: const Color(0xFF2563EB).withAlpha(120),
+                  shadowColor: const Color(0xFF0EA5E9).withAlpha(120),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                        width: 22,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         child: CircularProgressIndicator(
                           color: Colors.white,
-                          strokeWidth: 2.5,
+                          strokeWidth: 2.2,
                         ),
                       )
-                    : const Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.send_rounded, size: 18),
-                          SizedBox(width: 8),
+                          Icon(Icons.send_rounded, size: 17.sp),
+                          SizedBox(width: 8.w),
                           Text(
                             'Ajukan Pindah Sekarang',
                             style: TextStyle(
-                              fontSize: 14.5,
+                              fontSize: 14.sp,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.2,
                             ),
@@ -1198,394 +1174,6 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // TAB 2: RIWAYAT MUTASI (BEAUTIFIED LIST)
-  // ═══════════════════════════════════════════════════════════════════
-  Widget _buildStatusListTab(bool isDark) {
-    List<Map<String, dynamic>> filteredList = _mutationList;
-    if (_selectedFilter != 'Semua') {
-      filteredList = _mutationList
-          .where((item) => item['tabType'] == _selectedFilter)
-          .toList();
-    }
-
-    final int cKeluar = _mutationList
-        .where((e) => e['tabType'] == 'Keluar')
-        .length;
-    final int cMasuk = _mutationList
-        .where((e) => e['tabType'] == 'Masuk')
-        .length;
-    final int cSelesai = _mutationList
-        .where((e) => e['tabType'] == 'Selesai')
-        .length;
-
-    return RefreshIndicator(
-      onRefresh: _loadMutations,
-      color: const Color(0xFF2563EB),
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        slivers: [
-          // Filter Chips
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: [
-                    _buildFilterChip(
-                      'Semua (${_mutationList.length})',
-                      'Semua',
-                      isDark,
-                    ),
-                    _buildFilterChip('Pelepasan ($cKeluar)', 'Keluar', isDark),
-                    _buildFilterChip('Aktivasi ($cMasuk)', 'Masuk', isDark),
-                    _buildFilterChip('Selesai ($cSelesai)', 'Selesai', isDark),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // List Items
-          if (filteredList.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF2563EB,
-                          ).withAlpha(isDark ? 25 : 15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.swap_horiz_rounded,
-                          size: 48,
-                          color: Color(0xFF2563EB),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Belum Ada Riwayat Mutasi',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Riwayat pemindahan domisili Anda antar desa akan tercatat secara resmi di sini.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: isDark
-                              ? Colors.white60
-                              : const Color(0xFF64748B),
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      OutlinedButton.icon(
-                        onPressed: () => _tabController.animateTo(0),
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        label: const Text('Ajukan Pindah Desa'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF2563EB),
-                          side: const BorderSide(color: Color(0xFF2563EB)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final item = filteredList[index];
-                  final Color badgeCol = item['color'];
-                  final bool isLocked = item['isLocked'];
-                  final bool isPending =
-                      item['tabType'] == 'Keluar' || item['tabType'] == 'Masuk';
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 14),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF131C2E) : Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFE2E8F0),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(isDark ? 30 : 6),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Top Ribbon Header
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 11,
-                          ),
-                          decoration: BoxDecoration(
-                            color: item['bgColor'],
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(17),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                item['tabType'] == 'Selesai'
-                                    ? Icons.check_circle_rounded
-                                    : item['tabType'] == 'Dibatalkan'
-                                    ? Icons.cancel_rounded
-                                    : Icons.hourglass_top_rounded,
-                                size: 16,
-                                color: badgeCol,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  item['statusTitle'],
-                                  style: TextStyle(
-                                    color: badgeCol,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                item['date'],
-                                style: TextStyle(
-                                  color: isDark
-                                      ? Colors.white60
-                                      : const Color(0xFF64748B),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Route Info
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF0F172A)
-                                      : const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? Colors.white10
-                                        : const Color(0xFFE2E8F0),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Desa Asal',
-                                            style: TextStyle(
-                                              fontSize: 10.5,
-                                              color: Color(0xFF94A3B8),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            item['desaAsal'],
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark
-                                                  ? Colors.white
-                                                  : const Color(0xFF0F172A),
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.arrow_forward_rounded,
-                                      color: Color(0xFF2563EB),
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          const Text(
-                                            'Desa Tujuan',
-                                            style: TextStyle(
-                                              fontSize: 10.5,
-                                              color: Color(0xFF94A3B8),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            item['desaTujuan'],
-                                            textAlign: TextAlign.end,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF2563EB),
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // Alasan
-                              Text(
-                                'Alasan: ${item['alasan']}',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: isDark
-                                      ? Colors.white70
-                                      : const Color(0xFF475569),
-                                ),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // Status Lock Banner
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 7,
-                                ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      (isLocked
-                                              ? const Color(0xFF2563EB)
-                                              : const Color(0xFF10B981))
-                                          .withAlpha(isDark ? 25 : 12),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      isLocked
-                                          ? Icons.vpn_key_rounded
-                                          : Icons.verified_user_rounded,
-                                      size: 14,
-                                      color: isLocked
-                                          ? const Color(0xFF2563EB)
-                                          : const Color(0xFF10B981),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        item['lockStatus'],
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: isLocked
-                                              ? (isDark
-                                                    ? const Color(0xFF60A5FA)
-                                                    : const Color(0xFF1E40AF))
-                                              : const Color(0xFF10B981),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              if (isPending) ...[
-                                const SizedBox(height: 12),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton.icon(
-                                    onPressed: () => _showCancelDialog(item),
-                                    icon: const Icon(
-                                      Icons.close_rounded,
-                                      size: 14,
-                                    ),
-                                    label: const Text(
-                                      'Batalkan Permohonan',
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.redAccent,
-                                      backgroundColor: Colors.redAccent
-                                          .withAlpha(20),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }, childCount: filteredList.length),
-              ),
-            ),
-        ],
       ),
     );
   }
@@ -1622,51 +1210,51 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
         Column(
           children: [
             Container(
-              width: 28,
-              height: 28,
+              width: 28.w,
+              height: 28.w,
               decoration: BoxDecoration(
                 color: nodeColor.withAlpha(isActive ? 35 : (isDone ? 30 : 20)),
                 shape: BoxShape.circle,
                 border: Border.all(color: nodeColor, width: isActive ? 2 : 1.5),
               ),
-              child: Center(child: Icon(nodeIcon, size: 16, color: nodeColor)),
+              child: Center(child: Icon(nodeIcon, size: 15.sp, color: nodeColor)),
             ),
             if (!isLast)
               Container(
                 width: 2,
-                height: 34,
+                height: 32.h,
                 color: isDone
                     ? const Color(0xFF10B981)
                     : Colors.grey.withAlpha(60),
               ),
           ],
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 2),
+            padding: EdgeInsets.only(top: 2.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.bold,
                     color: isActive
                         ? const Color(0xFFD97706)
                         : (isDark ? Colors.white : const Color(0xFF0F172A)),
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: isDark ? Colors.white60 : const Color(0xFF64748B),
                   ),
                 ),
-                if (!isLast) const SizedBox(height: 14),
+                if (!isLast) SizedBox(height: 12.h),
               ],
             ),
           ),
@@ -1683,7 +1271,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     bool isHighlighted = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1691,21 +1279,21 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: isDark ? Colors.white60 : const Color(0xFF64748B),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.end,
               style: TextStyle(
-                fontSize: 12.5,
+                fontSize: 12.5.sp,
                 fontWeight: isHighlighted ? FontWeight.w900 : FontWeight.bold,
                 fontFamily: isMonospace ? 'monospace' : null,
                 color: isHighlighted
-                    ? const Color(0xFF2563EB)
+                    ? const Color(0xFF0EA5E9)
                     : (isDark ? Colors.white : const Color(0xFF0F172A)),
               ),
             ),
@@ -1727,15 +1315,15 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
           title,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            fontSize: 14,
+            fontSize: 13.5.sp,
             color: isDark ? Colors.white : const Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2.h),
         Text(
           subtitle,
           style: TextStyle(
-            fontSize: 11.5,
+            fontSize: 11.sp,
             color: isDark ? Colors.white54 : const Color(0xFF64748B),
           ),
         ),
@@ -1746,10 +1334,10 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
   Widget _buildCardWrapper({required Widget child, required bool isDark}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF131C2E) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
@@ -1773,18 +1361,18 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     bool isMonospace = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xFF2563EB)),
-          const SizedBox(width: 12),
+          Icon(icon, size: 18.sp, color: const Color(0xFF0EA5E9)),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1792,16 +1380,16 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 10.5,
+                    fontSize: 10.5.sp,
                     fontWeight: FontWeight.w500,
                     color: isDark ? Colors.white54 : const Color(0xFF64748B),
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   value.isNotEmpty ? value : '-',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12.5.sp,
                     fontWeight: FontWeight.bold,
                     fontFamily: isMonospace ? 'monospace' : null,
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
@@ -1812,7 +1400,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
           ),
           Icon(
             Icons.lock_rounded,
-            size: 15,
+            size: 15.sp,
             color: isDark ? Colors.white30 : Colors.grey[400],
           ),
         ],
@@ -1837,7 +1425,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
           child: Text(
             e,
             style: TextStyle(
-              fontSize: 12.5,
+              fontSize: 12.5.sp,
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : const Color(0xFF0F172A),
             ),
@@ -1862,75 +1450,38 @@ class _DomicileTransferPageState extends State<DomicileTransferPage>
     required bool isDark,
     required IconData icon,
     String? label,
-    Color iconColor = const Color(0xFF2563EB),
+    Color iconColor = const Color(0xFF0EA5E9),
   }) {
     return InputDecoration(
       labelText: label,
       hintText: hintText,
       hintStyle: TextStyle(
-        fontSize: 12,
+        fontSize: 12.sp,
         color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
       ),
       labelStyle: TextStyle(
-        fontSize: 12,
+        fontSize: 12.sp,
         color: isDark ? Colors.white60 : const Color(0xFF64748B),
       ),
-      prefixIcon: Icon(icon, size: 18, color: iconColor),
+      prefixIcon: Icon(icon, size: 18.sp, color: iconColor),
       filled: true,
       fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         borderSide: BorderSide(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         borderSide: BorderSide(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.8),
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, String filterValue, bool isDark) {
-    final bool active = _selectedFilter == filterValue;
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label),
-        selected: active,
-        showCheckmark: false,
-        avatar: active
-            ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
-            : null,
-        labelStyle: TextStyle(
-          color: active
-              ? Colors.white
-              : (isDark ? Colors.white70 : const Color(0xFF475569)),
-          fontSize: 12,
-          fontWeight: active ? FontWeight.bold : FontWeight.w600,
-        ),
-        backgroundColor: isDark ? const Color(0xFF131C2E) : Colors.white,
-        selectedColor: const Color(0xFF2563EB),
-        side: BorderSide(
-          color: active
-              ? const Color(0xFF2563EB)
-              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: active ? 2 : 0,
-        shadowColor: const Color(0xFF2563EB).withAlpha(80),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        onSelected: (_) {
-          setState(() => _selectedFilter = filterValue);
-        },
+        borderRadius: BorderRadius.circular(14.r),
+        borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 1.8),
       ),
     );
   }

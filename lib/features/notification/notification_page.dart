@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -126,15 +127,15 @@ class _NotificationPageState extends State<NotificationPage> {
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white, size: 20),
-                SizedBox(width: 8),
+                Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
+                SizedBox(width: 8.w),
                 Text('Semua notifikasi ditandai sudah dibaca'),
               ],
             ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
           ),
         );
@@ -151,26 +152,26 @@ class _NotificationPageState extends State<NotificationPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFFEE2E2),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(
                 Icons.delete_forever_rounded,
                 color: Color(0xFFDC2626),
-                size: 24,
+                size: 24.sp,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 'Hapus Semua?',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp),
               ),
             ),
           ],
@@ -179,13 +180,13 @@ class _NotificationPageState extends State<NotificationPage> {
           'Semua notifikasi Anda (kecuali pengumuman sistem) akan dihapus secara permanen.',
           style: TextStyle(
             color: isDark ? Colors.white70 : const Color(0xFF475569),
-            fontSize: 14,
+            fontSize: 14.sp,
             height: 1.4,
           ),
         ),
-        actionsPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+        actionsPadding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 12.h,
         ),
         actions: [
           TextButton(
@@ -205,7 +206,7 @@ class _NotificationPageState extends State<NotificationPage> {
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
             ),
             child: Text(
@@ -242,15 +243,15 @@ class _NotificationPageState extends State<NotificationPage> {
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white, size: 20),
-                SizedBox(width: 8),
+                Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
+                SizedBox(width: 8.w),
                 Text('Semua notifikasi berhasil dihapus'),
               ],
             ),
             backgroundColor: const Color(0xFF0EA5E9),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
           ),
         );
@@ -378,11 +379,11 @@ class _NotificationPageState extends State<NotificationPage> {
           ? const Color(0xFF0B1120)
           : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Notifikasi',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 18.sp,
             color: Colors.white,
             letterSpacing: 0.3,
           ),
@@ -390,7 +391,7 @@ class _NotificationPageState extends State<NotificationPage> {
         centerTitle: true,
         backgroundColor: isDark
             ? const Color(0xFF0F172A)
-            : const Color(0xFF2563EB),
+            : const Color(0xFF2FA2F1),
         foregroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -437,10 +438,10 @@ class _NotificationPageState extends State<NotificationPage> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Colors.white,
-            size: 20,
+            size: 20.sp,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -470,9 +471,9 @@ class _NotificationPageState extends State<NotificationPage> {
               onRefresh: _fetchNotifications,
               color: const Color(0xFF2563EB),
               child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 14.h,
                 ),
                 children: [
                   // Filter Chips
@@ -484,20 +485,20 @@ class _NotificationPageState extends State<NotificationPage> {
                           'Semua (${_notifications.length})',
                           'all',
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         _buildFilterChip(
                           'Belum Dibaca ($_unreadCount)',
                           'unread',
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         _buildFilterChip('Pesan Admin', 'pesan_admin'),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         _buildFilterChip('Status & Transaksi', 'status'),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // Notifications List
                   if (_filteredNotifications.isEmpty)
@@ -517,23 +518,23 @@ class _NotificationPageState extends State<NotificationPage> {
     final isSelected = _selectedFilter == value;
     return InkWell(
       onTap: () => setState(() => _selectedFilter = value),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(20.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF2563EB)
+              ? const Color(0xFF0EA5E9)
               : (isDark ? const Color(0xFF1E293B) : Colors.white),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF2563EB)
+                ? const Color(0xFF0EA5E9)
                 : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
           ),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: const Color(0xFF2563EB).withAlpha(50),
+                color: const Color(0xFF0EA5E9).withAlpha(50),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -545,7 +546,7 @@ class _NotificationPageState extends State<NotificationPage> {
             color: isSelected
                 ? Colors.white
                 : (isDark ? Colors.white70 : const Color(0xFF64748B)),
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
         ),
@@ -556,11 +557,11 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget _buildEmptyState() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      margin: const EdgeInsets.only(top: 30),
-      padding: const EdgeInsets.all(32),
+      margin: EdgeInsets.only(top: 30.h),
+      padding: EdgeInsets.all(32.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
         ),
@@ -568,32 +569,32 @@ class _NotificationPageState extends State<NotificationPage> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.notifications_off_outlined,
-              size: 54,
+              size: 54.sp,
               color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             'Belum Ada Notifikasi',
             style: TextStyle(
-              fontSize: 17,
+              fontSize: 17.sp,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : const Color(0xFF1E293B),
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             'Notifikasi dan pesan dari admin desa akan muncul di sini.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               color: isDark ? Colors.white70 : const Color(0xFF64748B),
             ),
           ),
@@ -611,12 +612,12 @@ class _NotificationPageState extends State<NotificationPage> {
     final imageUrl = notif.fullImageUrl;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: notif.isRead
             ? (isDark ? const Color(0xFF1E293B) : Colors.white)
             : (isDark ? const Color(0xFF334155) : const Color(0xFFF0F9FF)),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: notif.isRead
               ? (isDark ? Colors.white12 : const Color(0xFFE2E8F0))
@@ -637,12 +638,12 @@ class _NotificationPageState extends State<NotificationPage> {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           onTap: () => _openDetail(notif),
           child: Padding(
-            padding: const EdgeInsets.all(14.0),
+            padding: EdgeInsets.all(14.0.w),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -652,7 +653,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
                         color: isDark
                             ? Colors.white12
@@ -677,7 +678,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         child: Icon(
                           typeDetails['icon'] as IconData,
                           color: typeDetails['textColor'] as Color,
-                          size: 26,
+                          size: 26.sp,
                         ),
                       ),
                     ),
@@ -692,7 +693,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       boxShadow: [
                         BoxShadow(
                           color: (typeDetails['gradient'] as List<Color>).first
@@ -706,12 +707,12 @@ class _NotificationPageState extends State<NotificationPage> {
                       child: Icon(
                         typeDetails['icon'] as IconData,
                         color: Colors.white,
-                        size: 26,
+                        size: 26.sp,
                       ),
                     ),
                   ),
 
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
 
                 // Right: Content Details
                 Expanded(
@@ -732,7 +733,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                       fontWeight: notif.isRead
                                           ? FontWeight.w600
                                           : FontWeight.bold,
-                                      fontSize: 14.5,
+                                      fontSize: 14.5.sp,
                                       color: isDark
                                           ? Colors.white
                                           : const Color(0xFF0F172A),
@@ -742,7 +743,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                   ),
                                 ),
                                 if (!notif.isRead) ...[
-                                  const SizedBox(width: 6),
+                                  SizedBox(width: 6.w),
                                   Container(
                                     width: 7,
                                     height: 7,
@@ -757,43 +758,43 @@ class _NotificationPageState extends State<NotificationPage> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6.w),
                           Text(
                             formattedDate,
                             style: TextStyle(
                               color: isDark
                                   ? Colors.white54
                                   : const Color(0xFF94A3B8),
-                              fontSize: 10.5,
+                              fontSize: 10.5.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
 
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
 
                       // Type Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 2.5,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 7.w,
+                          vertical: 2.5.h,
                         ),
                         decoration: BoxDecoration(
                           color: typeDetails['lightBg'] as Color,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(
                           typeDetails['label'] as String,
                           style: TextStyle(
                             color: typeDetails['textColor'] as Color,
-                            fontSize: 10,
+                            fontSize: 10.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
 
                       // Message snippet
                       Text(
@@ -804,12 +805,12 @@ class _NotificationPageState extends State<NotificationPage> {
                           color: isDark
                               ? Colors.white70
                               : const Color(0xFF475569),
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                           height: 1.35,
                         ),
                       ),
 
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
 
                       // Action Buttons Row
                       Row(
@@ -818,11 +819,11 @@ class _NotificationPageState extends State<NotificationPage> {
                           if (!notif.isRead)
                             InkWell(
                               onTap: () => _markAsRead(notif.id),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(6.r),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 9,
-                                  vertical: 4,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 9.w,
+                                  vertical: 4.h,
                                 ),
                                 decoration: BoxDecoration(
                                   color: isDark
@@ -830,24 +831,24 @@ class _NotificationPageState extends State<NotificationPage> {
                                           0xFF0EA5E9,
                                         ).withValues(alpha: 0.2)
                                       : const Color(0xFFE0F2FE),
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(6.r),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
                                       Icons.check,
-                                      size: 13,
+                                      size: 13.sp,
                                       color: Color(0xFF0284C7),
                                     ),
-                                    SizedBox(width: 4),
+                                    SizedBox(width: 4.w),
                                     Text(
                                       'Tandai Dibaca',
                                       style: TextStyle(
                                         color: isDark
                                             ? Colors.lightBlue
                                             : const Color(0xFF0284C7),
-                                        fontSize: 11,
+                                        fontSize: 11.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -861,17 +862,17 @@ class _NotificationPageState extends State<NotificationPage> {
                               children: [
                                 Icon(
                                   Icons.done_all_rounded,
-                                  size: 14,
+                                  size: 14.sp,
                                   color: Color(0xFF94A3B8),
                                 ),
-                                SizedBox(width: 4),
+                                SizedBox(width: 4.w),
                                 Text(
                                   'Sudah Dibaca',
                                   style: TextStyle(
                                     color: isDark
                                         ? Colors.white54
                                         : const Color(0xFF94A3B8),
-                                    fontSize: 11,
+                                    fontSize: 11.sp,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -886,14 +887,14 @@ class _NotificationPageState extends State<NotificationPage> {
                                 'Lihat Detail',
                                 style: TextStyle(
                                   color: Color(0xFF0EA5E9),
-                                  fontSize: 11.5,
+                                  fontSize: 11.5.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 2),
+                              SizedBox(width: 2.w),
                               Icon(
                                 Icons.arrow_forward_ios_rounded,
-                                size: 10,
+                                size: 10.sp,
                                 color: Color(0xFF0EA5E9),
                               ),
                             ],

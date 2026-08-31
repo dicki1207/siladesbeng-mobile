@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DeliveryTrackingPage extends StatefulWidget {
   final String orderNumber;
@@ -31,11 +32,11 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
         foregroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
+        title: Text(
           'Lacak Pengantaran',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 17,
+            fontSize: 17.sp,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.3,
           ),
@@ -92,16 +93,16 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ===== STATUS HEADER =====
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
                     color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
                   ),
@@ -119,12 +120,12 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                     Text(
                       'Estimasi tiba 09:23 - 09:33',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                         color: labelColor,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,14 +136,14 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                                 ? 'Ambulans sedang menuju ke lokasimu'
                                 : 'Supir sedang mengantar pesananmu',
                             style: TextStyle(
-                              fontSize: 22,
+                              fontSize: 22.sp,
                               fontWeight: FontWeight.bold,
                               color: textColor,
                               height: 1.2,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16.w),
                         Container(
                           width: 80,
                           height: 80,
@@ -154,7 +155,7 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             widget.type == 'Ambulans'
                                 ? Icons.emergency
                                 : Icons.local_shipping,
-                            size: 40,
+                            size: 40.sp,
                             color: widget.type == 'Ambulans'
                                 ? Colors.red
                                 : const Color(0xFF2563EB),
@@ -162,7 +163,7 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                     // STEPPER BAR
                     Row(
                       children: [
@@ -173,26 +174,26 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                         _buildStepIndicator(isCompleted: false, isActive: false),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     Text(
                       'Kami akan memberitahu kamu saat pesanan hampir tiba',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: labelColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Divider(color: isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     // DRIVER PROFILE
                     Row(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 22,
                           backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, color: Colors.white, size: 26),
+                          child: Icon(Icons.person, color: Colors.white, size: 26.sp),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10.w),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,22 +202,22 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                                 'FERDI KURNIAWAN (Supir)',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
+                                  fontSize: 13.5.sp,
                                   color: textColor,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 3),
+                              SizedBox(height: 3.h),
                               Row(
                                 children: [
-                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 15),
-                                  const SizedBox(width: 3),
+                                  Icon(Icons.star_rounded, color: Colors.amber, size: 15.sp),
+                                  SizedBox(width: 3.w),
                                   Text(
                                     '4.9',
-                                    style: TextStyle(fontSize: 12, color: labelColor),
+                                    style: TextStyle(fontSize: 12.sp, color: labelColor),
                                   ),
-                                  const SizedBox(width: 6),
+                                  SizedBox(width: 6.w),
                                   Container(
                                     width: 3,
                                     height: 3,
@@ -225,13 +226,13 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                                       shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
+                                  SizedBox(width: 6.w),
                                   Flexible(
                                     child: Text(
                                       'BM 6262 BP',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                        fontSize: 12.sp,
                                         color: textColor,
                                       ),
                                       maxLines: 1,
@@ -243,7 +244,7 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         // Action buttons
                         Container(
                           width: 38,
@@ -254,13 +255,13 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                           ),
                           child: IconButton(
                             padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            icon: const Icon(Icons.call_outlined, size: 18),
+                            constraints: BoxConstraints(),
+                            icon: Icon(Icons.call_outlined, size: 18.sp),
                             color: textColor,
                             onPressed: () {},
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Container(
                           width: 38,
                           height: 38,
@@ -270,8 +271,8 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                           ),
                           child: IconButton(
                             padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                            constraints: BoxConstraints(),
+                            icon: Icon(Icons.chat_bubble_outline, size: 18.sp),
                             color: textColor,
                             onPressed: () {},
                           ),
@@ -281,13 +282,13 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               // ===== DETAIL LOKASI =====
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
                     color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
                   ),
@@ -312,19 +313,19 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Text(
                           'Diambil dari',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: labelColor,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Padding(
-                      padding: const EdgeInsets.only(left: 22),
+                      padding: EdgeInsets.only(left: 22.w),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -332,15 +333,15 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             'Unit Pelayanan BUMDes',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               color: textColor,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             'Jl. Utama Desa, Kantor BUMDes',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: labelColor,
                               height: 1.4,
                             ),
@@ -348,20 +349,20 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Padding(
-                      padding: const EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.only(left: 4.w),
                       child: Row(
                         children: [
                           Icon(
                             Icons.more_vert,
                             color: Colors.grey[400],
-                            size: 18,
+                            size: 18.sp,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Row(
                       children: [
                         Container(
@@ -372,19 +373,19 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Text(
                           'Diantar ke',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: labelColor,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Padding(
-                      padding: const EdgeInsets.only(left: 22),
+                      padding: EdgeInsets.only(left: 22.w),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -392,15 +393,15 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                             'Lokasi Tujuan Anda',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               color: textColor,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             widget.deliveryAddress,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 13.sp,
                               color: labelColor,
                               height: 1.4,
                             ),
@@ -411,7 +412,7 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
             ],
           ),
         ),
@@ -430,7 +431,7 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
       child: Center(
         child: Icon(
           isCompleted ? Icons.check : (isActive ? Icons.local_shipping : Icons.home),
-          size: 14,
+          size: 14.sp,
           color: Colors.white,
         ),
       ),

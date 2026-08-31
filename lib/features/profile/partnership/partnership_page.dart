@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:siladesbeng_mobile/features/profile/partnership/partnership_registration_page.dart';
 
 class PartnershipPage extends StatelessWidget {
@@ -23,13 +24,13 @@ class PartnershipPage extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
-              titlePadding: const EdgeInsets.only(bottom: 14),
-              title: const Text(
+              titlePadding: EdgeInsets.only(bottom: 14.h),
+              title: Text(
                 'Gabung Kemitraan Desa',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -72,14 +73,14 @@ class PartnershipPage extends StatelessWidget {
                   ),
                   // Center Icon Content
                   Positioned(
-                    top: 50,
-                    left: 0,
-                    right: 0,
+                    top: 50.h,
+                    left: 0.w,
+                    right: 0.w,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(14),
+                          padding: EdgeInsets.all(14.w),
                           decoration: BoxDecoration(
                             color: Colors.white.withAlpha(35),
                             shape: BoxShape.circle,
@@ -95,18 +96,18 @@ class PartnershipPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.handshake_rounded,
-                            size: 34,
+                            size: 34.sp,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           'Sinergi Digital Pemerintah Desa & BUMDes',
                           style: TextStyle(
                             color: Colors.white.withAlpha(230),
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.4,
                           ),
@@ -120,14 +121,14 @@ class PartnershipPage extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildIntroCard(context, isDark),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   _buildStatCard(context, isDark),
-                  const SizedBox(height: 28),
+                  SizedBox(height: 28.h),
 
                   // Section Title: 3 Langkah Mudah
                   Row(
@@ -137,23 +138,23 @@ class PartnershipPage extends StatelessWidget {
                         height: 18,
                         decoration: BoxDecoration(
                           color: primaryBlue,
-                          borderRadius: BorderRadius.circular(2),
+                          borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text(
                         '3 Langkah Mudah Bergabung',
                         style: TextStyle(
-                          fontSize: 16.5,
+                          fontSize: 16.5.sp,
                           fontWeight: FontWeight.bold,
                           color: isDark ? Colors.white : const Color(0xFF0F172A),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                   _buildCompactSteps(context, isDark),
-                  const SizedBox(height: 28),
+                  SizedBox(height: 28.h),
 
                   // Section Title: Keuntungan
                   Row(
@@ -163,26 +164,26 @@ class PartnershipPage extends StatelessWidget {
                         height: 18,
                         decoration: BoxDecoration(
                           color: primaryBlue,
-                          borderRadius: BorderRadius.circular(2),
+                          borderRadius: BorderRadius.circular(2.r),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text(
                         'Keuntungan Kemitraan Desa',
                         style: TextStyle(
-                          fontSize: 16.5,
+                          fontSize: 16.5.sp,
                           fontWeight: FontWeight.bold,
                           color: isDark ? Colors.white : const Color(0xFF0F172A),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                   _buildBenefitGrid(context, isDark),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   _buildRegisterButton(context),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                 ],
               ),
             ),
@@ -194,10 +195,10 @@ class PartnershipPage extends StatelessWidget {
 
   Widget _buildIntroCard(BuildContext context, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
@@ -212,18 +213,18 @@ class PartnershipPage extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: const Color(0xFF2FA2F1).withAlpha(20),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.stars_rounded,
               color: Color(0xFF2FA2F1),
-              size: 26,
+              size: 26.sp,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,16 +232,16 @@ class PartnershipPage extends StatelessWidget {
                 Text(
                   'Transformasi Digital Terpadu',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   'Integrasikan layanan desa, ekonomi BUMDes, dan administrasi warga dalam satu genggaman.',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: isDark ? Colors.white70 : const Color(0xFF64748B),
                     height: 1.4,
                   ),
@@ -255,14 +256,14 @@ class PartnershipPage extends StatelessWidget {
 
   Widget _buildStatCard(BuildContext context, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF2FA2F1), Color(0xFF0284C7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2FA2F1).withAlpha(60),
@@ -274,19 +275,19 @@ class PartnershipPage extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(35),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.apartment_rounded,
               color: Colors.white,
-              size: 28,
+              size: 28.sp,
             ),
           ),
-          const SizedBox(width: 14),
-          const Expanded(
+          SizedBox(width: 14.w),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -295,15 +296,15 @@ class PartnershipPage extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
-                SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   'Desa & Kelurahan Tergabung',
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -311,10 +312,10 @@ class PartnershipPage extends StatelessWidget {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(15),
@@ -323,17 +324,17 @@ class PartnershipPage extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16),
-                SizedBox(width: 5),
+                Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16.sp),
+                SizedBox(width: 5.w),
                 Text(
                   'Aktif',
                   style: TextStyle(
                     color: Color(0xFF0F172A),
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                 ),
               ],
@@ -378,10 +379,10 @@ class PartnershipPage extends StatelessWidget {
         return Expanded(
           child: Container(
             margin: EdgeInsets.only(right: isLast ? 0 : 8),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+            padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 8.w),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
               ),
@@ -404,25 +405,25 @@ class PartnershipPage extends StatelessWidget {
                   ),
                   child: Icon(
                     step['icon'] as IconData,
-                    size: 20,
+                    size: 20.sp,
                     color: step['color'] as Color,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   step['title'] as String,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   step['sub'] as String,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     color: isDark ? Colors.white60 : const Color(0xFF64748B),
                     height: 1.3,
                   ),
@@ -471,15 +472,15 @@ class PartnershipPage extends StatelessWidget {
         Row(
           children: [
             Expanded(child: _buildBenefitCard(benefits[0], isDark)),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(child: _buildBenefitCard(benefits[1], isDark)),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         Row(
           children: [
             Expanded(child: _buildBenefitCard(benefits[2], isDark)),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(child: _buildBenefitCard(benefits[3], isDark)),
           ],
         ),
@@ -491,10 +492,10 @@ class PartnershipPage extends StatelessWidget {
     final color = item['color'] as Color;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
@@ -510,29 +511,29 @@ class PartnershipPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: color.withAlpha(25),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(item['icon'] as IconData, size: 20, color: color),
+            child: Icon(item['icon'] as IconData, size: 20.sp, color: color),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             item['title'] as String,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 13,
+              fontSize: 13.sp,
               color: isDark ? Colors.white : const Color(0xFF0F172A),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 3),
+          SizedBox(height: 3.h),
           Text(
             item['desc'] as String,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: isDark ? Colors.white60 : const Color(0xFF64748B),
               height: 1.35,
             ),
@@ -554,7 +555,7 @@ class PartnershipPage extends StatelessWidget {
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF2FA2F1).withAlpha(80),
@@ -568,16 +569,16 @@ class PartnershipPage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const PartnershipRegistrationPage(),
+                builder: (context) => PartnershipRegistrationPage(),
               ),
             );
           },
-          icon: const Icon(Icons.add_business_rounded, color: Colors.white, size: 20),
-          label: const Text(
+          icon: Icon(Icons.add_business_rounded, color: Colors.white, size: 20.sp),
+          label: Text(
             'Ajukan Kemitraan Desa',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: 15.sp,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.3,
             ),
@@ -585,9 +586,9 @@ class PartnershipPage extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(18.r),
             ),
           ),
         ),

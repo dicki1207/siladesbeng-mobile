@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -83,7 +84,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/user'),
+        Uri.parse('http://10.121.197.148:8000/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -150,7 +151,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.250.3.148:8000/api/profile/update'),
+        Uri.parse('http://10.121.197.148:8000/api/profile/update'),
       );
 
       request.headers.addAll({
@@ -214,7 +215,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final token = prefs.getString('auth_token');
       if (token != null) {
         await http.post(
-          Uri.parse('http://10.250.3.148:8000/api/logout'),
+          Uri.parse('http://10.121.197.148:8000/api/logout'),
           headers: {'Authorization': 'Bearer $token'},
         );
       }
@@ -266,13 +267,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(10),
+          insetPadding: EdgeInsets.all(10.w),
           child: Stack(
             alignment: Alignment.center,
             children: [
               InteractiveViewer(
                 panEnabled: true,
-                boundaryMargin: const EdgeInsets.all(20),
+                boundaryMargin: EdgeInsets.all(20.w),
                 minScale: 0.5,
                 maxScale: 3.0,
                 child: Container(
@@ -281,7 +282,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     maxWidth: MediaQuery.of(context).size.width * 0.9,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     image: DecorationImage(
                       image: imageProvider,
                       fit: BoxFit.contain,
@@ -290,13 +291,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
               ),
               Positioned(
-                top: 10,
-                right: 10,
+                top: 10.h,
+                right: 10.w,
                 child: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close_rounded,
                     color: Colors.white,
-                    size: 30,
+                    size: 30.sp,
                   ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -337,7 +338,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18.0),
+      padding: EdgeInsets.only(bottom: 18.0.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -348,7 +349,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: Text(
                   label,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white70 : const Color(0xFF1E293B),
                   ),
@@ -361,14 +362,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   children: [
                     Icon(
                       Icons.lock_outline_rounded,
-                      size: 13,
+                      size: 13.sp,
                       color: isDark ? Colors.white30 : Colors.grey[400],
                     ),
-                    const SizedBox(width: 3),
+                    SizedBox(width: 3.w),
                     Text(
                       'Terkunci',
                       style: TextStyle(
-                        fontSize: 10.5,
+                        fontSize: 10.5.sp,
                         color: isDark ? Colors.white30 : Colors.grey[400],
                         fontWeight: FontWeight.w500,
                       ),
@@ -377,7 +378,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           child,
         ],
       ),
@@ -400,7 +401,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ? Colors.white.withValues(alpha: 0.03)
                   : const Color(0xFFF1F5F9))
             : Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: isDark
               ? Colors.white10
@@ -413,7 +414,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         maxLines: maxLines,
         keyboardType: keyboardType,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           fontWeight: !enabled ? FontWeight.w600 : FontWeight.normal,
           color: isDark
               ? (!enabled ? Colors.white54 : Colors.white)
@@ -424,20 +425,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
           prefixIcon: prefixIcon != null
               ? Icon(
                   prefixIcon,
-                  size: 20,
+                  size: 20.sp,
                   color: isDark ? Colors.white38 : Colors.grey[400],
                 )
               : null,
           suffixIcon: isLocked
               ? Icon(
                   Icons.lock_outline_rounded,
-                  size: 16,
+                  size: 16.sp,
                   color: isDark ? Colors.white24 : Colors.grey[400],
                 )
               : null,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 13,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 13.h,
           ),
         ),
       ),
@@ -452,7 +453,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark ? Colors.white12 : Colors.grey.shade300,
           width: 1.2,
@@ -466,7 +467,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(17.r),
         child: Stack(
           children: [
             // Watermark Logo
@@ -477,13 +478,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 opacity: isDark ? 0.04 : 0.06,
                 child: Icon(
                   Icons.account_balance_rounded,
-                  size: 130,
+                  size: 130.sp,
                   color: primaryColor,
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -495,14 +496,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         children: [
                           Icon(
                             Icons.credit_card_rounded,
-                            size: 18,
+                            size: 18.sp,
                             color: primaryColor,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Text(
                             'KTP DIGITAL',
                             style: TextStyle(
-                              fontSize: 13.5,
+                              fontSize: 13.5.sp,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.8,
                               color: isDark
@@ -514,15 +515,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                       // Status Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 4.h,
                         ),
                         decoration: BoxDecoration(
                           color: isVerified
                               ? primaryColor.withValues(alpha: 0.12)
                               : Colors.amber.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                           border: Border.all(
                             color: isVerified
                                 ? primaryColor.withValues(alpha: 0.4)
@@ -536,16 +537,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               isVerified
                                   ? Icons.verified_rounded
                                   : Icons.shield_outlined,
-                              size: 13,
+                              size: 13.sp,
                               color: isVerified
                                   ? primaryColor
                                   : Colors.amber.shade800,
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             Text(
                               isVerified ? 'TERVERIFIKASI' : 'BELUM VERIFIKASI',
                               style: TextStyle(
-                                fontSize: 10.5,
+                                fontSize: 10.5.sp,
                                 fontWeight: FontWeight.bold,
                                 color: isVerified
                                     ? primaryColor
@@ -559,13 +560,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ],
                   ),
 
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                   Divider(
                     height: 1,
                     thickness: 1,
                     color: isDark ? Colors.white10 : Colors.grey.shade200,
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
 
                   // 2. Data Card Body
                   Row(
@@ -590,7 +591,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 color: isDark
                                     ? Colors.grey[800]
                                     : Colors.grey[100],
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(10.r),
                                 border: Border.all(
                                   color: isDark
                                       ? Colors.white24
@@ -599,14 +600,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(9),
+                                borderRadius: BorderRadius.circular(9.r),
                                 child: _imageFile != null
                                     ? Image.file(
                                         _imageFile!,
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, _, _) => Icon(
                                           Icons.person_rounded,
-                                          size: 40,
+                                          size: 40.sp,
                                           color: Colors.grey[400],
                                         ),
                                       )
@@ -616,13 +617,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                               fit: BoxFit.cover,
                                               errorBuilder: (_, _, _) => Icon(
                                                 Icons.person_rounded,
-                                                size: 40,
+                                                size: 40.sp,
                                                 color: Colors.grey[400],
                                               ),
                                             )
                                           : Icon(
                                               Icons.person_rounded,
-                                              size: 40,
+                                              size: 40.sp,
                                               color: Colors.grey[400],
                                             )),
                               ),
@@ -632,10 +633,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r),
                               onTap: _pickImage,
                               child: Container(
-                                padding: const EdgeInsets.all(5),
+                                padding: EdgeInsets.all(5.w),
                                 decoration: BoxDecoration(
                                   color: primaryColor,
                                   shape: BoxShape.circle,
@@ -653,9 +654,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.camera_alt_rounded,
-                                  size: 13,
+                                  size: 13.sp,
                                   color: Colors.white,
                                 ),
                               ),
@@ -664,7 +665,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ],
                       ),
 
-                      const SizedBox(width: 14),
+                      SizedBox(width: 14.w),
 
                       // Informasi NIK, Nama, Alamat
                       Expanded(
@@ -672,20 +673,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // NIK
-                            const Text(
+                            Text(
                               'NIK',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey,
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2.h),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 3.h,
                               ),
                               decoration: BoxDecoration(
                                 color: isVerified
@@ -693,12 +694,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     : (isDark
                                           ? Colors.white.withValues(alpha: 0.05)
                                           : const Color(0xFFF1F5F9)),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Text(
                                 hasNik ? _nik : 'Belum diisi',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: hasNik ? 'monospace' : null,
                                   letterSpacing: hasNik ? 0.8 : 0,
@@ -712,19 +713,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
 
                             // NAMA
-                            const Text(
+                            Text(
                               'NAMA',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey,
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2.h),
                             Row(
                               children: [
                                 Expanded(
@@ -733,7 +734,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                         ? _nameController.text.toUpperCase()
                                         : 'WARGA DESA',
                                     style: TextStyle(
-                                      fontSize: 12.5,
+                                      fontSize: 12.5.sp,
                                       fontWeight: FontWeight.w800,
                                       color: isDark
                                           ? Colors.white
@@ -744,32 +745,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   ),
                                 ),
                                 if (isVerified) ...[
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4.w),
                                   Icon(
                                     Icons.check_circle_rounded,
-                                    size: 14,
+                                    size: 14.sp,
                                     color: primaryColor,
                                   ),
                                 ],
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
 
                             // ALAMAT
-                            const Text(
+                            Text(
                               'ALAMAT',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 10.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey,
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2.h),
                             Text(
                               'RT ${_rtController.text.isNotEmpty ? _rtController.text : '00'} / RW ${_rwController.text.isNotEmpty ? _rwController.text : '00'} - (Disensor)',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 11.sp,
                                 fontWeight: FontWeight.w600,
                                 color: isDark
                                     ? Colors.white60
@@ -786,7 +787,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                   // 3. Action Button (Jika Belum Verifikasi)
                   if (!isVerified) ...[
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14.h),
                     InkWell(
                       onTap: () {
                         Navigator.push(
@@ -796,15 +797,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                         ).then((_) => _loadProfileFromApi());
                       },
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 8.h,
                         ),
                         decoration: BoxDecoration(
                           color: primaryColor.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                           border: Border.all(
                             color: primaryColor.withValues(alpha: 0.25),
                           ),
@@ -816,14 +817,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               children: [
                                 Icon(
                                   Icons.shield_outlined,
-                                  size: 15,
+                                  size: 15.sp,
                                   color: primaryColor,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.w),
                                 Text(
                                   'Verifikasi KTP & Wajah Sekarang',
                                   style: TextStyle(
-                                    fontSize: 11.5,
+                                    fontSize: 11.5.sp,
                                     fontWeight: FontWeight.bold,
                                     color: primaryColor,
                                   ),
@@ -832,7 +833,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ),
                             Icon(
                               Icons.arrow_forward_ios_rounded,
-                              size: 12,
+                              size: 12.sp,
                               color: primaryColor,
                             ),
                           ],
@@ -908,14 +909,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ],
           ),
           leading: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios_new_rounded,
               color: Colors.white,
-              size: 18,
+              size: 18.sp,
             ),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Column(
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -923,14 +924,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
-                  fontSize: 17,
+                  fontSize: 17.sp,
                 ),
               ),
               Text(
                 'Kelola identitas, domisili & keamanan akun',
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.normal,
                 ),
               ),
@@ -942,8 +943,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               height: 52,
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF090D16) : Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(24.r),
                 ),
                 border: Border(
                   bottom: BorderSide(
@@ -958,32 +959,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     width: 3.5,
                     color: Color(0xFF2563EB),
                   ),
-                  borderRadius: BorderRadius.circular(3),
-                  insets: const EdgeInsets.symmetric(horizontal: 16),
+                  borderRadius: BorderRadius.circular(3.r),
+                  insets: EdgeInsets.symmetric(horizontal: 16.w),
                 ),
                 indicatorSize: TabBarIndicatorSize.label,
                 labelColor: const Color(0xFF2563EB),
                 unselectedLabelColor: isDark
                     ? Colors.white60
                     : const Color(0xFF64748B),
-                labelStyle: const TextStyle(
+                labelStyle: TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 13.5,
+                  fontSize: 13.5.sp,
                   letterSpacing: 0.2,
                 ),
-                unselectedLabelStyle: const TextStyle(
+                unselectedLabelStyle: TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
                 dividerColor: Colors.transparent,
-                tabs: const [
+                tabs: [
                   Tab(
                     height: 48,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.person_rounded, size: 16),
-                        SizedBox(width: 6),
+                        Icon(Icons.person_rounded, size: 16.sp),
+                        SizedBox(width: 6.w),
                         Text('Pribadi'),
                       ],
                     ),
@@ -993,8 +994,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.map_rounded, size: 16),
-                        SizedBox(width: 6),
+                        Icon(Icons.map_rounded, size: 16.sp),
+                        SizedBox(width: 6.w),
                         Text('Wilayah'),
                       ],
                     ),
@@ -1004,8 +1005,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.shield_rounded, size: 16),
-                        SizedBox(width: 6),
+                        Icon(Icons.shield_rounded, size: 16.sp),
+                        SizedBox(width: 6.w),
                         Text('Keamanan'),
                       ],
                     ),
@@ -1023,14 +1024,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   // TAB 1: PRIBADI
                   SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // KTP Digital Hero Card (dengan foto profil & ganti foto)
                         _buildDigitalKtpCard(isDark, primaryColor),
 
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
 
                         _buildField(
                           label: 'Nama Pengguna',
@@ -1070,10 +1071,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         _buildField(
                           label: 'Jenis Kelamin',
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
                             decoration: BoxDecoration(
                               color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14.r),
                               border: Border.all(
                                 color: isDark
                                     ? Colors.white12
@@ -1087,7 +1088,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 hint: Text(
                                   'Pilih Jenis Kelamin',
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 14.sp,
                                     color: isDark
                                         ? Colors.white38
                                         : Colors.grey[500],
@@ -1113,7 +1114,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 80),
+                        SizedBox(height: 80.h),
                       ],
                     ),
                   ),
@@ -1121,18 +1122,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   // TAB 2: WILAYAH
                   SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Data Domisili & Wilayah',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20.h),
 
                         _buildField(
                           label: 'Alamat Lengkap (Jalan / Nomor Rumah)',
@@ -1155,7 +1156,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Expanded(
                               child: _buildField(
                                 label: 'Desa / Kelurahan',
@@ -1181,7 +1182,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Expanded(
                               child: _buildField(
                                 label: 'RT',
@@ -1194,7 +1195,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 80),
+                        SizedBox(height: 80.h),
                       ],
                     ),
                   ),
@@ -1202,26 +1203,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   // TAB 3: KEAMANAN
                   SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Keamanan & Akses Akun',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         Text(
                           'Kelola kata sandi dan keamanan akun Anda untuk melindungi data pribadi.',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: isDark ? Colors.white54 : Colors.grey[600],
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20.h),
 
                         // Card 1: Kata Sandi
                         _buildSecurityCard(
@@ -1241,7 +1242,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             );
                           },
                         ),
-                        const SizedBox(height: 80),
+                        SizedBox(height: 80.h),
                       ],
                     ),
                   ),
@@ -1262,16 +1263,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      padding: EdgeInsets.symmetric(vertical: 15.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Simpan Perubahan',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1297,7 +1298,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
         ),
@@ -1311,12 +1312,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(14.w),
             child: Row(
               children: [
                 Container(
@@ -1324,11 +1325,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   height: 44,
                   decoration: BoxDecoration(
                     color: iconColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(icon, color: iconColor, size: 22),
+                  child: Icon(icon, color: iconColor, size: 22.sp),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1336,18 +1337,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           fontWeight: FontWeight.bold,
                           color: isDark
                               ? Colors.white
                               : const Color(0xFF1E293B),
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3.h),
                       Text(
                         subtitle,
                         style: TextStyle(
-                          fontSize: 11.5,
+                          fontSize: 11.5.sp,
                           color: isDark ? Colors.white38 : Colors.grey[500],
                         ),
                       ),
@@ -1362,15 +1363,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       Text(
                         actionLabel,
                         style: TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).primaryColor,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Icon(
                         Icons.arrow_forward_ios_rounded,
-                        size: 12,
+                        size: 12.sp,
                         color: Theme.of(context).primaryColor,
                       ),
                     ],

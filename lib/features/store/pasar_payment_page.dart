@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
@@ -91,7 +92,7 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
       SnackBar(
         content: Text('$label berhasil disalin ke clipboard!'),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
       ),
     );
   }
@@ -103,11 +104,11 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
 
     if (widget.paymentMethod == 'cod' || widget.paymentMethod == 'tunai') {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
@@ -120,28 +121,28 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: primaryColor.withAlpha(20),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.payments_outlined, size: 40, color: primaryColor),
+              child: Icon(Icons.payments_outlined, size: 40.sp, color: primaryColor),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14.h),
             Text(
               "Bayar Tunai / COD",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               "Siapkan uang pas saat pesanan diantar kurir atau saat Anda mengambil barang di toko.",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 height: 1.4,
                 color: isDark ? Colors.white60 : const Color(0xFF64748B),
               ),
@@ -153,11 +154,11 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
       const String rekName = "BRI";
       const String rekNumber = "1234-5678-9012";
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
@@ -170,40 +171,40 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: primaryColor.withAlpha(20),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.account_balance_outlined, size: 36, color: primaryColor),
+              child: Icon(Icons.account_balance_outlined, size: 36.sp, color: primaryColor),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14.h),
             Text(
               "Transfer ke Rekening Resmi:",
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 color: isDark ? Colors.white60 : const Color(0xFF64748B),
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               "$rekName - $rekNumber",
               style: TextStyle(
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                color: isDark ? Colors.white : Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             OutlinedButton.icon(
               onPressed: () => _copyToClipboard(rekNumber, "Nomor Rekening"),
-              icon: const Icon(Icons.copy_rounded, size: 16),
+              icon: Icon(Icons.copy_rounded, size: 16.sp),
               label: const Text("Salin Rekening", style: TextStyle(fontWeight: FontWeight.bold)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: primaryColor,
                 side: BorderSide(color: primaryColor),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               ),
             ),
           ],
@@ -211,11 +212,11 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
       );
     } else if (widget.paymentMethod == 'qris') {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
@@ -228,26 +229,26 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: primaryColor.withAlpha(20),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.qr_code_2_rounded, size: 36, color: primaryColor),
+              child: Icon(Icons.qr_code_2_rounded, size: 36.sp, color: primaryColor),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               "Scan QRIS untuk Membayar",
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14.h),
             if (widget.paymentQrUrl != null && widget.paymentQrUrl!.isNotEmpty)
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 child: Image.network(
                   widget.paymentQrUrl!,
                   height: 180,
@@ -256,8 +257,8 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
                   errorBuilder: (context, error, stackTrace) => Container(
                     height: 180,
                     width: 180,
-                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                    child: const Center(child: Icon(Icons.qr_code, size: 80, color: Colors.grey)),
+                    color: isDark ? Color(0xFF0F172A) : Color(0xFFF1F5F9),
+                    child: Center(child: Icon(Icons.qr_code, size: 80.sp, color: Colors.grey)),
                   ),
                 ),
               )
@@ -267,10 +268,10 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
                 width: 160,
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Center(
-                  child: Icon(Icons.qr_code_2, size: 80, color: primaryColor),
+                  child: Icon(Icons.qr_code_2, size: 80.sp, color: primaryColor),
                 ),
               ),
           ],
@@ -278,11 +279,11 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
       );
     } else if (widget.paymentMethod == 'virtual_account') {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: cardBg,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
@@ -295,44 +296,44 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: primaryColor.withAlpha(20),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.credit_card_rounded, size: 36, color: primaryColor),
+              child: Icon(Icons.credit_card_rounded, size: 36.sp, color: primaryColor),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               "Nomor Virtual Account:",
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 color: isDark ? Colors.white60 : const Color(0xFF64748B),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               widget.paymentVaNumber ?? "8808 1234 5678 9012",
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             OutlinedButton.icon(
               onPressed: () => _copyToClipboard(
                 widget.paymentVaNumber ?? "8808123456789012",
                 "Nomor Virtual Account",
               ),
-              icon: const Icon(Icons.copy_rounded, size: 16),
+              icon: Icon(Icons.copy_rounded, size: 16.sp),
               label: const Text("Salin Nomor VA", style: TextStyle(fontWeight: FontWeight.bold)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: primaryColor,
                 side: BorderSide(color: primaryColor),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               ),
             ),
           ],
@@ -353,11 +354,11 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'Pembayaran',
             style: TextStyle(
               fontWeight: FontWeight.w800,
-              fontSize: 17,
+              fontSize: 17.sp,
               color: Colors.white,
               letterSpacing: 0.3,
             ),
@@ -415,57 +416,57 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
             children: [
               // Dynamic Header Card
               Container(
-                margin: const EdgeInsets.all(20),
-                padding: const EdgeInsets.all(22),
+                margin: EdgeInsets.all(20.w),
+                padding: EdgeInsets.all(22.w),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(22.r),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF2563EB).withAlpha(60),
                       blurRadius: 14,
-                      offset: const Offset(0, 5),
+                      offset: Offset(0, 5),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.check_circle_outline_rounded, size: 64, color: Colors.white),
-                    const SizedBox(height: 12),
-                    const Text(
+                    Icon(Icons.check_circle_outline_rounded, size: 64.sp, color: Colors.white),
+                    SizedBox(height: 12.h),
+                    Text(
                       "Pesanan Berhasil Dibuat!",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 19,
+                        fontSize: 19.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       "Nomor Pesanan: ${widget.orderNumber}",
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18.h),
                     Container(height: 1, color: Colors.white24),
-                    const SizedBox(height: 14),
-                    const Text(
+                    SizedBox(height: 14.h),
+                    Text(
                       "Total Pembayaran",
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                      style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       _formatCurrency(widget.grandTotal),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 26,
+                        fontSize: 26.sp,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -476,21 +477,21 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
               // Countdown Timer
               if (_expiryTime != null) ...[
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Column(
                     children: [
                       Text(
                         "Batas Waktu Pembayaran:",
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 13.sp,
                           color: isDark ? Colors.white60 : const Color(0xFF64748B),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       Text(
                         _formatDuration(_remainingTime),
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 26.sp,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'monospace',
                           color: isWarningTime ? const Color(0xFFEF4444) : (isDark ? Colors.white : const Color(0xFF0F172A)),
@@ -499,13 +500,13 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
               ],
 
               // Payment Instructions
               _buildPaymentInstructions(isDark),
 
-              const SizedBox(height: 40),
+              SizedBox(height: 40.h),
             ],
           ),
         ),
@@ -534,9 +535,9 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                     ),
-                    child: const Text('Kembali ke Beranda', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                    child: Text('Kembali ke Beranda', style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

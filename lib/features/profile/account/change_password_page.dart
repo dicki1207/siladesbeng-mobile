@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -51,7 +52,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       final token = prefs.getString('auth_token');
 
       final response = await http.post(
-        Uri.parse('http://10.250.3.148:8000/api/profile/password'),
+        Uri.parse('http://10.121.197.148:8000/api/profile/password'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -111,12 +112,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Ubah Kata Sandi',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 17,
+            fontSize: 17.sp,
             letterSpacing: 0.3,
           ),
         ),
@@ -168,15 +169,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.0.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
                 color: primaryColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
                 border: Border.all(
                   color: primaryColor.withValues(alpha: 0.15),
                 ),
@@ -184,18 +185,18 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
                       color: primaryColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
                       Icons.shield_outlined,
                       color: primaryColor,
-                      size: 24,
+                      size: 24.sp,
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,16 +204,16 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                         Text(
                           'Perbarui Keamanan Akun',
                           style: TextStyle(
-                            fontSize: 14.5,
+                            fontSize: 14.5.sp,
                             fontWeight: FontWeight.bold,
                             color: isDark ? Colors.white : const Color(0xFF1E293B),
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3.h),
                         Text(
                           'Gunakan kombinasi huruf, angka, dan karakter unik agar kata sandi kuat.',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: isDark ? Colors.white54 : Colors.grey[600],
                           ),
                         ),
@@ -222,7 +223,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: 28.h),
 
             _buildPasswordField(
               label: 'Kata Sandi Saat Ini',
@@ -231,7 +232,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               onToggleVisibility: () =>
                   setState(() => _obscureCurrent = !_obscureCurrent),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
 
             _buildPasswordField(
               label: 'Kata Sandi Baru',
@@ -240,7 +241,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               onToggleVisibility: () =>
                   setState(() => _obscureNew = !_obscureNew),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
 
             _buildPasswordField(
               label: 'Konfirmasi Kata Sandi Baru',
@@ -252,7 +253,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
               onSubmitted: (_) => _submitChangePassword(),
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -260,14 +261,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                   ),
                   elevation: 0,
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
@@ -275,10 +276,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           strokeWidth: 2.5,
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'Simpan Kata Sandi',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -307,16 +308,16 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 13.5,
+            fontSize: 13.5.sp,
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white70 : const Color(0xFF1E293B),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(
               color: isDark ? Colors.white12 : Colors.grey.shade300,
             ),
@@ -327,14 +328,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             textInputAction: textInputAction,
             onSubmitted: onSubmitted,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: isDark ? Colors.white : Colors.black87,
               fontWeight: FontWeight.w600,
             ),
             decoration: InputDecoration(
               prefixIcon: Icon(
                 Icons.lock_outline_rounded,
-                size: 20,
+                size: 20.sp,
                 color: primaryColor,
               ),
               suffixIcon: IconButton(
@@ -343,14 +344,14 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       ? Icons.visibility_off_rounded
                       : Icons.visibility_rounded,
                   color: Colors.grey,
-                  size: 20,
+                  size: 20.sp,
                 ),
                 onPressed: onToggleVisibility,
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.w,
+                vertical: 14.h,
               ),
             ),
           ),

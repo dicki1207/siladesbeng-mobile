@@ -1,5 +1,6 @@
 import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
@@ -65,11 +66,13 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     _fetchItems();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndStartShowcase();
+      _checkAndStartShowcase(
+);
     });
   }
 
-  Future<void> _checkAndStartShowcase() async {
+  Future<void> _checkAndStartShowcase(
+) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTour = prefs.getBool('has_seen_tool_rental_tour') ?? false;
@@ -191,12 +194,12 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: Theme.of(ctx).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
         padding: EdgeInsets.only(
-          top: 16,
-          left: 20,
-          right: 20,
+          top: 16.h,
+          left: 20.w,
+          right: 20.w,
           bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
         ),
         child: SingleChildScrollView(
@@ -210,11 +213,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -223,10 +226,10 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     height: 50,
                     decoration: BoxDecoration(
                       color: primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                       child:
                           (item['image'] != null &&
                               item['image'].toString().isNotEmpty)
@@ -239,7 +242,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                                         ? Icons.inventory_2_outlined
                                         : Icons.handyman_outlined,
                                     color: primaryColor,
-                                    size: 26,
+                                    size: 26.sp,
                                   ),
                             )
                           : Icon(
@@ -247,11 +250,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                                   ? Icons.inventory_2_outlined
                                   : Icons.handyman_outlined,
                               color: primaryColor,
-                              size: 26,
+                              size: 26.sp,
                             ),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,18 +262,18 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         Text(
                           item['name'] ?? 'Detail Paket',
                           style: TextStyle(
-                            fontSize: 17,
+                            fontSize: 17.sp,
                             fontWeight: FontWeight.bold,
                             color: isDark
                                 ? Colors.white
                                 : const Color(0xFF1E293B),
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3.h),
                         Text(
                           '${_currencyFormat.format(itemPrice)} / Hari',
                           style: TextStyle(
-                            fontSize: 14.5,
+                            fontSize: 14.5.sp,
                             fontWeight: FontWeight.w900,
                             color: primaryColor,
                           ),
@@ -280,56 +283,56 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               Text(
                 'Deskripsi Layanan',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : const Color(0xFF1E293B),
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Text(
                 item['description'] ??
                     'Penyewaan perlengkapan berkualitas, kokoh, dan terawat dari BUMDes.',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   color: isDark ? Colors.white60 : Colors.grey[700],
                   height: 1.5,
                 ),
               ),
               if (item['details'] != null &&
                   (item['details'] as List).isNotEmpty) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   'Fasilitas & Kelengkapan:',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : const Color(0xFF1E293B),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 ...((item['details'] as List<dynamic>?) ?? [])
                     .map((e) => e.toString())
                     .map(
                       (detail) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
+                        padding: EdgeInsets.only(bottom: 6.h),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.check_circle_rounded,
                               color: primaryColor,
-                              size: 16,
+                              size: 16.sp,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w),
                             Expanded(
                               child: Text(
                                 detail,
                                 style: TextStyle(
-                                  fontSize: 12.5,
+                                  fontSize: 12.5.sp,
                                   color: isDark
                                       ? Colors.white70
                                       : Colors.grey[800],
@@ -341,7 +344,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       ),
                     ),
               ],
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -364,17 +367,17 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       _handleBooking();
                     }
                   },
-                  icon: const Icon(Icons.shopping_bag_outlined, size: 18),
-                  label: const Text(
+                  icon: Icon(Icons.shopping_bag_outlined, size: 18.sp),
+                  label: Text(
                     'Pilih & Sewa Paket Ini',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                     elevation: 0,
                   ),
@@ -486,12 +489,12 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Penyewaan Alat',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 18.sp,
             letterSpacing: 0.3,
           ),
         ),
@@ -550,25 +553,27 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Showcase(
+            titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+            descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
             key: _keyTabs,
             title: 'Pilihan Mode Sewa',
             description: 'Pilih "Paket Alat Desa" untuk paket lengkap hemat, atau "Buat Paket Sendiri" untuk memilih alat satuan sesuai kebutuhan.',
-            targetBorderRadius: BorderRadius.circular(25),
+            targetBorderRadius: BorderRadius.circular(25.r),
             child: Container(
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(25.r),
               ),
               child: TabBar(
               controller: _tabController,
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+              labelPadding: EdgeInsets.symmetric(horizontal: 4.w),
               indicator: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(22.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),
@@ -579,23 +584,23 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
               ),
               labelColor: isDark ? Colors.white : primaryColor,
               unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
-              labelStyle: const TextStyle(
+              labelStyle: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 12.5,
+                fontSize: 12.5.sp,
               ),
-              unselectedLabelStyle: const TextStyle(
+              unselectedLabelStyle: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 12.5,
+                fontSize: 12.5.sp,
               ),
-              tabs: const [
+              tabs: [
                 Tab(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.inventory_2_rounded, size: 15),
-                        SizedBox(width: 5),
+                        Icon(Icons.inventory_2_rounded, size: 15.sp),
+                        SizedBox(width: 5.w),
                         Text('Paket Alat Desa'),
                       ],
                     ),
@@ -607,8 +612,8 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.handyman_rounded, size: 15),
-                        SizedBox(width: 5),
+                        Icon(Icons.handyman_rounded, size: 15.sp),
+                        SizedBox(width: 5.w),
                         Text('Buat Paket Sendiri'),
                       ],
                     ),
@@ -646,11 +651,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 60, color: Colors.grey[400]),
-            const SizedBox(height: 12),
-            const Text(
+            Icon(Icons.inventory_2_outlined, size: 60.sp, color: Colors.grey[400]),
+            SizedBox(height: 12.h),
+            Text(
               'Belum ada paket alat tersedia.',
-              style: TextStyle(fontSize: 15, color: Colors.grey),
+              style: TextStyle(fontSize: 15.sp, color: Colors.grey),
             ),
           ],
         ),
@@ -661,7 +666,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: _adminPackages.length,
       itemBuilder: (context, idx) {
         final item = _adminPackages[idx];
@@ -674,13 +679,13 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(bottom: 14),
-            padding: const EdgeInsets.all(16),
+            margin: EdgeInsets.only(bottom: 14.h),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: isSelected
                   ? primaryColor.withValues(alpha: 0.08)
                   : Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: isSelected
                     ? primaryColor
@@ -708,7 +713,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         item['name']?.toString() ?? 'Paket Alat',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15.5,
+                          fontSize: 15.5.sp,
                           color: isDark
                               ? Colors.white
                               : const Color(0xFF1E293B),
@@ -717,39 +722,39 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 3.h,
                       ),
                       decoration: BoxDecoration(
                         color: primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
                         'Paket Resmi',
                         style: TextStyle(
                           color: primaryColor,
-                          fontSize: 10.5,
+                          fontSize: 10.5.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   item['items']?.toString() ?? '',
                   style: TextStyle(
                     color: isDark ? Colors.white54 : Colors.grey[600],
-                    fontSize: 12.5,
+                    fontSize: 12.5.sp,
                     height: 1.35,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -759,17 +764,17 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         Text(
                           'Tarif Sewa',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             color: isDark ? Colors.white38 : Colors.grey[500],
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         Text(
                           '${_currencyFormat.format(itemPrice)} / Hari',
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             color: primaryColor,
-                            fontSize: 15,
+                            fontSize: 15.sp,
                           ),
                         ),
                       ],
@@ -779,22 +784,22 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           ? Icons.check_circle_rounded
                           : Icons.radio_button_unchecked_rounded,
                       color: isSelected ? primaryColor : Colors.grey[400],
-                      size: 22,
+                      size: 22.sp,
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14.h),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () =>
                             _showDetailModal(context, item, adminIndex: idx),
-                        icon: const Icon(Icons.info_outline_rounded, size: 16),
-                        label: const Text(
+                        icon: Icon(Icons.info_outline_rounded, size: 16.sp),
+                        label: Text(
                           'Lihat Detail',
                           style: TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 12.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -802,13 +807,13 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           foregroundColor: primaryColor,
                           side: BorderSide(color: primaryColor),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
@@ -819,15 +824,15 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           backgroundColor: primaryColor,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          padding: EdgeInsets.symmetric(vertical: 10.h),
                           elevation: 0,
                         ),
-                        child: const Text(
+                        child: Text(
                           'Langsung Sewa',
                           style: TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 12.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -842,10 +847,12 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
         if (idx == 0) {
           return Showcase(
+            titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+            descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
             key: _keyItem,
             title: 'Pilih Paket Sewa',
             description: 'Ketuk pada kartu paket untuk memilih paket perlengkapan yang ingin disewa.',
-            targetBorderRadius: BorderRadius.circular(16),
+            targetBorderRadius: BorderRadius.circular(16.r),
             child: cardWidget,
           );
         }
@@ -866,11 +873,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.handyman_outlined, size: 60, color: Colors.grey[400]),
-            const SizedBox(height: 12),
-            const Text(
+            Icon(Icons.handyman_outlined, size: 60.sp, color: Colors.grey[400]),
+            SizedBox(height: 12.h),
+            Text(
               'Tidak ada alat satuan tersedia saat ini.',
-              style: TextStyle(fontSize: 15, color: Colors.grey),
+              style: TextStyle(fontSize: 15.sp, color: Colors.grey),
             ),
           ],
         ),
@@ -880,23 +887,23 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     final primaryColor = Theme.of(context).primaryColor;
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.all(12),
+              margin: EdgeInsets.only(bottom: 14.h),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: primaryColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(color: primaryColor.withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.touch_app_rounded, color: primaryColor, size: 20),
-                  const SizedBox(width: 10),
+                  Icon(Icons.touch_app_rounded, color: primaryColor, size: 20.sp),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       'Pilih alat yang Anda butuhkan dan sesuaikan jumlahnya untuk membuat paket sendiri.',
@@ -904,7 +911,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         color: isDark
                             ? Colors.white70
                             : const Color(0xFF334155),
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         height: 1.35,
                       ),
                     ),
@@ -925,7 +932,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
               childCount: _customItems.length,
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+          SliverToBoxAdapter(child: SizedBox(height: 20.h)),
         ],
       ),
     );
@@ -954,7 +961,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
           color: isSelected
               ? primaryColor.withValues(alpha: 0.08)
               : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isSelected
                 ? primaryColor
@@ -985,13 +992,13 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.05)
                           : const Color(0xFFF8FAFC),
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(15),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(15.r),
                       ),
                     ),
                     child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(15),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(15.r),
                       ),
                       child:
                           (item['image'] != null &&
@@ -1001,22 +1008,22 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                               fit: BoxFit.cover,
                               errorBuilder: (_, _, _) => Icon(
                                 Icons.handyman_outlined,
-                                size: 36,
+                                size: 36.sp,
                                 color: Colors.grey[400],
                               ),
                             )
                           : Icon(
                               Icons.handyman_outlined,
-                              size: 36,
+                              size: 36.sp,
                               color: Colors.grey[400],
                             ),
                     ),
                   ),
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 8.h,
+                    right: 8.w,
                     child: Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: EdgeInsets.all(4.w),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? primaryColor
@@ -1025,7 +1032,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       ),
                       child: Icon(
                         isSelected ? Icons.check_rounded : Icons.add_rounded,
-                        size: 14,
+                        size: 14.sp,
                         color: isSelected ? Colors.white : Colors.grey[700],
                       ),
                     ),
@@ -1037,7 +1044,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
             Expanded(
               flex: 50,
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(10.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1049,7 +1056,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           item['name']?.toString() ?? 'Alat',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: isDark
                                 ? Colors.white
                                 : const Color(0xFF1E293B),
@@ -1057,11 +1064,11 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         Text(
                           '${_currencyFormat.format(price)} / Hari',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.bold,
                             color: primaryColor,
                           ),
@@ -1086,21 +1093,21 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.all(4),
+                            padding: EdgeInsets.all(4.w),
                             decoration: BoxDecoration(
                               color: isDark
                                   ? Colors.white12
                                   : Colors.grey.shade200,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.remove, size: 14),
+                            child: Icon(Icons.remove, size: 14.sp),
                           ),
                         ),
                         Text(
                           '$qty',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                            fontSize: 13.sp,
                           ),
                         ),
                         InkWell(
@@ -1111,14 +1118,14 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                             });
                           },
                           child: Container(
-                            padding: const EdgeInsets.all(4),
+                            padding: EdgeInsets.all(4.w),
                             decoration: BoxDecoration(
                               color: primaryColor,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.add,
-                              size: 14,
+                              size: 14.sp,
                               color: Colors.white,
                             ),
                           ),
@@ -1142,20 +1149,22 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     final int total = _getTotalPrice();
 
     return Showcase(
+      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
       key: _keyBottomBar,
       title: 'Total & Lanjutkan Pemesanan',
       description: 'Periksa estimasi biaya sewa harian dan ketuk tombol "Lanjutkan Sewa" untuk melengkapi formulir jadwal dan pengantaran.',
-      targetBorderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      targetBorderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       child: Container(
         padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 16,
+          left: 20.w,
+          right: 20.w,
+          top: 16.h,
           bottom: MediaQuery.of(context).padding.bottom + 16,
         ),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
@@ -1180,19 +1189,19 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                         Text(
                           'Total Biaya (per hari)',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w500,
                             color: isDark ? Colors.white38 : Colors.grey[500],
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2.h),
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
                             _currencyFormat.format(total),
                             style: TextStyle(
-                              fontSize: 18.5,
+                              fontSize: 18.5.sp,
                               fontWeight: FontWeight.w900,
                               color: primaryColor,
                             ),
@@ -1201,25 +1210,25 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     flex: 52,
                     child: ElevatedButton.icon(
                       onPressed: _handleBooking,
-                      icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                      label: const Text(
+                      icon: Icon(Icons.arrow_forward_rounded, size: 16.sp),
+                      label: Text(
                         'Lanjutkan Sewa',
                         style: TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 13.5.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        padding: EdgeInsets.symmetric(vertical: 13.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14.r),
                         ),
                         elevation: 0,
                       ),

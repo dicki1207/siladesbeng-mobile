@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
@@ -39,11 +40,11 @@ class _ServiceListPageState extends State<ServiceListPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Penyewaan Alat',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -134,14 +135,14 @@ class _ServiceListPageState extends State<ServiceListPage> {
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Colors.blue[600]!, Colors.blue[900]!],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.blue.withAlpha(50),
@@ -153,19 +154,19 @@ class _ServiceListPageState extends State<ServiceListPage> {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: EdgeInsets.all(10.w),
                           decoration: BoxDecoration(
                             color: Colors.white.withAlpha(40),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.handyman_outlined,
                             color: Colors.white,
-                            size: 32,
+                            size: 32.sp,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        const Expanded(
+                        SizedBox(width: 16.w),
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -174,26 +175,26 @@ class _ServiceListPageState extends State<ServiceListPage> {
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              SizedBox(height: 4.h),
                               Text(
                                 'Pilih Paket Desa atau Rangkai Paket Alat Anda Sendiri',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 15,
+                                  fontSize: 15.sp,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(
+                        Icon(
                           Icons.arrow_forward_ios,
                           color: Colors.white,
-                          size: 18,
+                          size: 18.sp,
                         ),
                       ],
                     ),
@@ -205,9 +206,9 @@ class _ServiceListPageState extends State<ServiceListPage> {
                 ? SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 10.h,
                         ),
                         child: Shimmer.fromColors(
                           baseColor: Colors.grey[300]!,
@@ -216,7 +217,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                             height: 120,
                             decoration: BoxDecoration(
                               color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r),
                             ),
                           ),
                         ),
@@ -227,16 +228,16 @@ class _ServiceListPageState extends State<ServiceListPage> {
                 ? SliverFillRemaining(
                     hasScrollBody: false,
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: EdgeInsets.all(24.0.w),
                       child: Center(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 40,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 40.h,
                           ),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(30.r),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withAlpha(20),
@@ -249,32 +250,32 @@ class _ServiceListPageState extends State<ServiceListPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Image.network(
-                                'http://10.250.3.148:8000/User/img/elemen/F1.png',
+                                'http://10.121.197.148:8000/User/img/elemen/F1.png',
                                 width: 150,
                                 height: 150,
                                 errorBuilder: (ctx, err, stack) => Icon(
                                   Icons.inventory_2,
-                                  size: 100,
+                                  size: 100.sp,
                                   color: Colors.blue[600],
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20.h),
                               Text(
                                 "Belum Ada Alat",
                                 style: TextStyle(
-                                  fontSize: 22,
+                                  fontSize: 22.sp,
                                   fontWeight: FontWeight.w800,
                                   color: Theme.of(
                                     context,
                                   ).textTheme.bodyLarge?.color,
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 "Peralatan untuk disewakan sedang tidak tersedia saat ini atau gagal memuat data dari server.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                   color:
                                       Theme.of(context)
                                           .textTheme
@@ -285,7 +286,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                                   height: 1.5,
                                 ),
                               ),
-                              const SizedBox(height: 30),
+                              SizedBox(height: 30.h),
                               ElevatedButton.icon(
                                 onPressed: _fetchRentals,
                                 icon: const Icon(Icons.refresh),
@@ -293,12 +294,12 @@ class _ServiceListPageState extends State<ServiceListPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue[700],
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24.w,
+                                    vertical: 12.h,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
+                                    borderRadius: BorderRadius.circular(15.r),
                                   ),
                                 ),
                               ),
@@ -309,7 +310,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                     ),
                   )
                 : SliverPadding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     sliver: SliverGrid(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
@@ -325,8 +326,8 @@ class _ServiceListPageState extends State<ServiceListPage> {
                       ),
                     ),
                   ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 100), // Bottom navigation spacing
+            SliverToBoxAdapter(
+              child: SizedBox(height: 100.h), // Bottom navigation spacing
             ),
           ],
         ),

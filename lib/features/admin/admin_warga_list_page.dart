@@ -11,7 +11,7 @@ class AdminWargaListPage extends StatefulWidget {
 }
 
 class _AdminWargaListPageState extends State<AdminWargaListPage> {
-  static const Color _primaryBlue = Color(0xFF2563EB);
+  static const Color _primaryBlue = Color(0xFF0EA5E9);
 
   String _selectedFilter = 'Semua';
   String _selectedRtFilter = 'Seluruh RW 01';
@@ -489,7 +489,7 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
               scrolledUnderElevation: 2,
               backgroundColor: isDark
                   ? const Color(0xFF0F172A)
-                  : const Color(0xFF1E3A8A),
+                  : const Color(0xFF2FA2F1),
               leading: IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(6),
@@ -522,8 +522,8 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
                                   const Color(0xFF1E293B),
                                 ]
                               : [
-                                  const Color(0xFF2563EB),
-                                  const Color(0xFF1D4ED8),
+                                  const Color(0xFF2FA2F1),
+                                  const Color(0xFF0284C7),
                                 ],
                         ),
                       ),

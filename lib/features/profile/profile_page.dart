@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:siladesbeng_mobile/main_wrapper.dart';
@@ -45,7 +46,8 @@ class _ProfilePageState extends State<ProfilePage> {
     _showcaseView = ShowcaseView.register();
     _loadProfile();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndStartShowcase();
+      _checkAndStartShowcase(
+);
     });
   }
 
@@ -63,7 +65,8 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _checkAndStartShowcase() async {
+  Future<void> _checkAndStartShowcase(
+) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTour = prefs.getBool('has_seen_profile_tour') ?? false;
@@ -110,7 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
     // Verifikasi token ke server di latar belakang
     try {
       final response = await http.get(
-        Uri.parse('http://10.250.3.148:8000/api/user'),
+        Uri.parse('http://10.121.197.148:8000/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -236,7 +239,7 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF0F172A) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha(isDark ? 100 : 40),
@@ -254,10 +257,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: isDark ? Colors.white24 : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
 
               // Title Row
               Row(
@@ -266,25 +269,25 @@ class _ProfilePageState extends State<ProfilePage> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
                           color: const Color(0xFF2563EB).withAlpha(15),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.badge_outlined,
                           color: Color(0xFF2563EB),
-                          size: 20,
+                          size: 20.sp,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'KTP Digital Warga',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.bold,
                               color: isDark
                                   ? Colors.white
@@ -294,7 +297,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           Text(
                             'Identitas Resmi Kependudukan',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 11.sp,
                               color: isDark
                                   ? Colors.white60
                                   : const Color(0xFF64748B),
@@ -306,12 +309,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
 
               // The Digital KTP Card
               _buildKtpCardContent(isDark),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // Action Buttons
               SizedBox(
@@ -328,12 +331,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         : const Color(0xFF334155),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Tutup Kartu',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
                   ),
                 ),
               ),
@@ -347,238 +350,318 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildKtpCardContent(bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFF1E40AF),
-        gradient: isDark
-            ? const LinearGradient(
-                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : const LinearGradient(
-                colors: [Color(0xFF1E40AF), Color(0xFF2563EB)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-        borderRadius: BorderRadius.circular(22),
+        color: isDark ? const Color(0xFF1A2332) : Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark
-              ? const Color(0xFF3B82F6).withAlpha(120)
-              : const Color(0xFF93C5FD).withAlpha(150),
-          width: 1.5,
+              ? Colors.white.withAlpha(20)
+              : const Color(0xFFE2E8F0),
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E40AF).withAlpha(isDark ? 60 : 40),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withAlpha(isDark ? 40 : 18),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(17.r),
+        child: Stack(
           children: [
-            // Header Bar: KTP DIGITAL + TERVERIFIKASI
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'KTP DIGITAL',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.2,
-                    color: Colors.white,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF2563EB).withAlpha(70),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Text(
-                    'TERVERIFIKASI',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ),
-              ],
+            // ── Watermark: Garuda / Shield pattern ──
+            Positioned(
+              right: -15,
+              bottom: -10,
+              child: Icon(
+                Icons.shield_outlined,
+                size: 120.sp,
+                color: isDark
+                    ? Colors.white.withAlpha(8)
+                    : const Color(0xFF2563EB).withAlpha(12),
+              ),
             ),
-            const SizedBox(height: 12),
-            Divider(color: Colors.white.withAlpha(35), height: 1),
-            const SizedBox(height: 14),
+            Positioned(
+              left: -20,
+              top: -15,
+              child: Icon(
+                Icons.verified_user_outlined,
+                size: 80.sp,
+                color: isDark
+                    ? Colors.white.withAlpha(6)
+                    : const Color(0xFF2563EB).withAlpha(8),
+              ),
+            ),
 
-            // Content Row: Photo Left + Info Right
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Foto Avatar KTP (3:4 ratio)
-                Container(
-                  width: 76,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: const Color(0xFF93C5FD),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(40),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: (_imagePath != null)
-                        ? Image.file(
-                            File(_imagePath!),
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const Icon(
-                              Icons.person,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
-                          )
-                        : (_imageUrl != null)
-                        ? Image.network(
-                            _imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const Icon(
-                              Icons.person,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.person,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
-                  ),
-                ),
-
-                const SizedBox(width: 14),
-
-                // Data Warga
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            // ── Main Content ──
+            Padding(
+              padding: EdgeInsets.all(18.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Bar: KTP DIGITAL + TERVERIFIKASI
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // NIK
-                      Text(
-                        'NIK',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                          color: Colors.white.withAlpha(180),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(40),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _maskNik(_nik),
-                            style: const TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // NAMA
-                      Text(
-                        'NAMA LENGKAP',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                          color: Colors.white.withAlpha(180),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
                       Row(
                         children: [
-                          Flexible(
-                            child: Text(
-                              _name.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          Container(
+                            padding: EdgeInsets.all(5.w),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF2563EB).withAlpha(30)
+                                  : const Color(0xFF2563EB).withAlpha(15),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Icon(
+                              Icons.badge_rounded,
+                              color: isDark
+                                  ? const Color(0xFF60A5FA)
+                                  : const Color(0xFF2563EB),
+                              size: 16.sp,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.verified,
-                            color: Color(0xFF38BDF8),
-                            size: 14,
+                          SizedBox(width: 8.w),
+                          Text(
+                            'KTP DIGITAL',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-
-                      // ALAMAT
-                      Text(
-                        'ALAMAT DOMISILI',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                          color: Colors.white.withAlpha(180),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 4.h,
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${_address.isNotEmpty ? _address : "RT 01 / RW 02, Bengkalis"} - (Disensor)',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.white.withAlpha(210),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withAlpha(20),
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: const Color(0xFF10B981).withAlpha(60),
+                            width: 0.8,
+                          ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.verified_rounded,
+                              color: Color(0xFF10B981),
+                              size: 12.sp,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              'TERVERIFIKASI',
+                              style: TextStyle(
+                                color: Color(0xFF10B981),
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  SizedBox(height: 14.h),
+                  Divider(
+                    color: isDark
+                        ? Colors.white.withAlpha(15)
+                        : const Color(0xFFE2E8F0),
+                    height: 1,
+                  ),
+                  SizedBox(height: 14.h),
+
+                  // Content Row: Photo Left + Info Right
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Foto Avatar KTP (3:4 ratio)
+                      Container(
+                        width: 76,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withAlpha(25)
+                                : const Color(0xFFCBD5E1),
+                            width: 1,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(11.r),
+                          child: (_imagePath != null)
+                              ? Image.file(
+                                  File(_imagePath!),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => Icon(
+                                    Icons.person,
+                                    size: 40.sp,
+                                    color: isDark
+                                        ? Colors.white38
+                                        : Colors.grey[400],
+                                  ),
+                                )
+                              : (_imageUrl != null)
+                              ? Image.network(
+                                  _imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => Icon(
+                                    Icons.person,
+                                    size: 40.sp,
+                                    color: isDark
+                                        ? Colors.white38
+                                        : Colors.grey[400],
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.person,
+                                  size: 40.sp,
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.grey[400],
+                                ),
+                        ),
+                      ),
+
+                      SizedBox(width: 14.w),
+
+                      // Data Warga
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // NIK
+                            Text(
+                              'NIK',
+                              style: TextStyle(
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: isDark
+                                    ? Colors.white60
+                                    : const Color(0xFF94A3B8),
+                              ),
+                            ),
+                            SizedBox(height: 3.h),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 4.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withAlpha(10)
+                                    : const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(8.r),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white.withAlpha(15)
+                                      : const Color(0xFFE2E8F0),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _maskNik(_nik),
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.0,
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+
+                            // NAMA
+                            Text(
+                              'NAMA LENGKAP',
+                              style: TextStyle(
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: isDark
+                                    ? Colors.white60
+                                    : const Color(0xFF94A3B8),
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    _name.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w800,
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF0F172A),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(width: 4.w),
+                                Icon(
+                                  Icons.verified,
+                                  color: Color(0xFF10B981),
+                                  size: 14.sp,
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10.h),
+
+                            // ALAMAT
+                            Text(
+                              'ALAMAT DOMISILI',
+                              style: TextStyle(
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.8,
+                                color: isDark
+                                    ? Colors.white60
+                                    : const Color(0xFF94A3B8),
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              '${_address.isNotEmpty ? _address : "RT 01 / RW 02, Bengkalis"} - (Disensor)',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                color: isDark
+                                    ? Colors.white70
+                                    : const Color(0xFF475569),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -590,10 +673,10 @@ class _ProfilePageState extends State<ProfilePage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      margin: margin ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      margin: margin ?? EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
         ),
@@ -608,7 +691,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           onTap: () {
             if (_isVerified) {
               _showDigitalKtpModal(context);
@@ -617,7 +700,7 @@ class _ProfilePageState extends State<ProfilePage> {
             }
           },
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: Row(
               children: [
                 // Avatar with Verified badge overlay
@@ -641,41 +724,41 @@ class _ProfilePageState extends State<ProfilePage> {
                                 File(_imagePath!),
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, _, _) =>
-                                    const Icon(Icons.person, size: 30),
+                                    Icon(Icons.person, size: 30.sp),
                               )
                             : (_imageUrl != null)
                             ? Image.network(
                                 _imageUrl!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, _, _) =>
-                                    const Icon(Icons.person, size: 30),
+                                    Icon(Icons.person, size: 30.sp),
                               )
-                            : const Icon(Icons.person, size: 30),
+                            : Icon(Icons.person, size: 30.sp),
                       ),
                     ),
                     if (_isVerified)
                       Positioned(
-                        bottom: 0,
-                        right: 0,
+                        bottom: 0.h,
+                        right: 0.w,
                         child: Container(
-                          padding: const EdgeInsets.all(2),
+                          padding: EdgeInsets.all(2.w),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF1E293B)
                                 : Colors.white,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.verified,
                             color: Color(0xFF2563EB),
-                            size: 18,
+                            size: 18.sp,
                           ),
                         ),
                       ),
                   ],
                 ),
 
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
 
                 // Name, Email, and KTP Pill
                 Expanded(
@@ -688,7 +771,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Text(
                               _name,
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                                 color: isDark
                                     ? Colors.white
@@ -699,54 +782,54 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3.h),
                       Text(
                         _email,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: isDark
                               ? Colors.white60
                               : const Color(0xFF64748B),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
 
                       // Action Badge
                       if (_isVerified)
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 4.h,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF2563EB).withAlpha(15),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20.r),
                             border: Border.all(
                               color: const Color(0xFF2563EB).withAlpha(50),
                             ),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.badge_outlined,
-                                size: 13,
+                                size: 13.sp,
                                 color: Color(0xFF2563EB),
                               ),
-                              SizedBox(width: 5),
+                              SizedBox(width: 5.w),
                               Text(
                                 'KTP Digital Terverifikasi',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF2563EB),
                                 ),
                               ),
-                              SizedBox(width: 4),
+                              SizedBox(width: 4.w),
                               Icon(
                                 Icons.arrow_forward_ios_rounded,
-                                size: 9,
+                                size: 9.sp,
                                 color: Color(0xFF2563EB),
                               ),
                             ],
@@ -754,30 +837,30 @@ class _ProfilePageState extends State<ProfilePage> {
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.w,
+                            vertical: 4.h,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF59E0B).withAlpha(20),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(20.r),
                             border: Border.all(
                               color: const Color(0xFFF59E0B).withAlpha(60),
                             ),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.shield_outlined,
-                                size: 13,
+                                size: 13.sp,
                                 color: Color(0xFFD97706),
                               ),
-                              SizedBox(width: 5),
+                              SizedBox(width: 5.w),
                               Text(
                                 'Belum Terverifikasi • Klik Disini',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFFD97706),
                                 ),
@@ -806,14 +889,14 @@ class _ProfilePageState extends State<ProfilePage> {
         gradient: LinearGradient(
           colors: [
             primaryColor,
-            const Color(0xFF1D4ED8), // Deep vibrant blue
+            const Color(0xFF0284C7), // Deep sky blue
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32.r),
+          bottomRight: Radius.circular(32.r),
         ),
         boxShadow: [
           BoxShadow(
@@ -870,21 +953,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'Profil Saya',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 22,
+                        fontSize: 22.sp,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       'Kabupaten Bengkalis',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -894,23 +977,23 @@ class _ProfilePageState extends State<ProfilePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.help_outline_rounded,
                         color: Colors.white,
-                        size: 22,
+                        size: 22.sp,
                       ),
                       tooltip: 'Panduan Halaman',
                       onPressed: _replayTour,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.w),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 6.h,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.25),
                         ),
@@ -923,14 +1006,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ? Icons.verified_rounded
                                 : Icons.person_outline_rounded,
                             color: Colors.white,
-                            size: 15,
+                            size: 15.sp,
                           ),
-                          const SizedBox(width: 5),
+                          SizedBox(width: 5.w),
                           Text(
                             _isVerified ? 'Terverifikasi' : 'Warga',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -963,9 +1046,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (_isLoggedIn)
                   Positioned(
                     bottom: -45,
-                    left: 20,
-                    right: 20,
+                    left: 20.w,
+                    right: 20.w,
                     child: Showcase(
+                      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                       key: _keyVerification,
                       title: 'Verifikasi & KTP Digital',
                       description:
@@ -981,7 +1066,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 55,
               ), // Space compensation for the positioned card
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
                   children: [
                     if (_isVerified) ...[
@@ -993,32 +1078,32 @@ class _ProfilePageState extends State<ProfilePage> {
                           );
                           if (status == 'pending') {
                             return Container(
-                              margin: const EdgeInsets.only(top: 10),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 14,
+                              margin: EdgeInsets.only(top: 10.h),
+                              padding: EdgeInsets.symmetric(
+                                vertical: 10.h,
+                                horizontal: 14.w,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.orange.withAlpha(20),
                                 border: Border.all(
                                   color: Colors.orange.withAlpha(50),
                                 ),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.hourglass_empty,
                                     color: Colors.orange,
-                                    size: 18,
+                                    size: 18.sp,
                                   ),
-                                  const SizedBox(width: 10),
+                                  SizedBox(width: 10.w),
                                   Expanded(
                                     child: Text(
                                       'Pemindahan Domisili Anda sedang diproses oleh admin.',
                                       style: TextStyle(
                                         color: Colors.orange[800],
-                                        fontSize: 12,
+                                        fontSize: 12.sp,
                                       ),
                                     ),
                                   ),
@@ -1034,12 +1119,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ] else ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
             ],
 
             // Menus - Modern Grouped Section Cards
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1048,9 +1133,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     'Aktivitas & Kemitraan',
                     Colors.blue[600]!,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   _buildMenuGroup(context, [
                     Showcase(
+                      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                       key: _keyActivity,
                       title: 'Riwayat Aktivitas',
                       description:
@@ -1066,6 +1153,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     Showcase(
+                      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                       key: _keyRtRw,
                       title: 'Portal Pengurus RT / RW',
                       description:
@@ -1103,16 +1192,18 @@ class _ProfilePageState extends State<ProfilePage> {
                         isLast: true,
                       ),
                   ]),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildSectionHeader(
                     context,
                     'Pengaturan & Informasi',
                     Colors.green[600]!,
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                   _buildMenuGroup(context, [
                     if (_isLoggedIn)
                       Showcase(
+                        titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                        descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                         key: _keyEditProfile,
                         title: 'Edit Profil & Keamanan',
                         description:
@@ -1146,7 +1237,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       isLast: true,
                     ),
                   ]),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
 
                   Center(
                     child: SizedBox(
@@ -1178,7 +1269,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               : Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(25.r),
                             side: BorderSide(
                               color: _isLoggedIn
                                   ? Colors.redAccent
@@ -1189,12 +1280,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         icon: Icon(
                           _isLoggedIn ? Icons.logout : Icons.login,
-                          size: 20,
+                          size: 20.sp,
                         ),
                         label: Text(
                           _isLoggedIn ? 'Keluar' : 'Login / Daftar Akun',
-                          style: const TextStyle(
-                            fontSize: 15,
+                          style: TextStyle(
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1202,7 +1293,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
-                  const SizedBox(height: 100), // Spacing for bottom nav
+                  SizedBox(height: 100.h), // Spacing for bottom nav
                 ],
               ),
             ),
@@ -1224,15 +1315,15 @@ class _ProfilePageState extends State<ProfilePage> {
           height: 20,
           decoration: BoxDecoration(
             color: accentColor,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(6.r),
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10.w),
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w800,
-            fontSize: 16,
+            fontSize: 16.sp,
             letterSpacing: 0.3,
           ),
         ),
@@ -1244,7 +1335,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.grey.withAlpha(30), width: 1.2),
         boxShadow: [
           BoxShadow(
@@ -1294,18 +1385,18 @@ class _ProfilePageState extends State<ProfilePage> {
               }
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
                       color: activeColor.withAlpha(25),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                    child: Icon(icon, color: activeColor, size: 22),
+                    child: Icon(icon, color: activeColor, size: 22.sp),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1314,17 +1405,17 @@ class _ProfilePageState extends State<ProfilePage> {
                           title,
                           style: Theme.of(context).textTheme.titleMedium!
                               .copyWith(
-                                fontSize: 14,
+                                fontSize: 14.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
                         if (subtitle != null) ...[
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             subtitle,
                             style: Theme.of(context).textTheme.bodyMedium!
                                 .copyWith(
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   color: Colors.grey[600],
                                 ),
                           ),
@@ -1332,17 +1423,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.all(4.w),
                     decoration: BoxDecoration(
                       color: Colors.grey.withAlpha(20),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_forward_ios_rounded,
                       color: Colors.grey,
-                      size: 12,
+                      size: 12.sp,
                     ),
                   ),
                 ],
@@ -1352,7 +1443,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         if (!isLast)
           Padding(
-            padding: const EdgeInsets.only(left: 64, right: 18),
+            padding: EdgeInsets.only(left: 64.w, right: 18.w),
             child: Divider(
               height: 1,
               thickness: 1,
@@ -1372,12 +1463,12 @@ class _ProfilePageState extends State<ProfilePage> {
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30.r),
+              topRight: Radius.circular(30.r),
             ),
           ),
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1386,30 +1477,30 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 5,
                 decoration: BoxDecoration(
                   color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30.h),
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.blue.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.verified_user_rounded,
-                  size: 80,
+                  size: 80.sp,
                   color: Colors.blue,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Text(
                 'Buka Akses Penuh!',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 'Yuk lengkapi data diri Anda untuk menikmati dan mengakses seluruh fitur serta unit layanan BUMDes dengan aman dan nyaman.',
                 textAlign: TextAlign.center,
@@ -1417,7 +1508,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   context,
                 ).textTheme.bodyMedium?.copyWith(height: 1.5),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -1435,17 +1526,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
+                  child: Text(
                     'Mulai Lengkapi Data',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -1455,7 +1546,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Text('Nanti Saja'),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
             ],
           ),
         );

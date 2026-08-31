@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'dart:async';
@@ -530,10 +531,10 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
           if (_cameraError != null)
             Center(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24.0.w),
                 child: Text(
                   _cameraError!,
-                  style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                  style: TextStyle(color: Colors.redAccent, fontSize: 14.sp),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -565,67 +566,67 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
               children: [
                 // Top Header Row
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
                         icon: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
                             color: Colors.black.withAlpha(120),
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white24),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_back_ios_new_rounded,
                             color: Colors.white,
-                            size: 16,
+                            size: 16.sp,
                           ),
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(150),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                           border: Border.all(color: Colors.white12),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 16),
-                            SizedBox(width: 6),
+                            Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 16.sp),
+                            SizedBox(width: 6.w),
                             Text(
                               'e-KYC Liveness Biometrik',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 40), // Spacer balance
+                      SizedBox(width: 40.w), // Spacer balance
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
 
                 // 4-Step Indicator Pills
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  padding: EdgeInsets.symmetric(horizontal: 32.w),
                   child: Row(
                     children: [
                       _buildStepPill('1. Posisi', 0),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       _buildStepPill('2. Toleh', 1),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       _buildStepPill('3. Balik', 2),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       _buildStepPill('4. Kedip', 3),
                     ],
                   ),
@@ -634,15 +635,15 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                 // Smart Guidance Alert Badge
                 if (_brightnessWarning != null || _facePositionWarning != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 14),
+                    padding: EdgeInsets.only(top: 14.h),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
                         color: (_brightnessWarning != null
                                 ? const Color(0xFFF59E0B)
                                 : const Color(0xFFEF4444))
                             .withAlpha(220),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withAlpha(80),
@@ -659,14 +660,14 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                                 ? Icons.wb_sunny_rounded
                                 : Icons.center_focus_strong_rounded,
                             color: Colors.white,
-                            size: 16,
+                            size: 16.sp,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Text(
                             _brightnessWarning ?? _facePositionWarning!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -680,18 +681,18 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
 
           // ── 4. FLOATING INTERACTIVE INSTRUCTION CARD (BOTTOM) ──
           Positioned(
-            bottom: 36,
-            left: 20,
-            right: 20,
+            bottom: 36.h,
+            left: 20.w,
+            right: 20.w,
             child: ScaleTransition(
               scale: _isFaceInstructionSuccess ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
                 decoration: BoxDecoration(
                   color: _isFaceInstructionSuccess
                       ? const Color(0xFF064E3B).withAlpha(240)
                       : const Color(0xFF0F172A).withAlpha(235),
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(22.r),
                   border: Border.all(
                     color: _isFaceInstructionSuccess
                         ? const Color(0xFF10B981)
@@ -714,7 +715,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                   children: [
                     // Animated State Icon
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
                         color: _isFaceInstructionSuccess
                             ? const Color(0xFF10B981)
@@ -733,11 +734,11 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                       child: Icon(
                         _getCurrentInstructionIcon(),
                         color: Colors.white,
-                        size: 26,
+                        size: 26.sp,
                       ),
                     ),
 
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14.w),
 
                     // Instruction Texts
                     Expanded(
@@ -751,17 +752,17 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                               color: _isFaceInstructionSuccess
                                   ? const Color(0xFF6EE7B7)
                                   : Colors.white,
-                              fontSize: 15.5,
+                              fontSize: 15.5.sp,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -0.2,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             _getCurrentInstructionSubtitle(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
                               height: 1.25,
                             ),
@@ -779,7 +780,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
           if (_isUploadingFace)
             Container(
               color: Colors.black.withAlpha(210),
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -787,19 +788,19 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                       color: Color(0xFF10B981),
                       strokeWidth: 3.5,
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Text(
                       'Menyinkronkan Data Biometrik...',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Text(
                       'Verifikasi Dukcapil / SIAK sedang diproses',
-                      style: TextStyle(color: Colors.white60, fontSize: 12.5),
+                      style: TextStyle(color: Colors.white60, fontSize: 12.5.sp),
                     ),
                   ],
                 ),
@@ -835,10 +836,10 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
     return Expanded(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: EdgeInsets.symmetric(vertical: 6.h),
         decoration: BoxDecoration(
           color: pillBg,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           border: Border.all(color: borderCol, width: isCurrent ? 1.5 : 1),
           boxShadow: isCurrent
               ? [
@@ -855,7 +856,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
           textAlign: TextAlign.center,
           style: TextStyle(
             color: textCol,
-            fontSize: 11,
+            fontSize: 11.sp,
             fontWeight: isCurrent || isPassed ? FontWeight.bold : FontWeight.w500,
           ),
         ),

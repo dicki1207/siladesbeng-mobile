@@ -168,7 +168,7 @@ class _AdminReportPageState extends State<AdminReportPage> {
       appBar: AppBar(
         backgroundColor: isDark
             ? const Color(0xFF0F172A)
-            : const Color(0xFF2563EB),
+            : const Color(0xFF2FA2F1),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         flexibleSpace: Stack(
@@ -268,10 +268,12 @@ class _AdminReportPageState extends State<AdminReportPage> {
                         child: ChoiceChip(
                           label: Text(filter),
                           selected: isSelected,
+                          showCheckmark: false,
+                          avatar: null,
                           onSelected: (selected) {
                             if (selected) _applyFilter(filter);
                           },
-                          selectedColor: const Color(0xFF2563EB),
+                          selectedColor: const Color(0xFF0EA5E9),
                           labelStyle: TextStyle(
                             color: isSelected
                                 ? Colors.white
@@ -290,7 +292,7 @@ class _AdminReportPageState extends State<AdminReportPage> {
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
                               color: isSelected
-                                  ? const Color(0xFF2563EB)
+                                  ? const Color(0xFF0EA5E9)
                                   : (isDark
                                         ? Colors.white12
                                         : const Color(0xFFE2E8F0)),

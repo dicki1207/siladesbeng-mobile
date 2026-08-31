@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:siladesbeng_mobile/features/news/news_page.dart';
 
 class KabarDaerahPage extends StatelessWidget {
@@ -14,11 +15,11 @@ class KabarDaerahPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'Kabar Daerah',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: 18.sp,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.3,
             ),
@@ -75,17 +76,17 @@ class KabarDaerahPage extends StatelessWidget {
             preferredSize: const Size.fromHeight(56),
             child: Container(
               margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(25.r),
               ),
               child: TabBar(
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
                 indicator: BoxDecoration(
                   color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(22.r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.1),
@@ -96,21 +97,21 @@ class KabarDaerahPage extends StatelessWidget {
                 ),
                 labelColor: isDark ? Colors.white : primaryColor,
                 unselectedLabelColor: Colors.white.withValues(alpha: 0.85),
-                labelStyle: const TextStyle(
+                labelStyle: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
-                unselectedLabelStyle: const TextStyle(
+                unselectedLabelStyle: TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
-                tabs: const [
+                tabs: [
                   Tab(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.newspaper_rounded, size: 16),
-                        SizedBox(width: 6),
+                        Icon(Icons.newspaper_rounded, size: 16.sp),
+                        SizedBox(width: 6.w),
                         Text('Berita Daerah'),
                       ],
                     ),
@@ -119,8 +120,8 @@ class KabarDaerahPage extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.campaign_rounded, size: 16),
-                        SizedBox(width: 6),
+                        Icon(Icons.campaign_rounded, size: 16.sp),
+                        SizedBox(width: 6.w),
                         Text('Pengumuman'),
                       ],
                     ),

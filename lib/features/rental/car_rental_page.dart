@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
@@ -35,7 +36,8 @@ class _CarRentalPageState extends State<CarRentalPage> {
     super.dispose();
   }
 
-  Future<void> _checkAndStartShowcase() async {
+  Future<void> _checkAndStartShowcase(
+) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTour = prefs.getBool('has_seen_car_rental_tour') ?? false;
@@ -82,7 +84,8 @@ class _CarRentalPageState extends State<CarRentalPage> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndStartShowcase();
+      _checkAndStartShowcase(
+);
     });
   }
 
@@ -93,11 +96,11 @@ class _CarRentalPageState extends State<CarRentalPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Penyewaan Kendaraan',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.3,
           ),
@@ -165,9 +168,9 @@ class _CarRentalPageState extends State<CarRentalPage> {
                 ? SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 10.h,
                         ),
                         child: Shimmer.fromColors(
                           baseColor: Colors.grey[300]!,
@@ -176,7 +179,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
                             height: 120,
                             decoration: BoxDecoration(
                               color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r),
                             ),
                           ),
                         ),
@@ -187,16 +190,16 @@ class _CarRentalPageState extends State<CarRentalPage> {
                 ? SliverFillRemaining(
                     hasScrollBody: false,
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: EdgeInsets.all(24.0.w),
                       child: Center(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 40,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 40.h,
                           ),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(30.r),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.withAlpha(20),
@@ -214,27 +217,27 @@ class _CarRentalPageState extends State<CarRentalPage> {
                                 height: 150,
                                 errorBuilder: (ctx, err, stack) => Icon(
                                   Icons.directions_car,
-                                  size: 100,
+                                  size: 100.sp,
                                   color: Colors.blue[600],
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              SizedBox(height: 20.h),
                               Text(
                                 "Belum Ada Mobil",
                                 style: TextStyle(
-                                  fontSize: 22,
+                                  fontSize: 22.sp,
                                   fontWeight: FontWeight.w800,
                                   color: Theme.of(
                                     context,
                                   ).textTheme.bodyLarge?.color,
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               Text(
                                 "Mobil untuk disewakan sedang tidak tersedia saat ini atau gagal memuat data dari server.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 14.sp,
                                   color:
                                       Theme.of(context)
                                           .textTheme
@@ -245,7 +248,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
                                   height: 1.5,
                                 ),
                               ),
-                              const SizedBox(height: 30),
+                              SizedBox(height: 30.h),
                               ElevatedButton.icon(
                                 onPressed: _fetchRentals,
                                 icon: const Icon(Icons.refresh),
@@ -253,12 +256,12 @@ class _CarRentalPageState extends State<CarRentalPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue[700],
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24.w,
+                                    vertical: 12.h,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
+                                    borderRadius: BorderRadius.circular(15.r),
                                   ),
                                 ),
                               ),
@@ -269,7 +272,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
                     ),
                   )
                 : SliverPadding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     sliver: SliverGrid(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
@@ -285,8 +288,8 @@ class _CarRentalPageState extends State<CarRentalPage> {
                       ),
                     ),
                   ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 100), // Bottom navigation spacing
+            SliverToBoxAdapter(
+              child: SizedBox(height: 100.h), // Bottom navigation spacing
             ),
           ],
         ),
@@ -362,10 +365,12 @@ class _CarRentalPageState extends State<CarRentalPage> {
 
     if (index == 0) {
       return Showcase(
+        titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+        descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
         key: _keyCarItem,
         title: 'Pilih Mobil BUMDes',
         description: 'Ketuk pada mobil untuk melihat spesifikasi kapasitas, tarif sewa harian, opsi sopir, dan pesan langsung.',
-        targetBorderRadius: BorderRadius.circular(20),
+        targetBorderRadius: BorderRadius.circular(20.r),
         child: cardWidget,
       );
     }

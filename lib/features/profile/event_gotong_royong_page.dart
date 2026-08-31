@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:siladesbeng_mobile/services/event_service.dart';
 
@@ -253,15 +254,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     ? Icons.check_circle_rounded
                     : Icons.info_outline_rounded,
                 color: Colors.white,
-                size: 20,
+                size: 20.sp,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   isJoined
                       ? 'Terima kasih! Anda tercatat siap hadir.'
                       : 'Partisipasi kehadiran dibatalkan.',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -272,7 +273,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
         ),
       );
@@ -315,10 +316,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.celebration_rounded, color: Colors.white, size: 22),
-              SizedBox(width: 10),
+              Icon(Icons.celebration_rounded, color: Colors.white, size: 22.sp),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   'Pengumuman berhasil dipublikasikan ke warga!',
@@ -330,7 +331,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
           backgroundColor: const Color(0xFF10B981),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
         ),
       );
@@ -341,7 +342,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
         ),
       );
@@ -370,15 +371,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   : const Color(0xFF2FA2F1),
               leading: IconButton(
                 icon: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: EdgeInsets.all(6.w),
                   decoration: BoxDecoration(
                     color: Colors.white.withAlpha(isDark ? 25 : 35),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back_ios_new_rounded,
                     color: Colors.white,
-                    size: 16,
+                    size: 16.sp,
                   ),
                 ),
                 onPressed: () => Navigator.pop(context),
@@ -433,27 +434,27 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     ),
                     // Title info in header (positioned with generous breathing room below back button)
                     Positioned(
-                      left: 20,
-                      right: 20,
+                      left: 20.w,
+                      right: 20.w,
                       top: MediaQuery.of(context).padding.top + 52,
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Pengumuman & Agenda',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 19,
+                              fontSize: 19.sp,
                               fontWeight: FontWeight.w900,
                               letterSpacing: -0.3,
                             ),
                           ),
-                          SizedBox(height: 3),
+                          SizedBox(height: 3.h),
                           Text(
                             'Pusat kegiatan, gotong royong & info warga',
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 11.5,
+                              fontSize: 11.5.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -469,8 +470,8 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   height: 52,
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF090D16) : Colors.white,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24.r),
                     ),
                     border: Border(
                       bottom: BorderSide(
@@ -488,32 +489,32 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         width: 3.5,
                         color: Color(0xFF2FA2F1),
                       ),
-                      borderRadius: BorderRadius.circular(3),
-                      insets: const EdgeInsets.symmetric(horizontal: 16),
+                      borderRadius: BorderRadius.circular(3.r),
+                      insets: EdgeInsets.symmetric(horizontal: 16.w),
                     ),
                     indicatorSize: TabBarIndicatorSize.label,
                     labelColor: const Color(0xFF2FA2F1),
                     unselectedLabelColor: isDark
                         ? Colors.white60
                         : const Color(0xFF64748B),
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       letterSpacing: 0.2,
                     ),
-                    unselectedLabelStyle: const TextStyle(
+                    unselectedLabelStyle: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 13.5,
+                      fontSize: 13.5.sp,
                     ),
                     dividerColor: Colors.transparent,
                     tabs: [
-                      const Tab(
+                      Tab(
                         height: 48,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.event_note_rounded, size: 18),
-                            SizedBox(width: 8),
+                            Icon(Icons.event_note_rounded, size: 18.sp),
+                            SizedBox(width: 8.w),
                             Text('Daftar Kegiatan'),
                           ],
                         ),
@@ -523,25 +524,25 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.history_rounded, size: 18),
-                            const SizedBox(width: 8),
+                            Icon(Icons.history_rounded, size: 18.sp),
+                            SizedBox(width: 8.w),
                             const Text('Riwayat'),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6.w),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 2,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 7.w,
+                                vertical: 2.h,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(
                                   0xFF2FA2F1,
                                 ).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(10.r),
                               ),
                               child: Text(
                                 '${_events.where((e) => e['isJoined'] == true).length}',
-                                style: const TextStyle(
-                                  fontSize: 11,
+                                style: TextStyle(
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF2FA2F1),
                                 ),
@@ -571,9 +572,9 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
         foregroundColor: Colors.white,
         elevation: 4,
         icon: const Icon(Icons.add_rounded),
-        label: const Text(
+        label: Text(
           'Buat Agenda',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
         ),
       ),
     );
@@ -608,27 +609,21 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         (filter) {
                           final bool active = _selectedFilter == filter;
                           return Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: EdgeInsets.only(right: 8.w),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               child: FilterChip(
                                 label: Text(filter),
                                 selected: active,
                                 showCheckmark: false,
-                                avatar: active
-                                    ? const Icon(
-                                        Icons.check_rounded,
-                                        size: 14,
-                                        color: Colors.white,
-                                      )
-                                    : null,
+                                avatar: null,
                                 labelStyle: TextStyle(
                                   color: active
                                       ? Colors.white
                                       : (isDark
                                             ? Colors.white70
                                             : const Color(0xFF475569)),
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: active
                                       ? FontWeight.bold
                                       : FontWeight.w600,
@@ -645,15 +640,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                             : const Color(0xFFE2E8F0)),
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(20.r),
                                 ),
                                 elevation: active ? 2 : 0,
                                 shadowColor: const Color(
                                   0xFF2FA2F1,
                                 ).withAlpha(80),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 2,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 4.w,
+                                  vertical: 2.h,
                                 ),
                                 onSelected: (_) =>
                                     setState(() => _selectedFilter = filter),
@@ -670,33 +665,33 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
           // Event Count Bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Agenda & Pengumuman Aktif',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white70 : const Color(0xFF334155),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 2.h,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(
                         0xFF2FA2F1,
                       ).withAlpha(isDark ? 35 : 20),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
                       '${filteredEvents.length} Kegiatan',
-                      style: const TextStyle(
-                        fontSize: 11,
+                      style: TextStyle(
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2FA2F1),
                       ),
@@ -718,41 +713,41 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
             SliverFillRemaining(
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(32),
+                  padding: EdgeInsets.all(32.w),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(22),
+                        padding: EdgeInsets.all(22.w),
                         decoration: BoxDecoration(
                           color: const Color(
                             0xFF2563EB,
                           ).withAlpha(isDark ? 25 : 15),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.event_busy_rounded,
-                          size: 48,
+                          size: 48.sp,
                           color: Color(0xFF2563EB),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         'Belum Ada Kegiatan',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                           color: isDark
                               ? Colors.white
                               : const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       Text(
                         'Tidak ada pengumuman kegiatan di "$_selectedFilter". Jadilah yang pertama membuat agenda!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                           color: isDark
                               ? Colors.white60
                               : const Color(0xFF64748B),
@@ -778,10 +773,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   );
 
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 14),
+                    margin: EdgeInsets.only(bottom: 14.h),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF131C2E) : Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(18.r),
                       border: Border.all(
                         color: isDark
                             ? const Color(0xFF1E293B)
@@ -800,16 +795,16 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                       children: [
                         // Top Ribbon Header
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
                           ),
                           decoration: BoxDecoration(
                             color: (tipeConfig['color'] as Color).withAlpha(
                               isDark ? 25 : 15,
                             ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(17),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(17.r),
                             ),
                             border: Border(
                               bottom: BorderSide(
@@ -822,41 +817,41 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           child: Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(6),
+                                padding: EdgeInsets.all(6.w),
                                 decoration: BoxDecoration(
                                   color: tipeConfig['color'] as Color,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Icon(
                                   tipeConfig['icon'] as IconData,
-                                  size: 14,
+                                  size: 14.sp,
                                   color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               Text(
                                 item['tipe'],
                                 style: TextStyle(
                                   color: tipeConfig['color'] as Color,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                               if (item['wilayah'].toString().isNotEmpty)
                                 Flexible(
                                   child: Align(
                                     alignment: Alignment.centerRight,
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 3,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.w,
+                                        vertical: 3.h,
                                       ),
                                       decoration: BoxDecoration(
                                         color: isDark
                                             ? const Color(0xFF1E293B)
                                             : Colors.white,
-                                        borderRadius: BorderRadius.circular(6),
+                                        borderRadius: BorderRadius.circular(6.r),
                                         border: Border.all(
                                           color: isDark
                                               ? Colors.white10
@@ -868,17 +863,17 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                         children: [
                                           Icon(
                                             Icons.place_rounded,
-                                            size: 12,
+                                            size: 12.sp,
                                             color: isDark
                                                 ? Colors.white54
                                                 : const Color(0xFF64748B),
                                           ),
-                                          const SizedBox(width: 4),
+                                          SizedBox(width: 4.w),
                                           Flexible(
                                             child: Text(
                                               item['wilayah'],
                                               style: TextStyle(
-                                                fontSize: 11,
+                                                fontSize: 11.sp,
                                                 fontWeight: FontWeight.w600,
                                                 color: isDark
                                                     ? Colors.white70
@@ -899,7 +894,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
 
                         // Card Body
                         Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -907,7 +902,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                               Text(
                                 item['title'],
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.w800,
                                   color: isDark
                                       ? Colors.white
@@ -915,35 +910,35 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                   height: 1.3,
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12.h),
 
                               // Schedule Row
                               if (item['jadwal'].toString().isNotEmpty)
                                 Container(
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 7,
+                                  margin: EdgeInsets.only(bottom: 8.h),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w,
+                                    vertical: 7.h,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? const Color(0xFF1E293B)
                                         : const Color(0xFFF8FAFC),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(10.r),
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.calendar_today_rounded,
-                                        size: 14,
+                                        size: 14.sp,
                                         color: Color(0xFF2563EB),
                                       ),
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: 8.w),
                                       Expanded(
                                         child: Text(
                                           item['jadwal'],
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 12.sp,
                                             fontWeight: FontWeight.w600,
                                             color: isDark
                                                 ? Colors.white70
@@ -958,30 +953,30 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                               // Location Row
                               if (item['lokasi'].toString().isNotEmpty)
                                 Container(
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 7,
+                                  margin: EdgeInsets.only(bottom: 8.h),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w,
+                                    vertical: 7.h,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isDark
                                         ? const Color(0xFF1E293B)
                                         : const Color(0xFFF8FAFC),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(10.r),
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.location_on_rounded,
-                                        size: 14,
+                                        size: 14.sp,
                                         color: Color(0xFFEF4444),
                                       ),
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: 8.w),
                                       Expanded(
                                         child: Text(
                                           item['lokasi'],
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 12.sp,
                                             fontWeight: FontWeight.w600,
                                             color: isDark
                                                 ? Colors.white70
@@ -995,11 +990,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
 
                               // Note
                               if (item['note'].toString().isNotEmpty) ...[
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4.h),
                                 Text(
                                   item['note'],
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     color: isDark
                                         ? Colors.white60
                                         : const Color(0xFF64748B),
@@ -1010,14 +1005,14 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                 ),
                               ],
 
-                              const SizedBox(height: 14),
+                              SizedBox(height: 14.h),
                               Divider(
                                 height: 1,
                                 color: isDark
                                     ? Colors.white10
                                     : const Color(0xFFF1F5F9),
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12.h),
 
                               // Footer: Participants & Join Button
                               Row(
@@ -1025,29 +1020,29 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8.w,
+                                      vertical: 4.h,
                                     ),
                                     decoration: BoxDecoration(
                                       color: const Color(
                                         0xFF10B981,
                                       ).withAlpha(isDark ? 30 : 15),
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8.r),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.people_alt_rounded,
-                                          size: 15,
+                                          size: 15.sp,
                                           color: Color(0xFF10B981),
                                         ),
-                                        const SizedBox(width: 5),
+                                        SizedBox(width: 5.w),
                                         Text(
                                           '${item['participants']} Siap Hadir',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 11.5,
+                                            fontSize: 11.5.sp,
                                             color: Color(0xFF10B981),
                                           ),
                                         ),
@@ -1056,35 +1051,35 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                   ),
                                   if (item['isCreator'] == true)
                                     Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 10.w,
+                                        vertical: 6.h,
                                       ),
                                       decoration: BoxDecoration(
                                         color: const Color(
                                           0xFF2563EB,
                                         ).withAlpha(isDark ? 40 : 18),
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(10.r),
                                         border: Border.all(
                                           color: const Color(
                                             0xFF2563EB,
                                           ).withAlpha(isDark ? 70 : 40),
                                         ),
                                       ),
-                                      child: const Row(
+                                      child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Icon(
                                             Icons.verified_user_rounded,
-                                            size: 14,
+                                            size: 14.sp,
                                             color: Color(0xFF2563EB),
                                           ),
-                                          SizedBox(width: 5),
+                                          SizedBox(width: 5.w),
                                           Text(
                                             'Anda Koordinator',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              fontSize: 11.5,
+                                              fontSize: 11.5.sp,
                                               color: Color(0xFF2563EB),
                                             ),
                                           ),
@@ -1099,15 +1094,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                         isJoined
                                             ? Icons.check_circle_rounded
                                             : Icons.handshake_rounded,
-                                        size: 15,
+                                        size: 15.sp,
                                       ),
                                       label: Text(
                                         isJoined
                                             ? 'Telah Terdaftar'
                                             : 'Ikut Hadir',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 12,
+                                          fontSize: 12.sp,
                                         ),
                                       ),
                                       style: ElevatedButton.styleFrom(
@@ -1119,9 +1114,9 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                         shadowColor: const Color(
                                           0xFF2563EB,
                                         ).withAlpha(100),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 8,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 14.w,
+                                          vertical: 8.h,
                                         ),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
@@ -1163,14 +1158,14 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: isDark
                         ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
                         : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
                     color: const Color(0xFF2563EB).withAlpha(isDark ? 50 : 35),
                   ),
@@ -1178,18 +1173,18 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.w),
                       decoration: const BoxDecoration(
                         color: Color(0xFF2563EB),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.history_edu_rounded,
                         color: Colors.white,
-                        size: 22,
+                        size: 22.sp,
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1197,18 +1192,18 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           Text(
                             '${joinedEvents.length} Kegiatan Terdaftar',
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w800,
                               color: isDark
                                   ? Colors.white
                                   : const Color(0xFF1E3A8A),
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             'Riwayat partisipasi agenda dan gotong royong Anda',
                             style: TextStyle(
-                              fontSize: 11.5,
+                              fontSize: 11.5.sp,
                               color: isDark
                                   ? Colors.white60
                                   : const Color(0xFF475569),
@@ -1233,57 +1228,57 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
             SliverFillRemaining(
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(32),
+                  padding: EdgeInsets.all(32.w),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(22),
+                        padding: EdgeInsets.all(22.w),
                         decoration: BoxDecoration(
                           color: const Color(
                             0xFF2563EB,
                           ).withAlpha(isDark ? 25 : 15),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.history_toggle_off_rounded,
-                          size: 48,
+                          size: 48.sp,
                           color: Color(0xFF2563EB),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         'Belum Ada Riwayat Partisipasi',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                           color: isDark
                               ? Colors.white
                               : const Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       Text(
                         'Pilih kegiatan pada tab "Daftar Kegiatan" dan tekan tombol "Ikut Hadir" untuk berpartisipasi.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                           color: isDark
                               ? Colors.white60
-                              : const Color(0xFF64748B),
+                              : Color(0xFF64748B),
                           height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      SizedBox(height: 18.h),
                       OutlinedButton.icon(
                         onPressed: () => _tabController.animateTo(0),
-                        icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                        icon: Icon(Icons.arrow_back_rounded, size: 18.sp),
                         label: const Text('Jelajahi Kegiatan'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF2563EB),
                           side: const BorderSide(color: Color(0xFF2563EB)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
                       ),
@@ -1305,10 +1300,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   );
 
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 14),
+                    margin: EdgeInsets.only(bottom: 14.h),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF131C2E) : Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(18.r),
                       border: Border.all(
                         color: const Color(
                           0xFF10B981,
@@ -1327,49 +1322,49 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                       children: [
                         // Ribbon
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(
                               0xFF10B981,
                             ).withAlpha(isDark ? 35 : 15),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(17),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(17.r),
                             ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.check_circle_rounded,
-                                size: 16,
+                                size: 16.sp,
                                 color: Color(0xFF10B981),
                               ),
-                              const SizedBox(width: 6),
-                              const Text(
+                              SizedBox(width: 6.w),
+                              Text(
                                 'Terdaftar Mengikuti',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF059669),
                                 ),
                               ),
                               const Spacer(),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w,
+                                  vertical: 3.h,
                                 ),
                                 decoration: BoxDecoration(
                                   color: (tipeConfig['color'] as Color)
                                       .withAlpha(isDark ? 40 : 25),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Text(
                                   item['tipe'],
                                   style: TextStyle(
-                                    fontSize: 10.5,
+                                    fontSize: 10.5.sp,
                                     fontWeight: FontWeight.bold,
                                     color: tipeConfig['color'] as Color,
                                   ),
@@ -1380,33 +1375,33 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         ),
 
                         Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(16.w),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 item['title'],
                                 style: TextStyle(
-                                  fontSize: 15.5,
+                                  fontSize: 15.5.sp,
                                   fontWeight: FontWeight.w800,
                                   color: isDark
                                       ? Colors.white
                                       : const Color(0xFF0F172A),
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              SizedBox(height: 10.h),
                               _buildEventMetaRow(
                                 icon: Icons.calendar_month_rounded,
                                 text: item['jadwal'],
                                 isDark: isDark,
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6.h),
                               _buildEventMetaRow(
                                 icon: Icons.place_rounded,
                                 text: '${item['lokasi']} (${item['wilayah']})',
                                 isDark: isDark,
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12.h),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -1414,7 +1409,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                   Text(
                                     'Koordinator: ${item['koordinator']}',
                                     style: TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 11.sp,
                                       color: isDark
                                           ? Colors.white54
                                           : const Color(0xFF64748B),
@@ -1423,15 +1418,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                   TextButton.icon(
                                     onPressed: () =>
                                         _handleToggleJoin(realIndex),
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.cancel_outlined,
-                                      size: 14,
+                                      size: 14.sp,
                                       color: Colors.redAccent,
                                     ),
-                                    label: const Text(
+                                    label: Text(
                                       'Batal Ikut',
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 11.sp,
                                         color: Colors.redAccent,
                                       ),
                                     ),
@@ -1478,8 +1473,8 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? const Color(0xFF090D16) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
@@ -1495,12 +1490,12 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                 // Handle bar
                 Center(
                   child: Container(
-                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
                       color: isDark ? Colors.white24 : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
                 ),
@@ -1512,7 +1507,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                       Text(
                         'Buat Agenda / Pengumuman',
                         style: TextStyle(
-                          fontSize: 16.5,
+                          fontSize: 16.5.sp,
                           fontWeight: FontWeight.w800,
                           color: isDark
                               ? Colors.white
@@ -1556,7 +1551,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               subtitle: 'Pilih jenis publikasi agar warga mudah mengenali',
               isDark: isDark,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Row(
               children: _tipeOptions.map((opt) {
                 final bool isSelected = _formTipe == opt['label'];
@@ -1564,18 +1559,18 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
 
                 return Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    padding: EdgeInsets.symmetric(horizontal: 3.w),
                     child: InkWell(
                       onTap: () {
                         setModalState(() => _formTipe = opt['label']);
                         setState(() {});
                       },
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 220),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 8,
+                        padding: EdgeInsets.symmetric(
+                          vertical: 12.h,
+                          horizontal: 8.w,
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
@@ -1583,7 +1578,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                               : (isDark
                                     ? const Color(0xFF131C2E)
                                     : Colors.white),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14.r),
                           border: Border.all(
                             color: isSelected
                                 ? color
@@ -1605,7 +1600,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         child: Column(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8.w),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? color
@@ -1616,7 +1611,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                               ),
                               child: Icon(
                                 opt['icon'] as IconData,
-                                size: 18,
+                                size: 18.sp,
                                 color: isSelected
                                     ? Colors.white
                                     : (isDark
@@ -1624,12 +1619,12 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                                           : const Color(0xFF64748B)),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Text(
                               opt['label'],
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 11.5,
+                                fontSize: 11.5.sp,
                                 fontWeight: isSelected
                                     ? FontWeight.w800
                                     : FontWeight.w600,
@@ -1649,7 +1644,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               }).toList(),
             ),
 
-            const SizedBox(height: 22),
+            SizedBox(height: 22.h),
 
             // ── 2. CARD: INFORMASI UTAMA ──
             _buildCardWrapper(
@@ -1662,13 +1657,13 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     subtitle: 'Tuliskan nama kegiatan yang jelas dan menarik',
                     isDark: isDark,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   // Judul Field
                   TextFormField(
                     controller: _titleController,
-                    style: const TextStyle(
-                      fontSize: 13.5,
+                    style: TextStyle(
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: _inputDecoration(
@@ -1680,13 +1675,13 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         ? 'Judul wajib diisi'
                         : null,
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
 
                   // Catatan / Keterangan Field
                   TextFormField(
                     controller: _noteController,
                     maxLines: 3,
-                    style: const TextStyle(fontSize: 13),
+                    style: TextStyle(fontSize: 13.sp),
                     decoration: _inputDecoration(
                       hintText:
                           'Instruksi tambahan (misal: membawa cangkul/sapu lidi, konsumsi disediakan)...',
@@ -1698,7 +1693,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               ),
             ),
 
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
 
             // ── 3. CARD: CAKUPAN WILAYAH ──
             _buildCardWrapper(
@@ -1712,13 +1707,13 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         'Tentukan siapa saja warga yang akan melihat info ini',
                     isDark: isDark,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   // Dropdown Scope
                   DropdownButtonFormField<String>(
                     initialValue: _targetScope,
                     style: TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
@@ -1742,11 +1737,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   ),
 
                   if (_targetScope != 'Seluruh Desa (Umum)') ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     DropdownButtonFormField<String>(
                       initialValue: _selectedRw,
                       style: TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 13.5.sp,
                         fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
@@ -1777,11 +1772,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   ],
 
                   if (_targetScope == 'Spesifik Lingkungan RT') ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     DropdownButtonFormField<String>(
                       initialValue: _selectedRt,
                       style: TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 13.5.sp,
                         fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
@@ -1811,7 +1806,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               ),
             ),
 
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
 
             // ── 4. CARD: WAKTU & TEMPAT PELAKSANAAN ──
             _buildCardWrapper(
@@ -1824,13 +1819,13 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     subtitle: 'Kapan dan di mana warga harus berkumpul',
                     isDark: isDark,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   // Jadwal with Auto Picker Button
                   TextFormField(
                     controller: _scheduleController,
-                    style: const TextStyle(
-                      fontSize: 13,
+                    style: TextStyle(
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: _inputDecoration(
@@ -1850,20 +1845,20 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                         ? 'Jadwal wajib diisi'
                         : null,
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Align(
                     alignment: Alignment.centerRight,
                     child: InkWell(
                       onTap: _pickDateTime,
-                      child: const Padding(
+                      child: Padding(
                         padding: EdgeInsets.symmetric(
-                          vertical: 2,
-                          horizontal: 4,
+                          vertical: 2.h,
+                          horizontal: 4.w,
                         ),
                         child: Text(
                           '📅 Buka Kalender & Waktu',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2563EB),
                           ),
@@ -1872,13 +1867,13 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     ),
                   ),
 
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
 
                   // Lokasi
                   TextFormField(
                     controller: _locationController,
-                    style: const TextStyle(
-                      fontSize: 13,
+                    style: TextStyle(
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: _inputDecoration(
@@ -1892,7 +1887,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   ),
 
                   // Quick Suggestion Chips for Location
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -1902,17 +1897,17 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           setModalState(() => _locationController.text = loc);
                           setState(() {});
                         },
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 4.h,
                           ),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF1E293B)
                                 : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                             border: Border.all(
                               color: isDark
                                   ? Colors.white10
@@ -1922,16 +1917,16 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.add_location_alt_outlined,
-                                size: 11,
+                                size: 11.sp,
                                 color: Color(0xFF2563EB),
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4.w),
                               Text(
                                 loc,
                                 style: TextStyle(
-                                  fontSize: 10.5,
+                                  fontSize: 10.5.sp,
                                   fontWeight: FontWeight.w600,
                                   color: isDark
                                       ? Colors.white70
@@ -1948,7 +1943,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               ),
             ),
 
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
 
             // ── 5. LAMPIRAN POSTER / GAMBAR ──
             _buildCardWrapper(
@@ -1961,7 +1956,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     subtitle: 'Opsional: Tambahkan foto untuk menarik perhatian warga',
                     isDark: isDark,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   if (_posterImage == null)
                     Material(
                       color: Colors.transparent,
@@ -1970,15 +1965,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           // Gunakan StatefulBuilder setModalState
                           _pickImage(setModalState);
                         },
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          padding: EdgeInsets.symmetric(vertical: 24.h),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF1E293B)
                                 : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
                               color: isDark
                                   ? Colors.white10
@@ -1990,14 +1985,14 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                             children: [
                               Icon(
                                 Icons.add_photo_alternate_outlined,
-                                size: 36,
+                                size: 36.sp,
                                 color: isDark ? Colors.white60 : Colors.grey[500],
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               Text(
                                 'Klik untuk memilih gambar',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.w600,
                                   color: isDark ? Colors.white70 : Colors.grey[600],
                                 ),
@@ -2009,12 +2004,12 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                     )
                   else
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFF1E293B)
                             : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: const Color(0xFF2FA2F1).withAlpha(100),
                         ),
@@ -2022,7 +2017,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                       child: Row(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                             child: Image.file(
                               _posterImage!,
                               width: 60,
@@ -2030,25 +2025,25 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                               fit: BoxFit.cover,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Gambar Terpilih',
                                   style: TextStyle(
-                                    fontSize: 12.5,
+                                    fontSize: 12.5.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4.h),
                                 Text(
                                   _posterImage!.path.split('/').last,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 11.sp,
                                     color: isDark ? Colors.white70 : Colors.grey[600],
                                   ),
                                 ),
@@ -2056,10 +2051,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.delete_outline_rounded,
                               color: Colors.red,
-                              size: 22,
+                              size: 22.sp,
                             ),
                             onPressed: () {
                               setModalState(() {
@@ -2075,14 +2070,14 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
               ),
             ),
 
-            const SizedBox(height: 30),
+            SizedBox(height: 30.h),
 
             // ── 5. SUBMIT BUTTON ──
             Container(
               width: double.infinity,
               height: 50,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
                 gradient: const LinearGradient(
                   colors: [Color(0xFF2FA2F1), Color(0xFF0284C7)],
                 ),
@@ -2101,11 +2096,11 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                   shadowColor: Colors.transparent,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
@@ -2113,15 +2108,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
                           strokeWidth: 2.5,
                         ),
                       )
-                    : const Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.send_rounded, size: 18),
-                          SizedBox(width: 8),
+                          Icon(Icons.send_rounded, size: 18.sp),
+                          SizedBox(width: 8.w),
                           Text(
                             'Publikasikan Sekarang',
                             style: TextStyle(
-                              fontSize: 14.5,
+                              fontSize: 14.5.sp,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.2,
                             ),
@@ -2151,15 +2146,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
           title,
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            fontSize: 14,
+            fontSize: 14.sp,
             color: isDark ? Colors.white : const Color(0xFF0F172A),
           ),
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2.h),
         Text(
           subtitle,
           style: TextStyle(
-            fontSize: 11.5,
+            fontSize: 11.5.sp,
             color: isDark ? Colors.white54 : const Color(0xFF64748B),
           ),
         ),
@@ -2170,10 +2165,10 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
   Widget _buildCardWrapper({required Widget child, required bool isDark}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF131C2E) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
@@ -2200,15 +2195,15 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
       children: [
         Icon(
           icon,
-          size: 14,
+          size: 14.sp,
           color: isDark ? Colors.white60 : const Color(0xFF64748B),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: isDark ? Colors.white70 : const Color(0xFF475569),
             ),
           ),
@@ -2226,28 +2221,28 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage>
     return InputDecoration(
       hintText: hintText,
       hintStyle: TextStyle(
-        fontSize: 12,
+        fontSize: 12.sp,
         color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
       ),
-      prefixIcon: Icon(icon, size: 18, color: const Color(0xFF2563EB)),
+      prefixIcon: Icon(icon, size: 18.sp, color: const Color(0xFF2563EB)),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         borderSide: BorderSide(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         borderSide: BorderSide(
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.8),
       ),
     );

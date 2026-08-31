@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -198,10 +199,10 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.5.h),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
         border: Border.all(color: borderColor),
       ),
       child: Text(
@@ -209,7 +210,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
         style: TextStyle(
           color: textColor,
           fontWeight: FontWeight.bold,
-          fontSize: 10.5,
+          fontSize: 10.5.sp,
         ),
       ),
     );
@@ -279,7 +280,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(16.r),
                               border: Border.all(
                                 color: isDark
                                     ? Colors.white12
@@ -297,7 +298,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                             ),
                             child: TextField(
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 14.sp,
                                 color: isDark ? Colors.white : Colors.black87,
                               ),
                               decoration: InputDecoration(
@@ -306,18 +307,18 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                   color: isDark
                                       ? Colors.white38
                                       : Colors.grey[400],
-                                  fontSize: 13.5,
+                                  fontSize: 13.5.sp,
                                 ),
                                 prefixIcon: Icon(
                                   Icons.search_rounded,
                                   color: primaryColor,
-                                  size: 22,
+                                  size: 22.sp,
                                 ),
                                 suffixIcon: _searchQuery.isNotEmpty
                                     ? IconButton(
-                                        icon: const Icon(
+                                        icon: Icon(
                                           Icons.close_rounded,
-                                          size: 18,
+                                          size: 18.sp,
                                           color: Colors.grey,
                                         ),
                                         onPressed: () {
@@ -329,9 +330,9 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                       )
                                     : null,
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 14.h,
                                 ),
                               ),
                               onChanged: (value) {
@@ -343,12 +344,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10.w),
                         // 1 Dedicated Filter Button
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16.r),
                             onTap: _showFilterBottomSheet,
                             child: Container(
                               width: 48,
@@ -357,7 +358,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                 color: hasActiveFilter
                                     ? primaryColor
                                     : Theme.of(context).cardColor,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(16.r),
                                 border: Border.all(
                                   color: hasActiveFilter
                                       ? primaryColor
@@ -389,12 +390,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                         : (isDark
                                               ? Colors.white70
                                               : primaryColor),
-                                    size: 22,
+                                    size: 22.sp,
                                   ),
                                   if (hasActiveFilter)
                                     Positioned(
-                                      top: 10,
-                                      right: 10,
+                                      top: 10.h,
+                                      right: 10.w,
                                       child: Container(
                                         width: 7,
                                         height: 7,
@@ -415,17 +416,17 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                     // Active filter chip tag (if filter is applied)
                     if (hasActiveFilter)
                       Padding(
-                        padding: const EdgeInsets.only(top: 10),
+                        padding: EdgeInsets.only(top: 10.h),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10.w,
+                                vertical: 5.h,
                               ),
                               decoration: BoxDecoration(
                                 color: primaryColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(20.r),
                                 border: Border.all(
                                   color: primaryColor.withValues(alpha: 0.2),
                                 ),
@@ -437,11 +438,11 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                     'Filter: ${_selectedCategory != 'Semua' ? _selectedCategory : ''}${_selectedCategory != 'Semua' && _selectedStatus != 'Semua' ? ' · ' : ''}${_selectedStatus != 'Semua' ? _selectedStatus : ''}',
                                     style: TextStyle(
                                       color: primaryColor,
-                                      fontSize: 11.5,
+                                      fontSize: 11.5.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
+                                  SizedBox(width: 6.w),
                                   GestureDetector(
                                     onTap: () {
                                       setState(() {
@@ -452,7 +453,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                     },
                                     child: Icon(
                                       Icons.close_rounded,
-                                      size: 14,
+                                      size: 14.sp,
                                       color: primaryColor,
                                     ),
                                   ),
@@ -477,9 +478,9 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                     child: _buildEmptyState(),
                   )
                 : SliverPadding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 4,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.w,
+                      vertical: 4.h,
                     ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
@@ -490,13 +491,13 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
             if (_isLoadingMore)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
                   child: Center(
                     child: CircularProgressIndicator(color: primaryColor),
                   ),
                 ),
               ),
-            const SliverToBoxAdapter(child: SizedBox(height: 90)),
+            SliverToBoxAdapter(child: SizedBox(height: 90.h)),
           ],
         ),
       ),
@@ -513,12 +514,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
           : const Color(0xFF2563EB),
       iconTheme: const IconThemeData(color: Colors.white),
       elevation: 0,
-      title: const Text(
+      title: Text(
         'Riwayat Aktivitas',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          fontSize: 18,
+          fontSize: 18.sp,
           letterSpacing: 0.3,
         ),
       ),
@@ -588,7 +589,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
             return Container(
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF0F172A) : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withAlpha(isDark ? 80 : 25),
@@ -599,9 +600,9 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
               ),
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                left: 20,
-                right: 20,
-                top: 12,
+                left: 20.w,
+                right: 20.w,
+                top: 12.h,
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -617,11 +618,11 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           color: isDark
                               ? Colors.white24
                               : const Color(0xFFCBD5E1),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14.h),
 
                     // Header
                     Row(
@@ -630,7 +631,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                         Text(
                           'Filter Aktivitas',
                           style: TextStyle(
-                            fontSize: 16.5,
+                            fontSize: 16.5.sp,
                             fontWeight: FontWeight.bold,
                             color: isDark
                                 ? Colors.white
@@ -645,37 +646,37 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                 tempStatus = 'Semua';
                               });
                             },
-                            child: const Padding(
+                            child: Padding(
                               padding: EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 4,
+                                horizontal: 6.w,
+                                vertical: 4.h,
                               ),
                               child: Text(
                                 'Reset',
                                 style: TextStyle(
                                   color: primaryColor,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                 ),
                               ),
                             ),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18.h),
 
                     // 1. Kategori Layanan Section
                     Text(
                       'Kategori Layanan',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.bold,
                         color: isDark
                             ? Colors.white70
                             : const Color(0xFF475569),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -688,12 +689,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                               tempCategory = name;
                             });
                           },
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 150),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 14.w,
+                              vertical: 8.h,
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
@@ -701,7 +702,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                   : (isDark
                                       ? const Color(0xFF1E293B)
                                       : const Color(0xFFF1F5F9)),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(20.r),
                               border: Border.all(
                                 color: isSelected
                                     ? primaryColor
@@ -714,7 +715,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                             child: Text(
                               name,
                               style: TextStyle(
-                                fontSize: 12.5,
+                                fontSize: 12.5.sp,
                                 fontWeight: isSelected
                                     ? FontWeight.bold
                                     : FontWeight.w500,
@@ -729,20 +730,20 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18.h),
 
                     // 2. Status Transaksi Section
                     Text(
                       'Status Transaksi',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.bold,
                         color: isDark
                             ? Colors.white70
                             : const Color(0xFF475569),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -755,12 +756,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                               tempStatus = status;
                             });
                           },
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 150),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 14.w,
+                              vertical: 8.h,
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
@@ -768,7 +769,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                   : (isDark
                                       ? const Color(0xFF1E293B)
                                       : const Color(0xFFF1F5F9)),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(20.r),
                               border: Border.all(
                                 color: isSelected
                                     ? primaryColor
@@ -781,7 +782,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                             child: Text(
                               status,
                               style: TextStyle(
-                                fontSize: 12.5,
+                                fontSize: 12.5.sp,
                                 fontWeight: isSelected
                                     ? FontWeight.bold
                                     : FontWeight.w500,
@@ -796,7 +797,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // 3. Tombol Terapkan Filter
                     SizedBox(
@@ -816,13 +817,13 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Terapkan Filter',
                           style: TextStyle(
-                            fontSize: 14.5,
+                            fontSize: 14.5.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -847,10 +848,10 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
         (item['title']?.toString().toLowerCase().contains('lapor') ?? false);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
         ),
@@ -864,9 +865,9 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           onTap: () {
             Navigator.push(
               context,
@@ -876,7 +877,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -886,10 +887,10 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: primaryColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0.w),
                     child: item['image'] != null
                         ? (item['image'].toString().startsWith('http')
                               ? Image.network(
@@ -911,7 +912,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                       errorBuilder: (_, _, _) => Icon(
                                         Icons.apps_rounded,
                                         color: primaryColor,
-                                        size: 24,
+                                        size: 24.sp,
                                       ),
                                     );
                                   },
@@ -921,17 +922,17 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                   errorBuilder: (_, _, _) => Icon(
                                     Icons.apps_rounded,
                                     color: primaryColor,
-                                    size: 24,
+                                    size: 24.sp,
                                   ),
                                 ))
                         : Icon(
                             Icons.apps_rounded,
                             color: primaryColor,
-                            size: 24,
+                            size: 24.sp,
                           ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
 
                 // Main Content
                 Expanded(
@@ -948,7 +949,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                               item['title']?.toString() ?? 'Tidak ada judul',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14.5,
+                                fontSize: 14.5.sp,
                                 color: isDark
                                     ? Colors.white
                                     : const Color(0xFF1E293B),
@@ -957,22 +958,22 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           _buildStatusBadge(item['status']),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
 
                       // Date
                       Text(
                         formattedDate,
                         style: TextStyle(
                           color: isDark ? Colors.white38 : Colors.grey[500],
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
 
                       // Price or Detail Row
                       Row(
@@ -980,15 +981,15 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                         children: [
                           if (isLaporan)
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 2.h,
                               ),
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? Colors.white10
                                     : Colors.grey.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(4.r),
                               ),
                               child: Text(
                                 item['price']?.toString() ??
@@ -997,7 +998,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                                   color: isDark
                                       ? Colors.white70
                                       : Colors.grey[700],
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1008,12 +1009,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                               style: TextStyle(
                                 color: primaryColor,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 14.sp,
                               ),
                             ),
                           Icon(
                             Icons.arrow_forward_ios_rounded,
-                            size: 12,
+                            size: 12.sp,
                             color: isDark ? Colors.white24 : Colors.grey[300],
                           ),
                         ],
@@ -1035,38 +1036,38 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: EdgeInsets.all(32.0.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: primaryColor.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.receipt_long_rounded,
-                size: 54,
+                size: 54.sp,
                 color: primaryColor,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               'Belum Ada Aktivitas',
               style: TextStyle(
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white70 : Colors.grey[800],
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               'Riwayat pesanan dan laporan Anda akan muncul di sini.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDark ? Colors.white38 : Colors.grey[500],
-                fontSize: 13,
+                fontSize: 13.sp,
               ),
             ),
           ],
@@ -1081,41 +1082,41 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: EdgeInsets.all(32.0.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: primaryColor.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.receipt_long_rounded,
-                size: 54,
+                size: 54.sp,
                 color: primaryColor,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               'Belum Ada Aktivitas',
               style: TextStyle(
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white70 : Colors.grey[800],
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               'Silakan login untuk melihat riwayat aktivitas dan transaksi Anda.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDark ? Colors.white38 : Colors.grey[500],
-                fontSize: 13,
+                fontSize: 13.sp,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -1130,12 +1131,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 32.w,
+                  vertical: 12.h,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 elevation: 0,
               ),

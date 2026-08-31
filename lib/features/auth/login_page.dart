@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse('http://10.250.3.148:8000/api/login');
+      final url = Uri.parse('http://10.121.197.148:8000/api/login');
       final body = {
         'email': _emailController.text,
         'password': _passwordController.text,
@@ -180,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         final response = await http.post(
-          Uri.parse('http://10.250.3.148:8000/api/login/google'),
+          Uri.parse('http://10.121.197.148:8000/api/login/google'),
           headers: {'Accept': 'application/json'},
           body: {
             'email': user.email ?? '',

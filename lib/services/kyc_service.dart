@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class KycService {
-  static const String baseUrl = 'http://10.250.3.148:8000/api';
+  static const String baseUrl = 'http://10.121.197.148:8000/api';
 
   Future<Map<String, dynamic>> processKtp({
     required String imagePath,

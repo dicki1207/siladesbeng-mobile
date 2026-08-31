@@ -200,7 +200,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
             pinned: true,
             backgroundColor: isDark
                 ? const Color(0xFF0F172A)
-                : const Color(0xFF2563EB),
+                : const Color(0xFF2FA2F1),
             foregroundColor: Colors.white,
             actions: [
               // Cart with Badge
@@ -1048,6 +1048,8 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
+      showCheckmark: false,
+      avatar: null,
       selectedColor: primaryColor.withValues(alpha: 0.18),
       backgroundColor: isDark
           ? const Color(0xFF0F172A)
@@ -1064,6 +1066,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
             ? primaryColor
             : (isDark ? Colors.white12 : const Color(0xFFCBD5E1)),
       ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       onSelected: (selected) {
         if (selected) {
           setState(() => _selectedReviewFilter = value);

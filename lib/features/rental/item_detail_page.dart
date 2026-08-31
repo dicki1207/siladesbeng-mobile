@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
 class ItemDetailPage extends StatelessWidget {
@@ -156,7 +157,7 @@ class ItemDetailPage extends StatelessWidget {
             backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
             elevation: 0,
             leading: Padding(
-              padding: const EdgeInsets.only(left: 12),
+              padding: EdgeInsets.only(left: 12.w),
               child: Center(
                 child: Container(
                   width: 38,
@@ -168,7 +169,7 @@ class ItemDetailPage extends StatelessWidget {
                   child: IconButton(
                     icon: Icon(
                       Icons.arrow_back_ios_new_rounded,
-                      size: 20,
+                      size: 20.sp,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                     padding: EdgeInsets.zero,
@@ -191,7 +192,7 @@ class ItemDetailPage extends StatelessWidget {
                               fit: BoxFit.contain,
                               errorBuilder: (_, _, _) => Icon(
                                 Icons.image_not_supported_outlined,
-                                size: 80,
+                                size: 80.sp,
                                 color: Colors.grey[400],
                               ),
                             )
@@ -200,7 +201,7 @@ class ItemDetailPage extends StatelessWidget {
                               fit: BoxFit.contain,
                               errorBuilder: (_, _, _) => Icon(
                                 Icons.image_not_supported_outlined,
-                                size: 80,
+                                size: 80.sp,
                                 color: Colors.grey[400],
                               ),
                             ),
@@ -217,7 +218,7 @@ class ItemDetailPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,38 +228,38 @@ class ItemDetailPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                         decoration: BoxDecoration(
                           color: primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
                           category,
                           style: TextStyle(
                             color: primaryColor,
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ),
                       if (stock > 0)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            color: Color(0xFF10B981).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFF10B981)),
-                              const SizedBox(width: 4),
+                              Icon(Icons.check_circle_rounded, size: 12.sp, color: Color(0xFF10B981)),
+                              SizedBox(width: 4.w),
                               Text(
                                 'Stok: $stock Tabung',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Color(0xFF10B981),
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                 ),
                               ),
                             ],
@@ -266,18 +267,18 @@ class ItemDetailPage extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   // Title
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
 
                   // Price
                   Row(
@@ -287,16 +288,16 @@ class ItemDetailPage extends StatelessWidget {
                       Text(
                         _formatCurrency(price),
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 22.sp,
                           fontWeight: FontWeight.w900,
                           color: primaryColor,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Text(
                         category.contains('Sewa') ? '/ Hari' : '/ Tabung',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 13.sp,
                           color: isDark ? Colors.white54 : Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -304,29 +305,29 @@ class ItemDetailPage extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Spesifikasi Title
                   Text(
                     'Spesifikasi Produk',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : const Color(0xFF1E293B),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   // Dynamic Specification Cards Row
                   Row(
                     children: specList.map((spec) {
                       return Expanded(
                         child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                          margin: EdgeInsets.only(right: 8.w),
+                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                             border: Border.all(
                               color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
                             ),
@@ -336,23 +337,23 @@ class ItemDetailPage extends StatelessWidget {
                             children: [
                               Icon(
                                 spec['icon'] as IconData,
-                                size: 18,
+                                size: 18.sp,
                                 color: primaryColor,
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8.h),
                               Text(
                                 spec['label'] as String,
                                 style: TextStyle(
-                                  fontSize: 10.5,
+                                  fontSize: 10.5.sp,
                                   color: isDark ? Colors.white38 : Colors.grey[500],
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              SizedBox(height: 2.h),
                               Text(
                                 spec['value'] as String,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
                                   color: isDark ? Colors.white : const Color(0xFF1E293B),
                                 ),
@@ -366,14 +367,14 @@ class ItemDetailPage extends StatelessWidget {
                     }).toList(),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Notice Box
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: EdgeInsets.all(14.w),
                     decoration: BoxDecoration(
                       color: primaryColor.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                       border: Border.all(
                         color: primaryColor.withValues(alpha: 0.15),
                       ),
@@ -383,10 +384,10 @@ class ItemDetailPage extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.info_outline_rounded,
-                          size: 18,
+                          size: 18.sp,
                           color: primaryColor,
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10.w),
                         Expanded(
                           child: Text(
                             category == 'Beli Gas'
@@ -395,7 +396,7 @@ class ItemDetailPage extends StatelessWidget {
                                     : 'Pesanan dapat diantar langsung ke rumah atau diambil secara mandiri di kantor BUMDes.')
                                 : 'Layanan sewa didukung oleh BUMDes resmi untuk kemudahan masyarakat desa.',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               height: 1.4,
                               color: isDark ? Colors.white70 : const Color(0xFF334155),
                             ),
@@ -405,22 +406,22 @@ class ItemDetailPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Description
                   Text(
                     'Deskripsi Lengkap',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : const Color(0xFF1E293B),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     description,
                     style: TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 13.5.sp,
                       color: isDark ? Colors.white60 : Colors.grey[700],
                       height: 1.55,
                     ),
@@ -434,7 +435,7 @@ class ItemDetailPage extends StatelessWidget {
 
       // Bottom Sticky Bar (Harga Ringkas + Tombol Pesan)
       bottomSheet: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           border: Border(
@@ -463,19 +464,19 @@ class ItemDetailPage extends StatelessWidget {
                     Text(
                       'Total Harga',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         color: isDark ? Colors.white38 : Colors.grey[500],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
                       child: Text(
                         _formatCurrency(price),
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.w900,
                           color: primaryColor,
                         ),
@@ -485,7 +486,7 @@ class ItemDetailPage extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(width: 14),
+              SizedBox(width: 14.w),
 
               // Action Button
               Expanded(
@@ -517,23 +518,23 @@ class ItemDetailPage extends StatelessWidget {
                     (category.toLowerCase().contains('gas'))
                         ? Icons.shopping_bag_outlined
                         : Icons.calendar_month_rounded,
-                    size: 18,
+                    size: 18.sp,
                   ),
                   label: Text(
                     (category.toLowerCase().contains('gas'))
                         ? 'Pesan Sekarang'
                         : 'Sewa Sekarang',
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                     elevation: 0,
                   ),
