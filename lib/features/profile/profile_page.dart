@@ -16,6 +16,7 @@ import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 import 'package:siladesbeng_mobile/features/profile/mutation/domicile_transfer_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
+import 'package:siladesbeng_mobile/features/profile/account/change_password_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -43,7 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _showcaseView = ShowcaseView.register();
+    _showcaseView = ShowcaseView.register(scope: 'profile');
     _loadProfile();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndStartShowcase(
@@ -370,7 +371,20 @@ class _ProfilePageState extends State<ProfilePage> {
         borderRadius: BorderRadius.circular(17.r),
         child: Stack(
           children: [
-            // ── Watermark: Garuda / Shield pattern ──
+            // ── Watermark: Logo Sila-DesBeng (Top Right) & Background Patterns ──
+            Positioned(
+              top: 4.h,
+              right: 8.w,
+              child: Opacity(
+                opacity: isDark ? 0.20 : 0.32,
+                child: Image.asset(
+                  'logodomain.png',
+                  width: 64.w,
+                  height: 64.w,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
             Positioned(
               right: -15,
               bottom: -10,
@@ -1200,24 +1214,33 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   SizedBox(height: 14.h),
                   _buildMenuGroup(context, [
-                    if (_isLoggedIn)
+                    if (_isLoggedIn) ...[
                       Showcase(
                         titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
                         descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                         key: _keyEditProfile,
-                        title: 'Edit Profil & Keamanan',
-                        description:
-                            'Ubah data profil, kata sandi (password), serta atur PIN keamanan akun Anda.',
+                        title: 'Edit Profil & Data Diri',
+                        description: 'Ubah informasi identitas dan domisili Anda.',
                         child: _buildMenuTile(
                           context,
                           icon: Icons.manage_accounts_rounded,
-                          title: 'Edit Profil & PIN Keamanan',
+                          title: 'Edit Profil & Data Diri',
                           targetPage: const EditProfilePage(),
                           iconColor: Colors.green,
                           isFirst: true,
                           isLast: false,
                         ),
                       ),
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.shield_rounded,
+                        title: 'Keamanan & Kata Sandi',
+                        targetPage: const ChangePasswordPage(),
+                        iconColor: Colors.blueGrey,
+                        isFirst: false,
+                        isLast: false,
+                      ),
+                    ],
                     _buildMenuTile(
                       context,
                       icon: Icons.help_outline_rounded,

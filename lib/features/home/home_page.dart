@@ -63,7 +63,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _showcaseView = ShowcaseView.register();
+    _showcaseView = ShowcaseView.register(scope: 'home');
     _unitPelayanan = _getDefaultUnitPelayanan();
     _pasarDaerahProducts = [];
     _announcements = [];

@@ -14,6 +14,7 @@ class DomicileTransferPage extends StatefulWidget {
 class _DomicileTransferPageState extends State<DomicileTransferPage> {
   bool _isLoading = false;
   bool _isFetching = true;
+  bool _isIdentityExpanded = false;
 
   final MutasiService _mutasiService = MutasiService();
 
@@ -26,18 +27,130 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
   String _userNik = '1403010101900001';
   String _userAddress = 'Jalan Haji Usman Zein, Bengkalis';
   final String _desaAsal = 'Desa Sila-DesBeng (Desa Saat Ini)';
-  String _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Mandau)';
+  String _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Bathin Solapan)';
 
-  final List<String> _desaList = [
-    'Desa Batin Solapan (Kec. Mandau)',
-    'Desa Makmur Jaya (Kec. Bantan)',
-    'Desa Pinggir (Kec. Pinggir)',
-    'Desa Senggoro (Kec. Bengkalis)',
-    'Desa Kelapapati (Kec. Bengkalis)',
-    'Desa Sukamaju (Kec. Rupat)',
-    'Desa Sukaasih (Kec. Bukit Batu)',
-    'Luar Daerah / Luar Kecamatan (Ketik Manual)',
+  // Database Lengkap Desa & Kecamatan se-Kabupaten Bengkalis
+  static const List<Map<String, String>> _allDesaBengkalis = [
+    // Kec. Bengkalis
+    {'desa': 'Desa Senggoro', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Wonosari', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Kelapapati', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Pedekik', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Damon', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Meskom', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Penampi', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Temeran', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Pangkalan Batang', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Sebauk', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Kuala Alam', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Sungai Alam', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Desa Air Putih', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Kelurahan Bengkalis Kota', 'kecamatan': 'Kec. Bengkalis'},
+    {'desa': 'Kelurahan Rimba Sekampung', 'kecamatan': 'Kec. Bengkalis'},
+
+    // Kec. Bantan
+    {'desa': 'Desa Selatbaru', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Bantan Tua', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Bantan Air', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Teluk Pambang', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Resam Lapis', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Jangkang', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Muntai', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Muntai Barat', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Kembung Luar', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Kembung Baru', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Teluk Papal', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Bantan Tengah', 'kecamatan': 'Kec. Bantan'},
+    {'desa': 'Desa Mentayan', 'kecamatan': 'Kec. Bantan'},
+
+    // Kec. Mandau
+    {'desa': 'Kelurahan Duri Barat', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Kelurahan Duri Timur', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Kelurahan Gajah Sakti', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Kelurahan Balik Alam', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Kelurahan Batang Serosa', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Kelurahan Air Jamban', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Kelurahan Pematang Pudu', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Desa Harapan Baru', 'kecamatan': 'Kec. Mandau'},
+    {'desa': 'Desa Bathin Betuah', 'kecamatan': 'Kec. Mandau'},
+
+    // Kec. Bathin Solapan
+    {'desa': 'Desa Batin Solapan', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Sebangar', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Boncah Mahang', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Simpang Padang', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Petani', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Buluh Manis', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Tambusai Batang Dui', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Balai Makam', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Pematang Obo', 'kecamatan': 'Kec. Bathin Solapan'},
+    {'desa': 'Desa Kesumbo Ampai', 'kecamatan': 'Kec. Bathin Solapan'},
+
+    // Kec. Bukit Batu
+    {'desa': 'Desa Sungai Pakning', 'kecamatan': 'Kec. Bukit Batu'},
+    {'desa': 'Desa Sejangat', 'kecamatan': 'Kec. Bukit Batu'},
+    {'desa': 'Desa Dompas', 'kecamatan': 'Kec. Bukit Batu'},
+    {'desa': 'Desa Pakning Asal', 'kecamatan': 'Kec. Bukit Batu'},
+    {'desa': 'Desa Buruk Bakul', 'kecamatan': 'Kec. Bukit Batu'},
+    {'desa': 'Desa Batang Duku', 'kecamatan': 'Kec. Bukit Batu'},
+    {'desa': 'Desa Sukajadi', 'kecamatan': 'Kec. Bukit Batu'},
+
+    // Kec. Siak Kecil
+    {'desa': 'Desa Lubuk Muda', 'kecamatan': 'Kec. Siak Kecil'},
+    {'desa': 'Desa Sepotong', 'kecamatan': 'Kec. Siak Kecil'},
+    {'desa': 'Desa Tanjung Belit', 'kecamatan': 'Kec. Siak Kecil'},
+    {'desa': 'Desa Sungai Nibung', 'kecamatan': 'Kec. Siak Kecil'},
+    {'desa': 'Desa Sadar Jaya', 'kecamatan': 'Kec. Siak Kecil'},
+    {'desa': 'Desa Koto Raja', 'kecamatan': 'Kec. Siak Kecil'},
+    {'desa': 'Desa Sungai Siput', 'kecamatan': 'Kec. Siak Kecil'},
+    {'desa': 'Desa Lubuk Garam', 'kecamatan': 'Kec. Siak Kecil'},
+
+    // Kec. Pinggir
+    {'desa': 'Desa Pinggir', 'kecamatan': 'Kec. Pinggir'},
+    {'desa': 'Desa Balai Pungut', 'kecamatan': 'Kec. Pinggir'},
+    {'desa': 'Desa Muara Basung', 'kecamatan': 'Kec. Pinggir'},
+    {'desa': 'Desa Semunai', 'kecamatan': 'Kec. Pinggir'},
+    {'desa': 'Kelurahan Titian Antui', 'kecamatan': 'Kec. Pinggir'},
+    {'desa': 'Desa Tengganau', 'kecamatan': 'Kec. Pinggir'},
+    {'desa': 'Desa Pangkalan Libut', 'kecamatan': 'Kec. Pinggir'},
+
+    // Kec. Bandar Laksamana
+    {'desa': 'Desa Tenggayun', 'kecamatan': 'Kec. Bandar Laksamana'},
+    {'desa': 'Desa Sepahat', 'kecamatan': 'Kec. Bandar Laksamana'},
+    {'desa': 'Desa Tanjung Leban', 'kecamatan': 'Kec. Bandar Laksamana'},
+    {'desa': 'Desa Bukit Batu', 'kecamatan': 'Kec. Bandar Laksamana'},
+    {'desa': 'Desa Parit I Kebumen', 'kecamatan': 'Kec. Bandar Laksamana'},
+    {'desa': 'Desa Temiang', 'kecamatan': 'Kec. Bandar Laksamana'},
+
+    // Kec. Talang Muandau
+    {'desa': 'Desa Beringin', 'kecamatan': 'Kec. Talang Muandau'},
+    {'desa': 'Desa Tasik Serai', 'kecamatan': 'Kec. Talang Muandau'},
+    {'desa': 'Desa Koto Pait Beringin', 'kecamatan': 'Kec. Talang Muandau'},
+    {'desa': 'Desa Tasik Serai Barat', 'kecamatan': 'Kec. Talang Muandau'},
+    {'desa': 'Desa Serai Wangi', 'kecamatan': 'Kec. Talang Muandau'},
+
+    // Kec. Rupat
+    {'desa': 'Kelurahan Batu Panjang', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Kelurahan Tanjung Kapal', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Kelurahan Terkul', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Kelurahan Pergam', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Desa Sukamaju', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Desa Makeruh', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Desa Hutan Panjang', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Desa Teluk Lecah', 'kecamatan': 'Kec. Rupat'},
+    {'desa': 'Desa Dungun Baru', 'kecamatan': 'Kec. Rupat'},
+
+    // Kec. Rupat Utara
+    {'desa': 'Desa Tanjung Medang', 'kecamatan': 'Kec. Rupat Utara'},
+    {'desa': 'Desa Teluk Rhu', 'kecamatan': 'Kec. Rupat Utara'},
+    {'desa': 'Desa Tanjung Punak', 'kecamatan': 'Kec. Rupat Utara'},
+    {'desa': 'Desa Kadur', 'kecamatan': 'Kec. Rupat Utara'},
+    {'desa': 'Desa Titi Akar', 'kecamatan': 'Kec. Rupat Utara'},
+    {'desa': 'Desa Putri Sembilan', 'kecamatan': 'Kec. Rupat Utara'},
   ];
+
+  static const String _luarDaerahValue =
+      'Luar Kabupaten Bengkalis (Ketik Manual)';
 
   final List<String> _quickReasons = [
     'Pindah Rumah',
@@ -218,15 +331,17 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
 
     setState(() => _isLoading = true);
 
-    final String finalDesaTujuan = _selectedDesaTujuan.contains('Luar Daerah')
-        ? _customDesaTujuanController.text.trim()
-        : _selectedDesaTujuan;
+    final String finalDesaTujuan =
+        _selectedDesaTujuan.contains('Luar Kabupaten') ||
+                _selectedDesaTujuan.contains('Luar Daerah')
+            ? _customDesaTujuanController.text.trim()
+            : _selectedDesaTujuan;
 
     if (finalDesaTujuan.isEmpty) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Detail wilayah luar daerah wajib diisi'),
+          content: Text('Detail wilayah luar kabupaten wajib diisi'),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
         ),
@@ -283,7 +398,9 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         title: Row(
           children: [
             Icon(
@@ -347,6 +464,23 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
     );
   }
 
+  void _openDesaPicker(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _SearchableDesaPickerSheet(
+        isDark: isDark,
+        currentSelected: _selectedDesaTujuan,
+        onSelect: (selectedString) {
+          setState(() {
+            _selectedDesaTujuan = selectedString;
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -355,130 +489,111 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
       backgroundColor: isDark
           ? const Color(0xFF0B1120)
           : const Color(0xFFF8FAFC),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 145.h,
-              pinned: true,
-              floating: false,
-              elevation: 0,
-              scrolledUnderElevation: 2,
-              backgroundColor: isDark
-                  ? const Color(0xFF0F172A)
-                  : const Color(0xFF2FA2F1),
-              leading: IconButton(
-                icon: Container(
-                  padding: EdgeInsets.all(7.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(isDark ? 25 : 35),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 16.sp,
-                  ),
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Gradient overlay
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: isDark
-                              ? [
-                                  const Color(0xFF0F172A),
-                                  const Color(0xFF1E293B),
-                                ]
-                              : [
-                                  const Color(0xFF2FA2F1),
-                                  const Color(0xFF0284C7),
-                                ],
-                        ),
-                      ),
-                    ),
-                    // Ambient light circles
-                    Positioned(
-                      right: -25,
-                      top: -25,
-                      child: Container(
-                        width: 130.w,
-                        height: 130.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withAlpha(20),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: -20,
-                      bottom: -20,
-                      child: Container(
-                        width: 80.w,
-                        height: 80.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withAlpha(15),
-                        ),
-                      ),
-                    ),
-                    // Title info in header
-                    Positioned(
-                      left: 20.w,
-                      right: 20.w,
-                      bottom: 20.h,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.swap_horiz_rounded,
-                                color: Colors.white,
-                                size: 22.sp,
-                              ),
-                              SizedBox(width: 8.w),
-                              Expanded(
-                                child: Text(
-                                  'Mutasi Domisili (Handshake)',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 17.5.sp,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 3.h),
-                          Text(
-                            'Pindah desa mandiri dengan integrasi NIK resmi antar Kepala Desa',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 11.5.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      appBar: AppBar(
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2FA2F1),
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                 ),
               ),
             ),
-          ];
-        },
-        body: _buildBodyContent(isDark),
+            // Glowing ambient light circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 120.w,
+                height: 120.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing ambient light circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 90.w,
+                height: 90.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: Container(
+            padding: EdgeInsets.all(6.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(isDark ? 25 : 35),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 16.sp,
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.swap_horiz_rounded,
+                  color: Colors.white,
+                  size: 20.sp,
+                ),
+                SizedBox(width: 6.w),
+                Flexible(
+                  child: Text(
+                    'Mutasi Domisili (Handshake)',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16.sp,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 1.h),
+            Text(
+              'Pindah desa mandiri dengan integrasi NIK resmi',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withAlpha(200),
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
       ),
+      body: _buildBodyContent(isDark),
     );
   }
 
@@ -787,10 +902,12 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // 2. ACTIVE FORMULIR PENGAJUAN PINDAH (CLEAN & MODERN)
+  // 2. ACTIVE FORMULIR PENGAJUAN PINDAH (CLEAN & MODERN UX)
   // ═══════════════════════════════════════════════════════════════════
   Widget _buildActiveFormView(bool isDark) {
     final completed = _lastCompletedMutasi;
+    final bool isLuarKabupaten = _selectedDesaTujuan.contains('Luar Kabupaten') ||
+        _selectedDesaTujuan.contains('Luar Daerah');
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -800,67 +917,6 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Hero Banner
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF2FA2F1), Color(0xFF0284C7)],
-                ),
-                borderRadius: BorderRadius.circular(18.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF0284C7).withAlpha(40),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(10.w),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(35),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.sync_alt_rounded,
-                      color: Colors.white,
-                      size: 24.sp,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sistem Handshake Digital',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13.5.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          'Data NIK Anda akan otomatis dialihkan ke desa tujuan setelah disetujui Kepala Desa.',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 11.sp,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
             if (completed != null) ...[
               SizedBox(height: 14.h),
@@ -910,40 +966,14 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
               ),
             ],
 
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
 
-            // Identitas Pemohon Section
-            _buildSectionHeader(
-              title: 'Data Identitas Pemohon',
-              subtitle: 'Data resmi terverifikasi dari profil Anda',
-              isDark: isDark,
-            ),
-            SizedBox(height: 10.h),
+            // 1. COMPACT IDENTITAS PEMOHON (ACCORDION)
+            _buildCompactIdentityBar(isDark),
 
-            _buildCardWrapper(
-              isDark: isDark,
-              child: Column(
-                children: [
-                  _buildReadOnlyField(
-                    label: 'Nama Lengkap Warga',
-                    value: _userName,
-                    icon: Icons.person_outline_rounded,
-                    isDark: isDark,
-                  ),
-                  SizedBox(height: 10.h),
-                  _buildReadOnlyField(
-                    label: 'Nomor Induk Kependudukan (NIK)',
-                    value: _userNik,
-                    icon: Icons.badge_outlined,
-                    isMonospace: true,
-                    isDark: isDark,
-                  ),
-                ],
-              ),
-            ),
+            SizedBox(height: 18.h),
 
-            SizedBox(height: 20.h),
-
+            // 2. ARAH PERPINDAHAN DOMISILI
             _buildSectionHeader(
               title: 'Arah Perpindahan Domisili',
               subtitle: 'Tentukan desa asal pelepasan dan desa tujuan baru',
@@ -1011,39 +1041,141 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
                     ),
                   ),
 
-                  // Desa Tujuan Dropdown
-                  _buildDropdownField(
-                    label: 'Pilih Desa Tujuan (Aktivasi NIK)',
-                    value: _selectedDesaTujuan,
-                    items: _desaList,
-                    icon: Icons.inbox_rounded,
-                    iconColor: const Color(0xFF10B981),
-                    isDark: isDark,
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedDesaTujuan = val);
-                      }
-                    },
+                  // Desa Tujuan Searchable Field Trigger
+                  InkWell(
+                    onTap: () => _openDesaPicker(context, isDark),
+                    borderRadius: BorderRadius.circular(14.r),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 14.w,
+                        vertical: 12.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF1E293B)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(7.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withAlpha(isDark ? 35 : 20),
+                              borderRadius: BorderRadius.circular(9.r),
+                            ),
+                            child: Icon(
+                              isLuarKabupaten
+                                  ? Icons.edit_location_alt_rounded
+                                  : Icons.apartment_rounded,
+                              size: 18.sp,
+                              color: const Color(0xFF10B981),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Pilih Desa Tujuan (Aktivasi NIK)',
+                                  style: TextStyle(
+                                    fontSize: 10.5.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? Colors.white54
+                                        : const Color(0xFF64748B),
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  _selectedDesaTujuan,
+                                  style: TextStyle(
+                                    fontSize: 12.5.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.all(5.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0EA5E9).withAlpha(isDark ? 35 : 15),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Icon(
+                              Icons.search_rounded,
+                              size: 17.sp,
+                              color: const Color(0xFF0EA5E9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
-                  if (_selectedDesaTujuan.contains('Luar Daerah')) ...[
-                    SizedBox(height: 10.h),
-                    TextFormField(
-                      controller: _customDesaTujuanController,
-                      style: TextStyle(fontSize: 13.sp),
-                      decoration: _inputDecoration(
-                        hintText: 'Tuliskan Nama Desa & Kecamatan Tujuan...',
-                        isDark: isDark,
-                        icon: Icons.edit_location_alt_rounded,
-                        iconColor: const Color(0xFF10B981),
+                  // Jika Luar Kabupaten Bengkalis -> Tampilkan Form Input Manual
+                  if (isLuarKabupaten) ...[
+                    SizedBox(height: 12.h),
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withAlpha(isDark ? 20 : 12),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: const Color(0xFFF59E0B).withAlpha(50),
+                        ),
                       ),
-                      validator: (val) {
-                        if (_selectedDesaTujuan.contains('Luar Daerah') &&
-                            (val == null || val.isEmpty)) {
-                          return 'Desa tujuan wajib diisi';
-                        }
-                        return null;
-                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline_rounded,
+                                size: 15.sp,
+                                color: const Color(0xFFD97706),
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                'Pindah ke Luar Kabupaten Bengkalis',
+                                style: TextStyle(
+                                  fontSize: 11.5.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFFD97706),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8.h),
+                          TextFormField(
+                            controller: _customDesaTujuanController,
+                            style: TextStyle(fontSize: 13.sp),
+                            decoration: _inputDecoration(
+                              hintText: 'Contoh: Desa Minas Jaya, Kec. Minas, Kab. Siak',
+                              label: 'Nama Desa / Kecamatan / Kab / Provinsi Tujuan',
+                              isDark: isDark,
+                              icon: Icons.location_city_rounded,
+                              iconColor: const Color(0xFFD97706),
+                            ),
+                            validator: (val) {
+                              if (isLuarKabupaten && (val == null || val.trim().isEmpty)) {
+                                return 'Tuliskan nama wilayah tujuan luar daerah';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ],
@@ -1052,6 +1184,7 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
 
             SizedBox(height: 20.h),
 
+            // 3. ALASAN KEPINDAHAN
             _buildSectionHeader(
               title: 'Alasan Kepindahan',
               subtitle: 'Pilih opsi cepat atau tuliskan alasan Anda',
@@ -1174,6 +1307,148 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // COMPACT IDENTITY ACCORDION BAR
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildCompactIdentityBar(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF131C2E) : Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 25 : 5),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () =>
+                setState(() => _isIdentityExpanded = !_isIdentityExpanded),
+            borderRadius: BorderRadius.circular(10.r),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(7.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0EA5E9).withAlpha(isDark ? 30 : 18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.person_outline_rounded,
+                    size: 17.sp,
+                    color: const Color(0xFF0EA5E9),
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _userName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 6.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6.w,
+                              vertical: 1.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withAlpha(isDark ? 35 : 20),
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                            child: Text(
+                              'Pemohon',
+                              style: TextStyle(
+                                fontSize: 9.5.sp,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF10B981),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        'NIK: $_userNik',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontFamily: 'monospace',
+                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _isIdentityExpanded ? 'Tutup' : 'Detail',
+                        style: TextStyle(
+                          fontSize: 10.5.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF0EA5E9),
+                        ),
+                      ),
+                      SizedBox(width: 2.w),
+                      Icon(
+                        _isIdentityExpanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        size: 14.sp,
+                        color: const Color(0xFF0EA5E9),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_isIdentityExpanded) ...[
+            Divider(
+              height: 18.h,
+              color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+            ),
+            _buildSummaryRow('Alamat Asal', _userAddress, isDark),
+            _buildSummaryRow('Status Pemohon', 'Mandiri (Diri Sendiri)', isDark),
+            _buildSummaryRow('Desa Asal', _desaAsal, isDark),
+          ],
+        ],
       ),
     );
   }
@@ -1408,43 +1683,6 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
     );
   }
 
-  Widget _buildDropdownField({
-    required String label,
-    required String value,
-    required List<String> items,
-    required IconData icon,
-    required Color iconColor,
-    required bool isDark,
-    required void Function(String?) onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      initialValue: items.contains(value) ? value : items.first,
-      items: items.map((e) {
-        return DropdownMenuItem<String>(
-          value: e,
-          child: Text(
-            e,
-            style: TextStyle(
-              fontSize: 12.5.sp,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
-            ),
-          ),
-        );
-      }).toList(),
-      onChanged: onChanged,
-      isExpanded: true,
-      icon: const Icon(Icons.arrow_drop_down_rounded, color: Colors.grey),
-      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-      decoration: _inputDecoration(
-        hintText: label,
-        isDark: isDark,
-        icon: icon,
-        iconColor: iconColor,
-      ),
-    );
-  }
-
   InputDecoration _inputDecoration({
     required String hintText,
     required bool isDark,
@@ -1482,6 +1720,459 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14.r),
         borderSide: const BorderSide(color: Color(0xFF0EA5E9), width: 1.8),
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// SEARCHABLE DESA & KECAMATAN PICKER BOTTOM SHEET (MODAL)
+// ═════════════════════════════════════════════════════════════════════
+class _SearchableDesaPickerSheet extends StatefulWidget {
+  final bool isDark;
+  final String currentSelected;
+  final ValueChanged<String> onSelect;
+
+  const _SearchableDesaPickerSheet({
+    required this.isDark,
+    required this.currentSelected,
+    required this.onSelect,
+  });
+
+  @override
+  State<_SearchableDesaPickerSheet> createState() =>
+      _SearchableDesaPickerSheetState();
+}
+
+class _SearchableDesaPickerSheetState
+    extends State<_SearchableDesaPickerSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedKecamatan = 'Semua';
+  String _searchQuery = '';
+
+  final List<String> _kecamatanFilters = [
+    'Semua',
+    'Kec. Bengkalis',
+    'Kec. Bantan',
+    'Kec. Mandau',
+    'Kec. Bathin Solapan',
+    'Kec. Bukit Batu',
+    'Kec. Siak Kecil',
+    'Kec. Pinggir',
+    'Kec. Bandar Laksamana',
+    'Kec. Talang Muandau',
+    'Kec. Rupat',
+    'Kec. Rupat Utara',
+  ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, String>> get _filteredDesaList {
+    return _DomicileTransferPageState._allDesaBengkalis.where((item) {
+      final String desa = item['desa']?.toLowerCase() ?? '';
+      final String kec = item['kecamatan']?.toLowerCase() ?? '';
+      final String q = _searchQuery.toLowerCase().trim();
+
+      final bool matchesKec = _selectedKecamatan == 'Semua' ||
+          item['kecamatan'] == _selectedKecamatan;
+
+      final bool matchesQuery = q.isEmpty || desa.contains(q) || kec.contains(q);
+
+      return matchesKec && matchesQuery;
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final filtered = _filteredDesaList;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.86,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(50),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Drag Handle
+          SizedBox(height: 10.h),
+          Center(
+            child: Container(
+              width: 38.w,
+              height: 4.5.h,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.grey[300],
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+
+          // Header Title
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0EA5E9).withAlpha(isDark ? 30 : 15),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.travel_explore_rounded,
+                    color: const Color(0xFF0EA5E9),
+                    size: 20.sp,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pilih Desa / Wilayah Tujuan',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      Text(
+                        'Pencarian desa resmi di wilayah Kabupaten Bengkalis',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: isDark ? Colors.white54 : Colors.grey[600],
+                    size: 22.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 12.h),
+
+          // Search Field
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (val) => setState(() => _searchQuery = val),
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
+              decoration: InputDecoration(
+                hintText: 'Ketik nama desa atau kecamatan...',
+                hintStyle: TextStyle(
+                  fontSize: 12.5.sp,
+                  color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  size: 20.sp,
+                  color: const Color(0xFF0EA5E9),
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.clear_rounded,
+                          size: 18.sp,
+                          color: isDark ? Colors.white54 : Colors.grey[500],
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor:
+                    isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14.r),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(height: 10.h),
+
+          // Kecamatan Filter Horizontal Chips
+          SizedBox(
+            height: 34.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              itemCount: _kecamatanFilters.length,
+              separatorBuilder: (context, index) => SizedBox(width: 6.w),
+              itemBuilder: (context, index) {
+                final kec = _kecamatanFilters[index];
+                final isSelected = _selectedKecamatan == kec;
+                return ChoiceChip(
+                  label: Text(kec),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() => _selectedKecamatan = kec);
+                    }
+                  },
+                  labelStyle: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.w600,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                            ? Colors.white70
+                            : const Color(0xFF475569)),
+                  ),
+                  backgroundColor: isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF1F5F9),
+                  selectedColor: const Color(0xFF0EA5E9),
+                  side: BorderSide(
+                    color: isSelected
+                        ? const Color(0xFF0EA5E9)
+                        : (isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                  showCheckmark: false,
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                );
+              },
+            ),
+          ),
+
+          SizedBox(height: 8.h),
+          Divider(
+            height: 1,
+            color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+          ),
+
+          // List Items
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
+              children: [
+                // 1. OPSI KHUSUS LUAR KABUPATEN BENGKALIS
+                Container(
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  decoration: BoxDecoration(
+                    color: widget.currentSelected.contains('Luar Kabupaten')
+                        ? const Color(0xFFF59E0B).withAlpha(isDark ? 35 : 20)
+                        : (isDark
+                            ? const Color(0xFF131C2E)
+                            : const Color(0xFFFFFBEB)),
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                      color: widget.currentSelected.contains('Luar Kabupaten')
+                          ? const Color(0xFFF59E0B)
+                          : const Color(0xFFF59E0B).withAlpha(80),
+                      width: widget.currentSelected.contains('Luar Kabupaten')
+                          ? 1.5
+                          : 1,
+                    ),
+                  ),
+                  child: ListTile(
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 14.w, vertical: 2.h),
+                    leading: Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withAlpha(35),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.edit_location_alt_rounded,
+                        color: const Color(0xFFD97706),
+                        size: 20.sp,
+                      ),
+                    ),
+                    title: Text(
+                      'Luar Kabupaten Bengkalis',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Pindah ke luar wilayah Bengkalis (Ketik manual nama daerah)',
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: isDark
+                            ? Colors.white60
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: widget.currentSelected.contains('Luar Kabupaten')
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: Color(0xFFF59E0B),
+                          )
+                        : Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 14.sp,
+                            color: Colors.grey,
+                          ),
+                    onTap: () {
+                      widget.onSelect(
+                        _DomicileTransferPageState._luarDaerahValue,
+                      );
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+
+                if (filtered.isEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 36.h),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.location_off_rounded,
+                          size: 42.sp,
+                          color: isDark ? Colors.white24 : Colors.grey[400],
+                        ),
+                        SizedBox(height: 10.h),
+                        Text(
+                          'Desa Tidak Ditemukan',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                isDark ? Colors.white70 : const Color(0xFF475569),
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          'Coba gunakan kata kunci lain atau pilih "Luar Kabupaten Bengkalis".',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11.5.sp,
+                            color: isDark ? Colors.white38 : Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ...filtered.map((item) {
+                    final String desa = item['desa']!;
+                    final String kec = item['kecamatan']!;
+                    final String fullLabel = '$desa ($kec)';
+                    final bool isSelected = widget.currentSelected == fullLabel;
+
+                    return Container(
+                      margin: EdgeInsets.only(bottom: 6.h),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF0EA5E9).withAlpha(isDark ? 30 : 15)
+                            : (isDark
+                                ? const Color(0xFF131C2E)
+                                : const Color(0xFFF8FAFC)),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF0EA5E9)
+                              : (isDark
+                                  ? const Color(0xFF1E293B)
+                                  : const Color(0xFFE2E8F0)),
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 2.h,
+                        ),
+                        leading: Container(
+                          padding: EdgeInsets.all(7.w),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFF0EA5E9).withAlpha(30)
+                                : (isDark
+                                    ? const Color(0xFF1E293B)
+                                    : Colors.white),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.place_rounded,
+                            size: 16.sp,
+                            color: isSelected
+                                ? const Color(0xFF0EA5E9)
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
+                        title: Text(
+                          desa,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                            color: isSelected
+                                ? const Color(0xFF0EA5E9)
+                                : (isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A)),
+                          ),
+                        ),
+                        subtitle: Text(
+                          '$kec • Kab. Bengkalis',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: isDark
+                                ? Colors.white54
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: Color(0xFF0EA5E9),
+                              )
+                            : null,
+                        onTap: () {
+                          widget.onSelect(fullLabel);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
+                  }),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

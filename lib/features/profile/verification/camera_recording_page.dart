@@ -519,8 +519,8 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final double ovalWidth = size.width * 0.76;
-    final double ovalHeight = ovalWidth * 1.32;
+    final double ovalWidth = size.width * 0.78;
+    final double ovalHeight = ovalWidth * 1.12;
 
     return Scaffold(
       backgroundColor: const Color(0xFF030712),
@@ -1007,7 +1007,9 @@ class FaceScanMaskPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant FaceScanMaskPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
+    return oldDelegate.ovalWidth != ovalWidth ||
+        oldDelegate.ovalHeight != ovalHeight ||
+        oldDelegate.progress != progress ||
         oldDelegate.isSuccess != isSuccess ||
         oldDelegate.isFaceDetected != isFaceDetected ||
         oldDelegate.laserProgress != laserProgress;

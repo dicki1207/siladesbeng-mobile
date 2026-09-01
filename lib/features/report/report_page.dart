@@ -49,16 +49,11 @@ class _ReportPageState extends State<ReportPage> {
   LatLng _selectedLocation = const LatLng(-0.959, 100.353); // Default location
   bool _hasSelectedLocation = false;
 
-  // Progress
-  double _progress = 0.0;
-
   @override
   void initState() {
     super.initState();
     _showcaseView = ShowcaseView.register();
     _loadProfileData();
-    _namaController.addListener(_calculateProgress);
-    _deskripsiController.addListener(_calculateProgress);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndStartShowcase(
@@ -95,19 +90,6 @@ class _ReportPageState extends State<ReportPage> {
       _keyLokasi,
       _keyFoto,
     ]);
-  }
-
-  void _calculateProgress() {
-    int score = 0;
-    if (_namaController.text.isNotEmpty) score++;
-    if (_deskripsiController.text.isNotEmpty) score++;
-    if (_selectedCategory != null) score++;
-    if (_selectedTujuan != null) score++;
-    if (_hasSelectedLocation) score++;
-    if (_imageFile != null) score++;
-    setState(() {
-      _progress = score / 6.0;
-    });
   }
 
   @override
@@ -169,7 +151,6 @@ class _ReportPageState extends State<ReportPage> {
         setState(() {
           _imageFile = result;
         });
-        _calculateProgress();
       }
     } catch (e) {
       _showError('Gagal membuka kamera: $e');
@@ -520,7 +501,6 @@ class _ReportPageState extends State<ReportPage> {
             tooltip: 'Hapus Foto',
             onPressed: () {
               setState(() => _imageFile = null);
-              _calculateProgress();
             },
           ),
         ],
@@ -545,7 +525,6 @@ class _ReportPageState extends State<ReportPage> {
         _hasSelectedLocation = true;
       });
       _mapController.move(result, 16.0);
-      _calculateProgress();
     }
   }
 
@@ -625,16 +604,6 @@ class _ReportPageState extends State<ReportPage> {
             onPressed: _replayTour,
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: _progress,
-            backgroundColor: Colors.black.withValues(alpha: 0.15),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              _progress == 1.0 ? const Color(0xFF10B981) : Colors.white,
-            ),
-          ),
-        ),
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
@@ -702,7 +671,6 @@ class _ReportPageState extends State<ReportPage> {
                         ],
                         onChanged: (val) {
                           setState(() => _selectedCategory = val);
-                          _calculateProgress();
                         },
                       ),
                     ),
@@ -726,7 +694,6 @@ class _ReportPageState extends State<ReportPage> {
               items: ['rt', 'rw', 'desa'],
               onChanged: (val) {
                 setState(() => _selectedTujuan = val);
-                _calculateProgress();
               },
               displayNames: const {
                 'rt': 'Pengurus RT Setempat',

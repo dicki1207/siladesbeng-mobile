@@ -478,169 +478,118 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
       backgroundColor: isDark
           ? const Color(0xFF090D16)
           : const Color(0xFFF4F6FA),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 145,
-              pinned: true,
-              floating: false,
-              elevation: 0,
-              scrolledUnderElevation: 2,
-              backgroundColor: isDark
-                  ? const Color(0xFF0F172A)
-                  : const Color(0xFF2FA2F1),
-              leading: IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(isDark ? 25 : 35),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Gradient overlay
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: isDark
-                              ? [
-                                  const Color(0xFF0F172A),
-                                  const Color(0xFF1E293B),
-                                ]
-                              : [
-                                  const Color(0xFF2FA2F1),
-                                  const Color(0xFF0284C7),
-                                ],
-                        ),
-                      ),
-                    ),
-                    // Ambient light circle 1 (Top Right)
-                    Positioned(
-                      right: -25,
-                      top: -25,
-                      child: Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withAlpha(22),
-                        ),
-                      ),
-                    ),
-                    // Ambient light circle 2 (Bottom Left)
-                    Positioned(
-                      left: -20,
-                      bottom: -20,
-                      child: Container(
-                        width: 90,
-                        height: 90,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withAlpha(14),
-                        ),
-                      ),
-                    ),
-                    // Title and Scope in Header
-                    Positioned(
-                      left: 20,
-                      right: 20,
-                      bottom: 16,
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(35),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: Colors.white.withAlpha(40),
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.menu_book_rounded,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Buku Induk Kependudukan',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 17.5,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withAlpha(30),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.place_rounded,
-                                        size: 12,
-                                        color: Colors.white70,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        isRwMode
-                                            ? 'Cakupan: Seluruh RW 01'
-                                            : 'Wilayah Kerja: RT 02 / RW 01',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      appBar: AppBar(
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2FA2F1),
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
                 ),
               ),
             ),
-          ];
-        },
-        body: RefreshIndicator(
-          onRefresh: _loadWargaFromApi,
-          color: _primaryBlue,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
+            // Ambient light circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Ambient light circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(isDark ? 25 : 35),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.menu_book_rounded,
+                  color: Colors.white,
+                  size: 19,
+                ),
+                const SizedBox(width: 6),
+                const Flexible(
+                  child: Text(
+                    'Buku Induk Kependudukan',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 1),
+            Text(
+              isRwMode
+                  ? 'Cakupan: Seluruh RW 01'
+                  : 'Wilayah Kerja: RT 02 / RW 01',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withAlpha(200),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadWargaFromApi,
+        color: _primaryBlue,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
               // ── 1. DASHBOARD METRIC STAT CARDS (INTERACTIVE) ──
               SliverToBoxAdapter(
                 child: Padding(
@@ -963,9 +912,8 @@ class _AdminWargaListPageState extends State<AdminWargaListPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   // ═══════════════════════════════════════════════════════════════════
   // REUSABLE DASHBOARD WIDGETS

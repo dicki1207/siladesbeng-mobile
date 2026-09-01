@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,7 +23,7 @@ class AdminReportDetailPage extends StatefulWidget {
 }
 
 class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
-  static const Color _primaryBlue = Color(0xFF2563EB);
+  static const Color _primaryBlue = Color(0xFF2FA2F1);
 
   late String _currentStatus;
   bool _isProcessing = false;
@@ -54,16 +55,11 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     return '${ApiConfig.baseUrl}/storage/$cleanPath';
   }
 
-  /// Parse bukti field yang bisa berupa:
-  /// - JSON array: ["laporan/file1.jpg","laporan/file2.jpg"]
-  /// - String biasa: "laporan/file1.jpg"
-  /// - null / empty
   List<String> _parseBuktiUrls(dynamic buktiRaw) {
     if (buktiRaw == null) return [];
     final raw = buktiRaw.toString().trim();
     if (raw.isEmpty) return [];
 
-    // Coba parse sebagai JSON array
     if (raw.startsWith('[')) {
       try {
         final List<dynamic> decoded = jsonDecode(raw);
@@ -74,14 +70,11 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
       } catch (_) {}
     }
 
-    // Fallback: string biasa (single path)
     final url = _getImageUrl(raw);
     return url.isNotEmpty ? [url] : [];
   }
 
-  // Parse GPS location from lat/lng or lokasi string
   LatLng? _parseCoordinates() {
-    // 1. Cek field latitude & longitude dari database
     if (widget.report['latitude'] != null && widget.report['longitude'] != null) {
       try {
         final lat = double.parse(widget.report['latitude'].toString());
@@ -90,7 +83,6 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
       } catch (_) {}
     }
 
-    // 2. Fallback cek field lokasi jika formatnya 'lat, lng'
     final loc = widget.report['lokasi'];
     if (loc == null) return null;
     final str = loc.toString().trim();
@@ -106,7 +98,6 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     return null;
   }
 
-  // Action: Submit status update to backend API
   Future<void> _submitAction({
     required String actionCode,
     required String actionLabel,
@@ -175,20 +166,20 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
+            Icon(Icons.check_circle_rounded, color: Colors.white, size: 18.sp),
+            SizedBox(width: 8.w),
             Expanded(
               child: Text(
                 'Status berhasil diperbarui: $actionLabel',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5.sp),
               ),
             ),
           ],
         ),
         backgroundColor: const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        margin: EdgeInsets.all(16.w),
       ),
     );
   }
@@ -197,31 +188,39 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     return [
       {
         'code': widget.role == 'rw' ? 'process_rw' : 'process',
+        'title': 'Proses Aduan',
+        'subtitle': 'Mulai penanganan laporan',
         'label': 'Tindak Lanjuti (Proses Aduan)',
         'newStatus': widget.role == 'rw' ? 'Diproses RW' : 'Diproses',
-        'color': _primaryBlue,
-        'icon': Icons.play_circle_outline_rounded,
+        'color': const Color(0xFF2FA2F1),
+        'icon': Icons.pending_actions_rounded,
       },
       {
         'code': 'resolve',
+        'title': 'Tandai Selesai',
+        'subtitle': 'Laporan telah tertangani',
         'label': 'Tandai Laporan Selesai',
         'newStatus': 'Selesai',
-        'color': const Color(0xFF059669),
-        'icon': Icons.check_circle_outline_rounded,
+        'color': const Color(0xFF10B981),
+        'icon': Icons.task_alt_rounded,
       },
       {
         'code': widget.role == 'rt' ? 'forward_rw' : 'forward_desa',
+        'title': widget.role == 'rt' ? 'Teruskan ke RW' : 'Teruskan ke Desa',
+        'subtitle': 'Eskalasi ke tingkat atas',
         'label': widget.role == 'rt' ? 'Teruskan ke Pengurus RW' : 'Teruskan ke Pemerintah Desa',
         'newStatus': widget.role == 'rt' ? 'Diteruskan ke RW' : 'Diteruskan ke Desa',
         'color': const Color(0xFF6366F1),
-        'icon': Icons.arrow_upward_rounded,
+        'icon': Icons.forward_to_inbox_rounded,
       },
       {
         'code': 'reject',
+        'title': 'Tolak Aduan',
+        'subtitle': 'Laporan tidak valid',
         'label': 'Tolak / Batalkan Aduan',
         'newStatus': 'Ditolak',
         'color': const Color(0xFFEF4444),
-        'icon': Icons.cancel_outlined,
+        'icon': Icons.block_rounded,
       },
     ];
   }
@@ -236,12 +235,10 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     final String tanggal = widget.report['date'] ?? 'Hari ini';
     final String deskripsiRaw = (widget.report['deskripsi'] ?? widget.report['description'] ?? widget.report['desc'] ?? '').toString().trim();
     final String deskripsi = deskripsiRaw.isNotEmpty ? deskripsiRaw : 'Tidak ada rincian keterangan tambahan dari pelapor.';
-    // Handle both JSON array and plain string bukti formats
     final List<String> buktiUrls = _parseBuktiUrls(widget.report['bukti'] ?? widget.report['foto'] ?? widget.report['foto_bukti']);
     final LatLng? coords = _parseCoordinates();
     
     String lokasiText = widget.report['lokasi_text'] ?? (widget.report['lokasi'] != null ? widget.report['lokasi'].toString() : 'Lingkungan RT 02 / RW 01');
-    // Jika lokasi tidak dikenali tapi ada koordinat, ganti teksnya
     if ((lokasiText == 'Lokasi tidak dikenali' || lokasiText.trim().isEmpty) && coords != null) {
       lokasiText = '${coords.latitude}, ${coords.longitude} (Titik GPS)';
     }
@@ -255,40 +252,107 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2FA2F1),
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 2,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+                ),
+              ),
+            ),
+            // Ambient light circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 120.w,
+                height: 120.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Ambient light circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 90.w,
+                height: 90.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
-            size: 18,
+          icon: Container(
+            padding: EdgeInsets.all(6.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(isDark ? 25 : 35),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 16.sp,
+            ),
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Detail Laporan #$reportId',
-          style: TextStyle(
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
-            fontWeight: FontWeight.w800,
-            fontSize: 16,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Detail Laporan #$reportId',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 16.5.sp,
+                letterSpacing: 0.2,
+              ),
+            ),
+            SizedBox(height: 1.h),
+            Text(
+              'Informasi & Tindak Lanjut Aduan Warga',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
         ),
-        centerTitle: true,
+        centerTitle: false,
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 40.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Ringkasan & Status
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(
                   color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
                 ),
@@ -303,33 +367,33 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                         child: Text(
                           kategori,
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.w800,
                             color: isDark ? Colors.white : const Color(0xFF0F172A),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       _buildStatusBadge(_currentStatus),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   const Divider(height: 1),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   _buildMetaRow(
                     icon: Icons.person_outline_rounded,
                     label: 'Pelapor',
                     value: pelapor,
                     isDark: isDark,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   _buildMetaRow(
                     icon: Icons.calendar_today_outlined,
                     label: 'Tanggal Masuk',
                     value: tanggal,
                     isDark: isDark,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   _buildMetaRow(
                     icon: Icons.location_on_outlined,
                     label: 'Wilayah / Lokasi',
@@ -337,32 +401,32 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                     isDark: isDark,
                   ),
                   if (coords != null) ...[
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Row(
                       children: [
-                        const SizedBox(width: 15 + 8 + 95 + 10), // Offset sejajar dengan teks value
+                        SizedBox(width: 15.w + 8.w + 95.w + 10.w),
                         InkWell(
                           onTap: () {
                             final url = 'https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}';
                             launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
                           },
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(6.r),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEFF6FF),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6.r),
                               border: Border.all(color: _primaryBlue.withAlpha(76)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.map_rounded, size: 12, color: _primaryBlue),
-                                const SizedBox(width: 4),
+                                Icon(Icons.map_rounded, size: 12.sp, color: _primaryBlue),
+                                SizedBox(width: 4.w),
                                 Text(
                                   'Buka di Google Maps',
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 10.sp,
                                     fontWeight: FontWeight.bold,
                                     color: _primaryBlue,
                                   ),
@@ -378,24 +442,24 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 2. Isi Uraian Pengaduan Warga
             Text(
               'Uraian Pengaduan Warga',
               style: TextStyle(
-                fontSize: 13.5,
+                fontSize: 13.5.sp,
                 fontWeight: FontWeight.w800,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
                   color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
                 ),
@@ -403,33 +467,33 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
               child: Text(
                 deskripsi,
                 style: TextStyle(
-                  fontSize: 12.5,
+                  fontSize: 12.5.sp,
                   height: 1.5,
                   color: isDark ? Colors.white70 : const Color(0xFF334155),
                 ),
               ),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 3. Foto Bukti Lapangan
             Text(
               'Foto Bukti Lapangan',
               style: TextStyle(
-                fontSize: 13.5,
+                fontSize: 13.5.sp,
                 fontWeight: FontWeight.w800,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             if (buktiUrls.isNotEmpty)
               ...buktiUrls.map((url) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: 8.h),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   child: Image.network(
                     url,
-                    height: 180,
+                    height: 180.h,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
@@ -439,7 +503,7 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(
-                        height: 160,
+                        height: 160.h,
                         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                         child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: _primaryBlue)),
                       );
@@ -450,22 +514,22 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
             else
               _buildNoPhotoBox(isDark),
 
-            // 4. Peta Lokasi Kejadian (Jika Koordinat Valid)
+            // 4. Peta Lokasi Kejadian
             if (coords != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 'Titik Lokasi Kejadian (GPS)',
                 style: TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 13.5.sp,
                   fontWeight: FontWeight.w800,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 child: SizedBox(
-                  height: 160,
+                  height: 160.h,
                   width: double.infinity,
                   child: FlutterMap(
                     options: MapOptions(
@@ -481,8 +545,8 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                         markers: [
                           Marker(
                             point: coords,
-                            width: 36,
-                            height: 36,
+                            width: 36.w,
+                            height: 36.h,
                             child: const Icon(
                               Icons.location_pin,
                               color: Colors.red,
@@ -497,154 +561,196 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
               ),
             ],
 
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
 
-            // 5. Tindak Lanjut Pengurus (DROPDOWN MENU SELEKTIF & MINIMALIS)
+            // 5. Tindak Lanjut Pengurus (MODERN SELECTION CARDS - NO EMOJIS)
             Row(
               children: [
                 Container(
-                  width: 3,
-                  height: 14,
+                  width: 3.5.w,
+                  height: 15.h,
                   decoration: BoxDecoration(
                     color: _primaryBlue,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 8.w),
                 Text(
                   'Tindak Lanjut Pengurus',
                   style: TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w800,
                     color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 10.h),
 
-            // Dropdown Menu Container
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-                ),
+            // Grid of 4 Action Cards
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10.w,
+                mainAxisSpacing: 10.h,
+                childAspectRatio: 1.7,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Dropdown Selector Field
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: actions.length,
+              itemBuilder: (context, index) {
+                final act = actions[index];
+                final bool isSelected = _selectedActionCode == act['code'];
+                final Color actColor = act['color'] as Color;
+                final IconData actIcon = act['icon'] as IconData;
+
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedActionCode = isSelected ? null : act['code'];
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(10),
+                      color: isSelected
+                          ? actColor.withAlpha(isDark ? 40 : 20)
+                          : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        color: selectedAction != null
-                            ? (selectedAction['color'] as Color).withAlpha(120)
-                            : (isDark ? Colors.white12 : const Color(0xFFCBD5E1)),
+                        color: isSelected
+                            ? actColor
+                            : (isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+                        width: isSelected ? 1.8 : 1.0,
                       ),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedActionCode,
-                        isExpanded: true,
-                        hint: Row(
-                          children: [
-                            Icon(
-                              Icons.touch_app_outlined,
-                              size: 16,
-                              color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Pilih Tindakan Pengurus...',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                color: isDark ? Colors.grey.shade400 : const Color(0xFF64748B),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: actColor.withAlpha(50),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
-                            ),
-                          ],
+                            ]
+                          : [],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(7.w),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? actColor
+                                : actColor.withAlpha(isDark ? 30 : 18),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Icon(
+                            actIcon,
+                            size: 18.sp,
+                            color: isSelected ? Colors.white : actColor,
+                          ),
                         ),
-                        dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        items: actions.map((act) {
-                          final Color actColor = act['color'];
-                          final IconData actIcon = act['icon'];
-                          return DropdownMenuItem<String>(
-                            value: act['code'],
-                            child: Row(
-                              children: [
-                                Icon(actIcon, size: 16, color: actColor),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    act['label'],
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                act['title'],
+                                style: TextStyle(
+                                  fontSize: 11.5.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: isSelected
+                                      ? (isDark ? Colors.white : actColor)
+                                      : (isDark ? Colors.white : const Color(0xFF0F172A)),
                                 ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedActionCode = val;
-                          });
-                        },
-                      ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                act['subtitle'],
+                                style: TextStyle(
+                                  fontSize: 9.5.sp,
+                                  color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                );
+              },
+            ),
 
-                  // Catatan & Tombol Terapkan (Muncul saat tindakan dipilih)
-                  if (selectedAction != null) ...[
-                    const SizedBox(height: 10),
+            // Note field & Submit button
+            if (selectedAction != null) ...[
+              SizedBox(height: 14.h),
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: (selectedAction['color'] as Color).withAlpha(100),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tindakan Terpilih: ${selectedAction['title']}',
+                      style: TextStyle(
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.bold,
+                        color: selectedAction['color'] as Color,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
                     TextField(
                       controller: _noteController,
                       maxLines: 2,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
                       decoration: InputDecoration(
                         hintText: 'Tuliskan catatan tindak lanjut untuk warga (opsional)...',
                         hintStyle: TextStyle(
-                          fontSize: 11.5,
+                          fontSize: 11.5.sp,
                           color: isDark ? Colors.white38 : Colors.grey.shade400,
                         ),
                         filled: true,
                         fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                           borderSide: BorderSide(
                             color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
                           ),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                           borderSide: BorderSide(
                             color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                           borderSide: BorderSide(color: selectedAction['color'] as Color),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 12.h),
                     SizedBox(
                       width: double.infinity,
+                      height: 42.h,
                       child: ElevatedButton.icon(
                         onPressed: _isProcessing
                             ? null
@@ -657,43 +763,41 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                                 );
                               },
                         icon: _isProcessing
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            ? SizedBox(
+                                width: 14.w,
+                                height: 14.h,
+                                child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                            : Icon(selectedAction['icon'] as IconData, size: 16),
+                            : Icon(selectedAction['icon'] as IconData, size: 16.sp),
                         label: Text(
-                          _isProcessing ? 'Memproses...' : 'Terapkan: ${selectedAction['label']}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          _isProcessing ? 'Memproses...' : 'Terapkan Status: ${selectedAction['newStatus']}',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5.sp),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: selectedAction['color'] as Color,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                         ),
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  // WIDGET: Placeholder jika tidak ada foto bukti
   Widget _buildNoPhotoBox(bool isDark) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
         ),
@@ -702,14 +806,14 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
         children: [
           Icon(
             Icons.image_not_supported_outlined,
-            size: 30,
+            size: 30.sp,
             color: isDark ? Colors.white38 : Colors.grey[400],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             'Tidak ada lampiran foto bukti',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: isDark ? Colors.white54 : Colors.grey[500],
             ),
           ),
@@ -718,7 +822,6 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     );
   }
 
-  // WIDGET: Meta Row Item
   Widget _buildMetaRow({
     required IconData icon,
     required String label,
@@ -728,14 +831,14 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 15, color: _primaryBlue),
-        const SizedBox(width: 8),
+        Icon(icon, size: 15.sp, color: _primaryBlue),
+        SizedBox(width: 8.w),
         SizedBox(
-          width: 95,
+          width: 95.w,
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 11.5,
+              fontSize: 11.5.sp,
               color: isDark ? Colors.white54 : const Color(0xFF64748B),
             ),
           ),
@@ -745,7 +848,7 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
           child: Text(
             value,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : const Color(0xFF0F172A),
             ),
@@ -755,7 +858,6 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     );
   }
 
-  // WIDGET: Status Badge
   Widget _buildStatusBadge(String status) {
     final sLower = status.toLowerCase();
     Color bg = const Color(0xFFEFF6FF);
@@ -776,16 +878,16 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(
         status,
         style: TextStyle(
           color: text,
-          fontSize: 10.5,
+          fontSize: 10.5.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
