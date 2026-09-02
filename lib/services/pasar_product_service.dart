@@ -230,4 +230,49 @@ class PasarProductService {
       return {'success': false, 'message': 'Terjadi kesalahan koneksi: $e'};
     }
   }
+
+  Future<Map<String, dynamic>> confirmReceived({
+    required int orderId,
+    String? proofImagePath,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) {
+        return {'success': false, 'message': 'Silakan login terlebih dahulu'};
+      }
+
+      final uri = Uri.parse('$baseUrl/pasar-daerah/orders/$orderId/confirm-received');
+      final request = http.MultipartRequest('POST', uri);
+
+      request.headers['Authorization'] = 'Bearer $token';
+      request.headers['Accept'] = 'application/json';
+
+      if (proofImagePath != null && proofImagePath.isNotEmpty) {
+        request.files.add(
+          await http.MultipartFile.fromPath('proof_image', proofImagePath),
+        );
+      }
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      final response = await http.Response.fromStream(streamedResponse);
+
+      final data = json.decode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Pesanan berhasil dikonfirmasi diterima',
+          'data': data['data'],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Gagal mengonfirmasi pesanan',
+        };
+      }
+    } catch (e) {
+      debugPrint('Error confirming order received: $e');
+      return {'success': false, 'message': 'Terjadi kesalahan koneksi: $e'};
+    }
+  }
 }

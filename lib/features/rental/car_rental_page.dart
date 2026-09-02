@@ -32,7 +32,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
 
   @override
   void dispose() {
-    _showcaseView.unregister();
+    // _showcaseView.unregister(); // Prevent unregister on route replace race condition
     super.dispose();
   }
 

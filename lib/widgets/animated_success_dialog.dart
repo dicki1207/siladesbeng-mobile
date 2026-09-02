@@ -23,8 +23,6 @@ class _AnimatedSuccessDialogState extends State<AnimatedSuccessDialog>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _cardScaleAnimation;
-  late Animation<double> _iconScaleAnimation;
-  late Animation<double> _pulseRingAnimation;
 
   @override
   void initState() {
@@ -43,20 +41,6 @@ class _AnimatedSuccessDialogState extends State<AnimatedSuccessDialog>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack),
-      ),
-    );
-
-    _iconScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.2, 0.9, curve: Curves.elasticOut),
-      ),
-    );
-
-    _pulseRingAnimation = Tween<double>(begin: 0.6, end: 1.25).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.1, 0.8, curve: Curves.easeOutQuad),
       ),
     );
 
@@ -85,141 +69,69 @@ class _AnimatedSuccessDialogState extends State<AnimatedSuccessDialog>
             scale: _cardScaleAnimation,
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 40),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: isDark
-                      ? primaryAccent.withValues(alpha: 0.35)
-                      : primaryAccent.withValues(alpha: 0.2),
-                  width: 1.5,
-                ),
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: primaryAccent.withValues(
-                      alpha: isDark ? 0.25 : 0.15,
-                    ),
-                    blurRadius: 28,
-                    spreadRadius: 2,
-                    offset: const Offset(0, 8),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.06),
-                    blurRadius: 16,
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                    blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Column(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Animated Icon with Pulse Ring
-                  SizedBox(
-                    width: 76,
-                    height: 76,
-                    child: Stack(
-                      alignment: Alignment.center,
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: widget.isLogout
+                          ? const Color(0xFFFFF7ED)
+                          : const Color(0xFFECFDF5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      widget.customIcon ??
+                          (widget.isLogout
+                              ? Icons.logout_rounded
+                              : Icons.check_circle_rounded),
+                      size: 24,
+                      color: primaryAccent,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Flexible(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Outer Pulsing Ring
-                        AnimatedBuilder(
-                          animation: _pulseRingAnimation,
-                          builder: (context, child) {
-                            return Transform.scale(
-                              scale: _pulseRingAnimation.value,
-                              child: Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: primaryAccent.withValues(
-                                      alpha:
-                                          (1.0 -
-                                                  (_pulseRingAnimation.value -
-                                                          0.6) /
-                                                      0.65)
-                                              .clamp(0.0, 0.45),
-                                    ),
-                                    width: 3,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        // Inner Animated Circle
-                        ScaleTransition(
-                          scale: _iconScaleAnimation,
-                          child: Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: widget.isLogout
-                                    ? [
-                                        const Color(0xFFFB923C),
-                                        const Color(0xFFEA580C),
-                                      ]
-                                    : [
-                                        const Color(0xFF34D399),
-                                        const Color(0xFF059669),
-                                      ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primaryAccent.withValues(alpha: 0.4),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              widget.customIcon ??
-                                  (widget.isLogout
-                                      ? Icons.logout_rounded
-                                      : Icons.check_rounded),
-                              size: 28,
-                              color: Colors.white,
-                            ),
+                        Text(
+                          widget.message,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
                           ),
                         ),
+                        if (widget.subMessage != null &&
+                            widget.subMessage!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.subMessage!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
-
-                  // Simplified Clean Title
-                  Text(
-                    widget.message,
-                    style: TextStyle(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.w900,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      letterSpacing: -0.2,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  // Optional Short Sub-message
-                  if (widget.subMessage != null &&
-                      widget.subMessage!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.subMessage!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? Colors.white60
-                            : const Color(0xFF64748B),
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
                 ],
               ),
             ),

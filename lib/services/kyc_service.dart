@@ -69,6 +69,7 @@ class KycService {
   Future<Map<String, dynamic>> submitFace({
     required int kycId,
     required List<Map<String, dynamic>> faceData,
+    String? faceImagePath, // Parameter baru untuk upload gambar
     String? nik,
     String? name,
     String? address,
@@ -80,31 +81,39 @@ class KycService {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? prefs.getString('token');
 
-      Map<String, dynamic> bodyData = {
-        'kyc_id': kycId,
-        'face_data': faceData,
-      };
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/kyc/submit'),
+      );
 
-      if (nik != null) bodyData['nik'] = nik;
-      if (name != null) bodyData['name'] = name;
-      if (address != null) bodyData['address'] = address;
+      request.headers['Accept'] = 'application/json';
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      // Input teks biasa
+      request.fields['kyc_id'] = kycId.toString();
+      request.fields['face_data'] = json.encode(faceData);
+
+      if (nik != null) request.fields['nik'] = nik;
+      if (name != null) request.fields['name'] = name;
+      if (address != null) request.fields['address'] = address;
       if (rtRw != null) {
         final parts = rtRw.split('/');
-        if (parts.isNotEmpty) bodyData['rt'] = parts[0];
-        if (parts.length >= 2) bodyData['rw'] = parts[1];
+        if (parts.isNotEmpty) request.fields['rt'] = parts[0];
+        if (parts.length >= 2) request.fields['rw'] = parts[1];
       }
-      if (kecamatan != null) bodyData['kecamatan'] = kecamatan;
-      if (desa != null) bodyData['desa'] = desa;
+      if (kecamatan != null) request.fields['kecamatan'] = kecamatan;
+      if (desa != null) request.fields['desa'] = desa;
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/kyc/submit'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          if (token != null) 'Authorization': 'Bearer $token',
-        },
-        body: json.encode(bodyData),
-      );
+      // File wajah (selfie)
+      if (faceImagePath != null && faceImagePath.isNotEmpty) {
+        var file = await http.MultipartFile.fromPath('face_image', faceImagePath);
+        request.files.add(file);
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
 
       final responseData = json.decode(response.body);
 

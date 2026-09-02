@@ -539,10 +539,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Edit Profil & Data Diri',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
@@ -552,7 +554,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             SizedBox(height: 1.h),
             Text(
-              'Kelola identitas dan data domisili warga',
+              'Kelola identitas dan data profil Anda',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 11.sp,
@@ -561,7 +564,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ],
         ),
-        centerTitle: false,
+        centerTitle: true,
+        actions: [
+          SizedBox(width: 48.w),
+        ],
       ),
       body: _isLoading && _nameController.text.isEmpty
           ? const Center(child: CircularProgressIndicator(color: _primaryBlue))
@@ -578,8 +584,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                   // SECTION 1: INFORMASI PRIBADI
                   _buildSectionHeader(
-                    title: 'Informasi Data Pribadi',
-                    subtitle: 'Data identitas akun warga pengguna',
+                    title: 'Informasi Data Diri',
+                    subtitle: 'Data identitas dan informasi kontak pribadi Anda',
                     isDark: isDark,
                   ),
                   SizedBox(height: 12.h),
@@ -696,10 +702,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
                   SizedBox(height: 22.h),
 
-                  // SECTION 2: DATA DOMISILI & WILAYAH
+                  // SECTION 2: ALAMAT & TEMPAT TINGGAL
                   _buildSectionHeader(
-                    title: 'Data Domisili & Wilayah',
-                    subtitle: 'Alamat tempat tinggal dan pembagian RT/RW',
+                    title: 'Alamat & Tempat Tinggal',
+                    subtitle: 'Informasi alamat tempat tinggal Anda',
                     isDark: isDark,
                   ),
                   SizedBox(height: 12.h),

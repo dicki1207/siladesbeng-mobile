@@ -94,7 +94,7 @@ class _ReportPageState extends State<ReportPage> {
 
   @override
   void dispose() {
-    _showcaseView.unregister();
+    // _showcaseView.unregister(); // Prevent unregister on route replace race condition
     _namaController.dispose();
     _deskripsiController.dispose();
     super.dispose();

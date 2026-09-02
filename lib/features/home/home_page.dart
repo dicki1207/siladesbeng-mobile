@@ -558,7 +558,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _showcaseView.unregister();
+    // _showcaseView.unregister(); // Prevent unregister on route replace race condition
     _searchController.dispose();
     super.dispose();
   }
@@ -1575,9 +1575,9 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 16.h),
           SizedBox(
-            height: 220,
+            height: _announcements.isEmpty ? 60 : 220,
             child: _announcements.isEmpty
-                ? const Center(child: Text("Tidak ada data terbaru"))
+                ? _buildEmptyNewsState(context)
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
@@ -1605,6 +1605,19 @@ class _HomePageState extends State<HomePage> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyNewsState(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
+      child: Text(
+        'Belum ada informasi terbaru saat ini.',
+        style: TextStyle(
+          color: isDark ? Colors.white60 : Colors.grey[600],
+          fontSize: 14.sp,
+        ),
       ),
     );
   }

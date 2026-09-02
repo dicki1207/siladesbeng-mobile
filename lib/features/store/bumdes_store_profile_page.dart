@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'pasar_detail_page.dart';
 import 'toko_chat_page.dart';
 import 'cart_page.dart';
-import 'give_review_dialog.dart';
+
 import 'report_store_dialog.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
@@ -49,73 +49,12 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
  bool _isLoading = true;
  bool _isStoreFavorite = false;
  int _cartCount = 0;
- String _selectedReviewFilter = 'Semua';
+
  String? _avatarUrl;
  String? _bannerUrl;
  String? _description;
 
- final List<Map<String, dynamic>> _reviews = [
-  {
-   'name': 'Hj. Fatimah Zahra',
-   'village': 'Warga Desa Wonosari',
-   'rating': 5,
-   'date': '2 hari yang lalu',
-   'comment':
-     'Beras premium dari BUMDes ini sangat pulen dan bersih. Pengantaran cepat langsung ke rumah. Sangat bangga dengan produk desa!',
-   'hasPhoto': true,
-   'photos': ['assets/images/PasarDaerah.png', 'assets/images/F2.png'],
-  },
-  {
-   'name': 'Rahmat Hidayat, S.Pd',
-   'village': 'Warga Desa Bantan Tua',
-   'rating': 5,
-   'date': '4 hari yang lalu',
-   'comment':
-     'Pelayanan pengurus BUMDes sangat ramah dan responsif saat di-chat. Barang sesuai pesanan dan harga bersahabat.',
-   'hasPhoto': true,
-   'photos': ['assets/images/F1.png'],
-  },
-  {
-   'name': 'Siti Nurhaliza',
-   'village': 'Warga Desa Senggoro',
-   'rating': 5,
-   'date': '1 minggu yang lalu',
-   'comment':
-     'Kualitas sayuran segar sekali, masih berembun saat sampai. Senang bisa belanja antar desa tanpa perlu ke pasar fisik.',
-   'hasPhoto': false,
-   'photos': <String>[],
-  },
-  {
-   'name': 'Pak Hendra Saputra',
-   'village': 'Warga Desa Damon',
-   'rating': 5,
-   'date': '1 minggu yang lalu',
-   'comment':
-     'Bahan bangunan kualitas bagus dan diantar tepat waktu. Sangat membantu renovasi rumah.',
-   'hasPhoto': true,
-   'photos': ['assets/images/PasarDaerah.png'],
-  },
-  {
-   'name': 'Syarifah Aisyah',
-   'village': 'Warga Desa Meskom',
-   'rating': 4,
-   'date': '2 minggu yang lalu',
-   'comment':
-     'Kerajinan dan olahan pangan khas desa rapi sekali. Sangat cocok buat oleh-oleh khas daerah.',
-   'hasPhoto': true,
-   'photos': ['assets/images/F2.png'],
-  },
-  {
-   'name': 'M. Danil Wahyudi',
-   'village': 'Warga Desa Kelapapati',
-   'rating': 5,
-   'date': '3 minggu yang lalu',
-   'comment':
-     'Paling suka kemudahan pesan barang antar-desa lewat aplikasi ini. Transaksi jelas dan terpercaya.',
-   'hasPhoto': false,
-   'photos': <String>[],
-  },
- ];
+
 
  @override
  void initState() {
@@ -186,9 +125,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   const primaryColor = Color(0xFF0EA5E9);
 
-  final filteredReviews = _selectedReviewFilter == 'Dengan Foto'
-    ? _reviews.where((r) => r['hasPhoto'] == true).toList()
-    : _reviews;
+
 
   return Scaffold(
    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -393,12 +330,9 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
                    ),
                   ),
                  )
-                : const Center(
-                  child: Icon(
-                   Icons.storefront_rounded,
-                   size: 32,
-                   color: Color(0xFF0284C7),
-                  ),
+                : Image.network(
+                  'https://ui-avatars.com/api/?name=${Uri.encodeComponent(widget.desaName)}&background=0284C7&color=fff&size=128',
+                  fit: BoxFit.cover,
                  ),
              ),
             ),
@@ -556,6 +490,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
                  tokoName: widget.tokoName,
                  tokoDesa: widget.desaName,
                  tokoKecamatan: widget.kecamatanName,
+                 tokoAvatar: _avatarUrl,
                 ),
                ),
               );
@@ -821,187 +756,8 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
       ),
 
      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+     // Review Section Removed
 
-     // 4. Section BAWAH: Ulasan & Penilaian Pembeli (Kayak Shopee!)
-     SliverToBoxAdapter(
-      child: Container(
-       margin: const EdgeInsets.symmetric(horizontal: 16),
-       padding: const EdgeInsets.all(14),
-       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-         color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
-        ),
-       ),
-       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-         // Title & Write Review Button
-         Row(
-          children: [
-           const Icon(
-            Icons.star_rounded,
-            color: Colors.amber,
-            size: 18,
-           ),
-           const SizedBox(width: 5),
-           Expanded(
-            child: Text(
-             'Ulasan & Penilaian',
-             style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: isDark
-                ? Colors.white
-                : const Color(0xFF0F172A),
-             ),
-            ),
-           ),
-           TextButton(
-            onPressed: () {
-             GiveReviewDialog.show(
-              context,
-              productName: 'Layanan Toko BUMDes',
-              tokoName: widget.tokoName,
-              desaName: widget.desaName,
-             );
-            },
-            style: TextButton.styleFrom(
-             padding: const EdgeInsets.symmetric(
-              horizontal: 6,
-              vertical: 4,
-             ),
-             minimumSize: Size.zero,
-             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: const Row(
-             mainAxisSize: MainAxisSize.min,
-             children: [
-              Icon(
-               Icons.edit_note_rounded,
-               size: 16,
-               color: primaryColor,
-              ),
-              SizedBox(width: 3),
-              Text(
-               'Tulis Ulasan',
-               style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
-               ),
-              ),
-             ],
-            ),
-           ),
-          ],
-         ),
-         const SizedBox(height: 10),
-         // Rating Summary Card
-         Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-           color: isDark
-             ? const Color(0xFF0F172A)
-             : const Color(0xFFF8FAFC),
-           borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-           children: [
-            Column(
-             children: [
-              const Text(
-               '4.9',
-               style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                color: Colors.amber,
-               ),
-              ),
-              const Row(
-               children: [
-                Icon(
-                 Icons.star_rounded,
-                 size: 13,
-                 color: Colors.amber,
-                ),
-                Icon(
-                 Icons.star_rounded,
-                 size: 13,
-                 color: Colors.amber,
-                ),
-                Icon(
-                 Icons.star_rounded,
-                 size: 13,
-                 color: Colors.amber,
-                ),
-                Icon(
-                 Icons.star_rounded,
-                 size: 13,
-                 color: Colors.amber,
-                ),
-                Icon(
-                 Icons.star_rounded,
-                 size: 13,
-                 color: Colors.amber,
-                ),
-               ],
-              ),
-              Text(
-               '48 ulasan pembeli',
-               style: TextStyle(
-                fontSize: 10,
-                color: isDark
-                  ? Colors.white54
-                  : Colors.grey[600],
-               ),
-              ),
-             ],
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-             child: Column(
-              children: [
-               _buildRatingBar(5, 0.88, isDark),
-               _buildRatingBar(4, 0.10, isDark),
-               _buildRatingBar(3, 0.02, isDark),
-               _buildRatingBar(2, 0.00, isDark),
-               _buildRatingBar(1, 0.00, isDark),
-              ],
-             ),
-            ),
-           ],
-          ),
-         ),
-         const SizedBox(height: 12),
-         // Filter Chips
-         Row(
-          children: [
-           _buildReviewFilterChip(
-            'Semua (48)',
-            'Semua',
-            isDark,
-            primaryColor,
-           ),
-           const SizedBox(width: 8),
-           _buildReviewFilterChip(
-            'Dengan Foto (32)',
-            'Dengan Foto',
-            isDark,
-            primaryColor,
-           ),
-          ],
-         ),
-         const SizedBox(height: 12),
-         // Review Items
-         ...filteredReviews.map(
-          (rev) => _buildReviewItem(rev, isDark),
-         ),
-        ],
-       ),
-      ),
-     ),
 
      const SliverToBoxAdapter(child: SizedBox(height: 40)),
     ],
@@ -1009,247 +765,6 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
   );
  }
 
- Widget _buildRatingBar(int stars, double pct, bool isDark) {
-  return Padding(
-   padding: const EdgeInsets.symmetric(vertical: 1.5),
-   child: Row(
-    children: [
-     Text(
-      '$stars',
-      style: TextStyle(
-       fontSize: 9.5,
-       color: isDark ? Colors.white60 : Colors.grey[600],
-      ),
-     ),
-     const SizedBox(width: 5),
-     Expanded(
-      child: ClipRRect(
-       borderRadius: BorderRadius.circular(4),
-       child: LinearProgressIndicator(
-        value: pct,
-        backgroundColor: isDark ? Colors.white12 : Colors.grey[200],
-        valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
-        minHeight: 4,
-       ),
-      ),
-     ),
-    ],
-   ),
-  );
- }
-
- Widget _buildReviewFilterChip(
-  String label,
-  String value,
-  bool isDark,
-  Color primaryColor,
- ) {
-  final isSelected = _selectedReviewFilter == value;
-  return ChoiceChip(
-   label: Text(label),
-   selected: isSelected,
-   showCheckmark: false,
-   avatar: null,
-   selectedColor: primaryColor.withValues(alpha: 0.18),
-   backgroundColor: isDark
-     ? const Color(0xFF0F172A)
-     : const Color(0xFFF1F5F9),
-   labelStyle: TextStyle(
-    color: isSelected
-      ? primaryColor
-      : (isDark ? Colors.white70 : Colors.grey[700]),
-    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-    fontSize: 11,
-   ),
-   side: BorderSide(
-    color: isSelected
-      ? primaryColor
-      : (isDark ? Colors.white12 : const Color(0xFFCBD5E1)),
-   ),
-   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-   onSelected: (selected) {
-    if (selected) {
-     setState(() => _selectedReviewFilter = value);
-    }
-   },
-  );
- }
-
- void _showImageZoomDialog(String imageSource) {
-  showDialog(
-   context: context,
-   builder: (context) => Dialog(
-    backgroundColor: Colors.transparent,
-    insetPadding: const EdgeInsets.all(16),
-    child: Stack(
-     alignment: Alignment.topRight,
-     children: [
-      InteractiveViewer(
-       panEnabled: true,
-       boundaryMargin: const EdgeInsets.all(20),
-       minScale: 0.5,
-       maxScale: 4.0,
-       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: imageSource.startsWith('assets/')
-          ? Image.asset(imageSource, fit: BoxFit.contain)
-          : Image.network(
-            imageSource,
-            fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => Container(
-             height: 250,
-             color: Colors.black54,
-             child: const Center(
-              child: Icon(
-               Icons.broken_image,
-               size: 50,
-               color: Colors.white,
-              ),
-             ),
-            ),
-           ),
-       ),
-      ),
-      IconButton(
-       onPressed: () => Navigator.pop(context),
-       icon: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: const BoxDecoration(
-         color: Colors.black87,
-         shape: BoxShape.circle,
-        ),
-        child: const Icon(Icons.close, color: Colors.white, size: 20),
-       ),
-      ),
-     ],
-    ),
-   ),
-  );
- }
-
- Widget _buildReviewItem(Map<String, dynamic> rev, bool isDark) {
-  const primaryColor = Color(0xFF0EA5E9);
-  final String name = rev['name'] ?? 'Warga';
-
-  return Container(
-   margin: const EdgeInsets.only(bottom: 12),
-   padding: const EdgeInsets.only(bottom: 12),
-   decoration: BoxDecoration(
-    border: Border(
-     bottom: BorderSide(
-      color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
-     ),
-    ),
-   ),
-   child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-     Row(
-      children: [
-       CircleAvatar(
-        radius: 14,
-        backgroundColor: primaryColor.withValues(alpha: 0.15),
-        child: Text(
-         name.isNotEmpty ? name[0] : 'W',
-         style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: primaryColor,
-         ),
-        ),
-       ),
-       const SizedBox(width: 8),
-       Expanded(
-        child: Column(
-         crossAxisAlignment: CrossAxisAlignment.start,
-         children: [
-          Text(
-           name,
-           style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-           ),
-          ),
-          Text(
-           '${rev['village']} • ${rev['date']}',
-           style: TextStyle(
-            fontSize: 10,
-            color: isDark ? Colors.white54 : Colors.grey[600],
-           ),
-          ),
-         ],
-        ),
-       ),
-       Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(
-         rev['rating'] as int,
-         (index) => const Icon(
-          Icons.star_rounded,
-          size: 13,
-          color: Colors.amber,
-         ),
-        ),
-       ),
-      ],
-     ),
-     const SizedBox(height: 6),
-     Text(
-      rev['comment'] ?? '',
-      style: TextStyle(
-       fontSize: 11.5,
-       height: 1.35,
-       color: isDark ? Colors.white70 : const Color(0xFF334155),
-      ),
-     ),
-     if (rev['hasPhoto'] == true &&
-       (rev['photos'] as List).isNotEmpty) ...[
-      const SizedBox(height: 8),
-      Row(
-       children: (rev['photos'] as List).map<Widget>((photoUrl) {
-        final photoStr = photoUrl.toString();
-        final isAsset = photoStr.startsWith('assets/');
-
-        return GestureDetector(
-         onTap: () => _showImageZoomDialog(photoStr),
-         child: Container(
-          margin: const EdgeInsets.only(right: 8),
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-           borderRadius: BorderRadius.circular(8),
-           border: Border.all(
-            color: isDark ? Colors.white12 : Colors.grey.shade300,
-           ),
-          ),
-          child: ClipRRect(
-           borderRadius: BorderRadius.circular(7),
-           child: isAsset
-             ? Image.asset(photoStr, fit: BoxFit.cover)
-             : Image.network(
-               photoStr,
-               fit: BoxFit.cover,
-               errorBuilder: (_, _, _) => Container(
-                color: isDark
-                  ? const Color(0xFF0F172A)
-                  : Colors.grey[200],
-                child: const Icon(
-                 Icons.image,
-                 size: 18,
-                 color: Colors.grey,
-                ),
-               ),
-              ),
-          ),
-         ),
-        );
-       }).toList(),
-      ),
-     ],
-    ],
-   ),
-  );
- }
 
  Widget _buildProductCard(
   Map<String, dynamic> product,

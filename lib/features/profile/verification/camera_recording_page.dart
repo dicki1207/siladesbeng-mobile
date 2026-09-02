@@ -383,8 +383,16 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
           });
 
           if (_livenessStep >= 4) {
-            _cameraController?.stopImageStream();
-            _finishVerification();
+            _cameraController?.stopImageStream().then((_) async {
+              String? imagePath;
+              try {
+                final file = await _cameraController?.takePicture();
+                imagePath = file?.path;
+              } catch (e) {
+                debugPrint("Gagal mengambil foto selfie: $e");
+              }
+              _finishVerification(imagePath);
+            });
           }
         });
       }
@@ -393,7 +401,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
     }
   }
 
-  Future<void> _finishVerification() async {
+  Future<void> _finishVerification(String? faceImagePath) async {
     setState(() {
       _isRecording = false;
       _isUploadingFace = true;
@@ -411,6 +419,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
             'vendor': 'dukcapil_biometric_standard',
           }
         ],
+        faceImagePath: faceImagePath,
         nik: widget.nik,
         name: widget.name,
         address: widget.address,
@@ -465,9 +474,11 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       case 0:
         return 'Tatap Lurus ke Depan';
       case 1:
-        return 'Tolehkan Kepala ke Samping';
+        return 'Tolehkan Kepala ke Kanan';
       case 2:
-        return 'Tolehkan ke Arah Sebaliknya';
+        return _firstTurnSign == -1
+            ? 'Tolehkan Kepala ke Kanan'
+            : 'Tolehkan Kepala ke Kiri';
       case 3:
         return 'Kedipkan Kedua Mata';
       default:
@@ -483,29 +494,15 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       case 0:
         return 'Pastikan wajah berada di tengah lingkaran';
       case 1:
-        return 'Tolehkan kepala perlahan ke kanan atau kiri';
+        return 'Tolehkan kepala perlahan ke arah kanan';
       case 2:
-        return 'Sekarang tolehkan ke arah yang berlawanan';
+        return _firstTurnSign == -1
+            ? 'Sekarang tolehkan kepala ke arah kanan'
+            : 'Sekarang tolehkan kepala ke arah kiri (sebaliknya)';
       case 3:
-        return 'Tutup kedua mata sebentar lalu buka kembali';
+        return 'Kedipkan kedua mata Anda secara wajar';
       default:
         return 'Menyinkronkan data biometrik kependudukan...';
-    }
-  }
-
-  IconData _getCurrentInstructionIcon() {
-    if (_isFaceInstructionSuccess) return Icons.check_circle_rounded;
-    switch (_livenessStep) {
-      case 0:
-        return Icons.face_retouching_natural;
-      case 1:
-        return Icons.arrow_circle_right_rounded;
-      case 2:
-        return Icons.arrow_circle_left_rounded;
-      case 3:
-        return Icons.remove_red_eye_rounded;
-      default:
-        return Icons.verified_user_rounded;
     }
   }
 
@@ -623,9 +620,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                     children: [
                       _buildStepPill('1. Posisi', 0),
                       SizedBox(width: 6.w),
-                      _buildStepPill('2. Toleh', 1),
+                      _buildStepPill('2. Kanan', 1),
                       SizedBox(width: 6.w),
-                      _buildStepPill('3. Balik', 2),
+                      _buildStepPill('3. Kiri', 2),
                       SizedBox(width: 6.w),
                       _buildStepPill('4. Kedip', 3),
                     ],
@@ -713,29 +710,12 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                 ),
                 child: Row(
                   children: [
-                    // Animated State Icon
-                    Container(
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: _isFaceInstructionSuccess
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF2563EB),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: (_isFaceInstructionSuccess
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFF2563EB))
-                                .withAlpha(100),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _getCurrentInstructionIcon(),
-                        color: Colors.white,
-                        size: 26.sp,
-                      ),
+                    // Animated Live Instruction Icon
+                    _LiveInstructionIcon(
+                      livenessStep: _livenessStep,
+                      isSuccess: _isFaceInstructionSuccess,
+                      faceDetected: _faceDetected,
+                      firstTurnSign: _firstTurnSign,
                     ),
 
                     SizedBox(width: 14.w),
@@ -862,6 +842,316 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
         ),
       ),
     );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIVE ANIMATED INSTRUCTION BADGE (DYNAMIC MOTION & EYE BLINKING)
+// ═══════════════════════════════════════════════════════════════════════════
+class _LiveInstructionIcon extends StatefulWidget {
+  final int livenessStep;
+  final bool isSuccess;
+  final bool faceDetected;
+  final int? firstTurnSign;
+
+  const _LiveInstructionIcon({
+    required this.livenessStep,
+    required this.isSuccess,
+    required this.faceDetected,
+    this.firstTurnSign,
+  });
+
+  @override
+  State<_LiveInstructionIcon> createState() => _LiveInstructionIconState();
+}
+
+class _LiveInstructionIconState extends State<_LiveInstructionIcon>
+    with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _turnController;
+  late AnimationController _blinkController;
+  late AnimationController _successController;
+
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _turnAnimation;
+  late Animation<double> _blinkScaleAnimation;
+  late Animation<double> _successScaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 1. Subtle pulsing for center face / reticle
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.90, end: 1.10).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
+    );
+
+    // 2. Gliding swing for head turns (kanan / kiri)
+    _turnController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _turnAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _turnController, curve: Curves.easeInOutCubic),
+    );
+
+    // 3. Realistic human eye blink cycle
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+
+    _blinkScaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween<double>(1.0), weight: 65), // Mata terbuka
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.05)
+            .chain(CurveTween(curve: Curves.easeInQuad)),
+        weight: 8, // Mengedip cepat
+      ),
+      TweenSequenceItem(tween: ConstantTween<double>(0.05), weight: 6), // Tertutup sejenak
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.05, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOutQuad)),
+        weight: 9, // Membuka kembali
+      ),
+      TweenSequenceItem(tween: ConstantTween<double>(1.0), weight: 12), // Istirahat terbuka
+    ]).animate(_blinkController);
+
+    // 4. Elastic pop on success
+    _successController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _successScaleAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _successController, curve: Curves.elasticOut),
+    );
+
+    if (widget.isSuccess) {
+      _successController.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _LiveInstructionIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.isSuccess && widget.isSuccess) {
+      _successController.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _turnController.dispose();
+    _blinkController.dispose();
+    _successController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSuccess = widget.isSuccess;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: 52.w,
+      height: 52.w,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isSuccess
+              ? const [Color(0xFF10B981), Color(0xFF059669)]
+              : const [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isSuccess ? const Color(0xFF10B981) : const Color(0xFF3B82F6))
+                .withAlpha(isSuccess ? 140 : 100),
+            blurRadius: isSuccess ? 16 : 10,
+            spreadRadius: isSuccess ? 3 : 1,
+          ),
+        ],
+      ),
+      child: Center(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 280),
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(scale: animation, child: child),
+          ),
+          child: _buildAnimatedContent(key: ValueKey('${widget.livenessStep}_$isSuccess')),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedContent({required Key key}) {
+    if (widget.isSuccess) {
+      return ScaleTransition(
+        key: key,
+        scale: _successScaleAnimation,
+        child: Icon(
+          Icons.check_rounded,
+          color: Colors.white,
+          size: 30.sp,
+        ),
+      );
+    }
+
+    switch (widget.livenessStep) {
+      case 0:
+        // STAGE 0: Posisikan Wajah (Tatap Lurus)
+        return AnimatedBuilder(
+          key: key,
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform.scale(
+                  scale: _pulseAnimation.value,
+                  child: Icon(
+                    Icons.center_focus_strong_rounded,
+                    color: Colors.white.withAlpha(150),
+                    size: 29.sp,
+                  ),
+                ),
+                Icon(
+                  Icons.face_rounded,
+                  color: Colors.white,
+                  size: 19.sp,
+                ),
+              ],
+            );
+          },
+        );
+
+      case 1:
+        // STAGE 1: Tolehkan Kepala ke Kanan (Animasi Wajah + Panah meluncur ke kanan)
+        return AnimatedBuilder(
+          key: key,
+          animation: _turnAnimation,
+          builder: (context, child) {
+            final double slideX = (_turnAnimation.value * 3.w);
+            final double tiltAngle = _turnAnimation.value * 0.10;
+            return Transform.translate(
+              offset: Offset(slideX, 0),
+              child: Transform.rotate(
+                angle: tiltAngle,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.face_rounded,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 2.w),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 16.sp,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+      case 2:
+        // STAGE 2: Tolehkan Kepala ke Kiri (Arah Sebaliknya)
+        final bool turnLeft = widget.firstTurnSign != -1;
+        return AnimatedBuilder(
+          key: key,
+          animation: _turnAnimation,
+          builder: (context, child) {
+            final double direction = turnLeft ? -1.0 : 1.0;
+            final double slideX = (_turnAnimation.value * 3.w) * direction;
+            final double tiltAngle = (_turnAnimation.value * 0.10) * direction;
+            return Transform.translate(
+              offset: Offset(slideX, 0),
+              child: Transform.rotate(
+                angle: tiltAngle,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: turnLeft
+                      ? [
+                          Icon(
+                            Icons.arrow_back_rounded,
+                            color: Colors.white,
+                            size: 16.sp,
+                          ),
+                          SizedBox(width: 2.w),
+                          Icon(
+                            Icons.face_rounded,
+                            color: Colors.white,
+                            size: 20.sp,
+                          ),
+                        ]
+                      : [
+                          Icon(
+                            Icons.face_rounded,
+                            color: Colors.white,
+                            size: 20.sp,
+                          ),
+                          SizedBox(width: 2.w),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 16.sp,
+                          ),
+                        ],
+                ),
+              ),
+            );
+          },
+        );
+
+      case 3:
+        // STAGE 3: Kedipkan Mata (Animasi Kelopak Mata berkedip secara natural)
+        return AnimatedBuilder(
+          key: key,
+          animation: _blinkScaleAnimation,
+          builder: (context, child) {
+            final double scaleY = _blinkScaleAnimation.value;
+            final bool isShut = scaleY <= 0.22;
+            return isShut
+                ? Icon(
+                    Icons.remove_rounded,
+                    color: Colors.white,
+                    size: 28.sp,
+                  )
+                : Transform.scale(
+                    scaleY: scaleY,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.remove_red_eye_rounded,
+                      color: Colors.white,
+                      size: 26.sp,
+                    ),
+                  );
+          },
+        );
+
+      default:
+        return Icon(
+          Icons.verified_user_rounded,
+          key: key,
+          color: Colors.white,
+          size: 26.sp,
+        );
+    }
   }
 }
 

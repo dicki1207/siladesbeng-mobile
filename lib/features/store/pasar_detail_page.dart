@@ -7,7 +7,6 @@ import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 import 'cart_page.dart';
 import 'bumdes_store_profile_page.dart';
 import 'toko_chat_page.dart';
-import 'give_review_dialog.dart';
 import 'return_refund_dialog.dart';
 import 'report_store_dialog.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
@@ -812,45 +811,36 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                 ],
                ),
                const Spacer(),
-               ElevatedButton.icon(
-                onPressed: () async {
-                 final result = await GiveReviewDialog.show(
-                  context,
-                  productId: widget.productId,
-                  productName: name,
-                  tokoName: _seller?['store_name'] ?? 'BUMDes $regionName',
-                  desaName: regionName,
-                  productImage: _images.isNotEmpty
-                    ? _images[0]
-                    : null,
-                 );
-                 if (result == true) {
-                  _fetchDetail();
-                 }
-                },
-                icon: const Icon(
-                 Icons.edit_note_rounded,
-                 size: 18,
-                 color: Colors.white,
+               Container(
+                padding: const EdgeInsets.symmetric(
+                 horizontal: 10,
+                 vertical: 6,
                 ),
-                label: const Text(
-                 'Beri Ulasan',
-                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                 color: isDark ? Colors.white.withAlpha(15) : const Color(0xFFF1F5F9),
+                 borderRadius: BorderRadius.circular(8),
+                 border: Border.all(
+                  color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
                  ),
                 ),
-                style: ElevatedButton.styleFrom(
-                 backgroundColor: const Color(0xFFF59E0B),
-                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                 ),
-                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                 ),
-                 elevation: 0,
+                child: Row(
+                 mainAxisSize: MainAxisSize.min,
+                 children: [
+                  Icon(
+                   Icons.verified_user_outlined,
+                   size: 14,
+                   color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                   'Pembeli Terverifikasi',
+                   style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                   ),
+                  ),
+                 ],
                 ),
                ),
               ],
@@ -879,7 +869,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                   'Jadilah yang pertama memberikan ulasan!',
+                   'Ulasan hanya dapat diberikan setelah pesanan diterima.',
                    style: TextStyle(
                     fontSize: 11.5,
                     color: isDark ? Colors.white38 : Colors.grey[500],
@@ -1175,6 +1165,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                   tokoName: 'BUMDes $regionName',
                   tokoDesa: regionName,
                   tokoKecamatan: 'Kec. Bengkalis',
+                  tokoAvatar: _seller?['avatar'],
                   productInquiry: {
                    'id': widget.productId,
                    'nama_produk': name,

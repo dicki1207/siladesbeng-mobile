@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_report_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_warga_list_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
 import 'package:siladesbeng_mobile/services/admin_wilayah_service.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class AdminPortalPage extends StatefulWidget {
   const AdminPortalPage({super.key});
@@ -16,6 +18,13 @@ class AdminPortalPage extends StatefulWidget {
 class _AdminPortalPageState extends State<AdminPortalPage> {
   static const Color _primaryBlue = Color(0xFF2563EB);
   static const Color _lightBlue = Color(0xFF3B82F6);
+
+  late final ShowcaseView _showcaseView;
+  final GlobalKey _keyOfficerProfile = GlobalKey();
+  final GlobalKey _keyStatsSummary = GlobalKey();
+  final GlobalKey _keyModulAduan = GlobalKey();
+  final GlobalKey _keyModulGotongRoyong = GlobalKey();
+  final GlobalKey _keyModulDataWarga = GlobalKey();
 
   String _role = 'rt';
   String _adminName = 'Pengurus Wilayah';
@@ -34,8 +43,66 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
   @override
   void initState() {
     super.initState();
+    _showcaseView = ShowcaseView.register(scope: 'admin_portal');
     _loadAdminProfile();
     _loadDashboardStats();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
+    });
+  }
+
+  @override
+  void dispose() {
+    // _showcaseView.unregister(); // Prevent unregister on route replace race condition
+    super.dispose();
+  }
+
+  List<GlobalKey> get _activeShowcaseKeys => [
+    _keyOfficerProfile,
+    _keyStatsSummary,
+    _keyModulAduan,
+    _keyModulGotongRoyong,
+    _keyModulDataWarga,
+  ];
+
+  Future<void> _checkAndStartShowcase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenTour = prefs.getBool('has_seen_admin_portal_tour') ?? false;
+      if (!hasSeenTour && mounted) {
+        await Future.delayed(const Duration(milliseconds: 650));
+        if (mounted) {
+          _showcaseView.startShowCase(_activeShowcaseKeys);
+          await prefs.setBool('has_seen_admin_portal_tour', true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Admin portal showcase error: $e');
+    }
+  }
+
+  void _replayTour() {
+    _showcaseView.startShowCase(_activeShowcaseKeys);
+  }
+
+  String? _resolveAvatarUrl(String? url) {
+    if (url == null || url.trim().isEmpty) return null;
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      try {
+        final uri = Uri.parse(trimmed);
+        final baseUri = Uri.parse(ApiConfig.baseUrl);
+        if (uri.host != baseUri.host || uri.port != baseUri.port) {
+          return uri.replace(
+            scheme: baseUri.scheme,
+            host: baseUri.host,
+            port: baseUri.port,
+          ).toString();
+        }
+      } catch (_) {}
+      return trimmed;
+    }
+    return '${ApiConfig.baseUrl}/${trimmed.startsWith('/') ? trimmed.substring(1) : trimmed}';
   }
 
   Future<void> _loadAdminProfile() async {
@@ -48,7 +115,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         }
         _role = loadedRole;
         _adminName = prefs.getString('profile_name') ?? 'Pengurus Wilayah';
-        _adminAvatar = prefs.getString('profile_image_url');
+        _adminAvatar = _resolveAvatarUrl(prefs.getString('profile_image_url'));
       });
     }
   }
@@ -75,7 +142,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
         }
         if (pengurus['avatar_url'] != null &&
             pengurus['avatar_url'].toString().isNotEmpty) {
-          _adminAvatar = pengurus['avatar_url'];
+          _adminAvatar = _resolveAvatarUrl(pengurus['avatar_url'].toString());
         }
         if (pengurus['rt'] != null) _rt = pengurus['rt'].toString();
         if (pengurus['rw'] != null) _rw = pengurus['rw'].toString();
@@ -145,6 +212,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             ),
           ],
         ),
+        centerTitle: true,
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(6),
@@ -161,10 +229,12 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               'Portal Pengurus',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -174,6 +244,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             ),
             Text(
               'Panel Kendali Administrasi Lingkungan',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 10.5,
@@ -182,6 +253,25 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Panduan Menu Pengurus',
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(isDark ? 25 : 35),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.help_outline_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            onPressed: _replayTour,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadDashboardStats,
@@ -195,7 +285,26 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Executive Officer Identity Badge (Glassmorphism & Gradient)
-              Container(
+              Showcase(
+                key: _keyOfficerProfile,
+                title: 'Identitas Pengurus Wilayah',
+                description:
+                    'Informasi akun Anda sebagai pengurus RT/RW resmi beserta nama desa dan wilayah penugasan Anda.',
+                titleTextStyle: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                  letterSpacing: -0.2,
+                ),
+                descTextStyle: const TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF475569),
+                  height: 1.35,
+                ),
+                targetBorderRadius: BorderRadius.circular(16),
+                targetPadding: const EdgeInsets.all(4),
+                child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -257,11 +366,15 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                   _adminAvatar!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      const Center(
-                                        child: Icon(
-                                          Icons.security_rounded,
-                                          size: 22,
-                                          color: Colors.white,
+                                      Image.network(
+                                        'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_adminName)}&background=2563EB&color=fff&size=128',
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => const Center(
+                                          child: Icon(
+                                            Icons.security_rounded,
+                                            size: 22,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                   loadingBuilder:
@@ -281,11 +394,15 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                         );
                                       },
                                 )
-                              : const Center(
-                                  child: Icon(
-                                    Icons.security_rounded,
-                                    size: 22,
-                                    color: Colors.white,
+                              : Image.network(
+                                  'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_adminName)}&background=2563EB&color=fff&size=128',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => const Center(
+                                    child: Icon(
+                                      Icons.security_rounded,
+                                      size: 22,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                         ),
@@ -387,6 +504,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                   ],
                 ),
               ),
+            ),
 
               const SizedBox(height: 12),
 
@@ -468,41 +586,61 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
               ],
 
               // 3. Vibrant 3-Metric Stat Cards with Micro-Accents
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildVibrantStatCard(
-                      title: 'Aduan Masuk',
-                      count: _totalLaporan,
-                      subtext: '$_laporanBaru Baru',
-                      icon: Icons.all_inbox_rounded,
-                      isDark: isDark,
-                      accentColor: _lightBlue,
+              Showcase(
+                key: _keyStatsSummary,
+                title: 'Ringkasan Aduan Warga',
+                description:
+                    'Pantau cepat status aduan warga lingkungan Anda yang baru masuk, sedang ditangani, dan yang telah selesai.',
+                titleTextStyle: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                  letterSpacing: -0.2,
+                ),
+                descTextStyle: const TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF475569),
+                  height: 1.35,
+                ),
+                targetBorderRadius: BorderRadius.circular(16),
+                targetPadding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildVibrantStatCard(
+                        title: 'Aduan Masuk',
+                        count: _totalLaporan,
+                        subtext: '$_laporanBaru Baru',
+                        icon: Icons.all_inbox_rounded,
+                        isDark: isDark,
+                        accentColor: _lightBlue,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildVibrantStatCard(
-                      title: 'Dalam Proses',
-                      count: _laporanDiproses,
-                      subtext: 'Ditangani',
-                      icon: Icons.hourglass_top_rounded,
-                      isDark: isDark,
-                      accentColor: const Color(0xFFF59E0B),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildVibrantStatCard(
+                        title: 'Dalam Proses',
+                        count: _laporanDiproses,
+                        subtext: 'Ditangani',
+                        icon: Icons.hourglass_top_rounded,
+                        isDark: isDark,
+                        accentColor: const Color(0xFFF59E0B),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildVibrantStatCard(
-                      title: 'Tuntas Selesai',
-                      count: _laporanSelesai,
-                      subtext: 'Selesai',
-                      icon: Icons.task_alt_rounded,
-                      isDark: isDark,
-                      accentColor: const Color(0xFF10B981),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildVibrantStatCard(
+                        title: 'Tuntas Selesai',
+                        count: _laporanSelesai,
+                        subtext: 'Selesai',
+                        icon: Icons.task_alt_rounded,
+                        isDark: isDark,
+                        accentColor: const Color(0xFF10B981),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               const SizedBox(height: 18),
@@ -549,69 +687,129 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
               const SizedBox(height: 10),
 
               // 5. Distinctive High-Impact Action Tiles (Layanan Wilayah)
-              _buildFeatureActionTile(
-                isDark: isDark,
-                icon: Icons.mark_chat_unread_rounded,
+              Showcase(
+                key: _keyModulAduan,
                 title: 'Kelola Pengaduan Warga',
-                subtitle:
-                    'Tindak lanjuti aspirasi & laporan masalah lingkungan',
-                tag: 'Aduan & Respon',
-                gradientColors: [
-                  const Color(0xFF2563EB),
-                  const Color(0xFF3B82F6),
-                ],
-                badge: _laporanBaru > 0 ? '$_laporanBaru Baru' : null,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AdminReportPage()),
-                  );
-                },
+                description:
+                    'Tindak lanjuti aspirasi warga, respon kendala fasilitas, dan pantau penyelesaian laporan masalah lingkungan.',
+                titleTextStyle: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                  letterSpacing: -0.2,
+                ),
+                descTextStyle: const TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF475569),
+                  height: 1.35,
+                ),
+                targetBorderRadius: BorderRadius.circular(16),
+                targetPadding: const EdgeInsets.all(4),
+                child: _buildFeatureActionTile(
+                  isDark: isDark,
+                  icon: Icons.mark_chat_unread_rounded,
+                  title: 'Kelola Pengaduan Warga',
+                  subtitle:
+                      'Tindak lanjuti aspirasi & laporan masalah lingkungan',
+                  tag: 'Aduan & Respon',
+                  gradientColors: [
+                    const Color(0xFF2563EB),
+                    const Color(0xFF3B82F6),
+                  ],
+                  badge: _laporanBaru > 0 ? '$_laporanBaru Baru' : null,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AdminReportPage()),
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 8),
 
-              _buildFeatureActionTile(
-                isDark: isDark,
-                icon: Icons.campaign_rounded,
+              Showcase(
+                key: _keyModulGotongRoyong,
                 title: 'Pengumuman & Gotong Royong',
-                subtitle:
-                    'Publikasi kerja bakti, iuran, dan agenda resmi RT/RW',
-                tag: 'Agenda & Info',
-                gradientColors: [
-                  const Color(0xFF7C3AED),
-                  const Color(0xFF8B5CF6),
-                ],
-                badge: null,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const EventGotongRoyongPage(),
-                    ),
-                  );
-                },
+                description:
+                    'Publikasikan agenda kerja bakti warga, informasi iuran lingkungan, dan pengumuman resmi dari RT/RW.',
+                titleTextStyle: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                  letterSpacing: -0.2,
+                ),
+                descTextStyle: const TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF475569),
+                  height: 1.35,
+                ),
+                targetBorderRadius: BorderRadius.circular(16),
+                targetPadding: const EdgeInsets.all(4),
+                child: _buildFeatureActionTile(
+                  isDark: isDark,
+                  icon: Icons.campaign_rounded,
+                  title: 'Pengumuman & Gotong Royong',
+                  subtitle:
+                      'Publikasi kerja bakti, iuran, dan agenda resmi RT/RW',
+                  tag: 'Agenda & Info',
+                  gradientColors: [
+                    const Color(0xFF7C3AED),
+                    const Color(0xFF8B5CF6),
+                  ],
+                  badge: null,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EventGotongRoyongPage(),
+                      ),
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: 8),
 
-              _buildFeatureActionTile(
-                isDark: isDark,
-                icon: Icons.badge_rounded,
+              Showcase(
+                key: _keyModulDataWarga,
                 title: 'Buku Induk & Data Warga',
-                subtitle: 'Database kependudukan, domisili, & verifikasi KYC',
-                tag: 'Data Warga',
-                gradientColors: [
-                  const Color(0xFF0284C7),
-                  const Color(0xFF06B6D4),
-                ],
-                badge: null,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AdminWargaListPage(role: _role),
-                    ),
-                  );
-                },
+                description:
+                    'Akses database kependudukan warga RT/RW, data domisili, serta verifikasi status KTP warga setempat.',
+                titleTextStyle: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                  letterSpacing: -0.2,
+                ),
+                descTextStyle: const TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF475569),
+                  height: 1.35,
+                ),
+                targetBorderRadius: BorderRadius.circular(16),
+                targetPadding: const EdgeInsets.all(4),
+                child: _buildFeatureActionTile(
+                  isDark: isDark,
+                  icon: Icons.badge_rounded,
+                  title: 'Buku Induk & Data Warga',
+                  subtitle: 'Database kependudukan, domisili, & verifikasi KYC',
+                  tag: 'Data Warga',
+                  gradientColors: [
+                    const Color(0xFF0284C7),
+                    const Color(0xFF06B6D4),
+                  ],
+                  badge: null,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AdminWargaListPage(role: _role),
+                      ),
+                    );
+                  },
+                ),
               ),
 
               const SizedBox(height: 18),

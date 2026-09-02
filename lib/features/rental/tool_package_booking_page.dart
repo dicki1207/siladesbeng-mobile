@@ -102,7 +102,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
 
   @override
   void dispose() {
-    _showcaseView.unregister();
+    // _showcaseView.unregister(); // Prevent unregister on route replace race condition
     _tabController.dispose();
     super.dispose();
   }

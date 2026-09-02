@@ -19,6 +19,10 @@ class _MainWrapperState extends State<MainWrapper> {
   String _userRole = 'warga';
   final GlobalKey<TransactionHistoryPageState> _activityKey =
       GlobalKey<TransactionHistoryPageState>();
+  final GlobalKey _homeKey = GlobalKey();
+  final GlobalKey _profileKey = GlobalKey();
+  final GlobalKey _newsKey = GlobalKey();
+  final GlobalKey _adminPortalKey = GlobalKey();
 
   @override
   void initState() {
@@ -37,7 +41,7 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isAdmin = _userRole == 'rt' || _userRole == 'rw';
+    final bool isAdmin = _userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin';
     final String adminLabel = _userRole == 'rt'
         ? 'Admin RT'
         : (_userRole == 'rw' ? 'Admin RW' : 'Admin');
@@ -45,6 +49,7 @@ class _MainWrapperState extends State<MainWrapper> {
     final List<Widget> pages = isAdmin
         ? [
             HomePage(
+              key: _homeKey,
               onNavigateToProfile: () {
                 setState(() {
                   _currentIndex = 4; // Switch ke tab Profil (indeks ke-4 jika ada Admin Tab)
@@ -56,13 +61,14 @@ class _MainWrapperState extends State<MainWrapper> {
                 });
               },
             ),
-            const KabarDaerahPage(),
-            const AdminPortalPage(), // Tab Eksekutif Pengurus di Posisi Pusat Footer Nav
+            KabarDaerahPage(key: _newsKey),
+            AdminPortalPage(key: _adminPortalKey), // Tab Eksekutif Pengurus di Posisi Pusat Footer Nav
             TransactionHistoryPage(key: _activityKey),
-            const ProfilePage(),
+            ProfilePage(key: _profileKey),
           ]
         : [
             HomePage(
+              key: _homeKey,
               onNavigateToProfile: () {
                 setState(() {
                   _currentIndex = 3; // Switch ke tab Profil (indeks ke-3 untuk warga biasa)
@@ -74,9 +80,9 @@ class _MainWrapperState extends State<MainWrapper> {
                 });
               },
             ),
-            const KabarDaerahPage(),
+            KabarDaerahPage(key: _newsKey),
             TransactionHistoryPage(key: _activityKey),
-            const ProfilePage(),
+            ProfilePage(key: _profileKey),
           ];
 
     return Scaffold(

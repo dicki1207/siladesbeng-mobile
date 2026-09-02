@@ -114,6 +114,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
 
   final List<String> _categories = [
     'Semua',
+    'Pasar Daerah',
     'Penyewaan',
     'Pesanan Gas',
     'Sewa Kendaraan',

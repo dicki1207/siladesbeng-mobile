@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:siladesbeng_mobile/services/auth_service.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
@@ -24,20 +25,29 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   bool _obscureText2 = true;
   final AuthService _authService = AuthService();
 
+  static const Color _primaryBlue = Color(0xFF2FA2F1);
+  static const Color _darkBlue = Color(0xFF0284C7);
+
   Future<void> _submit() async {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
     if (password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kata sandi minimal 8 karakter')),
+        const SnackBar(
+          content: Text('Kata sandi minimal 8 karakter'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Konfirmasi kata sandi tidak cocok')),
+        const SnackBar(
+          content: Text('Konfirmasi kata sandi tidak cocok'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
@@ -78,6 +88,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
           title: const Text('Gagal'),
           content: Text(result['message'] ?? 'Terjadi kesalahan sistem.'),
           actions: [
@@ -100,75 +113,193 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Buat Kata Sandi Baru',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 16.5.sp,
+            letterSpacing: 0.2,
           ),
         ),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: _primaryBlue,
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: Container(
+            padding: EdgeInsets.all(6.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(isDark ? 25 : 35),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 16.sp,
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          SizedBox(width: 48.w),
+        ],
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [_primaryBlue, _darkBlue],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRRect(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -30,
+                  right: -20,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(22),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -20,
+                  left: -15,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withAlpha(14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.lock_open_rounded,
-                size: 80,
-                color: Colors.blueAccent,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Kata Sandi Baru',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Silakan buat kata sandi baru yang kuat untuk akun Anda.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 14,
-                  height: 1.4,
+              SizedBox(height: 16.h),
+              Center(
+                child: Container(
+                  width: 84.w,
+                  height: 84.w,
+                  decoration: BoxDecoration(
+                    color: _primaryBlue.withAlpha(isDark ? 30 : 20),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 64.w,
+                      height: 64.w,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [_primaryBlue, _darkBlue],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _primaryBlue.withAlpha(isDark ? 50 : 80),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.lock_open_rounded,
+                        size: 32.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 24.h),
+              Text(
+                'Kata Sandi Baru',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Silakan buat kata sandi baru yang kuat minimal 8 karakter untuk keamanan akun Anda.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                  fontSize: 13.sp,
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: 28.h),
 
               // Field Kata Sandi Baru
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withAlpha(isDark ? 25 : 5),
                       blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
                 child: TextField(
                   controller: _passwordController,
                   obscureText: _obscureText1,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Kata Sandi Baru',
+                    labelStyle: TextStyle(
+                      color: isDark ? Colors.white70 : const Color(0xFF475569),
+                      fontSize: 13.sp,
+                    ),
                     border: InputBorder.none,
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    prefixIcon: Icon(
+                      Icons.lock_outline_rounded,
+                      color: _primaryBlue,
+                      size: 18.sp,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureText1 ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.grey,
+                        _obscureText1
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: isDark ? Colors.white38 : Colors.grey[500],
+                        size: 18.sp,
                       ),
                       onPressed: () {
                         setState(() {
@@ -176,38 +307,57 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         });
                       },
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 14.h),
 
               // Field Konfirmasi Kata Sandi Baru
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withAlpha(isDark ? 25 : 5),
                       blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
                 child: TextField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureText2,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                   decoration: InputDecoration(
                     labelText: 'Konfirmasi Kata Sandi',
+                    labelStyle: TextStyle(
+                      color: isDark ? Colors.white70 : const Color(0xFF475569),
+                      fontSize: 13.sp,
+                    ),
                     border: InputBorder.none,
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    prefixIcon: Icon(
+                      Icons.lock_reset_rounded,
+                      color: _primaryBlue,
+                      size: 18.sp,
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureText2 ? Icons.visibility_off : Icons.visibility,
-                        color: Colors.grey,
+                        _obscureText2
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: isDark ? Colors.white38 : Colors.grey[500],
+                        size: 18.sp,
                       ),
                       onPressed: () {
                         setState(() {
@@ -215,41 +365,60 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         });
                       },
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 14.h,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 28.h),
 
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [_primaryBlue, _darkBlue],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _primaryBlue.withAlpha(isDark ? 60 : 80),
+                      blurRadius: 14,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? SizedBox(
+                          height: 20.h,
+                          width: 20.h,
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Simpan Kata Sandi',
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
+                          ),
                         ),
-                      )
-                    : const Text(
-                        'Simpan Kata Sandi',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                ),
               ),
             ],
           ),

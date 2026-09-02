@@ -28,14 +28,36 @@ class _TokoChatPageState extends State<TokoChatPage> {
   final ScrollController _scrollController = ScrollController();
   bool _isTokoTyping = false;
   bool _showProductInquiryCard = true;
+  bool _isEscalated = false;
 
   late List<Map<String, dynamic>> _messages;
 
-  final List<String> _quickReplies = [
-    'Halo, apakah stok ini masih ready?',
-    'Bisa dikirim ke desa/kecamatan saya?',
-    'Berapa estimasi ongkir antar-desa?',
-    'Bisa bayar COD saat barang sampai?',
+  final List<Map<String, dynamic>> _quickReplyChips = [
+    {
+      'label': 'Chat Pengelola Toko',
+      'isEscalate': true,
+      'icon': Icons.support_agent_rounded,
+    },
+    {
+      'label': 'Stok ready?',
+      'isEscalate': false,
+      'icon': Icons.inventory_2_outlined,
+    },
+    {
+      'label': 'Kirim antar-desa?',
+      'isEscalate': false,
+      'icon': Icons.local_shipping_outlined,
+    },
+    {
+      'label': 'Estimasi ongkir?',
+      'isEscalate': false,
+      'icon': Icons.payments_outlined,
+    },
+    {
+      'label': 'Bisa bayar COD?',
+      'isEscalate': false,
+      'icon': Icons.account_balance_wallet_outlined,
+    },
   ];
 
   @override
@@ -44,14 +66,17 @@ class _TokoChatPageState extends State<TokoChatPage> {
     final timeStr = DateFormat('HH:mm').format(DateTime.now());
     _messages = [
       {
-        'id': 'msg_1',
-        'sender': 'toko',
+        'id': 'msg_welcome',
+        'sender': 'bot',
         'text':
-            'Halo! Selamat datang di layanan chat resmi ${widget.tokoName} (${widget.tokoDesa}, ${widget.tokoKecamatan}). Ada yang bisa kami bantu seputar produk atau pengiriman antar-desa kami?',
+            'Halo! Selamat datang di layanan chat Toko BUMDes ${widget.tokoDesa}. Asisten otomatis kami siap membantu pertanyaan seputar stok, ongkir, dan pengiriman antar-desa.',
         'time': timeStr,
-        'hasProduct': false,
       },
     ];
+
+    if (widget.productInquiry != null) {
+      _showProductInquiryCard = true;
+    }
   }
 
   @override
@@ -71,6 +96,24 @@ class _TokoChatPageState extends State<TokoChatPage> {
         );
       }
     });
+  }
+
+  void _escalateToPengelola() {
+    if (_isEscalated) return;
+
+    final timeStr = DateFormat('HH:mm').format(DateTime.now());
+    setState(() {
+      _isEscalated = true;
+      _messages.add({
+        'id': 'msg_sys_${DateTime.now().millisecondsSinceEpoch}',
+        'sender': 'system',
+        'text':
+            'Percakapan telah dialihkan ke Pengelola Toko BUMDes ${widget.tokoDesa}. Petugas toko akan segera membaca dan merespons pesan Anda di sini.',
+        'time': timeStr,
+      });
+    });
+
+    _scrollToBottom();
   }
 
   void _sendMessage({String? customText, Map<String, dynamic>? product}) {
@@ -97,66 +140,63 @@ class _TokoChatPageState extends State<TokoChatPage> {
     });
 
     _scrollToBottom();
-    _simulateTokoReply(text);
+
+    if (!_isEscalated) {
+      _processBotReply(text, product);
+    } else {
+      _simulateAdminReply();
+    }
   }
 
-  Future<void> _simulateTokoReply(String userQuery) async {
+  Future<void> _processBotReply(String userQuery, Map<String, dynamic>? product) async {
     setState(() => _isTokoTyping = true);
 
-    await Future.delayed(const Duration(milliseconds: 1400));
+    await Future.delayed(const Duration(milliseconds: 1000));
     if (!mounted) return;
 
-    String replyText = 'Baik Kak! ';
+    String replyText = '';
     final q = userQuery.toLowerCase();
+    bool showEscalateButton = false;
 
-    if (q.contains('berapa hari') ||
-        q.contains('berapa lama') ||
-        q.contains('kapan sampai') ||
-        q.contains('estimasi') ||
-        q.contains('sampai kapan') ||
-        q.contains('durasi')) {
-      replyText +=
-          'Untuk pengiriman kurir lokal BUMDes antar-desa biasanya sampai di hari yang sama (*Sameday*) atau maksimal 1-2 hari kerja ya Kak, tergantung jarak desa.';
-    } else if (q.contains('tidak sesuai') ||
-        q.contains('rusak') ||
-        q.contains('cacat') ||
-        q.contains('retur') ||
-        q.contains('garansi') ||
-        q.contains('komplain') ||
-        q.contains('pengembalian') ||
-        q.contains('uang kembali') ||
-        q.contains('batal')) {
-      replyText +=
-          'Jika barang tidak sesuai atau terdapat kerusakan saat diterima, Kakak bisa langsung mengajukan "Komplain & Retur" melalui menu detail transaksi. Kami menjamin penggantian barang baru atau pengembalian dana 100% aman Kak.';
+    if (product != null || q.contains('produk:') || q.contains('menanyakan tentang')) {
+      replyText =
+          'Tentu Kak! Produk tersebut saat ini tercatat ready di etalase Toko BUMDes ${widget.tokoDesa} dan siap segera dikemas.';
     } else if (q.contains('stok') || q.contains('ready') || q.contains('ada')) {
-      replyText +=
-          'Stok produk di toko BUMDes kami selalu terpantau ready dan siap segera dikemas.';
+      replyText =
+          'Stok produk di Toko BUMDes ${widget.tokoDesa} selalu terpantau aktif dan siap diproses.';
     } else if (q.contains('kirim') ||
         q.contains('kecamatan') ||
         q.contains('desa') ||
         q.contains('antar')) {
-      replyText +=
-          'Tentu bisa! Kami melayani pengiriman antar-desa dan antar-kecamatan se-Kabupaten Bengkalis dengan kurir resmi BUMDes.';
+      replyText =
+          'Tentu bisa! Kami melayani pengiriman kurir lokal antar-desa dan antar-kecamatan se-Kabupaten Bengkalis.';
     } else if (q.contains('ongkir') ||
         q.contains('tarif') ||
         q.contains('biaya')) {
-      replyText +=
-          'Ongkir dalam satu desa flat Rp 5.000 (bahkan gratis promo tertentu). Untuk antar-kecamatan sekitar Rp 10.000 - Rp 15.000 sameday.';
+      replyText =
+          'Ongkir dalam satu desa flat Rp 5.000. Untuk pengiriman antar-desa berkisar Rp 10.000 (sameday).';
     } else if (q.contains('cod') ||
         q.contains('bayar') ||
         q.contains('transfer') ||
         q.contains('qris')) {
-      replyText +=
-          'Bisa bayar COD saat kurir tiba, atau lewat QRIS dan Transfer Bank Virtual Account saat checkout.';
+      replyText =
+          'Bisa bayar COD tunai saat kurir tiba, atau lewat QRIS dan Transfer Bank Virtual Account saat checkout.';
     } else if (q.contains('alamat') ||
         q.contains('lokasi') ||
         q.contains('toko') ||
         q.contains('ambil')) {
-      replyText +=
-          'Kantor BUMDes kami berlokasi di ${widget.tokoDesa}, ${widget.tokoKecamatan}. Kakak juga bisa memilih opsi "Ambil Sendiri" saat checkout gratis tanpa ongkir.';
+      replyText =
+          'Kantor BUMDes kami berlokasi di ${widget.tokoDesa}, ${widget.tokoKecamatan}. Tersedia juga opsi Ambil Sendiri saat checkout tanpa ongkir.';
+    } else if (q.contains('rusak') ||
+        q.contains('retur') ||
+        q.contains('komplain') ||
+        q.contains('garansi')) {
+      replyText =
+          'Jika produk tidak sesuai atau terdapat kerusakan saat diterima, Kakak bisa langsung mengajukan komplain & retur di menu transaksi. Kami menjamin penggantian barang baru atau pengembalian dana 100%.';
     } else {
-      replyText +=
-          'Terima kasih sudah menghubungi toko ${widget.tokoName}. Pertanyaan atau pesanan Kakak siap kami layani dengan senang hati!';
+      replyText =
+          'Maaf Kak, asisten otomatis kami belum memahami pertanyaan tersebut. Silakan klik tombol "Chat Pengelola Toko" di bawah agar dapat tersambung langsung dengan petugas pengelola toko kami.';
+      showEscalateButton = true;
     }
 
     final timeStr = DateFormat('HH:mm').format(DateTime.now());
@@ -164,11 +204,33 @@ class _TokoChatPageState extends State<TokoChatPage> {
     setState(() {
       _isTokoTyping = false;
       _messages.add({
-        'id': 'msg_toko_${DateTime.now().millisecondsSinceEpoch}',
-        'sender': 'toko',
+        'id': 'msg_bot_${DateTime.now().millisecondsSinceEpoch}',
+        'sender': 'bot',
         'text': replyText,
         'time': timeStr,
-        'hasProduct': false,
+        'canEscalate': showEscalateButton,
+      });
+    });
+
+    _scrollToBottom();
+  }
+
+  Future<void> _simulateAdminReply() async {
+    setState(() => _isTokoTyping = true);
+
+    await Future.delayed(const Duration(milliseconds: 1800));
+    if (!mounted) return;
+
+    final timeStr = DateFormat('HH:mm').format(DateTime.now());
+
+    setState(() {
+      _isTokoTyping = false;
+      _messages.add({
+        'id': 'msg_admin_${DateTime.now().millisecondsSinceEpoch}',
+        'sender': 'admin',
+        'text':
+            'Halo, dengan Pengelola Toko BUMDes ${widget.tokoDesa} di sini. Pesan Anda telah kami terima dan kami siap membantu kebutuhan pesanan Anda.',
+        'time': timeStr,
       });
     });
 
@@ -194,7 +256,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
         });
       });
       _scrollToBottom();
-      _simulateTokoReply('kirim foto');
+      _sendMessage(customText: 'Saya mengirimkan foto barang');
     }
   }
 
@@ -209,58 +271,23 @@ class _TokoChatPageState extends State<TokoChatPage> {
     );
 
     return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xFF0F172A)
-          : const Color(0xFFF1F5F9),
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
       appBar: AppBar(
-        backgroundColor: isDark
-            ? const Color(0xFF0F172A)
-            : const Color(0xFF2563EB),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF115789),
         foregroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         titleSpacing: 0,
-        flexibleSpace: Stack(
-          fit: StackFit.expand,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDark
-                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
-                ),
-              ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFF115789), const Color(0xFF0284C7)],
             ),
-            // Glowing circle 1 (Top Right)
-            Positioned(
-              top: -30,
-              right: -20,
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withAlpha(22),
-                ),
-              ),
-            ),
-            // Glowing circle 2 (Bottom Left)
-            Positioned(
-              bottom: -25,
-              left: -15,
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withAlpha(14),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
         leading: IconButton(
           icon: const Icon(
@@ -272,7 +299,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
         ),
         title: Row(
           children: [
-            // Store Avatar with Online Dot
+            // Store Avatar with Online Indicator
             Stack(
               children: [
                 Container(
@@ -286,12 +313,20 @@ class _TokoChatPageState extends State<TokoChatPage> {
                       width: 1.5,
                     ),
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.storefront_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(19),
+                    child: widget.tokoAvatar != null
+                        ? Image.network(
+                            widget.tokoAvatar!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => const Center(
+                              child: Icon(Icons.storefront_rounded, color: Colors.white, size: 20),
+                            ),
+                          )
+                        : Image.network(
+                            'https://ui-avatars.com/api/?name=${Uri.encodeComponent(widget.tokoDesa)}&background=0284C7&color=fff&size=128',
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 Positioned(
@@ -304,9 +339,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                       color: const Color(0xFF10B981),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFF2563EB),
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFF115789),
                         width: 2,
                       ),
                     ),
@@ -315,7 +348,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
               ],
             ),
             const SizedBox(width: 10),
-            // Store Name & Location
+            // Store Name & Support Status
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +359,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                         child: Text(
                           widget.tokoName,
                           style: const TextStyle(
-                            fontSize: 14.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -336,10 +369,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                       ),
                       const SizedBox(width: 5),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1.5,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(40),
                           borderRadius: BorderRadius.circular(4),
@@ -357,8 +387,14 @@ class _TokoChatPageState extends State<TokoChatPage> {
                   ),
                   const SizedBox(height: 1),
                   Text(
-                    '${widget.tokoDesa} • ${widget.tokoKecamatan}',
-                    style: const TextStyle(fontSize: 11, color: Colors.white70),
+                    _isEscalated
+                        ? 'Terhubung dengan Pengelola Toko'
+                        : 'Resmi BUMDes • Online',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: _isEscalated ? const Color(0xFFBAE6FD) : Colors.white70,
+                      fontWeight: _isEscalated ? FontWeight.w600 : FontWeight.normal,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -367,19 +403,10 @@ class _TokoChatPageState extends State<TokoChatPage> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline_rounded, color: Colors.white),
-            tooltip: 'Profil Toko',
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
-          // 1. Pinned Product Inquiry Banner (If opened from product)
+          // 1. Pinned Product Inquiry Banner (If opened from product page)
           if (widget.productInquiry != null && _showProductInquiryCard)
             Container(
               margin: const EdgeInsets.fromLTRB(14, 10, 14, 4),
@@ -413,20 +440,14 @@ class _TokoChatPageState extends State<TokoChatPage> {
                               width: 48,
                               height: 48,
                               color: Colors.grey[200],
-                              child: const Icon(
-                                Icons.image,
-                                color: Colors.grey,
-                              ),
+                              child: const Icon(Icons.image, color: Colors.grey),
                             ),
                           )
                         : Container(
                             width: 48,
                             height: 48,
                             color: Colors.grey[200],
-                            child: const Icon(
-                              Icons.shopping_bag,
-                              color: Colors.grey,
-                            ),
+                            child: const Icon(Icons.shopping_bag, color: Colors.grey),
                           ),
                   ),
                   const SizedBox(width: 10),
@@ -461,39 +482,38 @@ class _TokoChatPageState extends State<TokoChatPage> {
                       ],
                     ),
                   ),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {
                       _sendMessage(
                         customText:
-                            'Halo, saya tertarik dengan produk ${widget.productInquiry!['nama_produk'] ?? "ini"}. Apakah stoknya ready?',
+                            'Halo, saya ingin menanyakan tentang produk: ${widget.productInquiry!['nama_produk'] ?? "ini"}. Apakah stoknya masih tersedia?',
                         product: widget.productInquiry,
                       );
                     },
+                    icon: const Icon(Icons.send_rounded, size: 13, color: Colors.white),
+                    label: const Text(
+                      'Tanya Produk',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       minimumSize: Size.zero,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text(
-                      'Kirim Info',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
+                  const SizedBox(width: 4),
                   IconButton(
                     icon: const Icon(Icons.close, size: 16),
-                    onPressed: () =>
-                        setState(() => _showProductInquiryCard = false),
+                    onPressed: () => setState(() => _showProductInquiryCard = false),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -509,10 +529,8 @@ class _TokoChatPageState extends State<TokoChatPage> {
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
-                final bool isUser = msg['sender'] == 'user';
-                return _buildMessageBubble(
+                return _buildMessageItem(
                   msg: msg,
-                  isUser: isUser,
                   isDark: isDark,
                   currencyFormat: currencyFormat,
                 );
@@ -527,10 +545,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -544,12 +559,12 @@ class _TokoChatPageState extends State<TokoChatPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Admin BUMDes sedang mengetik',
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        Text(
+                          _isEscalated ? 'Pengelola Toko sedang mengetik...' : 'Asisten Toko sedang mengetik...',
+                          style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                         const SizedBox(width: 6),
-                        SizedBox(
+                        const SizedBox(
                           width: 10,
                           height: 10,
                           child: CircularProgressIndicator(
@@ -564,36 +579,56 @@ class _TokoChatPageState extends State<TokoChatPage> {
               ),
             ),
 
-          // 4. Quick Reply Suggestions
+          // 4. Quick Reply Action Chips
           Container(
             height: 38,
             margin: const EdgeInsets.symmetric(vertical: 4),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 14),
-              itemCount: _quickReplies.length,
+              itemCount: _quickReplyChips.length,
               separatorBuilder: (context, index) => const SizedBox(width: 8),
               itemBuilder: (context, i) {
-                final reply = _quickReplies[i];
+                final chip = _quickReplyChips[i];
+                final bool isEscalateChip = chip['isEscalate'] == true;
+
                 return ActionChip(
+                  avatar: Icon(
+                    chip['icon'] as IconData,
+                    size: 14,
+                    color: isEscalateChip
+                        ? (isDark ? const Color(0xFF7DD3FC) : const Color(0xFF0369A1))
+                        : (isDark ? Colors.white70 : const Color(0xFF0369A1)),
+                  ),
                   label: Text(
-                    reply,
+                    chip['label'] as String,
                     style: TextStyle(
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white70 : const Color(0xFF0369A1),
+                      fontWeight: isEscalateChip ? FontWeight.w700 : FontWeight.w500,
+                      color: isEscalateChip
+                          ? (isDark ? const Color(0xFF7DD3FC) : const Color(0xFF0369A1))
+                          : (isDark ? Colors.white70 : const Color(0xFF0369A1)),
                     ),
                   ),
-                  backgroundColor: isDark
-                      ? const Color(0xFF1E293B)
-                      : const Color(0xFFE0F2FE),
+                  backgroundColor: isEscalateChip
+                      ? (isDark ? const Color(0xFF0369A1).withAlpha(50) : const Color(0xFFE0F2FE))
+                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isDark ? Colors.white12 : const Color(0xFFBAE6FD),
+                      color: isEscalateChip
+                          ? (isDark ? const Color(0xFF0284C7) : const Color(0xFF7DD3FC))
+                          : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                      width: isEscalateChip ? 1.5 : 1.0,
                     ),
                   ),
-                  onPressed: () => _sendMessage(customText: reply),
+                  onPressed: () {
+                    if (isEscalateChip) {
+                      _escalateToPengelola();
+                    } else {
+                      _sendMessage(customText: chip['label'] as String);
+                    }
+                  },
                 );
               },
             ),
@@ -615,7 +650,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.image_outlined,
                       color: primaryColor,
                       size: 24,
@@ -626,9 +661,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFFF1F5F9),
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(22),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -638,7 +671,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                         textInputAction: TextInputAction.send,
                         onSubmitted: (_) => _sendMessage(),
                         decoration: const InputDecoration(
-                          hintText: 'Tulis pesan ke toko BUMDes...',
+                          hintText: 'Tulis pesan ke Toko BUMDes...',
                           hintStyle: TextStyle(
                             fontSize: 12.5,
                             color: Colors.grey,
@@ -674,26 +707,65 @@ class _TokoChatPageState extends State<TokoChatPage> {
     );
   }
 
-  Widget _buildMessageBubble({
+  Widget _buildMessageItem({
     required Map<String, dynamic> msg,
-    required bool isUser,
     required bool isDark,
     required NumberFormat currencyFormat,
   }) {
-    const primaryColor = Color(0xFF0EA5E9);
+    final sender = msg['sender'];
+
+    if (sender == 'system') {
+      return Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE0F2FE),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark ? Colors.white12 : const Color(0xFFBAE6FD),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF0284C7)),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  msg['text'] ?? '',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white70 : const Color(0xFF0369A1),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final bool isUser = sender == 'user';
+    final bool isAdmin = sender == 'admin';
+    const primaryColor = Color(0xFF115789);
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.76,
+          maxWidth: MediaQuery.of(context).size.width * 0.80,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isUser
               ? primaryColor
-              : (isDark ? const Color(0xFF1E293B) : Colors.white),
+              : (isAdmin
+                  ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFF0F9FF))
+                  : (isDark ? const Color(0xFF1E293B) : Colors.white)),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -703,7 +775,9 @@ class _TokoChatPageState extends State<TokoChatPage> {
           border: isUser
               ? null
               : Border.all(
-                  color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                  color: isAdmin
+                      ? const Color(0xFFBAE6FD)
+                      : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
                 ),
           boxShadow: [
             BoxShadow(
@@ -714,10 +788,29 @@ class _TokoChatPageState extends State<TokoChatPage> {
           ],
         ),
         child: Column(
-          crossAxisAlignment: isUser
-              ? CrossAxisAlignment.end
-              : CrossAxisAlignment.start,
+          crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
+            // Admin Official Badge
+            if (isAdmin) ...[
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.verified_rounded, size: 13, color: Color(0xFF0284C7)),
+                  SizedBox(width: 4),
+                  Text(
+                    'Pengelola Toko',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0284C7),
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+
             // Attached Product Card Inside Bubble
             if (msg['product'] != null) ...[
               Container(
@@ -725,41 +818,63 @@ class _TokoChatPageState extends State<TokoChatPage> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: isUser
-                      ? Colors.white.withValues(alpha: 0.15)
-                      : (isDark
-                            ? const Color(0xFF0F172A)
-                            : const Color(0xFFF8FAFC)),
+                      ? Colors.white.withValues(alpha: 0.18)
+                      : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isUser
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                  ),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.shopping_bag_outlined,
-                      size: 20,
-                      color: Colors.white,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: msg['product']['image_url'] != null
+                          ? Image.network(
+                              msg['product']['image_url'],
+                              width: 44,
+                              height: 44,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                width: 44,
+                                height: 44,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.image, size: 20, color: Colors.grey),
+                              ),
+                            )
+                          : Container(
+                              width: 44,
+                              height: 44,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.shopping_bag_outlined, size: 20, color: Colors.grey),
+                            ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            msg['product']['nama_produk'] ?? 'Produk',
-                            style: const TextStyle(
+                            msg['product']['nama_produk'] ?? msg['product']['name'] ?? 'Produk',
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: isUser ? Colors.white : (isDark ? Colors.white : const Color(0xFF1E293B)),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 2),
                           Text(
-                            currencyFormat.format(msg['product']['harga'] ?? 0),
-                            style: const TextStyle(
+                            currencyFormat.format(
+                              msg['product']['harga'] ?? msg['product']['price'] ?? 0,
+                            ),
+                            style: TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white70,
+                              fontWeight: FontWeight.w700,
+                              color: isUser ? const Color(0xFFE0F2FE) : const Color(0xFF0284C7),
                             ),
                           ),
                         ],
@@ -789,13 +904,36 @@ class _TokoChatPageState extends State<TokoChatPage> {
               Text(
                 msg['text'],
                 style: TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 13,
                   height: 1.35,
                   color: isUser
                       ? Colors.white
                       : (isDark ? Colors.white : const Color(0xFF0F172A)),
                 ),
               ),
+
+            // Inline Escalate Button (if bot can't answer)
+            if (msg['canEscalate'] == true && !_isEscalated) ...[
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed: _escalateToPengelola,
+                icon: const Icon(Icons.support_agent_rounded, size: 14, color: Colors.white),
+                label: const Text(
+                  'Chat Pengelola Toko',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: Size.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+            ],
 
             const SizedBox(height: 4),
 
@@ -807,7 +945,9 @@ class _TokoChatPageState extends State<TokoChatPage> {
                   msg['time'] ?? '',
                   style: TextStyle(
                     fontSize: 10,
-                    color: isUser ? Colors.white70 : const Color(0xFF94A3B8),
+                    color: isUser
+                        ? Colors.white70
+                        : (isAdmin ? const Color(0xFF0284C7) : const Color(0xFF94A3B8)),
                   ),
                 ),
                 if (isUser) ...[

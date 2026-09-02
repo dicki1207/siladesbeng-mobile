@@ -46,7 +46,7 @@ class _GasPageState extends State<GasPage> {
 
   @override
   void dispose() {
-    _showcaseView.unregister();
+    // _showcaseView.unregister(); // Prevent unregister on route replace race condition
     super.dispose();
   }
 

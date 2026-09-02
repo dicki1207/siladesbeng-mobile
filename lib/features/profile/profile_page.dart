@@ -40,6 +40,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? _imagePath;
   String? _imageUrl;
   bool _isVerified = false;
+  String _userRole = 'warga';
 
   @override
   void initState() {
@@ -54,16 +55,24 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   void dispose() {
-    _showcaseView.unregister();
     super.dispose();
   }
 
   List<GlobalKey> get _activeShowcaseKeys {
+    List<GlobalKey> keys = [];
     if (_isLoggedIn) {
-      return [_keyVerification, _keyActivity, _keyRtRw, _keyEditProfile];
+      keys.addAll([_keyVerification, _keyActivity]);
+      if (_userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin') {
+        keys.add(_keyRtRw);
+      }
+      keys.add(_keyEditProfile);
     } else {
-      return [_keyActivity, _keyRtRw];
+      keys.add(_keyActivity);
+      if (_userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin') {
+        keys.add(_keyRtRw);
+      }
     }
+    return keys;
   }
 
   Future<void> _checkAndStartShowcase(
@@ -109,6 +118,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _imagePath = prefs.getString('profile_image');
       _imageUrl = prefs.getString('profile_image_url');
       _isVerified = prefs.getBool('is_verified') ?? false;
+      _userRole = prefs.getString('user_role') ?? 'warga';
     });
 
     // Verifikasi token ke server di latar belakang
@@ -159,6 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
           await prefs.setString('profile_nik', userNik);
           await prefs.setString('profile_address', userAddress);
           await prefs.setBool('is_verified', isVerified);
+          await prefs.setString('user_role', user['role'] ?? 'warga');
 
           if (data['data']['avatar_url'] != null) {
             await prefs.setString(
@@ -174,6 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
               _nik = userNik;
               _address = userAddress;
               _isVerified = isVerified;
+              _userRole = user['role'] ?? _userRole;
               if (data['data']['avatar_url'] != null) {
                 _imageUrl = data['data']['avatar_url'];
               }
@@ -1166,24 +1178,25 @@ class _ProfilePageState extends State<ProfilePage> {
                         isLast: false,
                       ),
                     ),
-                    Showcase(
-                      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
-                      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
-                      key: _keyRtRw,
-                      title: 'Portal Pengurus RT / RW',
-                      description:
-                          'Layanan administrasi dan persetujuan permohonan warga bagi pengurus RT dan RW.',
-                      child: _buildMenuTile(
-                        context,
-                        icon: Icons.admin_panel_settings_rounded,
+                    if (_userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin')
+                      Showcase(
+                        titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                        descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
+                        key: _keyRtRw,
                         title: 'Portal Pengurus RT / RW',
-                        subtitle: 'Layanan administrasi & pengurus wilayah',
-                        targetPage: const AdminPortalPage(),
-                        iconColor: Colors.teal[600],
-                        isFirst: false,
-                        isLast: false,
+                        description:
+                            'Layanan administrasi dan persetujuan permohonan warga bagi pengurus RT dan RW.',
+                        child: _buildMenuTile(
+                          context,
+                          icon: Icons.admin_panel_settings_rounded,
+                          title: 'Portal Pengurus RT / RW',
+                          subtitle: 'Layanan administrasi & pengurus wilayah',
+                          targetPage: const AdminPortalPage(),
+                          iconColor: Colors.teal[600],
+                          isFirst: false,
+                          isLast: false,
+                        ),
                       ),
-                    ),
                     if (_isVerified)
                       _buildMenuTile(
                         context,

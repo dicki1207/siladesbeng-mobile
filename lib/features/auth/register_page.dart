@@ -399,12 +399,12 @@ class _RegisterPageState extends State<RegisterPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Buat Akun Baru',
+              'Daftar Akun Baru',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Masukkan data diri Anda dengan benar.',
+              'Silakan lengkapi data diri Anda di bawah ini dengan benar.',
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
