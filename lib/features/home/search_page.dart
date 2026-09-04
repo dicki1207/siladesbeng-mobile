@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/gas/gas_page.dart';
 import 'package:siladesbeng_mobile/features/report/report_page.dart';
@@ -318,7 +319,7 @@ class _SearchPageState extends State<SearchPage> {
                                       item['imageUrl'].toString().startsWith(
                                         'http',
                                       )
-                                  ? Image.network(
+                                  ? CustomCachedImage(
                                       item['imageUrl'],
                                       width: 30,
                                       height: 30,
@@ -378,7 +379,7 @@ class _SearchPageState extends State<SearchPage> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: item['image'] != null
-                                  ? Image.network(
+                                  ? CustomCachedImage(
                                       item['image'],
                                       width: 60,
                                       height: 60,
@@ -460,7 +461,7 @@ class _SearchPageState extends State<SearchPage> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: item['image'] != null
-                                  ? Image.network(
+                                  ? CustomCachedImage(
                                       item['image'],
                                       width: 60,
                                       height: 60,

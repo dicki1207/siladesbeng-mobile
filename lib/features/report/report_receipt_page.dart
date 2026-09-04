@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -543,7 +544,7 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
        maxScale: 4.0,
        child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: Image.network(
+        child: CustomCachedImage(
          imageUrl,
          fit: BoxFit.contain,
          loadingBuilder: (c, child, progress) {
@@ -1059,7 +1060,7 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
                      width: 130,
                      height: 110,
                      color: isDark ? Colors.black26 : Colors.grey[200],
-                     child: Image.network(
+                     child: CustomCachedImage(
                       imgUrl,
                       fit: BoxFit.cover,
                       loadingBuilder: (c, child, progress) {

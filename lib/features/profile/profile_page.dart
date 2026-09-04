@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -542,16 +543,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 )
                               : (_imageUrl != null)
-                              ? Image.network(
-                                  _imageUrl!,
+                              ? CachedNetworkImage(
+                                  imageUrl: _imageUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => Icon(
-                                    Icons.person,
-                                    size: 40.sp,
-                                    color: isDark
-                                        ? Colors.white38
-                                        : Colors.grey[400],
-                                  ),
+                                  memCacheWidth: 500,
+                                  placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                  errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                                 )
                               : Icon(
                                   Icons.person,
@@ -753,11 +750,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                     Icon(Icons.person, size: 30.sp),
                               )
                             : (_imageUrl != null)
-                            ? Image.network(
-                                _imageUrl!,
+                            ? CachedNetworkImage(
+                                imageUrl: _imageUrl!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) =>
-                                    Icon(Icons.person, size: 30.sp),
+                                memCacheWidth: 500,
+                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                               )
                             : Icon(Icons.person, size: 30.sp),
                       ),
@@ -1272,6 +1270,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       isFirst: false,
                       isLast: true,
                     ),
+
                   ]),
                   SizedBox(height: 40.h),
 

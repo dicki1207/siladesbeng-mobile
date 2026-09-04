@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
@@ -283,14 +284,12 @@ class _CartPageState extends State<CartPage> {
                     height: 70,
                     color: Colors.grey[200],
                     child: (item['image_url'] != null)
-                        ? Image.network(
-                            item['image_url'],
+                        ? CachedNetworkImage(
+                            imageUrl: item['image_url'],
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
-                                  Icons.image_not_supported,
-                                  color: Colors.grey,
-                                ),
+                            memCacheWidth: 500,
+                            placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                            errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                           )
                         : const Icon(
                             Icons.image_not_supported,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:siladesbeng_mobile/widgets/ticket_card.dart';
 
@@ -109,7 +110,7 @@ class GasReceiptPage extends StatelessWidget {
                   // Logo
                   Row(
                     children: [
-                      Image.network(
+                      CustomCachedImage(
                         'http://10.121.197.148:8000/assets/img/logo.png', // Fallback
                         height: 40,
                         errorBuilder: (c, e, s) => const Icon(

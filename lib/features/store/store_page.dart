@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -1499,20 +1500,14 @@ class _StorePageState extends State<StorePage> {
                       top: Radius.circular(16.r),
                     ),
                     child: imageUrl != null
-                        ? Image.network(
-                            imageUrl,
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => Container(
-                              color: isDark
-                                  ? const Color(0xFF0F172A)
-                                  : Colors.grey[200],
-                              child: const Icon(
-                                Icons.shopping_bag_outlined,
-                                color: Colors.grey,
-                              ),
-                            ),
+                            memCacheWidth: 500,
+                            placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                            errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                           )
                         : Container(
                             color: isDark

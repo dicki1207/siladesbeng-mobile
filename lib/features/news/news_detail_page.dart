@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 
 class NewsDetailPage extends StatelessWidget {
   final Map<String, dynamic> newsItem;
@@ -34,7 +35,7 @@ class NewsDetailPage extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
+                  CustomCachedImage(
                     newsItem['image']?.toString() ?? '',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(

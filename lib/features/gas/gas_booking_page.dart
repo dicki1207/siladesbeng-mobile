@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -1403,7 +1404,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
                               color: Colors.grey[400],
                             ),
                           )
-                        : Image.network(
+                        : CustomCachedImage(
                             imageUrl,
                             fit: BoxFit.contain,
                             errorBuilder: (_, _, _) => Icon(

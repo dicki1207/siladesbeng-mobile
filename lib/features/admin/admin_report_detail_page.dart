@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -491,7 +492,7 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                 padding: EdgeInsets.only(bottom: 8.h),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12.r),
-                  child: Image.network(
+                  child: CustomCachedImage(
                     url,
                     height: 180.h,
                     width: double.infinity,

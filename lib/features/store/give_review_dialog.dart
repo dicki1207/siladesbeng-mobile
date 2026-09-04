@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
@@ -194,7 +195,7 @@ class _GiveReviewDialogState extends State<GiveReviewDialog> {
          ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: widget.productImage != null
-            ? Image.network(
+            ? CustomCachedImage(
               widget.productImage!,
               width: 46,
               height: 46,

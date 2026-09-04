@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -957,7 +958,7 @@ class _ReportPageState extends State<ReportPage> {
                   backgroundColor: primaryColor,
                   child: ClipOval(
                     child: _userAvatarUrl != null
-                        ? Image.network(
+                        ? CustomCachedImage(
                             _userAvatarUrl!,
                             width: 40,
                             height: 40,

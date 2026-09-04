@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
@@ -57,6 +58,7 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
   final TextEditingController _bankAccountController = TextEditingController();
   String _selectedBank = 'Transfer Bank (BRI)';
   final List<String> _evidencePhotos = [];
+  String? _evidenceVideo;
   bool _isSubmitting = false;
 
   final List<String> _reasons = [
@@ -84,10 +86,10 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
   }
 
   Future<void> _pickImage() async {
-    if (_evidencePhotos.length >= 3) {
+    if (_evidencePhotos.length >= 5) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Maksimal 3 foto bukti.'),
+          content: Text('Wajib minimal 5 foto bukti.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -100,6 +102,32 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
     );
     if (image != null) {
       setState(() => _evidencePhotos.add(image.path));
+    }
+  }
+
+  
+  Future<void> _pickVideo() async {
+    final picker = ImagePicker();
+    final video = await picker.pickVideo(
+      source: ImageSource.gallery,
+      maxDuration: const Duration(minutes: 1),
+    );
+    if (video != null) {
+      final file = File(video.path);
+      final sizeInBytes = await file.length();
+      if (!mounted) return;
+      final sizeInMb = sizeInBytes / (1024 * 1024);
+      if (sizeInMb > 30) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ukuran video maksimal 30MB.'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      setState(() => _evidenceVideo = video.path);
     }
   }
 
@@ -122,6 +150,20 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
         ),
+      );
+      return;
+    }
+
+    
+    if (_evidencePhotos.length < 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mohon unggah minimal 5 foto bukti.'), backgroundColor: Colors.redAccent),
+      );
+      return;
+    }
+    if (_evidenceVideo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mohon unggah 1 video bukti.'), backgroundColor: Colors.redAccent),
       );
       return;
     }
@@ -274,7 +316,7 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: widget.productImage != null
-                        ? Image.network(
+                        ? CustomCachedImage(
                             widget.productImage!,
                             width: 48,
                             height: 48,
@@ -616,7 +658,7 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
 
             // 4. Evidence Photos
             Text(
-              '4. Unggah Foto Bukti Barang (Maks. 3)',
+              '4. Unggah Foto Bukti Barang (Minimal 5)',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -709,6 +751,75 @@ class _ReturnRefundDialogState extends State<ReturnRefundDialog> {
                     ),
                   ),
                 ),
+              ],
+            ),
+
+            
+            const SizedBox(height: 14),
+            Text(
+              '5. Unggah Video Bukti Barang (Wajib 1 Video)',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: _pickVideo,
+                  child: Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark ? Colors.white12 : const Color(0xFFCBD5E1),
+                      ),
+                    ),
+                    child: const Icon(Icons.video_call_outlined, size: 24, color: Colors.redAccent),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                if (_evidenceVideo != null)
+                  Expanded(
+                    child: Container(
+                      height: 58,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withAlpha(25),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.green),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _evidenceVideo!.split('/').last,
+                              style: const TextStyle(fontSize: 12, color: Colors.green),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                            onPressed: () => setState(() => _evidenceVideo = null),
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: Text(
+                      'Maksimal 1 menit (Maks. 30MB)',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ),
               ],
             ),
 

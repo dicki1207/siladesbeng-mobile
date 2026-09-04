@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -894,29 +895,12 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                     padding: EdgeInsets.all(8.0.w),
                     child: item['image'] != null
                         ? (item['image'].toString().startsWith('http')
-                              ? Image.network(
-                                  item['image'],
-                                  errorBuilder: (_, _, _) {
-                                    String fb = 'assets/images/F2.png';
-                                    final img = item['image'].toString();
-                                    if (img.contains('F1')) {
-                                      fb = 'assets/images/F1.png';
-                                    } else if (img.contains('mobil')) {
-                                      fb = 'assets/images/mobil.png';
-                                    } else if (img.contains('fasilitas')) {
-                                      fb = 'assets/images/fasilitas.png';
-                                    } else if (img.contains('lapor')) {
-                                      fb = 'assets/images/lapor.png';
-                                    }
-                                    return Image.asset(
-                                      fb,
-                                      errorBuilder: (_, _, _) => Icon(
-                                        Icons.apps_rounded,
-                                        color: primaryColor,
-                                        size: 24.sp,
-                                      ),
-                                    );
-                                  },
+                              ? CachedNetworkImage(
+                                  imageUrl: item['image'],
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 500,
+                                  placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                  errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                                 )
                               : Image.asset(
                                   item['image'],

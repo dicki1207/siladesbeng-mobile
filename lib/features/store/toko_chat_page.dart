@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -316,14 +317,14 @@ class _TokoChatPageState extends State<TokoChatPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(19),
                     child: widget.tokoAvatar != null
-                        ? Image.network(
+                        ? CustomCachedImage(
                             widget.tokoAvatar!,
                             fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => const Center(
                               child: Icon(Icons.storefront_rounded, color: Colors.white, size: 20),
                             ),
                           )
-                        : Image.network(
+                        : CustomCachedImage(
                             'https://ui-avatars.com/api/?name=${Uri.encodeComponent(widget.tokoDesa)}&background=0284C7&color=fff&size=128',
                             fit: BoxFit.cover,
                           ),
@@ -431,7 +432,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: widget.productInquiry!['image_url'] != null
-                        ? Image.network(
+                        ? CustomCachedImage(
                             widget.productInquiry!['image_url'],
                             width: 48,
                             height: 48,
@@ -832,7 +833,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: msg['product']['image_url'] != null
-                          ? Image.network(
+                          ? CustomCachedImage(
                               msg['product']['image_url'],
                               width: 44,
                               height: 44,

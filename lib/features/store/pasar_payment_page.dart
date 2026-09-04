@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
@@ -249,7 +250,7 @@ class _PasarPaymentPageState extends State<PasarPaymentPage> {
             if (widget.paymentQrUrl != null && widget.paymentQrUrl!.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
-                child: Image.network(
+                child: CustomCachedImage(
                   widget.paymentQrUrl!,
                   height: 180,
                   width: 180,

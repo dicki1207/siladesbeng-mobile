@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
@@ -354,7 +355,7 @@ class _PasarFavoritePageState extends State<PasarFavoritePage>
               top: Radius.circular(16),
              ),
              child: imageUrl != null
-               ? Image.network(
+               ? CustomCachedImage(
                  imageUrl,
                  width: double.infinity,
                  height: double.infinity,

@@ -171,6 +171,7 @@ class PasarProductService {
     String? bankAccountNumber,
     String? bankAccountName,
     List<String> evidencePhotoPaths = const [],
+    String? evidenceVideoPath,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -200,7 +201,7 @@ class PasarProductService {
         request.fields['bank_account_name'] = bankAccountName;
       }
 
-      for (int i = 0; i < evidencePhotoPaths.length && i < 3; i++) {
+      for (int i = 0; i < evidencePhotoPaths.length && i < 5; i++) {
         final path = evidencePhotoPaths[i];
         if (path.isNotEmpty) {
           request.files.add(
@@ -209,7 +210,14 @@ class PasarProductService {
         }
       }
 
-      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      if (evidenceVideoPath != null && evidenceVideoPath.isNotEmpty) {
+        request.files.add(
+          await http.MultipartFile.fromPath('evidence_video', evidenceVideoPath),
+        );
+      }
+
+      // 60 seconds timeout to allow video upload
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 60));
       final response = await http.Response.fromStream(streamedResponse);
 
       final data = json.decode(response.body);

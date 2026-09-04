@@ -384,6 +384,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
 
           if (_livenessStep >= 4) {
             _cameraController?.stopImageStream().then((_) async {
+              // Beri jeda agar hardware kamera benar-benar berhenti dari mode stream
+              // sebelum mengambil foto resolusi tinggi, mencegah CameraException di Android.
+              await Future.delayed(const Duration(milliseconds: 500));
               String? imagePath;
               try {
                 final file = await _cameraController?.takePicture();

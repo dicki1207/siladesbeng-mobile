@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
@@ -141,18 +142,12 @@ class _PasarDetailPageState extends State<PasarDetailPage>
         borderRadius: BorderRadius.circular(16),
         child: imageSource.startsWith('assets/')
           ? Image.asset(imageSource, fit: BoxFit.contain)
-          : Image.network(
-            imageSource,
+          : CachedNetworkImage(
+            imageUrl: imageSource,
             fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => Container(
-             color: Colors.black54,
-             padding: const EdgeInsets.all(40),
-             child: const Icon(
-              Icons.broken_image,
-              color: Colors.white,
-              size: 40,
-             ),
-            ),
+            memCacheWidth: 500,
+            placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+            errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
            ),
        ),
       ),
@@ -351,18 +346,12 @@ class _PasarDetailPageState extends State<PasarDetailPage>
            itemBuilder: (context, index) {
             return GestureDetector(
              onTap: () => _showImageZoomDialog(_images[index]),
-             child: Image.network(
-              _images[index],
+             child: CachedNetworkImage(
+              imageUrl: _images[index],
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                Container(
-                 color: Colors.grey[200],
-                 child: Icon(
-                  Icons.storefront,
-                  size: 60,
-                  color: Colors.grey[400],
-                 ),
-                ),
+              memCacheWidth: 500,
+              placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+              errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
              ),
             );
            },
@@ -579,14 +568,12 @@ class _PasarDetailPageState extends State<PasarDetailPage>
            child: ClipRRect(
             borderRadius: BorderRadius.circular(13),
             child: (_seller != null && _seller!['avatar'] != null && _seller!['avatar'].toString().isNotEmpty)
-              ? Image.network(
-                _seller!['avatar'],
+              ? CachedNetworkImage(
+                imageUrl: _seller!['avatar'],
                 fit: BoxFit.cover,
-                errorBuilder: (ctx, err, stack) => const Icon(
-                 Icons.storefront_rounded,
-                 color: Color(0xFF0EA5E9),
-                 size: 26,
-                ),
+                memCacheWidth: 500,
+                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                )
               : const Icon(
                 Icons.storefront_rounded,
@@ -1491,20 +1478,14 @@ class _PasarDetailPageState extends State<PasarDetailPage>
         top: Radius.circular(12),
        ),
        child: imageUrl != null
-         ? Image.network(
-           imageUrl,
+         ? CachedNetworkImage(
+           imageUrl: imageUrl,
            width: 135,
            height: 95,
            fit: BoxFit.cover,
-           errorBuilder: (_, _, _) => Container(
-            width: 135,
-            height: 95,
-            color: Colors.grey[200],
-            child: const Icon(
-             Icons.shopping_bag,
-             color: Colors.grey,
-            ),
-           ),
+           memCacheWidth: 500,
+           placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+           errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
           )
          : Container(
            width: 135,

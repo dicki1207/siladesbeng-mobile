@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
@@ -668,19 +669,14 @@ class _NotificationPageState extends State<NotificationPage> {
                       ],
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: Image.network(
-                      imageUrl,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
                       width: 58,
                       height: 58,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: typeDetails['lightBg'] as Color,
-                        child: Icon(
-                          typeDetails['icon'] as IconData,
-                          color: typeDetails['textColor'] as Color,
-                          size: 26.sp,
-                        ),
-                      ),
+                      memCacheWidth: 500,
+                      placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                      errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                     ),
                   )
                 else

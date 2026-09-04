@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProductCardWidget extends StatelessWidget {
   final String title;
@@ -85,10 +86,18 @@ class ProductCardWidget extends StatelessWidget {
                                     color: isDark ? Colors.white38 : Colors.grey,
                                   ),
                                 )
-                              : Image.network(
-                                  imageUrl,
+                              : CachedNetworkImage(
+                                  imageUrl: imageUrl,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (ctx, err, stack) => Icon(
+                                  memCacheWidth: 400,
+                                  placeholder: (ctx, url) => const Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  ),
+                                  errorWidget: (ctx, url, err) => Icon(
                                     Icons.image_not_supported_outlined,
                                     color: isDark ? Colors.white38 : Colors.grey,
                                   ),

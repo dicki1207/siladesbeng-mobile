@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -950,7 +951,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
                         top: Radius.circular(15.r),
                       ),
                       child: hasValidNetworkImage
-                          ? Image.network(
+                          ? CustomCachedImage(
                               rawImageUrl,
                               fit: BoxFit.cover,
                               errorBuilder: (_, _, _) =>

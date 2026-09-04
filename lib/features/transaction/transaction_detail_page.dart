@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -881,14 +882,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
               child: _tx['image'] != null && _tx['image'].toString().startsWith('http')
-                  ? Image.network(
-                      _tx['image'],
+                  ? CachedNetworkImage(
+                      imageUrl: _tx['image'],
                       fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, stack) => Icon(
-                        Icons.shopping_bag_outlined,
-                        size: 36.sp,
-                        color: const Color(0xFF0EA5E9),
-                      ),
+                      memCacheWidth: 500,
+                      placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                      errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                     )
                   : Image.asset(
                       _tx['image'] ?? 'assets/images/pasar.png',
@@ -1303,14 +1302,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                         height: 46.h,
                         color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
                         child: img != null && img.toString().startsWith('http')
-                            ? Image.network(
-                                img,
+                            ? CachedNetworkImage(
+                                imageUrl: img,
                                 fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, stack) => Icon(
-                                  Icons.shopping_bag_outlined,
-                                  color: Colors.grey[400],
-                                  size: 20.sp,
-                                ),
+                                memCacheWidth: 500,
+                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                               )
                             : Icon(
                                 Icons.shopping_bag_outlined,
@@ -1464,17 +1461,14 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           SizedBox(height: 12.h),
           ClipRRect(
             borderRadius: BorderRadius.circular(12.r),
-            child: Image.network(
-              imgUrl,
+            child: CachedNetworkImage(
+              imageUrl: imgUrl,
               width: double.infinity,
               height: 160.h,
               fit: BoxFit.cover,
-              errorBuilder: (ctx, err, stack) => Container(
-                height: 100.h,
-                color: isDark ? Colors.white10 : Colors.grey[200],
-                alignment: Alignment.center,
-                child: const Text('Foto bukti tersimpan di sistem'),
-              ),
+              memCacheWidth: 500,
+              placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+              errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
             ),
           ),
         ],

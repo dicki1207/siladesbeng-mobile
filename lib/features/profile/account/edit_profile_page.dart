@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -970,7 +971,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: _imageFile != null
                           ? Image.file(_imageFile!, fit: BoxFit.cover)
                           : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
-                              ? Image.network(
+                              ? CustomCachedImage(
                                   _avatarUrl!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) => Icon(

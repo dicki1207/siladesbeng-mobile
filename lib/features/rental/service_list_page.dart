@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
@@ -6,6 +7,7 @@ import 'item_detail_page.dart';
 import 'tool_package_booking_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 import '../../widgets/product_card_widget.dart';
+import '../common/unit_service_chat_page.dart';
 
 class ServiceListPage extends StatefulWidget {
   const ServiceListPage({super.key});
@@ -96,6 +98,27 @@ class _ServiceListPageState extends State<ServiceListPage> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: Colors.white,
+              size: 20.sp,
+            ),
+            tooltip: 'Chat Sewa Alat',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UnitServiceChatPage(
+                    serviceType: 'penyewaan',
+                    title: 'Chat Sewa Alat',
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchRentals,
@@ -249,15 +272,14 @@ class _ServiceListPageState extends State<ServiceListPage> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Image.network(
-                                'http://10.121.197.148:8000/User/img/elemen/F1.png',
+                              CachedNetworkImage(
+                                imageUrl: 'http://10.121.197.148:8000/User/img/elemen/F1.png',
                                 width: 150,
                                 height: 150,
-                                errorBuilder: (ctx, err, stack) => Icon(
-                                  Icons.inventory_2,
-                                  size: 100.sp,
-                                  color: Colors.blue[600],
-                                ),
+                                fit: BoxFit.cover,
+                                memCacheWidth: 500,
+                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                               ),
                               SizedBox(height: 20.h),
                               Text(

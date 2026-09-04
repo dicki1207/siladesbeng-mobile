@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -201,16 +202,14 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
-    return Image.network(
-      cleanPath,
+    return CachedNetworkImage(
+      imageUrl: cleanPath,
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (c, e, s) => Icon(
-        Icons.broken_image,
-        size: width != null ? width * 0.7 : 40,
-        color: Colors.grey.withAlpha(100),
-      ),
+      memCacheWidth: 500,
+      placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+      errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
     );
   }
 
@@ -705,16 +704,14 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                             child: ClipOval(
-                              child: Image.network(
-                                '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
+                              child: CachedNetworkImage(
+                                imageUrl: '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, stack) => Icon(
-                                  Icons.smart_toy,
-                                  size: 50.sp,
-                                  color: Colors.blueAccent,
-                                ),
+                                memCacheWidth: 500,
+                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                               ),
                             ),
                           ),
@@ -798,16 +795,14 @@ class _HomePageState extends State<HomePage> {
                           ),
                         )
                       : (_isLoggedIn && _userImageUrl != null)
-                      ? Image.network(
-                          _userImageUrl!,
+                      ? CachedNetworkImage(
+                          imageUrl: _userImageUrl!,
                           width: 40,
                           height: 40,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: 22.sp,
-                          ),
+                          memCacheWidth: 500,
+                          placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                          errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                         )
                       : Icon(Icons.person, color: Colors.white, size: 22.sp),
                 ),
@@ -922,93 +917,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFallbackBanner() {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 5.0.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.r),
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF1E3A8A), const Color(0xFF0F172A)]
-              : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).primaryColor.withAlpha(50),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -20,
-            bottom: -20,
-            child: Icon(
-              Icons.account_balance_rounded,
-              size: 130.sp,
-              color: Colors.white.withAlpha(30),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(18.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(40),
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Text(
-                    'PORTAL LAYANAN DESA',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  'Sila DesBeng Digital',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Pelayanan administrasi cepat, transparan & terpadu.',
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(220),
-                    fontSize: 12.sp,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildHeroBanner() {
     // 2 banner statis dari web (sama seperti beranda web)
     final List<String> staticBanners = [
@@ -1060,12 +968,14 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20.r),
-                  child: Image.network(
-                    imageUrl,
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
                     fit: BoxFit.fill,
                     width: double.infinity,
                     height: double.infinity,
-                    errorBuilder: (ctx, err, stack) => _buildFallbackBanner(),
+                    memCacheWidth: 500,
+                    placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                    errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                   ),
                 ),
               );
@@ -1266,15 +1176,12 @@ class _HomePageState extends State<HomePage> {
                           border: Border.all(color: cardColor.withAlpha(50)),
                         ),
                         child: imgPath.startsWith('http')
-                            ? Image.network(
-                                imgPath,
+                            ? CachedNetworkImage(
+                                imageUrl: imgPath,
                                 fit: BoxFit.contain,
-                                errorBuilder: (_, _, _) => Image.asset(
-                                  fallbackAsset,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, _, _) =>
-                                      Icon(Icons.apps, color: cardColor),
-                                ),
+                                memCacheWidth: 500,
+                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                               )
                             : Image.asset(
                                 imgPath,
@@ -1405,15 +1312,12 @@ class _HomePageState extends State<HomePage> {
                                       borderRadius: BorderRadius.vertical(
                                         top: Radius.circular(16.r),
                                       ),
-                                      child: Image.network(
-                                        imageUrl,
+                                      child: CachedNetworkImage(
+                                        imageUrl: imageUrl,
                                         fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                const Icon(
-                                                  Icons.storefront,
-                                                  color: Colors.grey,
-                                                ),
+                                        memCacheWidth: 500,
+                                        placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                        errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                                       ),
                                     )
                                   : const Icon(

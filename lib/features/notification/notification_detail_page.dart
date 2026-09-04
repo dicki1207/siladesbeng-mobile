@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/features/notification/models/notification_model.dart';
 
@@ -106,7 +107,7 @@ class NotificationDetailPage extends StatelessWidget {
               maxScale: 4.0,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.network(
+                child: CustomCachedImage(
                   imageUrl,
                   fit: BoxFit.contain,
                   loadingBuilder: (context, child, loadingProgress) {
@@ -428,7 +429,7 @@ class NotificationDetailPage extends StatelessWidget {
                         child: Stack(
                           alignment: Alignment.bottomRight,
                           children: [
-                            Image.network(
+                            CustomCachedImage(
                               imageUrl,
                               width: double.infinity,
                               fit: BoxFit.cover,

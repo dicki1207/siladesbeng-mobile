@@ -7,6 +7,7 @@ import 'rental_booking_page.dart';
 import 'item_detail_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 import '../../widgets/product_card_widget.dart';
+import '../common/unit_service_chat_page.dart';
 
 class CarRentalPage extends StatefulWidget {
   const CarRentalPage({super.key});
@@ -151,6 +152,21 @@ class _CarRentalPageState extends State<CarRentalPage> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white),
+            tooltip: 'Chat Sewa Mobil',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UnitServiceChatPage(
+                    serviceType: 'mobil',
+                    title: 'Chat Sewa Mobil',
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
             tooltip: 'Panduan Sewa Kendaraan',

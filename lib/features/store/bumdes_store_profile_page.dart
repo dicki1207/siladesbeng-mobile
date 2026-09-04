@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:intl/intl.dart';
 import 'pasar_detail_page.dart';
 import 'toko_chat_page.dart';
@@ -246,7 +247,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
          ),
          if (_bannerUrl != null && _bannerUrl!.isNotEmpty) ...[
           Positioned.fill(
-           child: Image.network(
+           child: CustomCachedImage(
             _bannerUrl!,
             fit: BoxFit.cover,
             errorBuilder: (ctx, err, stack) => const SizedBox.shrink(),
@@ -319,7 +320,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
              ),
              child: ClipOval(
               child: _avatarUrl != null && _avatarUrl!.isNotEmpty
-                ? Image.network(
+                ? CustomCachedImage(
                   _avatarUrl!,
                   fit: BoxFit.cover,
                   errorBuilder: (ctx, err, stack) => const Center(
@@ -330,7 +331,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
                    ),
                   ),
                  )
-                : Image.network(
+                : CustomCachedImage(
                   'https://ui-avatars.com/api/?name=${Uri.encodeComponent(widget.desaName)}&background=0284C7&color=fff&size=128',
                   fit: BoxFit.cover,
                  ),
@@ -825,7 +826,7 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
          top: Radius.circular(14),
         ),
         child: imageUrl != null
-          ? Image.network(
+          ? CustomCachedImage(
             imageUrl,
             width: double.infinity,
             height: double.infinity,

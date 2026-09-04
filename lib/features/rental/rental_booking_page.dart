@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -839,7 +840,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                     child:
                         (widget.item['image'] != null &&
                             widget.item['image'].toString().isNotEmpty)
-                        ? Image.network(
+                        ? CustomCachedImage(
                             widget.item['image'],
                             fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => Icon(

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/services/news_service.dart';
@@ -534,27 +535,14 @@ class _NewsPageState extends State<NewsPage> {
                     borderRadius: BorderRadius.circular(12),
                     child: Stack(
                       children: [
-                        Image.network(
-                          news['image']?.toString() ?? '',
+                        CachedNetworkImage(
+                          imageUrl: news['image']?.toString() ?? '',
                           height: 95,
                           width: 95,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 95,
-                              width: 95,
-                              color: isDark
-                                  ? Colors.grey[800]
-                                  : primaryColor.withValues(alpha: 0.08),
-                              child: Icon(
-                                isBerita
-                                    ? Icons.newspaper_rounded
-                                    : Icons.campaign_rounded,
-                                color: primaryColor.withValues(alpha: 0.5),
-                                size: 30,
-                              ),
-                            );
-                          },
+                          memCacheWidth: 500,
+                          placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                          errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                         ),
                       ],
                     ),

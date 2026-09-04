@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
@@ -196,7 +197,7 @@ class ItemDetailPage extends StatelessWidget {
                                 color: Colors.grey[400],
                               ),
                             )
-                          : Image.network(
+                          : CustomCachedImage(
                               imageUrl,
                               fit: BoxFit.contain,
                               errorBuilder: (_, _, _) => Icon(

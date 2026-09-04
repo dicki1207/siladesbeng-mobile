@@ -1,4 +1,5 @@
 import 'package:siladesbeng_mobile/core/api_config.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -233,7 +234,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       child:
                           (item['image'] != null &&
                               item['image'].toString().isNotEmpty)
-                          ? Image.network(
+                          ? CustomCachedImage(
                               item['image'],
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
@@ -1003,7 +1004,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                       child:
                           (item['image'] != null &&
                               item['image'].toString().isNotEmpty)
-                          ? Image.network(
+                          ? CustomCachedImage(
                               item['image'].toString(),
                               fit: BoxFit.cover,
                               errorBuilder: (_, _, _) => Icon(

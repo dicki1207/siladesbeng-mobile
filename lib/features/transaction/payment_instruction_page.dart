@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
@@ -275,7 +276,7 @@ class _PaymentInstructionPageState extends State<PaymentInstructionPage> {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 10.h),
-                      Image.network(
+                      CustomCachedImage(
                         qrUrl,
                         height: 200,
                         width: 200,

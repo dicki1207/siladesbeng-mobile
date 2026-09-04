@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
@@ -362,11 +363,11 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                           child:
                               (_adminAvatar != null &&
                                   _adminAvatar!.trim().isNotEmpty)
-                              ? Image.network(
+                              ? CustomCachedImage(
                                   _adminAvatar!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      Image.network(
+                                      CustomCachedImage(
                                         'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_adminName)}&background=2563EB&color=fff&size=128',
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, _, _) => const Center(
@@ -394,7 +395,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                                         );
                                       },
                                 )
-                              : Image.network(
+                              : CustomCachedImage(
                                   'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_adminName)}&background=2563EB&color=fff&size=128',
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, _, _) => const Center(

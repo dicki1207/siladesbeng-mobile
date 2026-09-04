@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -215,7 +216,7 @@ class _AllServicesPageState extends State<AllServicesPage> {
                     width: double.infinity,
                     color: Colors.white,
                     padding: const EdgeInsets.all(12),
-                    child: Image.network(
+                    child: CustomCachedImage(
                       item['image'] ?? '',
                       fit: BoxFit.contain,
                       errorBuilder: (c, e, s) => Icon(
