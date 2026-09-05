@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/services/event_service.dart';
 
 class EventGotongRoyongPage extends StatefulWidget {
@@ -89,6 +91,30 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
     _loadEvents();
   }
 
+  String? _resolvePosterUrl(dynamic raw) {
+    if (raw == null || raw.toString().trim().isEmpty) return null;
+    final str = raw.toString().trim();
+    if (str.startsWith('http://') || str.startsWith('https://')) {
+      final uri = Uri.tryParse(str);
+      if (uri != null && (uri.host == 'localhost' || uri.host == '127.0.0.1')) {
+        final baseUri = Uri.parse(ApiConfig.baseUrl);
+        return uri
+            .replace(
+              scheme: baseUri.scheme,
+              host: baseUri.host,
+              port: baseUri.port,
+            )
+            .toString();
+      }
+      return str;
+    }
+    final clean = str.startsWith('/') ? str.substring(1) : str;
+    if (clean.startsWith('storage/')) {
+      return '${ApiConfig.baseUrl}/$clean';
+    }
+    return '${ApiConfig.baseUrl}/storage/$clean';
+  }
+
   Future<void> _loadEvents() async {
     setState(() {
       _isLoading = true;
@@ -117,6 +143,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
             'jadwal': item['jadwal'] ?? '',
             'lokasi': item['lokasi'] ?? '',
             'note': item['catatan'] ?? '',
+            'posterUrl': _resolvePosterUrl(item['poster_url'] ?? item['poster_path']),
             'participants': item['jumlah_peserta'] ?? 0,
             'isJoined': item['is_joined'] ?? false,
             'isCreator': item['is_creator'] ?? false,
@@ -1005,6 +1032,62 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
                             ),
                           ),
 
+                          // Poster Banner (jika pengumuman memiliki foto lampiran)
+                          if (item['posterUrl'] != null && (item['posterUrl'] as String).isNotEmpty)
+                            GestureDetector(
+                              onTap: () => _showFullPosterDialog(item['posterUrl'], item['title']),
+                              child: Stack(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: item['posterUrl'],
+                                    width: double.infinity,
+                                    height: 160.h,
+                                    fit: BoxFit.cover,
+                                    memCacheWidth: 800,
+                                    placeholder: (ctx, url) => Container(
+                                      height: 160.h,
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Color(0xFF2FA2F1),
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (ctx, url, err) => const SizedBox.shrink(),
+                                  ),
+                                  Positioned(
+                                    right: 10.w,
+                                    bottom: 10.h,
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withAlpha(140),
+                                        borderRadius: BorderRadius.circular(8.r),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.zoom_in_rounded, color: Colors.white, size: 14.sp),
+                                          SizedBox(width: 4.w),
+                                          Text(
+                                            'Lihat Foto',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10.5.sp,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
                           // Card Body
                           Padding(
                             padding: EdgeInsets.all(16.w),
@@ -1263,14 +1346,87 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
     );
   }
 
+  void _showFullPosterDialog(String imageUrl, String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.all(16.w),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : Colors.black87,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              padding: EdgeInsets.all(8.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (_, _) => SizedBox(
+                        height: 200.h,
+                        child: const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
+                      ),
+                      errorWidget: (_, _, _) => Container(
+                        height: 150.h,
+                        alignment: Alignment.center,
+                        child: const Text('Gagal memuat gambar', style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ),
+                  if (title.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Positioned(
+              top: 12,
+              right: 12,
+              child: Material(
+                color: Colors.black54,
+                shape: const CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   // MODAL / SHEET: BUAT PENGUMUMAN & AGENDA BARU
   // ═══════════════════════════════════════════════════════════════════
-  Future<void> _pickImage(StateSetter setModalState) async {
+  Future<void> _pickImageDirect(StateSetter setModalState, ImageSource source) async {
     try {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         imageQuality: 80,
       );
       if (pickedFile != null) {
@@ -1281,6 +1437,77 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
       }
     } catch (e) {
       debugPrint("Error picking image: \$e");
+    }
+  }
+
+  Future<void> _pickImage(StateSetter setModalState) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                Text(
+                  'Unggah Poster / Foto Agenda',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                ListTile(
+                  leading: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0284C7).withAlpha(20),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: const Icon(Icons.camera_alt_rounded, color: Color(0xFF0284C7)),
+                  ),
+                  title: const Text('Buka Kamera', style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Ambil foto langsung', style: TextStyle(fontSize: 11)),
+                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withAlpha(20),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: const Icon(Icons.photo_library_rounded, color: Color(0xFF10B981)),
+                  ),
+                  title: const Text('Galeri Foto', style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text('Pilih dari penyimpanan galeri', style: TextStyle(fontSize: 11)),
+                  onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (source != null) {
+      await _pickImageDirect(setModalState, source);
     }
   }
 
@@ -1821,19 +2048,27 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
                               Icon(
                                 Icons.add_photo_alternate_outlined,
                                 size: 36.sp,
-                                color: isDark
-                                    ? Colors.white60
-                                    : Colors.grey[500],
+                                color: const Color(0xFF2FA2F1),
                               ),
                               SizedBox(height: 8.h),
                               Text(
-                                'Klik untuk memilih gambar',
+                                'Unggah Poster / Foto Kegiatan',
                                 style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.bold,
                                   color: isDark
-                                      ? Colors.white70
-                                      : Colors.grey[600],
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A),
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'Ketuk untuk memilih dari Kamera atau Galeri',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  color: isDark
+                                      ? Colors.white60
+                                      : const Color(0xFF64748B),
                                 ),
                               ),
                             ],
@@ -1870,7 +2105,7 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Gambar Terpilih',
+                                  'Foto / Poster Terpilih',
                                   style: TextStyle(
                                     fontSize: 12.5.sp,
                                     fontWeight: FontWeight.bold,
@@ -1895,6 +2130,16 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
                             ),
                           ),
                           IconButton(
+                            tooltip: 'Ganti foto',
+                            icon: Icon(
+                              Icons.refresh_rounded,
+                              color: const Color(0xFF2FA2F1),
+                              size: 22.sp,
+                            ),
+                            onPressed: () => _pickImage(setModalState),
+                          ),
+                          IconButton(
+                            tooltip: 'Hapus foto',
                             icon: Icon(
                               Icons.delete_outline_rounded,
                               color: Colors.red,

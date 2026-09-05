@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/services/unit_chat_service.dart';
@@ -7,6 +8,9 @@ class UnitServiceChatPage extends StatefulWidget {
   final String serviceType; // 'gas', 'penyewaan', 'mobil', 'fasilitas_umum'
   final String title;
   final String? itemInquiry;
+  final String? itemImage;
+  final String? itemPrice;
+  final String? itemUnit;
   final int? regionId;
 
   const UnitServiceChatPage({
@@ -14,6 +18,9 @@ class UnitServiceChatPage extends StatefulWidget {
     required this.serviceType,
     required this.title,
     this.itemInquiry,
+    this.itemImage,
+    this.itemPrice,
+    this.itemUnit,
     this.regionId,
   });
 
@@ -28,7 +35,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
 
   List<dynamic> _messages = [];
   bool _isLoading = true;
-  bool _isEscalated = false;
+  bool _showItemInquiryCard = true;
   Timer? _pollTimer;
 
   late List<String> _quickReplies;
@@ -77,6 +84,10 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
           'Ketersediaan layanan ini?',
         ];
     }
+
+    if (widget.itemInquiry != null && widget.itemInquiry!.isNotEmpty) {
+      _quickReplies.insert(0, 'Apakah ${widget.itemInquiry} ready?');
+    }
   }
 
   @override
@@ -110,11 +121,9 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
 
     if (res['status'] == 'success' && res['data'] != null) {
       final fetchedMessages = res['data']['messages'] ?? [];
-      final isEsc = res['data']['is_escalated'] ?? false;
 
       setState(() {
         _messages = fetchedMessages;
-        _isEscalated = isEsc;
         _isLoading = false;
       });
 
@@ -140,7 +149,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
     });
   }
 
-  Future<void> _sendMessage([String? customText]) async {
+  Future<void> _sendMessage([String? customText, Map<String, dynamic>? itemData]) async {
     final text = (customText ?? _messageController.text).trim();
     if (text.isEmpty) return;
 
@@ -155,6 +164,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
         'id': 'temp_${now.millisecondsSinceEpoch}',
         'sender_type': 'user',
         'message': text,
+        'item_data': itemData,
         'created_at': now.toIso8601String(),
       });
     });
@@ -176,28 +186,6 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
         });
         _scrollToBottom();
       }
-      if (res['data']['is_escalated'] == true) {
-        setState(() => _isEscalated = true);
-      }
-    }
-  }
-
-  Future<void> _escalateToAdmin() async {
-    final res = await _chatService.escalateChat(
-      widget.serviceType,
-      regionId: widget.regionId,
-    );
-
-    if (!mounted) return;
-
-    if (res['status'] == 'success' && res['data'] != null) {
-      setState(() {
-        _isEscalated = true;
-        if (res['data']['bot_message'] != null) {
-          _messages.add(res['data']['bot_message']);
-        }
-      });
-      _scrollToBottom();
     }
   }
 
@@ -209,40 +197,95 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 0,
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        elevation: 1,
-        shadowColor: Colors.black12,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : const Color(0xFF0F172A)),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+                ),
+              ),
+            ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -20,
+              left: -15,
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.12),
+                color: Colors.white.withAlpha(25),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withAlpha(80),
+                  width: 1.5,
+                ),
               ),
               child: Icon(
                 _getServiceIcon(widget.serviceType),
-                color: primaryColor,
-                size: 22,
+                color: Colors.white,
+                size: 20,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     widget.title,
-                    style: TextStyle(
-                      fontSize: 15,
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      color: Colors.white,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 1),
                   Row(
                     children: [
                       Container(
@@ -255,10 +298,10 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        _isEscalated ? 'Terhubung Petugas Desa' : 'Online BUMDes',
+                        'Petugas BUMDes Online',
                         style: TextStyle(
                           fontSize: 11,
-                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                          color: Colors.white.withAlpha(210),
                         ),
                       ),
                     ],
@@ -268,28 +311,6 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
             ),
           ],
         ),
-        actions: [
-          if (!_isEscalated)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: TextButton.icon(
-                onPressed: _escalateToAdmin,
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFFF0FDF4),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: const BorderSide(color: Color(0xFF86EFAC)),
-                  ),
-                ),
-                icon: const Icon(Icons.support_agent_rounded, size: 16, color: Color(0xFF166534)),
-                label: const Text(
-                  'Petugas',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
-                ),
-              ),
-            ),
-        ],
       ),
       body: Column(
         children: [
@@ -316,31 +337,125 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
             ),
           ),
 
-          // Inquiry Item Reference Banner (jika ada)
-          if (widget.itemInquiry != null && widget.itemInquiry!.isNotEmpty)
+          // Inquiry Item Card Banner (Mengikutsertakan Gambar Barang)
+          if (widget.itemInquiry != null && widget.itemInquiry!.isNotEmpty && _showItemInquiryCard)
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.08),
-                border: Border(
-                  bottom: BorderSide(color: primaryColor.withValues(alpha: 0.15)),
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                  width: 1,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
-                  Icon(Icons.bookmark_outline_rounded, size: 16, color: primaryColor),
-                  const SizedBox(width: 8),
+                  // Thumbnail Image Barang
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _buildItemImageWidget(widget.itemImage, 48, 48),
+                  ),
+                  const SizedBox(width: 10),
+                  // Info Barang: Nama & Tarif / Harga
                   Expanded(
-                    child: Text(
-                      'Menanyakan produk/item: ${widget.itemInquiry}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: primaryColor,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.itemInquiry!,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        if (widget.itemPrice != null && widget.itemPrice!.isNotEmpty) ...[
+                          Builder(
+                            builder: (_) {
+                              final numVal = double.tryParse(widget.itemPrice!);
+                              final priceText = numVal != null
+                                  ? NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(numVal)
+                                  : widget.itemPrice!;
+                              final unitText = widget.itemUnit != null && widget.itemUnit!.isNotEmpty
+                                  ? ' ${widget.itemUnit}'
+                                  : '';
+                              return Text(
+                                '$priceText$unitText',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0284C7),
+                                ),
+                              );
+                            },
+                          ),
+                        ] else ...[
+                          Text(
+                            'Layanan Desa',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? Colors.white60 : Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Tombol Tanya Item
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _sendMessage(
+                        'Halo admin, apakah ${widget.itemInquiry} saat ini masih tersedia?',
+                        {
+                          'name': widget.itemInquiry,
+                          'image': widget.itemImage,
+                          'price': widget.itemPrice,
+                          'unit': widget.itemUnit,
+                        },
+                      );
+                      setState(() => _showItemInquiryCard = false);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    ),
+                    icon: const Icon(Icons.send_rounded, size: 12, color: Colors.white),
+                    label: const Text(
+                      'Tanya Item',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  // Close Button
+                  GestureDetector(
+                    onTap: () => setState(() => _showItemInquiryCard = false),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 16,
+                        color: isDark ? Colors.white38 : Colors.grey[400],
+                      ),
                     ),
                   ),
                 ],
@@ -355,26 +470,27 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               children: [
-                if (!_isEscalated)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: ActionChip(
-                      onPressed: _escalateToAdmin,
-                      avatar: const Icon(Icons.support_agent_rounded, size: 14, color: Colors.white),
-                      label: const Text(
-                        'Chat Petugas Admin',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    ),
-                  ),
                 ..._quickReplies.map((chip) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: ActionChip(
-                      onPressed: () => _sendMessage(chip),
+                      onPressed: () {
+                        final isItemQuestion = widget.itemInquiry != null && chip.contains(widget.itemInquiry!);
+                        _sendMessage(
+                          chip,
+                          isItemQuestion
+                              ? {
+                                  'name': widget.itemInquiry,
+                                  'image': widget.itemImage,
+                                  'price': widget.itemPrice,
+                                  'unit': widget.itemUnit,
+                                }
+                              : null,
+                        );
+                        if (isItemQuestion) {
+                          setState(() => _showItemInquiryCard = false);
+                        }
+                      },
                       label: Text(
                         chip,
                         style: TextStyle(
@@ -529,6 +645,68 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              if (msg['item_data'] != null) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: _buildItemImageWidget(msg['item_data']['image'], 42, 42),
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              msg['item_data']['name'] ?? 'Item Layanan',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (msg['item_data']['price'] != null) ...[
+                              const SizedBox(height: 2),
+                              Builder(
+                                builder: (_) {
+                                  final numVal = double.tryParse(msg['item_data']['price'].toString());
+                                  final priceText = numVal != null
+                                      ? NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(numVal)
+                                      : msg['item_data']['price'].toString();
+                                  final unitText = msg['item_data']['unit'] != null && msg['item_data']['unit'].toString().isNotEmpty
+                                      ? ' ${msg['item_data']['unit']}'
+                                      : '';
+                                  return Text(
+                                    '$priceText$unitText',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFE0F2FE),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               Text(
                 text,
                 style: const TextStyle(fontSize: 13.5, color: Colors.white, height: 1.35),
@@ -638,6 +816,49 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
         ),
       );
     }
+  }
+
+  Widget _buildItemImageWidget(String? imgPath, double width, double height) {
+    if (imgPath == null || imgPath.isEmpty) {
+      return Container(
+        width: width,
+        height: height,
+        color: Colors.grey[200],
+        child: Icon(
+          _getServiceIcon(widget.serviceType),
+          size: width * 0.5,
+          color: Colors.grey[500],
+        ),
+      );
+    }
+    if (imgPath.startsWith('assets/')) {
+      return Image.asset(
+        imgPath,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(
+          width: width,
+          height: height,
+          color: Colors.grey[200],
+          child: const Icon(Icons.broken_image, color: Colors.grey),
+        ),
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: imgPath,
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
+      memCacheWidth: 500,
+      placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+      errorWidget: (ctx, url, err) => Container(
+        width: width,
+        height: height,
+        color: Colors.grey[200],
+        child: const Icon(Icons.broken_image, color: Colors.grey),
+      ),
+    );
   }
 
   IconData _getServiceIcon(String service) {

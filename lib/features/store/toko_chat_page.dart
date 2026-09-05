@@ -274,21 +274,52 @@ class _TokoChatPageState extends State<TokoChatPage> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF115789),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF2563EB),
         foregroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         titleSpacing: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                  : [const Color(0xFF115789), const Color(0xFF0284C7)],
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+                ),
+              ),
             ),
-          ),
+            // Glowing circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing circle 2 (Bottom Left)
+            Positioned(
+              bottom: -20,
+              left: -15,
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
         ),
         leading: IconButton(
           icon: const Icon(
@@ -340,7 +371,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
                       color: const Color(0xFF10B981),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFF115789),
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFF0284C7),
                         width: 2,
                       ),
                     ),
@@ -751,7 +782,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
 
     final bool isUser = sender == 'user';
     final bool isAdmin = sender == 'admin';
-    const primaryColor = Color(0xFF115789);
+    const primaryColor = Color(0xFF0284C7);
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,

@@ -176,7 +176,7 @@ class _VerificationPageState extends State<VerificationPage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Lengkapi Data Diri (e-KYC)',
+          'Lengkapi Data Diri',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

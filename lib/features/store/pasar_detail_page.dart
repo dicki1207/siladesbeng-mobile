@@ -8,7 +8,6 @@ import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 import 'cart_page.dart';
 import 'bumdes_store_profile_page.dart';
 import 'toko_chat_page.dart';
-import 'return_refund_dialog.dart';
 import 'report_store_dialog.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
 
@@ -270,19 +269,11 @@ class _PasarDetailPageState extends State<PasarDetailPage>
          );
         },
        ),
-       // More Options (Komplain / Lapor)
+       // More Options (Lapor Produk)
        PopupMenuButton<String>(
         icon: const Icon(Icons.more_vert_rounded),
         onSelected: (value) {
-         if (value == 'return') {
-          ReturnRefundDialog.show(
-           context,
-           productName: name,
-           tokoName: 'BUMDes $regionName',
-           productPrice: _price,
-           productImage: _images.isNotEmpty ? _images[0] : null,
-          );
-         } else if (value == 'report') {
+         if (value == 'report') {
           ReportStoreDialog.show(
            context,
            targetName: name,
@@ -292,23 +283,6 @@ class _PasarDetailPageState extends State<PasarDetailPage>
          }
         },
         itemBuilder: (ctx) => [
-         const PopupMenuItem(
-          value: 'return',
-          child: Row(
-           children: [
-            Icon(
-             Icons.assignment_return_outlined,
-             size: 18,
-             color: Color(0xFF0EA5E9),
-            ),
-            SizedBox(width: 8),
-            Text(
-             'Ajukan Pengembalian',
-             style: TextStyle(fontSize: 13),
-            ),
-           ],
-          ),
-         ),
          const PopupMenuItem(
           value: 'report',
           child: Row(
@@ -422,7 +396,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
         children: [
          Row(
           children: [
-           if (kategori != null)
+           if (kategori != null) ...[
             Container(
              padding: const EdgeInsets.symmetric(
               horizontal: 8,
@@ -441,37 +415,75 @@ class _PasarDetailPageState extends State<PasarDetailPage>
               ),
              ),
             ),
-           const SizedBox(width: 8),
-           // Rating Snippet
-           Container(
-            padding: const EdgeInsets.symmetric(
-             horizontal: 8,
-             vertical: 3,
-            ),
-            decoration: BoxDecoration(
-             color: Colors.amber.withValues(alpha: 0.15),
-             borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Row(
-             mainAxisSize: MainAxisSize.min,
-             children: [
-              Icon(
-               Icons.star_rounded,
-               size: 13,
-               color: Color(0xFFF59E0B),
-              ),
-              SizedBox(width: 3),
-              Text(
-               '4.9 (48 ulasan)',
-               style: TextStyle(
-                color: Color(0xFFD97706),
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 8),
+           ],
+           // Rating Snippet (Data ulasan riil)
+           if (_apiReviews.isNotEmpty || ((_ratingSummary?['total_reviews'] ?? 0) as num) > 0)
+            Builder(
+             builder: (_) {
+              final count = _ratingSummary?['total_reviews'] ?? _apiReviews.length;
+              final avg = _ratingSummary?['average'] ?? '5.0';
+              return Container(
+               padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 3,
                ),
-              ),
-             ],
+               decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+               ),
+               child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                 const Icon(
+                  Icons.star_rounded,
+                  size: 13,
+                  color: Color(0xFFF59E0B),
+                 ),
+                 const SizedBox(width: 3),
+                 Text(
+                  '$avg ($count ulasan)',
+                  style: const TextStyle(
+                   color: Color(0xFFD97706),
+                   fontSize: 11,
+                   fontWeight: FontWeight.bold,
+                  ),
+                 ),
+                ],
+               ),
+              );
+             },
+            )
+           else
+            Container(
+             padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 3,
+             ),
+             decoration: BoxDecoration(
+              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(6),
+             ),
+             child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+               Icon(
+                Icons.star_outline_rounded,
+                size: 13,
+                color: isDark ? Colors.white60 : Colors.grey[600],
+               ),
+               const SizedBox(width: 3),
+               Text(
+                'Belum ada ulasan',
+                style: TextStyle(
+                 color: isDark ? Colors.white70 : Colors.grey[700],
+                 fontSize: 11,
+                 fontWeight: FontWeight.w600,
+                ),
+               ),
+              ],
+             ),
             ),
-           ),
            const Spacer(),
            // Stock Status
            Container(
@@ -726,7 +738,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
           ),
           tabs: [
            const Tab(text: 'Deskripsi'),
-           Tab(text: ' Ulasan (${_apiReviews.length})'),
+           Tab(text: 'Ulasan (${_apiReviews.length})'),
            const Tab(text: 'Info Penting'),
           ],
          ),
@@ -755,8 +767,11 @@ class _PasarDetailPageState extends State<PasarDetailPage>
           );
          } else if (_tabController.index == 1) {
           // TAB 2: Ulasan Pembeli dari Backend
-          final avgRating = _ratingSummary?['average']?.toString() ?? '5.0';
           final totalReviews = _ratingSummary?['total_reviews'] ?? _apiReviews.length;
+          final rawAvg = _ratingSummary?['average'];
+          final avgRating = (totalReviews > 0 && rawAvg != null && rawAvg != 0 && rawAvg != '0')
+              ? rawAvg.toString()
+              : (totalReviews > 0 ? '5.0' : '-');
 
           return Padding(
            padding: const EdgeInsets.all(16),
@@ -773,22 +788,28 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                   children: [
                    Text(
                     avgRating,
-                    style: const TextStyle(
+                    style: TextStyle(
                      fontSize: 28,
                      fontWeight: FontWeight.w900,
-                     color: Color(0xFFF59E0B),
+                     color: totalReviews > 0
+                         ? const Color(0xFFF59E0B)
+                         : (isDark ? Colors.white60 : Colors.grey[400]),
                     ),
                    ),
                    const SizedBox(width: 6),
-                   const Icon(
-                    Icons.star_rounded,
-                    color: Color(0xFFF59E0B),
+                   Icon(
+                    totalReviews > 0 ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: totalReviews > 0
+                        ? const Color(0xFFF59E0B)
+                        : (isDark ? Colors.white60 : Colors.grey[400]),
                     size: 24,
                    ),
                   ],
                  ),
                  Text(
-                  '$totalReviews Ulasan Pembeli',
+                  totalReviews > 0
+                      ? '$totalReviews Ulasan Pembeli'
+                      : 'Belum ada ulasan',
                   style: const TextStyle(
                    fontSize: 11.5,
                    color: Colors.grey,
@@ -796,39 +817,6 @@ class _PasarDetailPageState extends State<PasarDetailPage>
                   ),
                  ),
                 ],
-               ),
-               const Spacer(),
-               Container(
-                padding: const EdgeInsets.symmetric(
-                 horizontal: 10,
-                 vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                 color: isDark ? Colors.white.withAlpha(15) : const Color(0xFFF1F5F9),
-                 borderRadius: BorderRadius.circular(8),
-                 border: Border.all(
-                  color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
-                 ),
-                ),
-                child: Row(
-                 mainAxisSize: MainAxisSize.min,
-                 children: [
-                  Icon(
-                   Icons.verified_user_outlined,
-                   size: 14,
-                   color: isDark ? Colors.white70 : const Color(0xFF64748B),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                   'Pembeli Terverifikasi',
-                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white70 : const Color(0xFF64748B),
-                   ),
-                  ),
-                 ],
-                ),
                ),
               ],
              ),

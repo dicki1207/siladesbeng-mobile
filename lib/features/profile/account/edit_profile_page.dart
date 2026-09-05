@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 import 'package:siladesbeng_mobile/main_wrapper.dart';
-import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -54,6 +53,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
+    _fallbackToLocalData();
     _loadProfileFromApi();
   }
 
@@ -75,12 +75,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     setState(() {
-      _nameController.text = prefs.getString('profile_name') ?? 'Nama Pengguna';
-      _emailController.text = prefs.getString('profile_email') ?? 'email@example.com';
-      _usernameController.text = prefs.getString('profile_name') ?? 'Username';
+      _nameController.text = prefs.getString('profile_name') ?? '';
+      _emailController.text = prefs.getString('profile_email') ?? '';
+      _usernameController.text = prefs.getString('profile_name') ?? '';
+      _addressController.text = prefs.getString('profile_address') ?? '';
       _avatarUrl = prefs.getString('profile_image_url');
       _isVerified = prefs.getBool('is_verified') ?? false;
-      _nik = prefs.getString('profile_nik') ?? (_isVerified ? '1403010101900001' : '');
+      _nik = prefs.getString('profile_nik') ?? '';
     });
   }
 
@@ -236,17 +237,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     if (mounted) {
       if (!forced) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const AnimatedSuccessDialog(
-            message: 'Sampai Jumpa!',
-            isLogout: true,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Anda telah berhasil keluar dari akun',
+                    style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
+                  ),
+                ),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF334155),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            duration: const Duration(seconds: 2),
           ),
         );
-        await Future.delayed(const Duration(seconds: 2));
       }
-      if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const MainWrapper()),

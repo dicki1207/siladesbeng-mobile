@@ -7,7 +7,6 @@ import 'item_detail_page.dart';
 import 'tool_package_booking_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 import '../../widgets/product_card_widget.dart';
-import '../common/unit_service_chat_page.dart';
 
 class ServiceListPage extends StatefulWidget {
   const ServiceListPage({super.key});
@@ -98,27 +97,6 @@ class _ServiceListPageState extends State<ServiceListPage> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.chat_bubble_outline_rounded,
-              color: Colors.white,
-              size: 20.sp,
-            ),
-            tooltip: 'Chat Sewa Alat',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const UnitServiceChatPage(
-                    serviceType: 'penyewaan',
-                    title: 'Chat Sewa Alat',
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchRentals,

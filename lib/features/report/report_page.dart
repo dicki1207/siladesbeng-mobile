@@ -25,6 +25,7 @@ class _ReportPageState extends State<ReportPage> {
   final GlobalKey _keyTujuan = GlobalKey();
   final GlobalKey _keyKategori = GlobalKey();
   final GlobalKey _keyLokasi = GlobalKey();
+  final GlobalKey _keyDeskripsi = GlobalKey();
   final GlobalKey _keyFoto = GlobalKey();
 
   // User profile data
@@ -74,6 +75,7 @@ class _ReportPageState extends State<ReportPage> {
             _keyTujuan,
             _keyKategori,
             _keyLokasi,
+            _keyDeskripsi,
             _keyFoto,
           ]);
           await prefs.setBool('has_seen_report_tour', true);
@@ -89,6 +91,7 @@ class _ReportPageState extends State<ReportPage> {
       _keyTujuan,
       _keyKategori,
       _keyLokasi,
+      _keyDeskripsi,
       _keyFoto,
     ]);
   }
@@ -324,6 +327,7 @@ class _ReportPageState extends State<ReportPage> {
     final primaryColor = Theme.of(context).primaryColor;
 
     return Container(
+      height: 48,
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(12),
@@ -331,7 +335,7 @@ class _ReportPageState extends State<ReportPage> {
           color: isDark ? Colors.white10 : Colors.grey.shade300,
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
@@ -545,6 +549,7 @@ class _ReportPageState extends State<ReportPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        centerTitle: true,
         title: const Text(
           'Buat Laporan Warga',
           style: TextStyle(
@@ -620,6 +625,8 @@ class _ReportPageState extends State<ReportPage> {
                   children: [
                     _buildLabel('Nama Pelapor *', icon: Icons.person_outline_rounded),
                     Container(
+                      height: 48,
+                      alignment: Alignment.centerLeft,
                       decoration: BoxDecoration(
                         color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(12),
@@ -640,7 +647,8 @@ class _ReportPageState extends State<ReportPage> {
                             color: isDark ? Colors.white24 : Colors.grey[400],
                             fontSize: 13,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                          isDense: true,
                         ),
                       ),
                     ),
@@ -892,29 +900,37 @@ class _ReportPageState extends State<ReportPage> {
 
           // 4. Deskripsi
           _buildLabel('Deskripsi Laporan *', icon: Icons.description_outlined),
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey.shade300,
-              ),
-            ),
-            child: TextField(
-              controller: _deskripsiController,
-              maxLines: 3,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.white : const Color(0xFF1E293B),
-              ),
-              decoration: InputDecoration(
-                hintText: 'Jelaskan keluhan atau kejadian dengan detail...',
-                hintStyle: TextStyle(
-                  color: isDark ? Colors.white24 : Colors.grey[400],
-                  fontSize: 13,
+          Showcase(
+            titleTextStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+            descTextStyle: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
+            key: _keyDeskripsi,
+            title: 'Deskripsi Laporan',
+            description: 'Tuliskan rincian keluhan, kronologi kejadian, atau aspirasi Anda secara lengkap dan jelas (minimal 20 karakter) agar pihak terkait dapat memahami dan menindaklanjuti dengan cepat.',
+            targetBorderRadius: BorderRadius.circular(12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.grey.shade300,
                 ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              child: TextField(
+                controller: _deskripsiController,
+                maxLines: 3,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Jelaskan keluhan atau kejadian dengan detail...',
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white24 : Colors.grey[400],
+                    fontSize: 13,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
               ),
             ),
           ),

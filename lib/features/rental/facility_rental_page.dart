@@ -608,7 +608,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Fasilitas Umum Desa',
+          'Fasilitas Umum',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18.sp,

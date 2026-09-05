@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -52,7 +53,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       final token = prefs.getString('auth_token');
 
       final response = await http.post(
-        Uri.parse('http://10.121.197.148:8000/api/profile/password'),
+        Uri.parse('${ApiConfig.baseUrl}/api/profile/password'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

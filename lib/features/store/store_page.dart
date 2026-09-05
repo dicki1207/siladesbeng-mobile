@@ -1619,33 +1619,47 @@ class _StorePageState extends State<StorePage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 3.h),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star_rounded,
-                        size: 13.sp,
-                        color: Color(0xFFF59E0B),
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        '4.9',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
-                          color: isDark
-                              ? Colors.white70
-                              : const Color(0xFF334155),
-                        ),
-                      ),
-                      SizedBox(width: 4.w),
-                      Text(
-                        '(48)',
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: isDark ? Colors.white38 : Colors.grey[500],
-                        ),
-                      ),
-                    ],
+                  Builder(
+                    builder: (_) {
+                      final int reviewsCount = product['reviews_count'] != null
+                          ? int.tryParse(product['reviews_count'].toString()) ?? 0
+                          : 0;
+                      final String? ratingStr = product['rating'] != null && product['rating'] != 0
+                          ? product['rating'].toString()
+                          : null;
+                      return Row(
+                        children: [
+                          Icon(
+                            reviewsCount > 0 ? Icons.star_rounded : Icons.star_outline_rounded,
+                            size: 13.sp,
+                            color: reviewsCount > 0
+                                ? const Color(0xFFF59E0B)
+                                : (isDark ? Colors.white38 : Colors.grey[400]),
+                          ),
+                          SizedBox(width: 2.w),
+                          Text(
+                            reviewsCount > 0 ? (ratingStr ?? '5.0') : 'Baru',
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.bold,
+                              color: reviewsCount > 0
+                                  ? (isDark ? Colors.white70 : const Color(0xFF334155))
+                                  : (isDark ? Colors.white54 : Colors.grey[600]),
+                            ),
+                          ),
+                          if (reviewsCount > 0) ...[
+                            SizedBox(width: 4.w),
+                            Text(
+                              '($reviewsCount)',
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: isDark ? Colors.white38 : Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
                   ),
                   SizedBox(height: 4.h),
                   Text(

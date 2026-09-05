@@ -8,7 +8,6 @@ import '../../core/api_config.dart';
 import '../../widgets/product_card_widget.dart';
 import '../rental/item_detail_page.dart';
 import 'gas_booking_page.dart';
-import '../common/unit_service_chat_page.dart';
 
 class GasPage extends StatefulWidget {
   const GasPage({super.key});
@@ -322,25 +321,6 @@ class _GasPageState extends State<GasPage> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.chat_bubble_outline_rounded,
-              color: Colors.white,
-              size: 20.sp,
-            ),
-            tooltip: 'Chat Layanan Gas',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const UnitServiceChatPage(
-                    serviceType: 'gas',
-                    title: 'Chat Layanan Gas',
-                  ),
-                ),
-              );
-            },
-          ),
           IconButton(
             icon: Icon(
               Icons.help_outline_rounded,

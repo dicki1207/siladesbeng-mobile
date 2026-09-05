@@ -445,23 +445,47 @@ class _PasarFavoritePageState extends State<PasarFavoritePage>
              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 3),
-            const Row(
-             children: [
-              Icon(
-               Icons.star_rounded,
-               size: 13,
-               color: Color(0xFFF59E0B),
-              ),
-              SizedBox(width: 2),
-              Text(
-               '4.9 (48)',
-               style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-               ),
-              ),
-             ],
+            Builder(
+             builder: (_) {
+              final int reviewsCount = product['reviews_count'] != null
+                  ? int.tryParse(product['reviews_count'].toString()) ?? 0
+                  : 0;
+              final String? ratingStr = product['rating'] != null && product['rating'] != 0
+                  ? product['rating'].toString()
+                  : null;
+              return Row(
+               children: [
+                Icon(
+                 reviewsCount > 0 ? Icons.star_rounded : Icons.star_outline_rounded,
+                 size: 13,
+                 color: reviewsCount > 0
+                     ? const Color(0xFFF59E0B)
+                     : (isDark ? Colors.white38 : Colors.grey[400]),
+                ),
+                const SizedBox(width: 2),
+                Text(
+                 reviewsCount > 0 ? (ratingStr ?? '5.0') : 'Baru',
+                 style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: reviewsCount > 0
+                      ? (isDark ? Colors.white70 : const Color(0xFF334155))
+                      : (isDark ? Colors.white54 : Colors.grey[600]),
+                 ),
+                ),
+                if (reviewsCount > 0) ...[
+                 const SizedBox(width: 3),
+                 Text(
+                  '($reviewsCount)',
+                  style: TextStyle(
+                   fontSize: 9.5,
+                   color: isDark ? Colors.white38 : Colors.grey[500],
+                  ),
+                 ),
+                ],
+               ],
+              );
+             },
             ),
             const SizedBox(height: 4),
             Text(
@@ -652,7 +676,7 @@ class _PasarFavoritePageState extends State<PasarFavoritePage>
              ),
              SizedBox(width: 4),
              Text(
-              'BUMDes Resmi • Rating 4.9 ',
+              'BUMDes Resmi • Terverifikasi',
               style: TextStyle(fontSize: 11, color: Colors.grey),
              ),
             ],

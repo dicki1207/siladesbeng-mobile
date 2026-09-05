@@ -8,7 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:siladesbeng_mobile/services/firebase_messaging_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/auth/register_page.dart';
 import 'package:siladesbeng_mobile/features/auth/forgot_password_page.dart';
 
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse('http://10.121.197.148:8000/api/login');
+      final url = Uri.parse('${ApiConfig.baseUrl}/api/login');
       final body = {
         'email': _emailController.text,
         'password': _passwordController.text,
@@ -85,22 +85,33 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         if (!mounted) return;
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const AnimatedSuccessDialog(
-            message: 'Berhasil Masuk',
-            isLogout: false,
+        final String displayName = (data['data']['user'] != null && data['data']['user']['name'] != null)
+            ? data['data']['user']['name']
+            : (prefs.getString('profile_name') ?? 'Warga');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Selamat datang kembali, $displayName!',
+                    style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
+                  ),
+                ),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF0284C7),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            duration: const Duration(seconds: 2),
           ),
         );
 
-        await Future.delayed(const Duration(milliseconds: 1000));
-        if (!mounted) return;
-        Navigator.pop(context); // Close dialog
-        Navigator.pop(
-          context,
-          true,
-        ); // Close login page, return true to indicate success
+        Navigator.pop(context, true);
       } else {
         String errorMsg = data['message'] ?? 'Gagal';
         if (data['errors'] != null) {
@@ -180,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         final response = await http.post(
-          Uri.parse('http://10.121.197.148:8000/api/login/google'),
+          Uri.parse('${ApiConfig.baseUrl}/api/login/google'),
           headers: {'Accept': 'application/json'},
           body: {
             'email': user.email ?? '',
@@ -226,19 +237,31 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           if (!mounted) return;
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => const AnimatedSuccessDialog(
-              message: 'Berhasil Masuk',
-              isLogout: false,
+          final String displayName = data['data']['user']?['name'] ?? user.displayName ?? 'Warga';
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Selamat datang kembali, $displayName!',
+                      style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
+                    ),
+                  ),
+                ],
+              ),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: const Color(0xFF0284C7),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              duration: const Duration(seconds: 2),
             ),
           );
 
-          await Future.delayed(const Duration(milliseconds: 1000));
-          if (!mounted) return;
-          Navigator.pop(context); // Close dialog
-          Navigator.pop(context, true); // Close login page
+          Navigator.pop(context, true);
         } else {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(

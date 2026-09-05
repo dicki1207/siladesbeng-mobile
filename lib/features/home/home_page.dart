@@ -1179,9 +1179,14 @@ class _HomePageState extends State<HomePage> {
                             ? CachedNetworkImage(
                                 imageUrl: imgPath,
                                 fit: BoxFit.contain,
-                                memCacheWidth: 500,
-                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
-                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
+                                memCacheWidth: 200,
+                                placeholder: (ctx, url) => Container(color: Colors.transparent),
+                                errorWidget: (ctx, url, err) => Image.asset(
+                                  fallbackAsset,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, _, _) =>
+                                      Icon(Icons.storefront_rounded, color: cardColor),
+                                ),
                               )
                             : Image.asset(
                                 imgPath,

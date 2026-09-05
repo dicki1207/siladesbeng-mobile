@@ -452,13 +452,13 @@ class _BumdesStoreProfilePageState extends State<BumdesStoreProfilePage> {
          // Metrics Row
          Row(
           children: [
-           _buildMetricItem(
-            icon: Icons.star_rounded,
-            iconColor: Colors.amber,
-            title: '4.9 / 5.0',
-            subtitle: 'Rating Toko',
-            isDark: isDark,
-           ),
+            _buildMetricItem(
+             icon: Icons.verified_rounded,
+             iconColor: const Color(0xFF0284C7),
+             title: 'Terverifikasi',
+             subtitle: 'BUMDes Resmi',
+             isDark: isDark,
+            ),
            _buildMetricDivider(isDark),
            _buildMetricItem(
             icon: Icons.inventory_2_rounded,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import '../common/unit_service_chat_page.dart';
 
 class ItemDetailPage extends StatelessWidget {
   final dynamic item;
@@ -455,9 +456,66 @@ class ItemDetailPage extends StatelessWidget {
         child: SafeArea(
           child: Row(
             children: [
+              // Chat Button (Sama seperti Pasar Daerah)
+              Container(
+                margin: EdgeInsets.only(right: 12.w),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: primaryColor.withValues(alpha: 0.5),
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    String serviceType = 'penyewaan';
+                    String chatTitle = 'Layanan Pesan Alat';
+                    final catLower = category.toLowerCase();
+                    if (catLower.contains('gas')) {
+                      serviceType = 'gas';
+                      chatTitle = 'Layanan Pesan Gas';
+                    } else if (catLower.contains('mobil') || catLower.contains('kendaraan')) {
+                      serviceType = 'mobil';
+                      chatTitle = 'Layanan Pesan Mobil';
+                    } else if (catLower.contains('fasilitas') || catLower.contains('gedung') || catLower.contains('lapangan')) {
+                      serviceType = 'fasilitas_umum';
+                      chatTitle = 'Layanan Pesan Fasilitas';
+                    }
+
+                    int? regId;
+                    if (item['region_id'] is int) {
+                      regId = item['region_id'];
+                    } else if (item['region_id'] != null) {
+                      regId = int.tryParse(item['region_id'].toString());
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => UnitServiceChatPage(
+                          serviceType: serviceType,
+                          title: chatTitle,
+                          itemInquiry: title,
+                          itemImage: imageUrl,
+                          itemPrice: price.toString(),
+                          itemUnit: item['satuan'] ?? item['unit'] ?? (category == 'Beli Gas' ? '/ tabung' : '/ hari'),
+                          regionId: regId,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    color: primaryColor,
+                    size: 20.sp,
+                  ),
+                  tooltip: 'Chat Petugas Layanan',
+                ),
+              ),
+
               // Price Summary
               Expanded(
-                flex: 45,
+                flex: 40,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,

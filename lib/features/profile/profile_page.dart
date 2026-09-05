@@ -13,7 +13,6 @@ import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:siladesbeng_mobile/features/profile/info/about_page.dart';
 import 'package:siladesbeng_mobile/features/profile/partnership/partnership_page.dart';
 import 'package:siladesbeng_mobile/features/profile/info/help_faq_page.dart';
-import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 import 'package:siladesbeng_mobile/features/profile/mutation/domicile_transfer_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
@@ -211,16 +210,27 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!context.mounted) return;
 
     if (!forced) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const AnimatedSuccessDialog(
-          message: 'Berhasil Keluar',
-          isLogout: true,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Anda telah berhasil keluar dari akun',
+                  style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
+                ),
+              ),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF334155),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          duration: const Duration(seconds: 2),
         ),
       );
-      await Future.delayed(const Duration(milliseconds: 1000));
-      if (!context.mounted) return;
     }
 
     Navigator.pushAndRemoveUntil(
@@ -1155,7 +1165,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildSectionHeader(
                     context,
                     'Aktivitas & Kemitraan',
-                    Colors.blue[600]!,
                   ),
                   SizedBox(height: 12.h),
                   _buildMenuGroup(context, [
@@ -1171,7 +1180,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         icon: Icons.receipt_long_rounded,
                         title: 'Riwayat Aktivitas',
                         targetPage: const TransactionHistoryPage(),
-                        iconColor: Colors.blue[600],
                         isFirst: true,
                         isLast: false,
                       ),
@@ -1190,7 +1198,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           title: 'Portal Pengurus RT / RW',
                           subtitle: 'Layanan administrasi & pengurus wilayah',
                           targetPage: const AdminPortalPage(),
-                          iconColor: Colors.teal[600],
                           isFirst: false,
                           isLast: false,
                         ),
@@ -1202,7 +1209,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         title: 'Mutasi Domisili',
                         subtitle: 'Handshake data kependudukan',
                         targetPage: const DomicileTransferPage(),
-                        iconColor: Colors.indigo[600],
                         isFirst: false,
                         isLast: true,
                       ),
@@ -1212,7 +1218,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         icon: Icons.handshake_rounded,
                         title: 'Gabung Kemitraan',
                         targetPage: const PartnershipPage(),
-                        iconColor: Colors.teal[600],
                         isFirst: false,
                         isLast: true,
                       ),
@@ -1221,7 +1226,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildSectionHeader(
                     context,
                     'Pengaturan & Informasi',
-                    Colors.green[600]!,
                   ),
                   SizedBox(height: 14.h),
                   _buildMenuGroup(context, [
@@ -1237,7 +1241,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: Icons.manage_accounts_rounded,
                           title: 'Edit Profil & Data Diri',
                           targetPage: const EditProfilePage(),
-                          iconColor: Colors.green,
                           isFirst: true,
                           isLast: false,
                         ),
@@ -1247,7 +1250,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         icon: Icons.shield_rounded,
                         title: 'Keamanan & Kata Sandi',
                         targetPage: const ChangePasswordPage(),
-                        iconColor: Colors.blueGrey,
                         isFirst: false,
                         isLast: false,
                       ),
@@ -1257,7 +1259,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.help_outline_rounded,
                       title: 'Pusat Bantuan & FAQ',
                       targetPage: const HelpFaqPage(),
-                      iconColor: Colors.amber[800],
                       isFirst: !_isLoggedIn,
                       isLast: false,
                     ),
@@ -1266,7 +1267,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.info_outline_rounded,
                       title: 'Tentang Sila-DesBeng',
                       targetPage: const AboutPage(),
-                      iconColor: Colors.indigo[600],
                       isFirst: false,
                       isLast: true,
                     ),
@@ -1281,7 +1281,33 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           if (_isLoggedIn) {
-                            _logout(context);
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                title: const Text('Keluar Akun', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      _logout(context);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.redAccent,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      elevation: 0,
+                                    ),
+                                    child: const Text('Keluar'),
+                                  ),
+                                ],
+                              ),
+                            );
                           } else {
                             Navigator.push(
                               context,
@@ -1340,16 +1366,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildSectionHeader(
     BuildContext context,
-    String title,
-    Color accentColor,
-  ) {
+    String title, [
+    Color? accentColor,
+  ]) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = accentColor ?? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7));
     return Row(
       children: [
         Container(
           width: 5,
           height: 20,
           decoration: BoxDecoration(
-            color: accentColor,
+            color: color,
             borderRadius: BorderRadius.circular(6.r),
           ),
         ),
@@ -1394,7 +1422,8 @@ class _ProfilePageState extends State<ProfilePage> {
     required bool isFirst,
     required bool isLast,
   }) {
-    final activeColor = iconColor ?? Theme.of(context).primaryColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = iconColor ?? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7));
     return Column(
       children: [
         Material(
@@ -1426,7 +1455,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Container(
                     padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
-                      color: activeColor.withAlpha(25),
+                      color: activeColor.withAlpha(isDark ? 35 : 22),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(icon, color: activeColor, size: 22.sp),
