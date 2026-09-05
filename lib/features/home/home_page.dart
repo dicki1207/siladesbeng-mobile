@@ -278,7 +278,6 @@ class _HomePageState extends State<HomePage> {
                 final List data = json.decode(res.body)['data'] ?? [];
                 if (data.isNotEmpty) {
                   final validData = data
-                      .where((item) => !(item['title']?.toString().toLowerCase().contains('testing') ?? false))
                       .map((item) {
                     if (item is Map<String, dynamic> &&
                         item['image'] != null) {
@@ -892,26 +891,28 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          SizedBox(width: 8.w),
-          GestureDetector(
-            onTap: _replayHomeTour,
-            child: Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(35),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withAlpha(45),
-                  width: 1,
+          if (_isLoggedIn) ...[
+            SizedBox(width: 8.w),
+            GestureDetector(
+              onTap: _replayHomeTour,
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(35),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withAlpha(45),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.help_outline_rounded,
+                  color: Colors.white,
+                  size: 20.sp,
                 ),
               ),
-              child: Icon(
-                Icons.help_outline_rounded,
-                color: Colors.white,
-                size: 20.sp,
-              ),
             ),
-          ),
+          ],
         ],
       ),
     );

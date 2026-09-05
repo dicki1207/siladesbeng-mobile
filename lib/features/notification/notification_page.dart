@@ -281,7 +281,7 @@ class _NotificationPageState extends State<NotificationPage> {
     switch (type) {
       case 'pesan_admin':
         return {
-          'label': 'Pesan Admin',
+          'label': 'Informasi Desa',
           'icon': Icons.admin_panel_settings_rounded,
           'gradient': const [Color(0xFF9333EA), Color(0xFFC084FC)],
           'lightBg': const Color(0xFFF3E8FF),
@@ -492,9 +492,9 @@ class _NotificationPageState extends State<NotificationPage> {
                           'unread',
                         ),
                         SizedBox(width: 8.w),
-                        _buildFilterChip('Pesan Admin', 'pesan_admin'),
+                        _buildFilterChip('Informasi Desa', 'pesan_admin'),
                         SizedBox(width: 8.w),
-                        _buildFilterChip('Status & Transaksi', 'status'),
+                        _buildFilterChip('Status Transaksi', 'status'),
                       ],
                     ),
                   ),
@@ -592,7 +592,11 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Notifikasi dan pesan dari admin desa akan muncul di sini.',
+            _selectedFilter == 'pesan_admin' 
+                ? 'Belum ada informasi terbaru dari desa.' 
+                : (_selectedFilter == 'status' 
+                    ? 'Belum ada notifikasi terkait transaksi atau pengajuan.'
+                    : 'Notifikasi dan informasi desa akan muncul di sini.'),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13.sp,

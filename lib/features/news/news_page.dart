@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/services/news_service.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
@@ -32,12 +33,35 @@ class _NewsPageState extends State<NewsPage> {
 
   List<Map<String, dynamic>> _newsList = [];
   bool _isLoading = true;
+  bool _isLoggedIn = false;
   final NewsService _newsService = NewsService();
 
   @override
   void initState() {
     super.initState();
-    _fetchNews();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? prefs.getString('token');
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = token != null && token.isNotEmpty;
+      });
+    }
+    
+    // Guest should not see Pengumuman (RT/RW specific)
+    if (widget.postCategory == 'Berita' || _isLoggedIn) {
+      _fetchNews();
+    } else {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _newsList = [];
+        });
+      }
+    }
   }
 
   Future<void> _fetchNews() async {
@@ -55,7 +79,6 @@ class _NewsPageState extends State<NewsPage> {
 
     if (data.isNotEmpty) {
       final validData = data
-          .where((item) => !(item['title']?.toString().toLowerCase().contains('testing') ?? false))
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
 
@@ -190,7 +213,7 @@ class _NewsPageState extends State<NewsPage> {
               ),
               iconTheme: const IconThemeData(color: Colors.white),
             ),
-      floatingActionButton: isBerita
+      floatingActionButton: isBerita || !_isLoggedIn
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
@@ -430,7 +453,7 @@ class _NewsPageState extends State<NewsPage> {
                             Text(
                               isBerita
                                   ? 'Belum Ada Berita'
-                                  : 'Belum Ada Pengumuman',
+                                  : (!_isLoggedIn ? 'Silakan Login' : 'Belum Ada Pengumuman'),
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
@@ -443,7 +466,7 @@ class _NewsPageState extends State<NewsPage> {
                             Text(
                               isBerita
                                   ? 'Belum ada berita daerah yang dipublikasikan.'
-                                  : 'Belum ada pengumuman yang sesuai dengan filter.',
+                                  : (!_isLoggedIn ? 'Anda harus login untuk melihat pengumuman daerah khusus untuk wilayah Anda.' : 'Belum ada pengumuman yang sesuai dengan filter.'),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: isDark

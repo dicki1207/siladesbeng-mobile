@@ -1010,16 +1010,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.help_outline_rounded,
-                        color: Colors.white,
-                        size: 22.sp,
+                    if (_isLoggedIn) ...[
+                      IconButton(
+                        icon: Icon(
+                          Icons.help_outline_rounded,
+                          color: Colors.white,
+                          size: 22.sp,
+                        ),
+                        tooltip: 'Panduan Halaman',
+                        onPressed: _replayTour,
                       ),
-                      tooltip: 'Panduan Halaman',
-                      onPressed: _replayTour,
-                    ),
-                    SizedBox(width: 4.w),
+                      SizedBox(width: 4.w),
+                    ],
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 12.w,
@@ -1182,6 +1184,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         targetPage: const TransactionHistoryPage(),
                         isFirst: true,
                         isLast: false,
+                        onTapOverride: !_isLoggedIn ? () => _navigateToLogin() : null,
                       ),
                     ),
                     if (_userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin')
@@ -1217,11 +1220,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         icon: Icons.handshake_rounded,
                         title: 'Gabung Kemitraan',
-                        targetPage: const PartnershipPage(),
+                        targetPage: PartnershipPage(
+                          isLoggedIn: _isLoggedIn,
+                          onLoginRequest: _navigateToLogin,
+                        ),
                         isFirst: false,
                         isLast: true,
                       ),
-                  ]),
+                    ]),
                   SizedBox(height: 24.h),
                   _buildSectionHeader(
                     context,
@@ -1364,6 +1370,17 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _navigateToLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+    ).then((value) {
+      if (value == true) {
+        _loadProfile();
+      }
+    });
+  }
+
   Widget _buildSectionHeader(
     BuildContext context,
     String title, [
@@ -1421,6 +1438,7 @@ class _ProfilePageState extends State<ProfilePage> {
     Color? iconColor,
     required bool isFirst,
     required bool isLast,
+    VoidCallback? onTapOverride,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = iconColor ?? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7));
@@ -1434,6 +1452,10 @@ class _ProfilePageState extends State<ProfilePage> {
               bottom: Radius.circular(isLast ? 16 : 0),
             ),
             onTap: () async {
+              if (onTapOverride != null) {
+                onTapOverride();
+                return;
+              }
               if (targetPage != null) {
                 final result = await Navigator.push(
                   context,

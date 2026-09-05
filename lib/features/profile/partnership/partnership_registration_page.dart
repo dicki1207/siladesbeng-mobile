@@ -183,8 +183,8 @@ class _PartnershipRegistrationPageState
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedDesaId == null) {
-      _showError('Silakan pilih Kelurahan/Desa terlebih dahulu');
+    if (_selectedKecamatanId == null || _selectedDesaId == null) {
+      _showError('Silakan pilih Kecamatan dan Kelurahan/Desa terlebih dahulu');
       return;
     }
 
@@ -202,7 +202,7 @@ class _PartnershipRegistrationPageState
       position: _jabatanController.text.trim(),
       contactPhone: _noHpController.text.trim(),
       contactEmail: _emailController.text.trim(),
-      regionId: _selectedDesaId!,
+      regionId: _selectedKecamatanId!,
       regionType: 'desa',
       regionName: regionName,
       reason: _pesanController.text.trim().isNotEmpty

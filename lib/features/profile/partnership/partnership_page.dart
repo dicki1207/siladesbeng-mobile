@@ -4,7 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:siladesbeng_mobile/features/profile/partnership/partnership_registration_page.dart';
 
 class PartnershipPage extends StatelessWidget {
-  const PartnershipPage({super.key});
+  final bool isLoggedIn;
+  final VoidCallback onLoginRequest;
+
+  const PartnershipPage({
+    super.key,
+    required this.isLoggedIn,
+    required this.onLoginRequest,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +140,23 @@ class PartnershipPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _handleRegistration(BuildContext context, {BuildContext? modalContext}) {
+    if (modalContext != null) {
+      Navigator.pop(modalContext);
+    }
+    if (!isLoggedIn) {
+      Navigator.pop(context); // Pop back to profile
+      onLoginRequest();
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const PartnershipRegistrationPage(),
+        ),
+      );
+    }
   }
 
   Widget _buildIntroCard(BuildContext context, bool isDark) {
@@ -465,12 +489,7 @@ class PartnershipPage extends StatelessWidget {
       scaleValue: 0.97,
       onTap: () {
         HapticFeedback.mediumImpact();
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const PartnershipRegistrationPage(),
-          ),
-        );
+        _handleRegistration(context);
       },
       child: Container(
         width: double.infinity,
@@ -596,13 +615,7 @@ class PartnershipPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PartnershipRegistrationPage(),
-                      ),
-                    );
+                    _handleRegistration(context, modalContext: ctx);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2FA2F1),
@@ -735,13 +748,7 @@ class PartnershipPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PartnershipRegistrationPage(),
-                      ),
-                    );
+                    _handleRegistration(context, modalContext: ctx);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,
@@ -868,13 +875,7 @@ class PartnershipPage extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PartnershipRegistrationPage(),
-                      ),
-                    );
+                    _handleRegistration(context, modalContext: ctx);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,

@@ -219,49 +219,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   letterSpacing: -0.3,
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h),
               Text(
-                'Masukkan alamat email atau nomor telepon yang terdaftar pada akun Anda untuk menerima kode OTP pemulihan.',
+                'Masukkan email atau nomor HP untuk menerima kode OTP.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isDark ? Colors.white60 : const Color(0xFF64748B),
                   fontSize: 13.sp,
-                  height: 1.5,
-                ),
-              ),
-
-              SizedBox(height: 24.h),
-
-              // Kartu Informasi OTP
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: _primaryBlue.withAlpha(isDark ? 15 : 12),
-                  borderRadius: BorderRadius.circular(14.r),
-                  border: Border.all(
-                    color: _primaryBlue.withAlpha(isDark ? 30 : 40),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      color: _primaryBlue,
-                      size: 18.sp,
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: Text(
-                        'Kode verifikasi OTP akan dikirimkan otomatis melalui Email atau WhatsApp sesuai kontak yang Anda masukkan.',
-                        style: TextStyle(
-                          fontSize: 11.5.sp,
-                          color: isDark ? Colors.white70 : const Color(0xFF0369A1),
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
+                  height: 1.4,
                 ),
               ),
 
@@ -288,7 +253,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Email atau Nomor Telepon',
+                      'Email atau Nomor HP',
                       style: TextStyle(
                         fontSize: 12.5.sp,
                         fontWeight: FontWeight.w600,
@@ -304,7 +269,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         color: isDark ? Colors.white : const Color(0xFF0F172A),
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Contoh: warga@email.com atau 0812xxxx',
+                        hintText: 'Email atau nomor WhatsApp',
                         hintStyle: TextStyle(
                           fontSize: 12.5.sp,
                           color: isDark ? Colors.white30 : Colors.grey[400],
