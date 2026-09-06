@@ -67,11 +67,7 @@ class _GasPageState extends State<GasPage> {
     }
   }
 
-  void _replayTour() {
-    if (_filteredGasItems.isNotEmpty) {
-      _showcaseView.startShowCase([_keyGasItem]);
-    }
-  }
+
 
   Future<void> _fetchGas() async {
     try {
@@ -321,15 +317,6 @@ class _GasPageState extends State<GasPage> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.help_outline_rounded,
-              color: Colors.white,
-              size: 20.sp,
-            ),
-            tooltip: 'Panduan Halaman',
-            onPressed: _replayTour,
-          ),
           if (_categories.length > 1)
             IconButton(
               icon: Icon(

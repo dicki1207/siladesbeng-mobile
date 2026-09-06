@@ -84,11 +84,6 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline, color: Colors.white),
-            tooltip: 'Bantuan',
-            onPressed: () {},
-          ),
         ],
       ),
       body: SingleChildScrollView(

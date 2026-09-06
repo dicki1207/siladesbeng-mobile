@@ -11,6 +11,7 @@ import 'pasar_favorite_page.dart';
 import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
+import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 
 class StorePage extends StatefulWidget {
   const StorePage({super.key});
@@ -286,13 +287,31 @@ class _StorePageState extends State<StorePage> {
     }
   }
 
-  void _replayTour() {
-    _showcaseView.startShowCase([
-      _searchKey,
-      _categoryKey,
-      _cartKey,
-    ]);
+  Future<bool> _checkLoginAndProceed() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    if (token == null || token.isEmpty) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Anda harus login terlebih dahulu!')),
+      );
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+      final newPrefs = await SharedPreferences.getInstance();
+      final newToken = newPrefs.getString('auth_token');
+      if (newToken != null && newToken.isNotEmpty) {
+        _fetchCartCount();
+        _fetchData();
+        return true;
+      }
+      return false;
+    }
+    return true;
   }
+
+
 
   @override
   void dispose() {
@@ -945,15 +964,7 @@ class _StorePageState extends State<StorePage> {
         elevation: 0,
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.help_outline_rounded,
-              color: Colors.white,
-              size: 22.sp,
-            ),
-            tooltip: 'Panduan Halaman',
-            onPressed: _replayTour,
-          ),
+          // Help button removed as per user request
         ],
         leading: IconButton(
           icon: Icon(
@@ -1126,7 +1137,8 @@ class _StorePageState extends State<StorePage> {
                         color: Colors.transparent,
                         child: InkWell(
                           borderRadius: BorderRadius.circular(14.r),
-                          onTap: () {
+                          onTap: () async {
+                            if (!(await _checkLoginAndProceed())) return;
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -1183,6 +1195,7 @@ class _StorePageState extends State<StorePage> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(14.r),
                             onTap: () async {
+                              if (!(await _checkLoginAndProceed())) return;
                               await Navigator.push(
                                 context,
                                 MaterialPageRoute(

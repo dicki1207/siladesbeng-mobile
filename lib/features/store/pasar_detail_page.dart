@@ -10,6 +10,8 @@ import 'bumdes_store_profile_page.dart';
 import 'toko_chat_page.dart';
 import 'report_store_dialog.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
+import 'package:siladesbeng_mobile/features/auth/login_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PasarDetailPage extends StatefulWidget {
  final int productId;
@@ -50,6 +52,26 @@ class _PasarDetailPageState extends State<PasarDetailPage>
   _tabController.dispose();
   _pageController.dispose();
   super.dispose();
+ }
+
+ Future<bool> _checkLoginAndProceed() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('auth_token');
+  if (token == null || token.isEmpty) {
+   if (!mounted) return false;
+   ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Anda harus login terlebih dahulu!')),
+   );
+   await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const LoginPage()),
+   );
+   // Check again after return
+   final newPrefs = await SharedPreferences.getInstance();
+   final newToken = newPrefs.getString('auth_token');
+   return newToken != null && newToken.isNotEmpty;
+  }
+  return true;
  }
 
  Future<void> _fetchDetail() async {
@@ -238,6 +260,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
         ),
         tooltip: 'Simpan ke Favorit',
         onPressed: () async {
+         if (!(await _checkLoginAndProceed())) return;
          final isNow = await _favService.toggleProductFavorite(
           widget.productId,
          );
@@ -1132,7 +1155,8 @@ class _PasarDetailPageState extends State<PasarDetailPage>
               borderRadius: BorderRadius.circular(12),
              ),
              child: IconButton(
-              onPressed: () {
+              onPressed: () async {
+               if (!(await _checkLoginAndProceed())) return;
                Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -1166,6 +1190,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
             Expanded(
              child: OutlinedButton.icon(
               onPressed: () async {
+               if (!(await _checkLoginAndProceed())) return;
                bool success = await _cartService.addToCart(
                 widget.productId,
                 _quantity,
@@ -1216,6 +1241,7 @@ class _PasarDetailPageState extends State<PasarDetailPage>
             Expanded(
              child: ElevatedButton.icon(
               onPressed: () async {
+               if (!(await _checkLoginAndProceed())) return;
                bool success = await _cartService.addToCart(
                 widget.productId,
                 _quantity,

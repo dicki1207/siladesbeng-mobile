@@ -86,16 +86,6 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
-  void _replayTour() {
-    _showcaseView.startShowCase([
-      _keyTujuan,
-      _keyKategori,
-      _keyLokasi,
-      _keyDeskripsi,
-      _keyFoto,
-    ]);
-  }
-
   @override
   void dispose() {
     // _showcaseView.unregister(); // Prevent unregister on route replace race condition
@@ -604,11 +594,6 @@ class _ReportPageState extends State<ReportPage> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
-            tooltip: 'Panduan Halaman',
-            onPressed: _replayTour,
-          ),
         ],
       ),
       body: ListView(

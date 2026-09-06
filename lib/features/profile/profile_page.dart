@@ -92,9 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _replayTour() {
-    _showcaseView.startShowCase(_activeShowcaseKeys);
-  }
+
 
   Future<void> _loadProfile() async {
     final prefs = await SharedPreferences.getInstance();
@@ -1010,18 +1008,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_isLoggedIn) ...[
-                      IconButton(
-                        icon: Icon(
-                          Icons.help_outline_rounded,
-                          color: Colors.white,
-                          size: 22.sp,
-                        ),
-                        tooltip: 'Panduan Halaman',
-                        onPressed: _replayTour,
-                      ),
-                      SizedBox(width: 4.w),
-                    ],
+                    // Help button removed
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 12.w,

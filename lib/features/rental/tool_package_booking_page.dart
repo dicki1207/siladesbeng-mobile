@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_booking_page.dart';
+import 'package:siladesbeng_mobile/features/common/unit_service_chat_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
 
 class ToolPackageBookingPage extends StatefulWidget {
@@ -93,13 +94,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
     }
   }
 
-  void _replayRentalTour() {
-    _showcaseView.startShowCase([
-      _keyTabs,
-      _keyItem,
-      _keyBottomBar,
-    ]);
-  }
+
 
   @override
   void dispose() {
@@ -346,43 +341,84 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
                     ),
               ],
               SizedBox(height: 24.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    if (adminIndex != null) {
-                      setState(() {
-                        _tabController.index = 0;
-                        _selectedPackageIndex = adminIndex;
-                      });
-                      _handleBooking();
-                    } else if (customIndex != null) {
-                      setState(() {
-                        _tabController.index = 1;
-                        _customItems[customIndex]['selected'] = true;
-                        if (_parseInt(_customItems[customIndex]['qty']) == 0) {
-                          _customItems[customIndex]['qty'] = 1;
-                        }
-                      });
-                      _handleBooking();
-                    }
-                  },
-                  icon: Icon(Icons.shopping_bag_outlined, size: 18.sp),
-                  label: Text(
-                    'Pilih & Sewa Paket Ini',
-                    style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
+              Row(
+                children: [
+                  Container(
+                    height: 48.h,
+                    width: 48.h,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white24
+                            : primaryColor.withValues(alpha: 0.3),
+                      ),
                       borderRadius: BorderRadius.circular(14.r),
                     ),
-                    elevation: 0,
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => UnitServiceChatPage(
+                              serviceType: 'penyewaan',
+                              title: 'Layanan Pesan Penyewaan Alat',
+                              itemInquiry: item['name'] ?? 'Paket Alat',
+                              itemImage: item['image'],
+                              itemPrice: itemPrice.toString(),
+                              itemUnit: '/ hari',
+                            ),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: primaryColor,
+                        size: 20.sp,
+                      ),
+                      tooltip: 'Tanya Petugas',
+                    ),
                   ),
-                ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        if (adminIndex != null) {
+                          setState(() {
+                            _tabController.index = 0;
+                            _selectedPackageIndex = adminIndex;
+                          });
+                          _handleBooking();
+                        } else if (customIndex != null) {
+                          setState(() {
+                            _tabController.index = 1;
+                            _customItems[customIndex]['selected'] = true;
+                            if (_parseInt(_customItems[customIndex]['qty']) == 0) {
+                              _customItems[customIndex]['qty'] = 1;
+                            }
+                          });
+                          _handleBooking();
+                        }
+                      },
+                      icon: Icon(Icons.shopping_bag_outlined, size: 18.sp),
+                      label: Text(
+                        'Pilih & Sewa Paket Ini',
+                        style: TextStyle(
+                            fontSize: 14.sp, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -503,10 +539,24 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
-            tooltip: 'Panduan Sewa',
-            onPressed: _replayRentalTour,
+            icon: const Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: Colors.white,
+            ),
+            tooltip: 'Chat Layanan Penyewaan Alat',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const UnitServiceChatPage(
+                    serviceType: 'penyewaan',
+                    title: 'Layanan Pesan Penyewaan Alat',
+                  ),
+                ),
+              );
+            },
           ),
+          SizedBox(width: 4.w),
         ],
         elevation: 0,
         centerTitle: true,

@@ -34,9 +34,7 @@ class ItemDetailPage extends StatelessWidget {
 
     final title = item['name'] ?? item['jenis_gas'] ?? item['title'] ?? 'Tanpa Nama';
     final price = item['price'] ?? item['harga_satuan'] ?? item['harga_sewa'] ?? 0;
-    final description = item['description'] ??
-        item['deskripsi'] ??
-        'Produk resmi BUMDes yang siap melayani kebutuhan warga desa dengan kualitas terjamin.';
+    final description = item['description'] ?? item['deskripsi'];
 
     int stock = 0;
     if (item['stok'] != null) {
@@ -371,63 +369,28 @@ class ItemDetailPage extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // Notice Box
-                  Container(
-                    padding: EdgeInsets.all(14.w),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(14.r),
-                      border: Border.all(
-                        color: primaryColor.withValues(alpha: 0.15),
+
+
+                  if (description != null && description.toString().trim().isNotEmpty) ...[
+                    SizedBox(height: 24.h),
+                    Text(
+                      'Deskripsi Lengkap',
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
                       ),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          size: 18.sp,
-                          color: primaryColor,
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Text(
-                            category == 'Beli Gas'
-                                ? (lowerTitle.contains('3kg') || lowerTitle.contains('3 kg')
-                                    ? 'Khusus gas subsidi, Anda dapat menukar tabung kosong langsung saat penerimaan di pangkalan BUMDes.'
-                                    : 'Pesanan dapat diantar langsung ke rumah atau diambil secara mandiri di kantor BUMDes.')
-                                : 'Layanan sewa didukung oleh BUMDes resmi untuk kemudahan masyarakat desa.',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              height: 1.4,
-                              color: isDark ? Colors.white70 : const Color(0xFF334155),
-                            ),
-                          ),
-                        ),
-                      ],
+                    SizedBox(height: 8.h),
+                    Text(
+                      description.toString(),
+                      style: TextStyle(
+                        fontSize: 13.5.sp,
+                        color: isDark ? Colors.white60 : Colors.grey[700],
+                        height: 1.55,
+                      ),
                     ),
-                  ),
-
-                  SizedBox(height: 24.h),
-
-                  // Description
-                  Text(
-                    'Deskripsi Lengkap',
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF1E293B),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      color: isDark ? Colors.white60 : Colors.grey[700],
-                      height: 1.55,
-                    ),
-                  ),
+                  ],
                 ],
               ),
             ),

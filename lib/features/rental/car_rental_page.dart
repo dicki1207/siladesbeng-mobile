@@ -53,11 +53,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
     }
   }
 
-  void _replayCarTour() {
-    if (_rentals.isNotEmpty) {
-      _showcaseView.startShowCase([_keyCarItem]);
-    }
-  }
+
 
   Future<void> _fetchRentals() async {
     final data = await _rentalService.getMobilItems();
@@ -151,11 +147,6 @@ class _CarRentalPageState extends State<CarRentalPage> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
-            tooltip: 'Panduan Sewa Kendaraan',
-            onPressed: _replayCarTour,
-          ),
         ],
       ),
       body: RefreshIndicator(

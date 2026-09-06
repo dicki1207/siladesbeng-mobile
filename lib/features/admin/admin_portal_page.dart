@@ -82,9 +82,7 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
     }
   }
 
-  void _replayTour() {
-    _showcaseView.startShowCase(_activeShowcaseKeys);
-  }
+
 
   String? _resolveAvatarUrl(String? url) {
     if (url == null || url.trim().isEmpty) return null;
@@ -255,22 +253,6 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
           ],
         ),
         actions: [
-          IconButton(
-            tooltip: 'Panduan Menu Pengurus',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(isDark ? 25 : 35),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.help_outline_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-            onPressed: _replayTour,
-          ),
           const SizedBox(width: 4),
         ],
       ),

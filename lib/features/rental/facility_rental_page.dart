@@ -75,9 +75,7 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
     }
   }
 
-  void _replayFacilityTour() {
-    _showcaseView.startShowCase([_keyFacilityTabs, _keyFacilityItem]);
-  }
+
 
   Future<void> _fetchFacilities() async {
     setState(() => _isLoading = true);
@@ -662,11 +660,6 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded, color: Colors.white),
-            tooltip: 'Panduan Fasilitas',
-            onPressed: _replayFacilityTour,
-          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),

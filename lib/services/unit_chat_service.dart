@@ -83,6 +83,7 @@ class UnitChatService {
     String? sessionToken,
     int? regionId,
     String? itemReference,
+    Map<String, dynamic>? itemData,
   }) async {
     try {
       final token = sessionToken ?? await getSavedSessionToken(service);
@@ -100,6 +101,9 @@ class UnitChatService {
       }
       if (itemReference != null && itemReference.isNotEmpty) {
         body['item_reference'] = itemReference;
+      }
+      if (itemData != null) {
+        body['item_data'] = itemData;
       }
 
       final response = await http.post(

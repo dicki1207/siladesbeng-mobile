@@ -175,6 +175,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
       text,
       regionId: widget.regionId,
       itemReference: widget.itemInquiry,
+      itemData: itemData,
     );
 
     if (!mounted) return;

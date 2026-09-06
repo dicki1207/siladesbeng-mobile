@@ -60,6 +60,7 @@ class _HomePageState extends State<HomePage> {
   String? _userImagePath;
   String? _userImageUrl;
   bool _isLoggedIn = false;
+  int _unreadNotificationCount = 0;
 
   @override
   void initState() {
@@ -70,6 +71,7 @@ class _HomePageState extends State<HomePage> {
     _announcements = [];
     _loadProfileData();
     _fetchPublicData();
+    _fetchUnreadNotifications();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndStartShowcase(
@@ -99,14 +101,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _replayHomeTour() {
-    _showcaseView.startShowCase([
-      _keySearch,
-      _keyNotif,
-      _keyUnitPelayanan,
-      _keyAsisten,
-    ]);
-  }
 
   Future<void> _loadProfileData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -124,6 +118,39 @@ class _HomePageState extends State<HomePage> {
         _userImagePath = imagePath;
         _userImageUrl = imageUrl;
       });
+    }
+  }
+
+  Future<void> _fetchUnreadNotifications() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? prefs.getString('auth_token');
+      if (token == null) {
+        if (mounted) setState(() => _unreadNotificationCount = 0);
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/api/notifications'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          final count = data['data']['unreadCount'] ?? 0;
+          if (mounted) {
+            setState(() {
+              _unreadNotificationCount = int.tryParse(count.toString()) ?? 0;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching unread notifications: $e');
     }
   }
 
@@ -217,9 +244,11 @@ class _HomePageState extends State<HomePage> {
   void didUpdateWidget(covariant HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
     _loadProfileData();
+    _fetchUnreadNotifications();
   }
 
   Future<void> _fetchPublicData() async {
+    _fetchUnreadNotifications();
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -439,6 +468,15 @@ class _HomePageState extends State<HomePage> {
 
     if (!mounted) return;
 
+    // Akses publik untuk Pasar Daerah (Toko BUMDes)
+    if (actionName == 'Toko BUMDes') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const StorePage()),
+      );
+      return;
+    }
+
     if (token != null && token.isNotEmpty) {
       if (isBlocked) {
         showDialog(
@@ -494,12 +532,7 @@ class _HomePageState extends State<HomePage> {
         return;
       }
 
-      if (actionName == 'Toko BUMDes') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const StorePage()),
-        );
-      } else if (actionName == 'Sewa Alat') {
+      if (actionName == 'Sewa Alat') {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const ToolPackageBookingPage()),
@@ -687,59 +720,29 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       // Icon Stack
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(4.w),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 10,
-                                ),
-                              ],
+                      Container(
+                        padding: EdgeInsets.all(4.w),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
                             ),
-                            child: ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                                memCacheWidth: 500,
-                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
-                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
-                              ),
-                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 500,
+                            placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                            errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                           ),
-                          Positioned(
-                            top: -2,
-                            right: -2,
-                            child: Container(
-                              padding: EdgeInsets.all(6.w),
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFEF4444,
-                                ), // Red badge color
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Text(
-                                '1',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -850,7 +853,7 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(
                     builder: (context) => const NotificationPage(),
                   ),
-                );
+                ).then((_) => _fetchUnreadNotifications());
               },
               child: Stack(
                 clipBehavior: Clip.none,
@@ -871,48 +874,28 @@ class _HomePageState extends State<HomePage> {
                       size: 20.sp,
                     ),
                   ),
-                  Positioned(
-                    top: 1.h,
-                    right: 1.w,
-                    child: Container(
-                      width: 9,
-                      height: 9,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF2563EB),
-                          width: 1.5,
+                  if (_unreadNotificationCount > 0)
+                    Positioned(
+                      top: 1.h,
+                      right: 1.w,
+                      child: Container(
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF2563EB),
+                            width: 1.5,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
           ),
-          if (_isLoggedIn) ...[
-            SizedBox(width: 8.w),
-            GestureDetector(
-              onTap: _replayHomeTour,
-              child: Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(35),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withAlpha(45),
-                    width: 1,
-                  ),
-                ),
-                child: Icon(
-                  Icons.help_outline_rounded,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
-              ),
-            ),
-          ],
+          // Help button removed as per user request
         ],
       ),
     );
