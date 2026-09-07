@@ -83,6 +83,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
   bool _faceDetected = false;
   String? _brightnessWarning;
   String? _facePositionWarning;
+  bool _isTorchOn = false;
 
   final KycService _kycService = KycService();
   bool _isUploadingFace = false;
@@ -113,6 +114,25 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
     _pulseAnimation = Tween<double>(begin: 0.98, end: 1.03).animate(
       CurvedAnimation(parent: _pulseAnimController, curve: Curves.easeInOut),
     );
+  }
+
+  Future<void> _toggleTorch() async {
+    final bool nextState = !_isTorchOn;
+    setState(() => _isTorchOn = nextState);
+    HapticFeedback.lightImpact();
+
+    // 1. Coba aktifkan flash hardware jika didukung oleh lensa kamera
+    try {
+      if (_cameraController != null && _cameraController!.value.isInitialized) {
+        await _cameraController!.setFlashMode(
+          nextState ? FlashMode.torch : FlashMode.off,
+        );
+      }
+    } catch (e) {
+      debugPrint('Hardware torch flash tidak tersedia pada lensa ini: $e');
+      // Hardware torch fisik mungkin tidak tersedia di kamera depan,
+      // teknologi Screen Flash (penerangan layar softbox) otomatis menyala!
+    }
   }
 
   Future<void> _initializeCamera({bool useFrontCamera = true}) async {
@@ -168,6 +188,11 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
 
   @override
   void dispose() {
+    if (_isTorchOn) {
+      try {
+        _cameraController?.setFlashMode(FlashMode.off);
+      } catch (_) {}
+    }
     _scannerAnimController.dispose();
     _pulseAnimController.dispose();
     _cameraController?.stopImageStream();
@@ -235,7 +260,9 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
           double avgBrightness = sum / sampleCount;
           String? warning;
           if (avgBrightness < 35) {
-            warning = 'Kurang Cahaya: Cari tempat yang lebih terang';
+            warning = _isTorchOn
+                ? 'Dekatkan wajah ke arah layar'
+                : 'Kurang Cahaya: Ketuk senter di kanan atas';
           } else if (avgBrightness > 225) {
             warning = 'Terlalu Silau: Hindari cahaya matahari langsung';
           }
@@ -557,6 +584,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                 isSuccess: _isFaceInstructionSuccess,
                 isFaceDetected: _faceDetected,
                 laserProgress: _scannerAnimController.value,
+                isTorchOn: _isTorchOn,
               ),
             ),
 
@@ -609,7 +637,41 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                           ],
                         ),
                       ),
-                      SizedBox(width: 40.w), // Spacer balance
+                      // Tombol Senter / Screen Flashlight
+                      IconButton(
+                        tooltip: _isTorchOn ? 'Matikan Senter' : 'Nyalakan Senter Wajah',
+                        icon: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: EdgeInsets.all(8.w),
+                          decoration: BoxDecoration(
+                            color: _isTorchOn
+                                ? const Color(0xFFF59E0B)
+                                : Colors.black.withAlpha(120),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: _isTorchOn
+                                  ? const Color(0xFFFDE68A)
+                                  : Colors.white24,
+                              width: 1.5,
+                            ),
+                            boxShadow: _isTorchOn
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFFF59E0B).withAlpha(160),
+                                      blurRadius: 10,
+                                      spreadRadius: 2,
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: Icon(
+                            _isTorchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+                            color: _isTorchOn ? Colors.white : Colors.white70,
+                            size: 18.sp,
+                          ),
+                        ),
+                        onPressed: _toggleTorch,
+                      ),
                     ],
                   ),
                 ),
@@ -618,17 +680,25 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
 
                 // 4-Step Indicator Pills
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 32.w),
-                  child: Row(
-                    children: [
-                      _buildStepPill('1. Posisi', 0),
-                      SizedBox(width: 6.w),
-                      _buildStepPill('2. Kanan', 1),
-                      SizedBox(width: 6.w),
-                      _buildStepPill('3. Kiri', 2),
-                      SizedBox(width: 6.w),
-                      _buildStepPill('4. Kedip', 3),
-                    ],
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(130),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Row(
+                      children: [
+                        _buildStepPill('1. Posisi', 0),
+                        SizedBox(width: 5.w),
+                        _buildStepPill('2. Kanan', 1),
+                        SizedBox(width: 5.w),
+                        _buildStepPill('3. Kiri', 2),
+                        SizedBox(width: 5.w),
+                        _buildStepPill('4. Kedip', 3),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -1168,6 +1238,7 @@ class FaceScanMaskPainter extends CustomPainter {
   final bool isSuccess;
   final bool isFaceDetected;
   final double laserProgress; // 0.0 to 1.0 for sweep effect
+  final bool isTorchOn;
 
   FaceScanMaskPainter({
     required this.ovalWidth,
@@ -1176,6 +1247,7 @@ class FaceScanMaskPainter extends CustomPainter {
     required this.isSuccess,
     required this.isFaceDetected,
     required this.laserProgress,
+    this.isTorchOn = false,
   });
 
   @override
@@ -1189,17 +1261,34 @@ class FaceScanMaskPainter extends CustomPainter {
       height: ovalHeight,
     );
 
-    // ── 1. DARK BACKGROUND WITH TRANSPARENT OVAL CUTOUT ──
+    // ── 1. BACKGROUND WITH TRANSPARENT OVAL CUTOUT ──
     final Path backgroundPath = Path()..addRect(fullScreenRect);
     final Path ovalPath = Path()..addOval(ovalRect);
     final Path maskPath = Path.combine(PathOperation.difference, backgroundPath, ovalPath);
 
-    final Paint maskPaint = Paint()..color = const Color(0xE0050B14);
+    // Saat senter/penerang aktif, gunakan warna putih murni (Screen Flash)
+    // yang berfungsi sebagai softbox ring light menyinari wajah secara merata di tempat gelap
+    final Paint maskPaint = Paint()
+      ..color = isTorchOn
+          ? const Color(0xFFFFFFFF)
+          : const Color(0xE0050B14);
     canvas.drawPath(maskPath, maskPaint);
+
+    // Pendaran cahaya hangat di sekitar frame wajah saat senter aktif
+    if (isTorchOn) {
+      final Paint torchHaloPaint = Paint()
+        ..color = const Color(0xFFFFFBEB).withAlpha(220)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 14.0
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+      canvas.drawOval(ovalRect, torchHaloPaint);
+    }
 
     // ── 2. OVAL BASE TRACK BORDER ──
     final Paint trackBorderPaint = Paint()
-      ..color = Colors.white.withAlpha(40)
+      ..color = isTorchOn
+          ? const Color(0xFFCBD5E1)
+          : Colors.white.withAlpha(40)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
     canvas.drawOval(ovalRect, trackBorderPaint);
@@ -1305,6 +1394,7 @@ class FaceScanMaskPainter extends CustomPainter {
         oldDelegate.progress != progress ||
         oldDelegate.isSuccess != isSuccess ||
         oldDelegate.isFaceDetected != isFaceDetected ||
-        oldDelegate.laserProgress != laserProgress;
+        oldDelegate.laserProgress != laserProgress ||
+        oldDelegate.isTorchOn != isTorchOn;
   }
 }

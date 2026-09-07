@@ -612,9 +612,15 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     String paymentMethod = 'tunai';
     if (_paymentCategory == 'bank') {
       paymentMethod = _selectedBank ?? 'bank_transfer_bca';
-    }
-    if (_paymentCategory == 'ewallet') {
+    } else if (_paymentCategory == 'ewallet') {
       paymentMethod = _selectedEWallet ?? 'qris';
+    }
+
+    // BACKEND COMPATIBILITY: MobilBookingApiController strictly expects 'tunai' or 'transfer'
+    if (itemType == 'mobil' || cat.contains('mobil')) {
+      if (_paymentCategory == 'bank' || _paymentCategory == 'ewallet') {
+        paymentMethod = 'transfer';
+      }
     }
 
     final String startDate = DateTime.now().toIso8601String().substring(0, 10);
@@ -625,7 +631,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
 
     Map<String, dynamic> result;
 
-    if (itemType == 'paket' || cat.contains('paket')) {
+    setState(() => _isSubmitting = true);
+
+    if (widget.item['is_package'] == true) {
       result = await _rentalService.bookPackage(
         packageName: widget.item['name'] ?? 'Paket Sewa',
         itemsDescription: widget.item['description'] ?? '',
@@ -637,12 +645,16 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         paymentMethod: paymentMethod,
       );
     } else if (itemType == 'mobil' || cat.contains('mobil')) {
+      // Determine delivery method
+      String deliveryMethod = _addressController.text.trim().isNotEmpty ? 'antar' : 'jemput';
+      
       result = await _rentalService.bookMobil(
         mobilId: itemId,
         startDate: startDate,
         endDate: endDate,
         recipientName: _nameController.text,
         deliveryAddress: _addressController.text,
+        deliveryMethod: deliveryMethod,
         paymentMethod: paymentMethod,
         rentalPurpose: _notesController.text,
         denganSupir: _driverOption != 'sendiri',
