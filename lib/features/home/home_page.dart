@@ -163,16 +163,10 @@ class _HomePageState extends State<HomePage> {
         'title': 'Pasar Daerah',
       },
       {
-        'action': 'Beli Gas',
-        'imageUrl': 'assets/images/F2.png',
-        'color': 'green',
-        'title': 'Pembelian Gas',
-      },
-      {
-        'action': 'Buat Laporan',
-        'imageUrl': 'assets/images/lapor.png',
-        'color': 'red',
-        'title': 'Pelaporan',
+        'action': 'Sewa Mobil',
+        'imageUrl': 'assets/images/mobil.png',
+        'color': 'blue',
+        'title': 'Penyewaan Mobil',
       },
       {
         'action': 'Sewa Alat',
@@ -181,10 +175,16 @@ class _HomePageState extends State<HomePage> {
         'title': 'Penyewaan Alat',
       },
       {
-        'action': 'Sewa Mobil',
-        'imageUrl': 'assets/images/mobil.png',
-        'color': 'blue',
-        'title': 'Penyewaan Kendaraan',
+        'action': 'Buat Laporan',
+        'imageUrl': 'assets/images/lapor.png',
+        'color': 'red',
+        'title': 'Pelaporan',
+      },
+      {
+        'action': 'Beli Gas',
+        'imageUrl': 'assets/images/F2.png',
+        'color': 'green',
+        'title': 'Pembelian Gas',
       },
       {
         'action': 'Sewa Fasilitas',
@@ -584,7 +584,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _getGreeting() {
-    return 'Selamat Siang'; // Sementara untuk pengeditan poster
+    final hour = DateTime.now().hour;
+    if (hour >= 4 && hour < 11) return 'Selamat Pagi';
+    if (hour >= 11 && hour < 15) return 'Selamat Siang';
+    if (hour >= 15 && hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
   }
 
   @override

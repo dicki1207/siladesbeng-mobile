@@ -243,16 +243,16 @@ class PartnershipPage extends StatelessWidget {
         'title': 'Daftar',
         'sub': 'Isi data desa & SK legalitas',
         'detail':
-            'Kepala Desa atau staf operator mengisi profil singkat desa, kontak resmi kantor, dan melampirkan file SK Pengesahan Desa/BUMDes langsung dari aplikasi tanpa proses rumit.',
+            'Perwakilan desa cukup mengisi profil singkat dan melampirkan file SK Pengesahan (Desa/BUMDes) langsung melalui aplikasi. Sangat praktis!',
         'icon': Icons.edit_document,
         'color': const Color(0xFF2FA2F1),
       },
       {
         'num': '2',
         'title': 'Verifikasi',
-        'sub': 'Validasi Admin Kabupaten',
+        'sub': 'Validasi Dokumen',
         'detail':
-            'Tim Administrator Diskominfotik / DPMD Kabupaten Bengkalis memvalidasi keabsahan pendaftaran maksimal 1x24 jam kerja untuk menjamin keamanan dan keaslian data desa Anda.',
+            'Data pendaftaran akan diverifikasi oleh Tim Pengelola dalam waktu maksimal 1x24 jam kerja demi memastikan keamanan sistem kita bersama.',
         'icon': Icons.verified_user_rounded,
         'color': const Color(0xFF8B5CF6),
       },
@@ -261,7 +261,7 @@ class PartnershipPage extends StatelessWidget {
         'title': 'Aktif',
         'sub': 'Kelola RT/RW & layanan',
         'detail':
-            'Sistem SilaDesBeng untuk desa Anda langsung aktif! Akun Kepala Desa, Sekdes, Ketua RT/RW, dan pengelola BUMDes siap melayani warga secara digital.',
+            'Sistem SilaDesBeng untuk desa Anda resmi aktif! Seluruh perangkat desa dan pengelola BUMDes kini siap melayani warga dengan lebih modern.',
         'icon': Icons.rocket_launch_rounded,
         'color': const Color(0xFF10B981),
       },
@@ -361,9 +361,8 @@ class PartnershipPage extends StatelessWidget {
         'icon': Icons.account_tree_rounded,
         'color': const Color(0xFF8B5CF6),
         'highlights': [
-          'Akun portal khusus Ketua RT dan RW untuk persetujuan surat pengantar dan mutasi domisili warga secara online.',
+          'Akun portal khusus Ketua RT dan RW untuk mengelola data kependudukan warga secara online.',
           'Buku administrasi penduduk digital dengan pencarian NIK & nomor KK instan.',
-          'Mempermudah penyaluran bansos atau agenda kemasyarakatan agar tepat sasaran.',
         ],
       },
       {

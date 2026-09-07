@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -66,8 +67,8 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
         break;
       case 'mobil':
         _quickReplies = [
+          'Apakah mobil ready?',
           'Armada mobil tersedia?',
-          'Bisa lepas kunci atau dengan supir?',
           'Syarat dokumen apa saja?',
         ];
         break;
@@ -120,7 +121,17 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
     if (!mounted) return;
 
     if (res['status'] == 'success' && res['data'] != null) {
-      final fetchedMessages = res['data']['messages'] ?? [];
+      final List fetchedMessages = res['data']['messages'] ?? [];
+
+      // Parse item_data jika masih berupa string JSON
+      for (var i = 0; i < fetchedMessages.length; i++) {
+        final msg = fetchedMessages[i];
+        if (msg['item_data'] != null && msg['item_data'] is String) {
+          try {
+            fetchedMessages[i]['item_data'] = json.decode(msg['item_data']);
+          } catch (_) {}
+        }
+      }
 
       setState(() {
         _messages = fetchedMessages;
@@ -197,6 +208,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 60,
         titleSpacing: 0,
         backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF2563EB),
         foregroundColor: Colors.white,
@@ -274,6 +286,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
             const SizedBox(width: 10),
             Expanded(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -628,7 +641,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
           margin: const EdgeInsets.only(bottom: 10, left: 48),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: primaryColor,
+            color: const Color(0xFF7BA7C9),
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16),
               topRight: Radius.circular(16),

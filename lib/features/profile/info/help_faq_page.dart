@@ -84,7 +84,7 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
       'icon': Icons.directions_car_rounded,
       'question': 'Bagaimana prosedur peminjaman mobil operasional desa?',
       'answer':
-          'Buka menu Fasilitas Umum > Kendaraan, pilih unit armada yang tersedia, tentukan durasi dan tanggal sewa, pilih opsi sopir atau lepas kunci, serta lampirkan foto KTP dan SIM aktif pengemudi saat pengajuan formulir.',
+          'Buka menu Penyewaan Mobil di Beranda, pilih unit mobil yang tersedia, tentukan durasi dan tanggal sewa, serta lampirkan foto KTP saat pengajuan formulir. Layanan ini sudah termasuk supir dari petugas BUMDes.',
     },
     {
       'category': 'Unit Pelayanan',
@@ -357,34 +357,33 @@ class _HelpFaqPageState extends State<HelpFaqPage> {
                       final isSelected = _selectedCategory == cat;
                       return Padding(
                         padding: EdgeInsets.only(right: 8.w),
-                        child: ChoiceChip(
-                          label: Text(cat),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() => _selectedCategory = cat);
-                            }
-                          },
-                          labelStyle: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                            color: isSelected
-                                ? Colors.white
-                                : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedCategory = cat),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFF0EA5E9)
+                                  : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                              borderRadius: BorderRadius.circular(20.r),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFF0EA5E9)
+                                    : (isDark ? Colors.white24 : const Color(0xFFCBD5E1)),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                              ),
+                            ),
                           ),
-                          selectedColor: const Color(0xFF0284C7),
-                          backgroundColor: isDark
-                              ? const Color(0xFF1E293B)
-                              : const Color(0xFFF1F5F9),
-                          side: BorderSide(
-                            color: isSelected
-                                ? const Color(0xFF0284C7)
-                                : (isDark ? Colors.white12 : Colors.grey.withAlpha(30)),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
                         ),
                       );
                     }).toList(),
