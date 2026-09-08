@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
+import 'package:siladesbeng_mobile/widgets/premium_header.dart';
+import 'package:siladesbeng_mobile/features/store/store_page.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/gas/gas_page.dart';
 import 'package:siladesbeng_mobile/features/report/report_page.dart';
@@ -95,6 +97,15 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _handleUnitTap(String actionName) async {
+    // Akses publik untuk Pasar Daerah (Toko BUMDes)
+    if (actionName == 'Toko BUMDes' || actionName.toLowerCase().contains('pasar')) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const StorePage()),
+      );
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
@@ -140,6 +151,92 @@ class _SearchPageState extends State<SearchPage> {
         MaterialPageRoute(builder: (_) => const LoginPage()),
       );
     }
+  }
+
+  Widget _buildUnitIcon(dynamic item) {
+    final title = (item['title'] ?? '').toString().toLowerCase();
+    final action = (item['action'] ?? '').toString().toLowerCase();
+    final imgUrl = (item['imageUrl'] ?? item['image'] ?? '').toString();
+
+    String fallbackAsset = 'assets/images/PasarDaerah.png';
+    if (title.contains('pasar') || action.contains('toko') || imgUrl.contains('PasarDaerah')) {
+      fallbackAsset = 'assets/images/PasarDaerah.png';
+    } else if (title.contains('gas') || action.contains('gas') || imgUrl.contains('F2')) {
+      fallbackAsset = 'assets/images/F2.png';
+    } else if (title.contains('lapor') || action.contains('lapor')) {
+      fallbackAsset = 'assets/images/lapor.png';
+    } else if (title.contains('alat') || action.contains('alat') || imgUrl.contains('F1')) {
+      fallbackAsset = 'assets/images/F1.png';
+    } else if (title.contains('mobil') || action.contains('mobil')) {
+      fallbackAsset = 'assets/images/mobil.png';
+    } else if (title.contains('fasilitas') || action.contains('fasilitas')) {
+      fallbackAsset = 'assets/images/fasilitas.png';
+    }
+
+    if (imgUrl.startsWith('http')) {
+      return CustomCachedImage(
+        imgUrl,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+        errorBuilder: (c, e, s) => Image.asset(fallbackAsset, width: 32, height: 32, fit: BoxFit.contain),
+      );
+    }
+    return Image.asset(fallbackAsset, width: 32, height: 32, fit: BoxFit.contain);
+  }
+
+  Widget _buildServiceImage(dynamic item) {
+    final name = (item['name'] ?? '').toString().toLowerCase();
+    final type = (item['type'] ?? '').toString().toLowerCase();
+    final imgUrl = (item['image'] ?? '').toString();
+
+    String? fallbackAsset;
+    if (name.contains('gas') || type == 'gas' || imgUrl.contains('gas') || imgUrl.contains('F2')) {
+      fallbackAsset = 'assets/images/F2.png';
+    } else if (name.contains('mobil') || type == 'mobil' || imgUrl.contains('mobil')) {
+      fallbackAsset = 'assets/images/mobil.png';
+    } else if (name.contains('fasilitas') || type == 'fasilitas' || imgUrl.contains('fasilitas')) {
+      fallbackAsset = 'assets/images/fasilitas.png';
+    } else if (name.contains('alat') || type == 'alat' || imgUrl.contains('F1')) {
+      fallbackAsset = 'assets/images/F1.png';
+    }
+
+    if (imgUrl.isNotEmpty && imgUrl.startsWith('http')) {
+      return CustomCachedImage(
+        imgUrl,
+        width: 60,
+        height: 60,
+        fit: BoxFit.contain,
+        errorBuilder: (c, e, s) {
+          if (fallbackAsset != null) {
+            return Image.asset(fallbackAsset, width: 60, height: 60, fit: BoxFit.contain);
+          }
+          return Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0284C7).withAlpha(15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF0284C7), size: 28),
+          );
+        },
+      );
+    }
+
+    if (fallbackAsset != null) {
+      return Image.asset(fallbackAsset, width: 60, height: 60, fit: BoxFit.contain);
+    }
+
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0284C7).withAlpha(15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF0284C7), size: 28),
+    );
   }
 
   @override
@@ -217,222 +314,243 @@ class _SearchPageState extends State<SearchPage> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Theme.of(context).cardColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: TextField(
-          controller: _searchController,
-          autofocus: true,
-          onChanged: _performFilter,
-          decoration: InputDecoration(
-            hintText: 'Cari layanan, berita...',
-            border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.grey[400]),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
-                    onPressed: () {
-                      _searchController.clear();
-                      _performFilter('');
-                    },
-                  )
-                : null,
-          ),
-          style: const TextStyle(fontSize: 16),
-        ),
-      ),
-      body: _query.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search_rounded, size: 80, color: Colors.grey[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Ketik untuk mulai mencari',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 16),
+      body: Column(
+        children: [
+          // Blue Premium Header with clean white search bar
+          PremiumHeader(
+            bottomPadding: 16,
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 22,
                   ),
-                ],
-              ),
-            )
-          : !hasResults
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.search_off_rounded,
-                    size: 80,
-                    color: Colors.grey[300],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Tidak ada hasil untuk "$_query"',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 16),
-                  ),
-                ],
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                children: [
-                  _buildResultSection(
-                    'Unit Pelayanan',
-                    Icons.widgets_rounded,
-                    _filteredUnits,
-                    (item) => InkWell(
-                      onTap: () => _handleUnitTap(item['action'] ?? ''),
-                      borderRadius: BorderRadius.circular(15),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: Colors.grey.withValues(alpha: 0.1),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                  onPressed: () => Navigator.pop(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Container(
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Theme.of(
-                                  context,
-                                ).primaryColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child:
-                                  item['imageUrl'] != null &&
-                                      item['imageUrl'].toString().startsWith(
-                                        'http',
-                                      )
-                                  ? CustomCachedImage(
-                                      item['imageUrl'],
-                                      width: 30,
-                                      height: 30,
-                                      errorBuilder: (c, e, s) =>
-                                          const Icon(Icons.build, size: 30),
-                                    )
-                                  : const Icon(Icons.build, size: 30),
-                            ),
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: Text(
-                                item['title'] ?? 'Layanan',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      onChanged: _performFilter,
+                      textAlignVertical: TextAlignVertical.center,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        color: Color(0xFF0F172A),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      cursorColor: const Color(0xFF0284C7),
+                      decoration: InputDecoration(
+                        hintText: 'Cari layanan, pasar, kabar...',
+                        hintStyle: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 13.5,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xFF0284C7),
+                          size: 20,
+                        ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.clear_rounded,
+                                  color: Colors.grey,
+                                  size: 18,
                                 ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward_ios,
-                              size: 14,
-                              color: Colors.grey[400],
-                            ),
-                          ],
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _performFilter('');
+                                },
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
                         ),
                       ),
                     ),
                   ),
-                  _buildResultSection(
-                    'Layanan Tersedia',
-                    Icons.shopping_bag_rounded,
-                    _filteredServices,
-                    (item) => InkWell(
-                      onTap: () {
-                        String actionName = 'Sewa Alat';
-                        if (item['type'] == 'gas') {
-                          actionName = 'Beli Gas';
-                        } else if (item['type'] == 'mobil') {
-                          actionName = 'Sewa Mobil';
-                        } else if (item['type'] == 'fasilitas') {
-                          actionName = 'Sewa Fasilitas';
-                        }
-                        _handleUnitTap(actionName);
-                      },
-                      borderRadius: BorderRadius.circular(15),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: Colors.grey.withValues(alpha: 0.1),
-                          ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _query.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_rounded, size: 80, color: Colors.grey[300]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Ketik untuk mulai mencari',
+                          style: TextStyle(color: Colors.grey[500], fontSize: 16),
                         ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: item['image'] != null
-                                  ? CustomCachedImage(
-                                      item['image'],
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (c, e, s) => Container(
-                                        width: 60,
-                                        height: 60,
-                                        color: Colors.grey[300],
-                                      ),
-                                    )
-                                  : Container(
-                                      width: 60,
-                                      height: 60,
-                                      color: Colors.grey[300],
-                                      child: const Icon(
-                                        Icons.image,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item['name'] ?? 'Layanan',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                      ],
+                    ),
+                  )
+                : !hasResults
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 80,
+                          color: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Tidak ada hasil untuk "$_query"',
+                          style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child: Column(
+                      children: [
+                        _buildResultSection(
+                          'Unit Pelayanan',
+                          Icons.widgets_rounded,
+                          _filteredUnits,
+                          (item) => InkWell(
+                            onTap: () => _handleUnitTap(item['action'] ?? ''),
+                            borderRadius: BorderRadius.circular(15),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: Colors.grey.withValues(alpha: 0.1),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _formatCurrency(item['price']),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Theme.of(context).primaryColor,
-                                      fontWeight: FontWeight.bold,
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(
+                                        context,
+                                      ).primaryColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    child: _buildUnitIcon(item),
+                                  ),
+                                  const SizedBox(width: 15),
+                                  Expanded(
+                                    child: Text(
+                                      item['title'] ?? 'Layanan',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 14,
+                                    color: Colors.grey[400],
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
+                        _buildResultSection(
+                          'Layanan Tersedia',
+                          Icons.shopping_bag_rounded,
+                          _filteredServices,
+                          (item) => InkWell(
+                            onTap: () {
+                              String actionName = 'Sewa Alat';
+                              if (item['type'] == 'gas') {
+                                actionName = 'Beli Gas';
+                              } else if (item['type'] == 'mobil') {
+                                actionName = 'Sewa Mobil';
+                              } else if (item['type'] == 'fasilitas') {
+                                actionName = 'Sewa Fasilitas';
+                              }
+                              _handleUnitTap(actionName);
+                            },
+                            borderRadius: BorderRadius.circular(15),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor,
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: Colors.grey.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: _buildServiceImage(item),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['name'] ?? 'Layanan',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          _formatCurrency(item['price']),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Theme.of(context).primaryColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                   _buildResultSection(
                     'Berita & Informasi',
                     Icons.article_rounded,
@@ -565,6 +683,9 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 }

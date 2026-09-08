@@ -161,7 +161,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -170,39 +170,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
               // Ikon Visual Modern
               Center(
-                child: Container(
-                  width: 90.w,
-                  height: 90.w,
-                  decoration: BoxDecoration(
-                    color: _primaryBlue.withAlpha(isDark ? 30 : 20),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 68.w,
-                      height: 68.w,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_primaryBlue, _darkBlue],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: _primaryBlue.withAlpha(isDark ? 50 : 80),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.lock_reset_rounded,
-                        size: 36.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                child: Image.asset(
+                  'assets/images/verifff.png',
+                  height: 100.w,
+                  fit: BoxFit.contain,
                 ),
               ),
 

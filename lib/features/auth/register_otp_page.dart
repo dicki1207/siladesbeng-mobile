@@ -1,27 +1,29 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:siladesbeng_mobile/services/auth_service.dart';
-import 'package:siladesbeng_mobile/features/auth/reset_password_page.dart';
-import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
+import 'package:http/http.dart' as http;
 import 'package:pinput/pinput.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
+import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
-class ForgotPasswordOtpPage extends StatefulWidget {
-  final String emailOrPhone;
-  final String otpMethod;
-  const ForgotPasswordOtpPage({
+class RegisterOtpPage extends StatefulWidget {
+  final String email;
+  final String? phone;
+
+  const RegisterOtpPage({
     super.key,
-    required this.emailOrPhone,
-    required this.otpMethod,
+    required this.email,
+    this.phone,
   });
 
   @override
-  State<ForgotPasswordOtpPage> createState() => _ForgotPasswordOtpPageState();
+  State<RegisterOtpPage> createState() => _RegisterOtpPageState();
 }
 
-class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
+class _RegisterOtpPageState extends State<RegisterOtpPage> {
   final _otpController = TextEditingController();
   bool _isLoading = false;
-  final AuthService _authService = AuthService();
 
   static const Color _primaryBlue = Color(0xFF2FA2F1);
   static const Color _darkBlue = Color(0xFF0284C7);
@@ -42,57 +44,82 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
       _isLoading = true;
     });
 
-    final result = await _authService.verifyForgotPasswordOtp(
-      widget.emailOrPhone,
-      otp,
-    );
-
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (result['status'] == 'success') {
-      final resetToken = result['data']['reset_token'];
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) =>
-            const AnimatedSuccessDialog(message: 'OTP Valid!', isLogout: false),
+    try {
+      final res = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/api/register/verify-otp'),
+        body: {
+          'email': widget.email,
+          'otp_code': otp,
+        },
       );
 
-      await Future.delayed(const Duration(seconds: 2));
+      final data = json.decode(res.body);
+
       if (!mounted) return;
-      Navigator.pop(context); // close dialog
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResetPasswordPage(
-            emailOrPhone: widget.emailOrPhone,
-            resetToken: resetToken,
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final prefs = await SharedPreferences.getInstance();
+        if (data['data'] != null && data['data']['token'] != null) {
+          await prefs.setString('auth_token', data['data']['token']);
+
+          final user = data['data']['user'];
+          if (user != null) {
+            await prefs.setString('profile_name', user['name'] ?? '');
+            await prefs.setString('profile_email', user['email'] ?? '');
+            if (user['phone'] != null) {
+              await prefs.setString('profile_phone', user['phone']);
+            }
+          }
+        }
+
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (successContext) => const AnimatedSuccessDialog(
+            message: 'Akun Terdaftar!',
+            isLogout: false,
           ),
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          title: const Text('Gagal Verifikasi'),
-          content: Text(
-            result['message'] ?? 'OTP tidak valid atau sudah kadaluarsa.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+        );
+
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (!mounted) return;
+        Navigator.pop(context); // Tutup dialog success
+        Navigator.pop(context, true); // Kembali dengan hasil sukses ke register page
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
             ),
-          ],
+            title: const Text('Gagal Verifikasi'),
+            content: Text(
+              data['message'] ?? 'Kode OTP salah atau telah kadaluarsa.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan koneksi: '),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -212,7 +239,7 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Kode verifikasi telah dikirimkan ke ${widget.otpMethod == 'whatsapp' ? 'WhatsApp' : 'Email'} Anda:\n${widget.emailOrPhone}',
+                'Kode verifikasi telah dikirimkan ke Email Anda:\n',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isDark ? Colors.white60 : const Color(0xFF64748B),
@@ -304,20 +331,20 @@ class _ForgotPasswordOtpPageState extends State<ForgotPasswordOtpPage> {
                   ),
                   child: _isLoading
                       ? SizedBox(
-                          height: 20.h,
-                          width: 20.h,
+                          height: 20.w,
+                          width: 20.w,
                           child: const CircularProgressIndicator(
                             color: Colors.white,
                             strokeWidth: 2,
                           ),
                         )
                       : Text(
-                          'Verifikasi Kode',
+                          'Verifikasi OTP',
                           style: TextStyle(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
-                            letterSpacing: 0.2,
+                            letterSpacing: 0.3,
                           ),
                         ),
                 ),

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
-import 'package:pinput/pinput.dart';
+import 'package:siladesbeng_mobile/features/auth/register_otp_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -88,8 +86,20 @@ class _RegisterPageState extends State<RegisterPage> {
       if (!mounted) return;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Tampilkan modal OTP jika register tahap 1 sukses
-        _showOtpDialog(_emailController.text);
+        // Navigasi ke halaman verifikasi OTP penuh (bukan pop up)
+        final isVerified = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RegisterOtpPage(
+              email: _emailController.text.trim(),
+              phone: _phoneController.text.trim(),
+            ),
+          ),
+        );
+
+        if (isVerified == true && mounted) {
+          Navigator.pop(context, true); // Selesai register & kembali
+        }
       } else {
         String errorMsg = data['message'] ?? 'Gagal';
         if (data['errors'] != null) {
@@ -111,194 +121,6 @@ class _RegisterPageState extends State<RegisterPage> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  void _showOtpDialog(String email) {
-    final otpController = TextEditingController();
-    bool isVerifying = false;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (stContext, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: const Text('Verifikasi OTP', textAlign: TextAlign.center),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Masukkan kode 4 digit yang dikirim ke email:\n$email',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.blueGrey),
-                  ),
-
-                  const SizedBox(height: 20),
-                  Pinput(
-                    controller: otpController,
-                    length: 4,
-                    defaultPinTheme: PinTheme(
-                      width: 50,
-                      height: 50,
-                      textStyle: const TextStyle(
-                        fontSize: 22,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blueGrey),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    focusedPinTheme: PinTheme(
-                      width: 50,
-                      height: 50,
-                      textStyle: const TextStyle(
-                        fontSize: 22,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Theme.of(context).primaryColor,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isVerifying
-                      ? null
-                      : () => Navigator.pop(dialogContext),
-                  child: const Text(
-                    'Batal',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: isVerifying
-                      ? null
-                      : () async {
-                          if (otpController.text.length != 4) return;
-
-                          setDialogState(() => isVerifying = true);
-
-                          try {
-                            final res = await http.post(
-                              Uri.parse(
-                                'https://siladesbeng.inovasia.site/api/register/verify-otp',
-                              ),
-                              body: {
-                                'email': email,
-                                'otp_code': otpController.text,
-                              },
-                            );
-
-                            final data = json.decode(res.body);
-
-                            if (res.statusCode == 200 ||
-                                res.statusCode == 201) {
-                              // OTP Benar, simpan token
-                              final prefs =
-                                  await SharedPreferences.getInstance();
-                              if (data['data'] != null &&
-                                  data['data']['token'] != null) {
-                                await prefs.setString(
-                                  'auth_token',
-                                  data['data']['token'],
-                                );
-
-                                final user = data['data']['user'];
-                                if (user != null) {
-                                  await prefs.setString(
-                                    'profile_name',
-                                    user['name'] ?? '',
-                                  );
-                                  await prefs.setString(
-                                    'profile_email',
-                                    user['email'] ?? '',
-                                  );
-                                }
-                              }
-
-                              if (!dialogContext.mounted) return;
-                              Navigator.pop(dialogContext); // Tutup dialog OTP
-
-                              if (!mounted) return;
-                              // ignore: use_build_context_synchronously
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (successContext) =>
-                                    const AnimatedSuccessDialog(
-                                      message: 'Akun Terdaftar',
-                                      isLogout: false,
-                                    ),
-                              );
-
-                              await Future.delayed(
-                                const Duration(milliseconds: 1000),
-                              );
-                              if (!mounted) return;
-                              // ignore: use_build_context_synchronously
-                              Navigator.pop(context); // Tutup dialog success
-                              // ignore: use_build_context_synchronously
-                              Navigator.pop(context, true); // Kembali ke login
-                            } else {
-                              setDialogState(() => isVerifying = false);
-                              if (!dialogContext.mounted) return;
-                              ScaffoldMessenger.of(dialogContext).showSnackBar(
-                                SnackBar(
-                                  content: Text(data['message'] ?? 'OTP Salah'),
-                                  backgroundColor: Colors.redAccent,
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            setDialogState(() => isVerifying = false);
-                            if (!dialogContext.mounted) return;
-                            ScaffoldMessenger.of(dialogContext).showSnackBar(
-                              const SnackBar(
-                                content: Text('Terjadi kesalahan jaringan'),
-                                backgroundColor: Colors.redAccent,
-                              ),
-                            );
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: isVerifying
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Verifikasi',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   Widget _buildTextField({
@@ -430,6 +252,51 @@ class _RegisterPageState extends State<RegisterPage> {
               labelText: 'Nomor Telepon',
               icon: Icons.phone_android_outlined,
               keyboardType: TextInputType.phone,
+            ),
+
+            // Form Kabupaten Terkunci (Sesuai dengan Web Backend)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withAlpha(10)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white12
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: TextFormField(
+                initialValue: 'Kabupaten Bengkalis',
+                enabled: false,
+                style: TextStyle(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : const Color(0xFF334155),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14.5,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Kabupaten',
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white54
+                        : Colors.blueGrey,
+                  ),
+                  border: InputBorder.none,
+                  prefixIcon: const Icon(Icons.account_balance_outlined, color: Colors.blueGrey),
+                  suffixIcon: const Padding(
+                    padding: EdgeInsets.only(right: 16.0),
+                    child: Icon(Icons.lock_outline_rounded, color: Colors.grey, size: 20),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 15,
+                  ),
+                ),
+              ),
             ),
 
             if (_isLoadingRegions)
