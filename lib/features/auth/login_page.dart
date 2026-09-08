@@ -9,6 +9,7 @@ import 'package:siladesbeng_mobile/services/firebase_messaging_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/features/auth/register_page.dart';
 import 'package:siladesbeng_mobile/features/auth/forgot_password_page.dart';
 
@@ -70,13 +71,12 @@ class _LoginPageState extends State<LoginPage> {
           await prefs.setString('user_role', 'warga'); // Fallback
         }
 
-        // Set status verifikasi berdasarkan ketersediaan NIK
-        if (data['data']['user'] != null &&
-            data['data']['user']['nik'] != null) {
-          await prefs.setBool('is_verified', true);
-        } else {
-          await prefs.setBool('is_verified', false);
-        }
+        // Status verifikasi lanjutan (KYC) diambil dari status resmi backend,
+        // bukan dari ada/tidaknya NIK — NIK bisa terisi tanpa lewat KYC.
+        await prefs.setBool(
+          'is_verified',
+          VerificationGuard.isVerifiedFromApi(data['data']['user']),
+        );
 
         // Update FCM Token
         final fcmToken = await FirebaseMessaging.instance.getToken();
@@ -219,12 +219,10 @@ class _LoginPageState extends State<LoginPage> {
             await prefs.setString('user_role', 'warga');
           }
 
-          if (data['data']['user'] != null &&
-              data['data']['user']['nik'] != null) {
-            await prefs.setBool('is_verified', true);
-          } else {
-            await prefs.setBool('is_verified', false);
-          }
+          await prefs.setBool(
+            'is_verified',
+            VerificationGuard.isVerifiedFromApi(data['data']['user']),
+          );
           await prefs.remove('profile_image');
           if (user.photoURL != null) {
             await prefs.setString('profile_image_url', user.photoURL!);

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_ticket_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 
 class RentalBookingPage extends StatefulWidget {
   final dynamic item;
@@ -24,6 +25,7 @@ class RentalBookingPage extends StatefulWidget {
 
 class _RentalBookingPageState extends State<RentalBookingPage> {
   int _durationDays = 1;
+  DateTime _startDate = DateUtils.dateOnly(DateTime.now());
   String _paymentCategory = 'tunai';
   String? _selectedBank;
   String? _selectedEWallet;
@@ -58,7 +60,31 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
   void initState() {
     super.initState();
     _durationDays = widget.initialDuration ?? 1;
+    _startDate = DateUtils.dateOnly(DateTime.now());
     _loadUserData();
+  }
+
+  /// Tanggal selesai mengikuti konvensi yang sudah dipakai backend:
+  /// tanggal mulai + jumlah hari sewa.
+  DateTime get _endDate => _startDate.add(Duration(days: _durationDays));
+
+  String _formatDate(DateTime date) =>
+      DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(date);
+
+  Future<void> _pickStartDate() async {
+    final today = DateUtils.dateOnly(DateTime.now());
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _startDate.isBefore(today) ? today : _startDate,
+      firstDate: today,
+      lastDate: today.add(const Duration(days: 365)),
+      helpText: 'Pilih tanggal mulai sewa',
+      confirmText: 'Pilih',
+      cancelText: 'Batal',
+    );
+    if (picked != null && mounted) {
+      setState(() => _startDate = DateUtils.dateOnly(picked));
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -555,6 +581,12 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
   }
 
   Future<void> _submitBooking() async {
+    final canProceed = await VerificationGuard.ensureVerified(
+      context,
+      serviceName: 'layanan penyewaan',
+    );
+    if (!canProceed || !mounted) return;
+
     final String itemType =
         widget.item['type']?.toString().toLowerCase() ?? 'alat';
     final String cat = widget.category?.toLowerCase() ?? '';
@@ -623,11 +655,9 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
       }
     }
 
-    final String startDate = DateTime.now().toIso8601String().substring(0, 10);
-    final String endDate = DateTime.now()
-        .add(Duration(days: _durationDays))
-        .toIso8601String()
-        .substring(0, 10);
+    final apiDateFormat = DateFormat('yyyy-MM-dd');
+    final String startDate = apiDateFormat.format(_startDate);
+    final String endDate = apiDateFormat.format(_endDate);
 
     Map<String, dynamic> result;
 
@@ -978,7 +1008,14 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
 
           SizedBox(height: 18.h),
 
-          // 2. Data Penyewa Section
+          // 2. Jadwal Sewa
+          _buildSectionHeader('Jadwal Sewa'),
+          SizedBox(height: 8.h),
+          _buildSchedulePicker(isDark, primaryColor),
+
+          SizedBox(height: 18.h),
+
+          // 3. Data Penyewa Section
           _buildSectionHeader('Data Penyewa'),
           SizedBox(height: 8.h),
           Container(
@@ -1182,7 +1219,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
 
           SizedBox(height: 18.h),
 
-          // 3. Metode Pembayaran Card (Compact Tile)
+          // 4. Metode Pembayaran Card (Compact Tile)
           _buildSectionHeader('Metode Pembayaran'),
           SizedBox(height: 8.h),
           Container(
@@ -1279,7 +1316,7 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
 
           SizedBox(height: 18.h),
 
-          // 4. Rincian Pembayaran (Order Summary)
+          // 5. Rincian Pembayaran (Order Summary)
           _buildSectionHeader('Rincian Pembayaran'),
           SizedBox(height: 8.h),
           Container(
@@ -1431,6 +1468,121 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSchedulePicker(bool isDark, Color primaryColor) {
+    final mutedColor = isDark ? Colors.white38 : Colors.grey[500];
+    final strongColor = isDark ? Colors.white : const Color(0xFF1E293B);
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+        ),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: _pickStartDate,
+            borderRadius: BorderRadius.circular(12.r),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 10.h),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.event_available_rounded,
+                    size: 20.sp,
+                    color: primaryColor,
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mulai Sewa',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: mutedColor,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          _formatDate(_startDate),
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.bold,
+                            color: strongColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    'Ubah',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w800,
+                      color: primaryColor,
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18.sp,
+                    color: primaryColor,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Divider(height: 1),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.h),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.event_busy_rounded,
+                  size: 20.sp,
+                  color: mutedColor,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Selesai Sewa',
+                        style: TextStyle(fontSize: 11.sp, color: mutedColor),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        _formatDate(_endDate),
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.bold,
+                          color: strongColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '$_durationDays Hari',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w800,
+                    color: mutedColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

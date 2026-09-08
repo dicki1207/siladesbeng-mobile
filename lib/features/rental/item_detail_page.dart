@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -27,6 +28,32 @@ class ItemDetailPage extends StatelessWidget {
     return formatter.format(number);
   }
 
+  /// Ambil nilai pertama yang benar-benar ada dari beberapa kemungkinan nama
+  /// field. Bentuk payload tiap modul (gas/mobil/fasilitas/alat) berbeda, dan
+  /// spek yang datanya tidak ada sengaja dilewat — bukan diisi tebakan.
+  String? _pick(List<String> keys, {String prefix = '', String suffix = ''}) {
+    for (final key in keys) {
+      final raw = item[key];
+      if (raw == null) continue;
+      final value = raw.toString().trim();
+      if (value.isEmpty || value == '-' || value == 'null' || value == '0') {
+        continue;
+      }
+      return '$prefix$value$suffix';
+    }
+    return null;
+  }
+
+  void _addSpec(
+    List<Map<String, dynamic>> list,
+    IconData icon,
+    String label,
+    String? value,
+  ) {
+    if (value == null) return;
+    list.add({'icon': icon, 'label': label, 'value': value});
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -37,6 +64,7 @@ class ItemDetailPage extends StatelessWidget {
     final description = item['description'] ?? item['deskripsi'];
 
     int stock = 0;
+    final bool hasStockField = item['stok'] != null || item['stock'] != null;
     if (item['stok'] != null) {
       stock = int.tryParse(item['stok'].toString()) ?? 0;
     } else if (item['stock'] != null) {
@@ -56,93 +84,105 @@ class ItemDetailPage extends StatelessWidget {
       imageUrl = 'assets/images/fasilitas.png';
     }
 
-    // Auto-detect weight from gas title if in gas category
-    String detectedWeight = '3 kg';
-    final lowerTitle = title.toString().toLowerCase();
-    if (lowerTitle.contains('12kg') || lowerTitle.contains('12 kg')) {
-      detectedWeight = '12 kg';
-    } else if (lowerTitle.contains('5.5kg') || lowerTitle.contains('5.5 kg') || lowerTitle.contains('5,5')) {
-      detectedWeight = '5.5 kg';
-    } else if (lowerTitle.contains('3kg') || lowerTitle.contains('3 kg')) {
-      detectedWeight = '3 kg';
-    } else if (item['berat'] != null) {
-      detectedWeight = item['berat'].toString();
+    // Berat tabung gas dibaca dari data, atau disimpulkan dari judul kalau
+    // judulnya memang menyebut ukuran. Kalau dua-duanya tidak ada, dibiarkan
+    // kosong supaya tidak mengarang ukuran tabung.
+    String? detectedWeight = _pick(['berat', 'weight', 'ukuran']);
+    if (detectedWeight == null) {
+      final lowerTitle = title.toString().toLowerCase();
+      if (lowerTitle.contains('12kg') || lowerTitle.contains('12 kg')) {
+        detectedWeight = '12 kg';
+      } else if (lowerTitle.contains('5.5kg') ||
+          lowerTitle.contains('5.5 kg') ||
+          lowerTitle.contains('5,5')) {
+        detectedWeight = '5.5 kg';
+      } else if (lowerTitle.contains('3kg') || lowerTitle.contains('3 kg')) {
+        detectedWeight = '3 kg';
+      }
     }
 
-    // Dynamic Specs based on Category
-    List<Map<String, dynamic>> specList = [];
+    // Spesifikasi dibangun dari data yang benar-benar dikirim API. Sebelumnya
+    // blok ini berisi teks tetap ("7 Penumpang", "Manual / Matic", "200 m2")
+    // yang muncul untuk unit apa pun, jadi bisa menyesatkan penyewa.
+    final List<Map<String, dynamic>> specList = [];
     if (category == 'Beli Gas') {
-      specList = [
-        {
-          'icon': Icons.scale_rounded,
-          'label': 'Berat Bersih',
-          'value': detectedWeight,
-        },
-        {
-          'icon': Icons.inventory_2_outlined,
-          'label': 'Ketersediaan',
-          'value': stock > 0 ? '$stock Tabung' : 'Stok Kosong',
-        },
-        {
-          'icon': Icons.local_shipping_outlined,
-          'label': 'Pengantaran',
-          'value': 'Antar / Ambil',
-        },
-      ];
+      _addSpec(specList, Icons.scale_rounded, 'Berat Bersih', detectedWeight);
+      _addSpec(
+        specList,
+        Icons.inventory_2_outlined,
+        'Ketersediaan',
+        stock > 0 ? '$stock Tabung' : (hasStockField ? 'Stok Kosong' : null),
+      );
     } else if (category == 'Sewa Mobil') {
-      specList = [
-        {
-          'icon': Icons.airline_seat_recline_normal_rounded,
-          'label': 'Kapasitas',
-          'value': '7 Penumpang',
-        },
-        {
-          'icon': Icons.settings_outlined,
-          'label': 'Transmisi',
-          'value': 'Manual / Matic',
-        },
-        {
-          'icon': Icons.local_gas_station_outlined,
-          'label': 'Bahan Bakar',
-          'value': 'Bensin',
-        },
-      ];
+      _addSpec(
+        specList,
+        Icons.airline_seat_recline_normal_rounded,
+        'Kapasitas',
+        _pick(['kapasitas', 'capacity', 'jumlah_kursi', 'seats'],
+            suffix: ' Penumpang'),
+      );
+      _addSpec(
+        specList,
+        Icons.settings_outlined,
+        'Transmisi',
+        _pick(['transmisi', 'transmission']),
+      );
+      _addSpec(
+        specList,
+        Icons.local_gas_station_outlined,
+        'Bahan Bakar',
+        _pick(['bahan_bakar', 'jenis_bbm', 'fuel_type', 'fuel']),
+      );
+      _addSpec(
+        specList,
+        Icons.confirmation_number_outlined,
+        'Plat Nomor',
+        _pick(['plat_nomor', 'nomor_plat', 'plat', 'no_polisi']),
+      );
+      _addSpec(
+        specList,
+        Icons.calendar_today_rounded,
+        'Tahun',
+        _pick(['tahun', 'year', 'tahun_kendaraan']),
+      );
     } else if (category == 'Fasilitas Umum') {
-      specList = [
-        {
-          'icon': Icons.groups_outlined,
-          'label': 'Kapasitas',
-          'value': '100 - 500 Orang',
-        },
-        {
-          'icon': Icons.aspect_ratio_rounded,
-          'label': 'Luas Area',
-          'value': '200 m²',
-        },
-        {
-          'icon': Icons.local_parking_rounded,
-          'label': 'Fasilitas',
-          'value': 'Toilet & Parkir',
-        },
-      ];
+      _addSpec(
+        specList,
+        Icons.groups_outlined,
+        'Kapasitas',
+        _pick(['kapasitas', 'capacity', 'daya_tampung'], suffix: ' Orang'),
+      );
+      _addSpec(
+        specList,
+        Icons.aspect_ratio_rounded,
+        'Luas Area',
+        _pick(['luas', 'luas_area', 'area'], suffix: ' m²'),
+      );
+      _addSpec(
+        specList,
+        Icons.place_outlined,
+        'Lokasi',
+        _pick(['lokasi', 'alamat', 'location']),
+      );
     } else {
-      specList = [
-        {
-          'icon': Icons.verified_outlined,
-          'label': 'Kondisi Alat',
-          'value': 'Siap Pakai',
-        },
-        {
-          'icon': Icons.access_time_rounded,
-          'label': 'Durasi Min',
-          'value': '1 Hari',
-        },
-        {
-          'icon': Icons.local_shipping_outlined,
-          'label': 'Pengantaran',
-          'value': 'Tersedia',
-        },
-      ];
+      _addSpec(
+        specList,
+        Icons.verified_outlined,
+        'Kondisi Alat',
+        _pick(['kondisi', 'condition']),
+      );
+      _addSpec(
+        specList,
+        Icons.straighten_rounded,
+        'Satuan',
+        _pick(['satuan', 'unit']),
+      );
+      _addSpec(
+        specList,
+        Icons.inventory_2_outlined,
+        'Ketersediaan',
+        stock > 0 ? '$stock Unit' : (hasStockField ? 'Stok Kosong' : null),
+      );
     }
 
     return Scaffold(
@@ -305,67 +345,71 @@ class ItemDetailPage extends StatelessWidget {
                     ],
                   ),
 
-                  SizedBox(height: 24.h),
+                  // Sembunyikan seluruh blok kalau tidak ada spek yang
+                  // datanya tersedia, daripada menampilkan kartu kosong.
+                  if (specList.isNotEmpty) ...[
+                    SizedBox(height: 24.h),
 
-                  // Spesifikasi Title
-                  Text(
-                    'Spesifikasi Produk',
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF1E293B),
+                    // Spesifikasi Title
+                    Text(
+                      'Spesifikasi Produk',
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 12.h),
+                    SizedBox(height: 12.h),
 
-                  // Dynamic Specification Cards Row
-                  Row(
-                    children: specList.map((spec) {
-                      return Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(right: 8.w),
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(14.r),
-                            border: Border.all(
-                              color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                    // Dynamic Specification Cards Row
+                    Row(
+                      children: specList.take(3).map((spec) {
+                        return Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(right: 8.w),
+                            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.h),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(14.r),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.grey.withValues(alpha: 0.15),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  spec['icon'] as IconData,
+                                  size: 18.sp,
+                                  color: primaryColor,
+                                ),
+                                SizedBox(height: 8.h),
+                                Text(
+                                  spec['label'] as String,
+                                  style: TextStyle(
+                                    fontSize: 10.5.sp,
+                                    color: isDark ? Colors.white38 : Colors.grey[500],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  spec['value'] as String,
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                spec['icon'] as IconData,
-                                size: 18.sp,
-                                color: primaryColor,
-                              ),
-                              SizedBox(height: 8.h),
-                              Text(
-                                spec['label'] as String,
-                                style: TextStyle(
-                                  fontSize: 10.5.sp,
-                                  color: isDark ? Colors.white38 : Colors.grey[500],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(height: 2.h),
-                              Text(
-                                spec['value'] as String,
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white : const Color(0xFF1E293B),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
 
                   SizedBox(height: 24.h),
 
@@ -514,7 +558,15 @@ class ItemDetailPage extends StatelessWidget {
               Expanded(
                 flex: 55,
                 child: ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
+                    final canProceed = await VerificationGuard.ensureVerified(
+                      context,
+                      serviceName: category.toLowerCase().contains('gas')
+                          ? 'layanan pemesanan Gas'
+                          : 'layanan penyewaan',
+                    );
+                    if (!canProceed || !context.mounted) return;
+
                     Navigator.push(
                       context,
                       PageRouteBuilder(

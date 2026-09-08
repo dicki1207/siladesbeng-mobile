@@ -14,6 +14,7 @@ import 'package:siladesbeng_mobile/features/profile/info/about_page.dart';
 import 'package:siladesbeng_mobile/features/profile/partnership/partnership_page.dart';
 import 'package:siladesbeng_mobile/features/profile/info/help_faq_page.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/features/profile/mutation/domicile_transfer_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
 import 'package:siladesbeng_mobile/features/profile/account/change_password_page.dart';
@@ -146,13 +147,12 @@ class _ProfilePageState extends State<ProfilePage> {
           final user = data['data']['user'];
           final region = data['data']['region_info'] ?? {};
 
-          final isVerified =
-              (user['verification_status'] == 'verified') ||
-              (user['nik'] != null && user['nik'].toString().isNotEmpty) ||
-              (user['is_verified'] == true);
+          // Hanya status resmi dari backend yang dihitung. Aturan lama
+          // "punya NIK = terverifikasi" dibuang: NIK bisa diisi sendiri saat
+          // daftar atau diinput admin tanpa pernah lewat KYC.
+          final isVerified = VerificationGuard.isVerifiedFromApi(user);
 
-          final userNik =
-              user['nik']?.toString() ?? (isVerified ? '1403010101900001' : '');
+          final userNik = user['nik']?.toString() ?? '';
           final userAddress =
               (user['address'] != null &&
                   user['address'] != '-' &&
@@ -167,6 +167,13 @@ class _ProfilePageState extends State<ProfilePage> {
           await prefs.setString('profile_nik', userNik);
           await prefs.setString('profile_address', userAddress);
           await prefs.setBool('is_verified', isVerified);
+          // Sebelumnya 'is_blocked' tidak pernah ditulis di mana pun, jadi
+          // gerbang "pindah domisili" di beranda selalu mati.
+          await prefs.setBool(
+            'is_blocked',
+            user['is_blocked'] == true ||
+                user['status']?.toString().toLowerCase() == 'blocked',
+          );
           await prefs.setString('user_role', user['role'] ?? 'warga');
 
           if (data['data']['avatar_url'] != null) {

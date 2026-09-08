@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/features/gas/gas_kk_scanner_page.dart';
 import 'package:siladesbeng_mobile/features/transaction/payment_instruction_page.dart';
 
@@ -96,53 +96,13 @@ class _GasBookingPageState extends State<GasBookingPage> {
   }
 
   Future<void> _submitBooking() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isVerified = prefs.getBool('is_verified') ?? false;
+    final canProceed = await VerificationGuard.ensureVerified(
+      context,
+      serviceName: 'layanan pemesanan Gas',
+    );
+    if (!canProceed || !mounted) return;
 
-    if (!isVerified) {
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            'Verifikasi Diperlukan',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            'Untuk menggunakan layanan pemesanan Gas, Anda harus memverifikasi identitas (KYC) terlebih dahulu.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Nanti', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const VerificationPage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text(
-                'Verifikasi Sekarang',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
+    final prefs = await SharedPreferences.getInstance();
 
     if (_nameController.text.isEmpty ||
         (_deliveryMethod == 'antar' && _addressController.text.isEmpty)) {

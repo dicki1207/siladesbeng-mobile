@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -155,6 +156,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
+            const SliverToBoxAdapter(child: VerificationBanner()),
             _isLoading
                 ? SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {

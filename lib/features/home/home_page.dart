@@ -47,6 +47,8 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey _keyAsisten = GlobalKey();
 
   List<dynamic> _banners = [];
+  // URL banner yang gambarnya gagal dimuat -> slide-nya dibuang dari carousel
+  final Set<String> _failedBannerUrls = {};
   List<dynamic> _announcements = [];
   List<dynamic> _unitPelayanan = [];
   List<dynamic> _availableServices = [];
@@ -290,6 +292,17 @@ class _HomePageState extends State<HomePage> {
                       item['image_url'] = imgUrl;
                     }
                     return item;
+                  }).where((item) {
+                    // Buang banner nonaktif / tanpa gambar supaya tidak jadi
+                    // slide kosong di beranda
+                    if (item is! Map<String, dynamic>) return false;
+                    final isActive = item['is_active'];
+                    if (isActive == false ||
+                        isActive == 0 ||
+                        isActive == '0') {
+                      return false;
+                    }
+                    return _resolveBannerUrl(item).isNotEmpty;
                   }).toList();
                 });
               } catch (_) {}
@@ -905,25 +918,61 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHeroBanner() {
-    // 2 banner statis dari web (sama seperti beranda web)
-    final List<String> staticBanners = [
-      '${ApiConfig.baseUrl}/User/img/elemen/kuncislide1r.png',
-      '${ApiConfig.baseUrl}/User/img/elemen/kuncislide2r.png',
-    ];
+  // Slide bawaan dari web. Dipakai HANYA sebagai cadangan kalau banner dari
+  // API kosong atau semua gambarnya gagal dimuat — dua file ini juga dikirim
+  // API sebagai "Slide Bawaan Sistem", jadi kalau selalu ditempel di depan
+  // slide-nya tampil dobel.
+  static const List<String> _fallbackBannerUrls = [
+    '${ApiConfig.baseUrl}/User/img/elemen/kuncislide1r.png',
+    '${ApiConfig.baseUrl}/User/img/elemen/kuncislide2r.png',
+  ];
 
-    // Gabungkan: statis dulu, lalu dari API
-    final List<Map<String, dynamic>> allBanners = [
-      ...staticBanners.map((url) => {'image_url': url, 'is_static': true}),
-      ..._banners,
-    ];
+  String _resolveBannerUrl(dynamic banner) {
+    if (banner is! Map) return '';
+    final url = banner['image_url'];
+    if (url != null && url.toString().trim().isNotEmpty) {
+      return url.toString().trim();
+    }
+    final path = banner['image'] ?? banner['image_path'];
+    if (path != null && path.toString().trim().isNotEmpty) {
+      return '${ApiConfig.baseUrl}/storage/${path.toString().trim()}';
+    }
+    return '';
+  }
+
+  void _markBannerFailed(String url) {
+    if (_failedBannerUrls.contains(url)) return;
+    // errorWidget dipanggil saat build berlangsung, jadi setState-nya
+    // ditunda ke frame berikutnya
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _failedBannerUrls.add(url));
+    });
+  }
+
+  Widget _buildHeroBanner() {
+    // Banner dari API dulu; kalau tidak ada yang bisa tampil baru slide
+    // bawaan web; kalau itu pun gagal, tampilkan kartu lokal.
+    List<String> urls = _banners
+        .map(_resolveBannerUrl)
+        .where((url) => url.isNotEmpty && !_failedBannerUrls.contains(url))
+        .toSet()
+        .toList();
+
+    if (urls.isEmpty) {
+      urls = _fallbackBannerUrls
+          .where((url) => !_failedBannerUrls.contains(url))
+          .toList();
+    }
+
+    if (urls.isEmpty) return _buildBannerFallback();
 
     return Container(
       margin: EdgeInsets.only(top: 10.h, bottom: 6.h),
       child: CarouselSlider(
         options: CarouselOptions(
           height: 168.0,
-          autoPlay: true,
+          autoPlay: urls.length > 1,
           autoPlayInterval: const Duration(seconds: 4),
           autoPlayAnimationDuration: const Duration(milliseconds: 800),
           autoPlayCurve: Curves.fastOutSlowIn,
@@ -931,13 +980,7 @@ class _HomePageState extends State<HomePage> {
           enlargeFactor: 0.18,
           viewportFraction: 0.94,
         ),
-        items: allBanners.map((banner) {
-          final imageUrl = banner['image_url'] != null
-              ? banner['image_url'].toString()
-              : banner['image'] != null
-                  ? '${ApiConfig.baseUrl}/storage/${banner['image']}'
-                  : '';
-
+        items: urls.map((imageUrl) {
           return Builder(
             builder: (BuildContext context) {
               return Container(
@@ -962,14 +1005,82 @@ class _HomePageState extends State<HomePage> {
                     width: double.infinity,
                     height: double.infinity,
                     memCacheWidth: 500,
-                    placeholder: (ctx, url) => Container(color: Colors.grey[200]),
-                    errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
+                    placeholder: (ctx, url) =>
+                        Container(color: Colors.grey[200]),
+                    errorWidget: (ctx, url, err) {
+                      // Gambarnya tidak ada di server — buang slide-nya,
+                      // jangan pajang ikon rusak
+                      _markBannerFailed(url);
+                      return Container(color: Colors.grey[200]);
+                    },
                   ),
                 ),
               );
             },
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildBannerFallback() {
+    return Container(
+      height: 168.0,
+      margin: EdgeInsets.only(top: 10.h, bottom: 6.h, left: 8.w, right: 8.w),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20.r),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(15),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          SizedBox(width: 18.w),
+          Image.asset(
+            'assets/images/logodomain.png',
+            width: 62.w,
+            height: 62.w,
+            cacheWidth: 200,
+            fit: BoxFit.contain,
+          ),
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Siladesbeng',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Layanan desa dalam satu genggaman',
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(210),
+                    fontSize: 11.5.sp,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 18.w),
+        ],
       ),
     );
   }

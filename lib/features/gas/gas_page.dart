@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -339,6 +340,7 @@ class _GasPageState extends State<GasPage> {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
+            const SliverToBoxAdapter(child: VerificationBanner()),
             SliverPadding(
               padding: EdgeInsets.symmetric(
                 horizontal: 16.0.w,

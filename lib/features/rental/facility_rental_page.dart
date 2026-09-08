@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -736,16 +737,23 @@ class _FacilityRentalPageState extends State<FacilityRentalPage>
           ),
         ),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: primaryColor))
-          : TabBarView(
-              controller: _tabController,
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildFacilityList(_vehicles, isVehicleTab: true),
-                _buildFacilityList(_buildings, isVehicleTab: false),
-              ],
-            ),
+      body: Column(
+        children: [
+          const VerificationBanner(),
+          Expanded(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator(color: primaryColor))
+                : TabBarView(
+                    controller: _tabController,
+                    physics: const BouncingScrollPhysics(),
+                    children: [
+                      _buildFacilityList(_vehicles, isVehicleTab: true),
+                      _buildFacilityList(_buildings, isVehicleTab: false),
+                    ],
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

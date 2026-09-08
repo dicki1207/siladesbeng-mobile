@@ -8,6 +8,7 @@ import 'package:showcaseview/showcaseview.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_booking_page.dart';
 import 'package:siladesbeng_mobile/features/common/unit_service_chat_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 
 class ToolPackageBookingPage extends StatefulWidget {
   const ToolPackageBookingPage({super.key});
@@ -470,6 +471,12 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
   }
 
   Future<void> _handleBooking() async {
+    final canProceed = await VerificationGuard.ensureVerified(
+      context,
+      serviceName: 'layanan penyewaan alat',
+    );
+    if (!canProceed || !mounted) return;
+
     final int total = _getTotalPrice();
     if (total <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -678,6 +685,7 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
       ),
       body: Column(
         children: [
+          const VerificationBanner(),
           Expanded(
             child: TabBarView(
               controller: _tabController,
