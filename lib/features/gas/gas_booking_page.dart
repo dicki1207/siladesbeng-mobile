@@ -62,7 +62,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
       if (token == null) return;
 
       final response = await http.get(
-        Uri.parse('http://10.121.197.148:8000/api/user'),
+        Uri.parse('https://siladesbeng.inovasia.site/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -217,7 +217,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
       };
 
       final response = await http.post(
-        Uri.parse('http://10.121.197.148:8000/api/gas/booking'),
+        Uri.parse('https://siladesbeng.inovasia.site/api/gas/booking'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

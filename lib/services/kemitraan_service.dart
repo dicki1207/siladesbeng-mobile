@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class KemitraanService {
   // Use Laragon backend IP
-  static const String baseUrl = 'http://10.121.197.148:8000/api';
+  static const String baseUrl = 'https://siladesbeng.inovasia.site/api';
 
   Future<List<dynamic>> getRegions() async {
     try {

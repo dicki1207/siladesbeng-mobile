@@ -251,7 +251,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               CachedNetworkImage(
-                                imageUrl: 'http://10.121.197.148:8000/User/img/elemen/F1.png',
+                                imageUrl: 'https://siladesbeng.inovasia.site/User/img/elemen/F1.png',
                                 width: 150,
                                 height: 150,
                                 fit: BoxFit.cover,

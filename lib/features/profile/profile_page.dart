@@ -122,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
     // Verifikasi token ke server di latar belakang
     try {
       final response = await http.get(
-        Uri.parse('http://10.121.197.148:8000/api/user'),
+        Uri.parse('https://siladesbeng.inovasia.site/api/user'),
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',

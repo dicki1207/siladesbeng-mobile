@@ -111,7 +111,7 @@ class GasReceiptPage extends StatelessWidget {
                   Row(
                     children: [
                       CustomCachedImage(
-                        'http://10.121.197.148:8000/assets/img/logo.png', // Fallback
+                        'https://siladesbeng.inovasia.site/assets/img/logo.png', // Fallback
                         height: 40,
                         errorBuilder: (c, e, s) => const Icon(
                           Icons.gas_meter,
