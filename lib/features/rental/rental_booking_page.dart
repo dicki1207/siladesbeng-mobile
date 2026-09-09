@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/features/rental/rental_ticket_page.dart';
 import 'package:siladesbeng_mobile/services/rental_service.dart';
+import 'package:siladesbeng_mobile/services/saldo_alamat_service.dart';
 import 'package:siladesbeng_mobile/core/verification_guard.dart';
 
 class RentalBookingPage extends StatefulWidget {
@@ -97,6 +98,45 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
           _waController.text = phone;
         }
       });
+    }
+
+    // Fetch primary address
+    final service = SaldoAlamatService();
+    final res = await service.getAlamat();
+    if (res['success'] == true && res['data'] != null) {
+      final List alamatList = res['data'];
+      final primary = alamatList.firstWhere(
+        (a) => a['is_utama'] == true || a['is_utama'] == 1,
+        orElse: () => null,
+      );
+      if (primary != null) {
+        final parts = <String>[];
+        if (primary['detail_alamat'] != null && primary['detail_alamat'].toString().isNotEmpty) {
+          parts.add(primary['detail_alamat']);
+        }
+        if (primary['rt'] != null && primary['rt'].toString().isNotEmpty) {
+          parts.add('RT ${primary['rt']}');
+        }
+        if (primary['rw'] != null && primary['rw'].toString().isNotEmpty) {
+          parts.add('RW ${primary['rw']}');
+        }
+        if (primary['region'] != null && primary['region']['name'] != null) {
+          parts.add(primary['region']['name']);
+        }
+        if (primary['kode_pos'] != null && primary['kode_pos'].toString().isNotEmpty) {
+          parts.add(primary['kode_pos'].toString());
+        }
+        
+        String fullAddr = '${primary['nama_penerima'] ?? ''} - ${primary['no_telepon'] ?? ''}\n${parts.join(', ')}';
+        if (primary['patokan'] != null && primary['patokan'].toString().isNotEmpty) {
+          fullAddr += '\nPatokan: ${primary['patokan']}';
+        }
+        if (mounted) {
+          setState(() {
+            _addressController.text = fullAddr;
+          });
+        }
+      }
     }
   }
 

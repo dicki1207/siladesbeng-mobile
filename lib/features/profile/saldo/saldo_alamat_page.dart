@@ -530,6 +530,7 @@ class _SaldoAlamatPageState extends State<SaldoAlamatPage> {
   /// 2. Section Pengajuan Dana
   Widget _buildPengajuanSection(bool isDark) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20.r),
@@ -673,6 +674,7 @@ class _SaldoAlamatPageState extends State<SaldoAlamatPage> {
   /// 3. Section Alamat Tersimpan (Buku Alamat)
   Widget _buildAlamatSection(bool isDark) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20.r),
@@ -870,6 +872,7 @@ class _SaldoAlamatPageState extends State<SaldoAlamatPage> {
   /// 4. Section Riwayat Saldo
   Widget _buildRiwayatSection(bool isDark) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20.r),

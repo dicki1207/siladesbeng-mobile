@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/features/store/pasar_payment_page.dart';
 import 'package:siladesbeng_mobile/services/pasar_checkout_service.dart';
+import 'package:siladesbeng_mobile/services/saldo_alamat_service.dart';
 
 class PasarCheckoutPage extends StatefulWidget {
   final double totalAmount;
@@ -29,6 +30,7 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
   bool _isLoading = false;
+  bool _isLoadingAlamat = false;
 
   final formatCurrency = NumberFormat.currency(
     locale: 'id_ID',
@@ -38,6 +40,50 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
 
   double get _ongkir => _deliveryMethod == 'Diantar' ? 5000 : 0;
   double get _grandTotal => widget.totalAmount + _ongkir;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPrimaryAddress();
+  }
+
+  Future<void> _fetchPrimaryAddress() async {
+    setState(() => _isLoadingAlamat = true);
+    final service = SaldoAlamatService();
+    final res = await service.getAlamat();
+    if (res['success'] == true && res['data'] != null) {
+      final List alamatList = res['data'];
+      final primary = alamatList.firstWhere(
+        (a) => a['is_utama'] == true || a['is_utama'] == 1,
+        orElse: () => null,
+      );
+      if (primary != null) {
+        final parts = <String>[];
+        if (primary['detail_alamat'] != null && primary['detail_alamat'].toString().isNotEmpty) {
+          parts.add(primary['detail_alamat']);
+        }
+        if (primary['rt'] != null && primary['rt'].toString().isNotEmpty) {
+          parts.add('RT ${primary['rt']}');
+        }
+        if (primary['rw'] != null && primary['rw'].toString().isNotEmpty) {
+          parts.add('RW ${primary['rw']}');
+        }
+        if (primary['region'] != null && primary['region']['name'] != null) {
+          parts.add(primary['region']['name']);
+        }
+        if (primary['kode_pos'] != null && primary['kode_pos'].toString().isNotEmpty) {
+          parts.add(primary['kode_pos'].toString());
+        }
+        
+        String fullAddr = '${primary['nama_penerima'] ?? ''} - ${primary['no_telepon'] ?? ''}\n${parts.join(', ')}';
+        if (primary['patokan'] != null && primary['patokan'].toString().isNotEmpty) {
+          fullAddr += '\nPatokan: ${primary['patokan']}';
+        }
+        _addressController.text = fullAddr;
+      }
+    }
+    if (mounted) setState(() => _isLoadingAlamat = false);
+  }
 
   @override
   void dispose() {
@@ -1029,6 +1075,15 @@ class _PasarCheckoutPageState extends State<PasarCheckoutPage> {
                           fontSize: 12.sp,
                           color: isDark ? Colors.white38 : Colors.grey[400],
                         ),
+                        suffixIcon: _isLoadingAlamat 
+                            ? Padding(
+                                padding: EdgeInsets.all(12.w),
+                                child: SizedBox(
+                                  width: 16.w, height: 16.w, 
+                                  child: const CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ) 
+                            : null,
                         filled: true,
                         fillColor: isDark
                             ? const Color(0xFF1E293B)
