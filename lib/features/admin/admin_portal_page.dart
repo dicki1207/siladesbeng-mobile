@@ -6,6 +6,7 @@ import 'package:showcaseview/showcaseview.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_report_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_warga_list_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
+import 'package:siladesbeng_mobile/features/admin/create_news_page.dart';
 import 'package:siladesbeng_mobile/services/admin_wilayah_service.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
 
@@ -751,6 +752,29 @@ class _AdminPortalPageState extends State<AdminPortalPage> {
                     );
                   },
                 ),
+              ),
+              const SizedBox(height: 8),
+
+              _buildFeatureActionTile(
+                isDark: isDark,
+                icon: Icons.newspaper_rounded,
+                title: 'Kabar & Berita Wilayah',
+                subtitle:
+                    'Publikasikan liputan & kegiatan warga lingkungan',
+                tag: 'Citizen Journalism',
+                gradientColors: [
+                  const Color(0xFF0284C7),
+                  const Color(0xFF0EA5E9),
+                ],
+                badge: 'Tulis',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CreateNewsPage(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 8),
 

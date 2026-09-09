@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,6 +99,66 @@ class NewsService {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  /// Create news / article / activity (for Admin RT/RW/Desa)
+  Future<Map<String, dynamic>> createNews({
+    required String title,
+    required String type, // 'Berita', 'Kegiatan', 'Artikel'
+    required String description,
+    String? location,
+    String? eventDate,
+    String? imagePath,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token') ?? prefs.getString('token');
+
+      final uri = Uri.parse('$baseUrl/wilayah/berita');
+      final request = http.MultipartRequest('POST', uri);
+
+      request.headers['Accept'] = 'application/json';
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      request.fields['title'] = title;
+      request.fields['type'] = type;
+      request.fields['description'] = description;
+      if (location != null && location.trim().isNotEmpty) {
+        request.fields['location'] = location.trim();
+      }
+      if (eventDate != null && eventDate.trim().isNotEmpty) {
+        request.fields['event_date'] = eventDate.trim();
+      }
+
+      if (imagePath != null && imagePath.isNotEmpty) {
+        final file = File(imagePath);
+        if (await file.exists()) {
+          request.files.add(await http.MultipartFile.fromPath('image', imagePath));
+        }
+      }
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 15));
+      final response = await http.Response.fromStream(streamedResponse);
+
+      try {
+        final data = json.decode(response.body);
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return {'success': true, 'message': data['message'] ?? 'Berita berhasil dipublikasikan!'};
+        } else {
+          return {'success': false, 'message': data['message'] ?? 'Gagal mempublikasikan berita'};
+        }
+      } catch (_) {
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          return {'success': true, 'message': 'Berita berhasil dipublikasikan!'};
+        }
+        return {'success': false, 'message': 'Terjadi kesalahan pada respon server (${response.statusCode})'};
+      }
+    } catch (e) {
+      debugPrint('Error creating news: $e');
+      return {'success': false, 'message': 'Terjadi kesalahan koneksi atau sistem.'};
     }
   }
 }

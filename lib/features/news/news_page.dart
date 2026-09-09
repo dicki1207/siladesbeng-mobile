@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/services/news_service.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
+import 'package:siladesbeng_mobile/features/admin/create_news_page.dart';
 
 class NewsPage extends StatefulWidget {
   final String postCategory; // 'Berita' or 'Pengumuman'
@@ -34,6 +35,7 @@ class _NewsPageState extends State<NewsPage> {
   List<Map<String, dynamic>> _newsList = [];
   bool _isLoading = true;
   bool _isLoggedIn = false;
+  bool _canCreateNews = false;
   final NewsService _newsService = NewsService();
 
   @override
@@ -45,9 +47,17 @@ class _NewsPageState extends State<NewsPage> {
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? prefs.getString('token');
+    final role = (prefs.getString('user_role') ?? '').toLowerCase();
+    final isOfficer = role == 'rt' ||
+        role == 'rw' ||
+        role == 'admin' ||
+        role == 'admin_rt' ||
+        role == 'admin_rw';
+
     if (mounted) {
       setState(() {
         _isLoggedIn = token != null && token.isNotEmpty;
+        _canCreateNews = _isLoggedIn && isOfficer;
       });
     }
     
@@ -213,28 +223,59 @@ class _NewsPageState extends State<NewsPage> {
               ),
               iconTheme: const IconThemeData(color: Colors.white),
             ),
-      floatingActionButton: isBerita || !_isLoggedIn
+      floatingActionButton: !_isLoggedIn
           ? null
-          : FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const EventGotongRoyongPage(),
+          : (isBerita
+              ? (_canCreateNews
+                  ? FloatingActionButton.extended(
+                      heroTag: 'fab_create_berita',
+                      onPressed: () async {
+                        final res = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CreateNewsPage(
+                              initialCategory: 'Berita',
+                            ),
+                          ),
+                        );
+                        if (res == true) {
+                          _fetchNews();
+                        }
+                      },
+                      icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
+                      label: const Text(
+                        'Tulis Berita (RT/RW)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      backgroundColor: const Color(0xFF2563EB),
+                      elevation: 4,
+                    )
+                  : null)
+              : FloatingActionButton.extended(
+                  heroTag: 'fab_create_pengumuman',
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EventGotongRoyongPage(),
+                      ),
+                    );
+                    _fetchNews();
+                  },
+                  icon: const Icon(Icons.campaign_rounded, color: Colors.white),
+                  label: const Text(
+                    'Buat Pengumuman (RT/RW)',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                );
-              },
-              icon: const Icon(Icons.campaign_rounded, color: Colors.white),
-              label: const Text(
-                'Buat Pengumuman (RT/RW)',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              backgroundColor: primaryColor,
-              elevation: 4,
-            ),
+                  backgroundColor: primaryColor,
+                  elevation: 4,
+                )),
       body: RefreshIndicator(
         onRefresh: _fetchNews,
         color: primaryColor,
