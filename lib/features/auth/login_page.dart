@@ -322,6 +322,14 @@ class _LoginPageState extends State<LoginPage> {
               'profile_email',
               data['data']['user']['email'] ?? user.email ?? '',
             );
+            // Simpan profile_desa dari DATABASE (bukan dari GPS!)
+            // Ini penting agar nama desa KTP yang terverifikasi tidak tertimpa lokasi GPS
+            if (data['data']['user']['region'] != null &&
+                data['data']['user']['region']['name'] != null) {
+              await prefs.setString('profile_desa', data['data']['user']['region']['name']);
+            } else {
+              await prefs.setString('profile_desa', '');
+            }
             if (data['data']['user'] != null &&
                 data['data']['user']['role'] != null) {
               await prefs.setString('user_role', data['data']['user']['role']);
