@@ -38,6 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String _email = 'warga@desa.id';
   String _nik = '';
   String _address = '';
+  String _desa = '';
   String? _imagePath;
   String? _imageUrl;
   bool _isVerified = false;
@@ -114,6 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _email = prefs.getString('profile_email') ?? 'warga@desa.id';
       _nik = prefs.getString('profile_nik') ?? '';
       _address = prefs.getString('profile_address') ?? '';
+      _desa = prefs.getString('profile_desa') ?? '';
       _imagePath = prefs.getString('profile_image');
       _imageUrl = prefs.getString('profile_image_url');
       _isVerified = prefs.getBool('is_verified') ?? false;
@@ -169,9 +171,9 @@ class _ProfilePageState extends State<ProfilePage> {
           final userDesa = (region['desa'] != null && region['desa'] != 'Belum ditentukan')
               ? region['desa']
               : (user['region'] != null && user['region']['name'] != null ? user['region']['name'] : '');
-          if (userDesa.toString().isNotEmpty) {
-            await prefs.setString('profile_desa', userDesa.toString());
-          }
+          
+          await prefs.setString('profile_desa', userDesa.toString());
+          
           await prefs.setBool('is_verified', isVerified);
           // Sebelumnya 'is_blocked' tidak pernah ditulis di mana pun, jadi
           // gerbang "pindah domisili" di beranda selalu mati.
@@ -195,6 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
               _email = user['email'] ?? _email;
               _nik = userNik;
               _address = userAddress;
+              _desa = userDesa.toString();
               _isVerified = isVerified;
               _userRole = user['role'] ?? _userRole;
               if (data['data']['avatar_url'] != null) {
@@ -430,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      'KTP DIGITAL - SILADESBENG',
+                      'KTP DIGITAL',
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w900,
@@ -469,7 +472,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 _buildKtpRow('NIK', _maskNik(_nik)),
                                 _buildKtpRow('NAMA', _name, isName: true),
                                 _buildKtpRow('ALAMAT', _address.isNotEmpty ? _address : 'RT 002 / RW 001'),
-                                _buildKtpRow('DESA', 'DESA PEMATANG DUKU TIMUR'),
+                                _buildKtpRow('DESA', _desa.isNotEmpty ? _desa.toUpperCase() : 'BELUM DITENTUKAN'),
                                 _buildKtpRow('STATUS', 'WARGA TERVERIFIKASI', isStatus: true),
                               ],
                             ),

@@ -306,11 +306,12 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
               desa = region['desa'];
             } else if (user['region'] != null && user['region']['name'] != null) {
               desa = user['region']['name'];
+            } else {
+              desa = '';
             }
 
-            if (desa.isNotEmpty) {
-              await prefs.setString('profile_desa', desa);
-            }
+            await prefs.setString('profile_desa', desa);
+            
             if (name.isNotEmpty) {
               await prefs.setString('profile_name', name);
             }
