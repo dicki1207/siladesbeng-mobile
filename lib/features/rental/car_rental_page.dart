@@ -227,7 +227,7 @@ class _CarRentalPageState extends State<CarRentalPage> {
                               ),
                               SizedBox(height: 10.h),
                               Text(
-                                "Mobil untuk disewakan sedang tidak tersedia saat ini atau gagal memuat data dari server.",
+                                "Mobil untuk disewakan sedang tidak tersedia di wilayah Anda saat ini.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 14.sp,

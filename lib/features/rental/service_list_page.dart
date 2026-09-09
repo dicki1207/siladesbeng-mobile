@@ -272,7 +272,7 @@ class _ServiceListPageState extends State<ServiceListPage> {
                               ),
                               SizedBox(height: 10.h),
                               Text(
-                                "Peralatan untuk disewakan sedang tidak tersedia saat ini atau gagal memuat data dari server.",
+                                "Peralatan untuk disewakan sedang tidak tersedia di wilayah Anda saat ini.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 14.sp,
