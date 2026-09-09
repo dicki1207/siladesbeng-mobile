@@ -1,21 +1,18 @@
-import package:shared_preferences/shared_preferences.dart;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
-import 'package:siladesbeng_mobile/services/kyc_service.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
 class PartnershipRegistrationPage extends StatefulWidget {
-  const PartnershipRegistrationPage({super.key});
+  const PartnershipRegistrationPage({Key? key}) : super(key: key);
 
   @override
-  State<PartnershipRegistrationPage> createState() =>
-      _PartnershipRegistrationPageState();
+  State<PartnershipRegistrationPage> createState() => _PartnershipRegistrationPageState();
 }
 
-class _PartnershipRegistrationPageState
-    extends State<PartnershipRegistrationPage> {
+class _PartnershipRegistrationPageState extends State<PartnershipRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final KemitraanService _kemitraanService = KemitraanService();
 
@@ -23,17 +20,27 @@ class _PartnershipRegistrationPageState
   bool _isLoadingRegions = true;
 
   final _namaPendaftarController = TextEditingController();
-  String? _selectedJabatan;
-  List<String> _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
   final _noHpController = TextEditingController();
-  final _emailController = TextEditingController();
   final _pesanController = TextEditingController();
+  
+  // Extra text fields for RW / RT
+  final _nomorRwController = TextEditingController();
+  final _nomorRtController = TextEditingController();
+  
+  String? _profileEmail = '';
 
-  List<dynamic> _kecamatans = [];
+  String? _selectedTingkatJabatan;
+  List<String> _tingkatJabatanOptions = ['desa', 'rw', 'rt'];
+  
+  String? _selectedJabatanSpesifik;
+  List<String> _jabatanSpesifikOptions = [];
+
   String? _selectedKecamatanId;
-  List<dynamic> _desas = [];
   String? _selectedDesaId;
   Map<String, dynamic>? _selectedDesaData;
+
+  List<dynamic> _kecamatans = [];
+  List<dynamic> _desas = [];
 
   String? _filePath;
   String? _fileName;
@@ -49,9 +56,11 @@ class _PartnershipRegistrationPageState
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('profile_name') ?? '';
+    final email = prefs.getString('profile_email') ?? '';
     if (mounted) {
       setState(() {
         _namaPendaftarController.text = name;
+        _profileEmail = email;
       });
     }
   }
@@ -67,58 +76,67 @@ class _PartnershipRegistrationPageState
   }
 
   void _onKecamatanChanged(String? kecamatanId) {
+    if (kecamatanId == null) return;
     setState(() {
       _selectedKecamatanId = kecamatanId;
       _selectedDesaId = null;
       _selectedDesaData = null;
-
-      if (kecamatanId != null) {
-        final kec = _kecamatans.firstWhere(
-          (item) => item['id'].toString() == kecamatanId,
-          orElse: () => null,
-        );
-        _desas = kec != null ? (kec['children'] ?? []) : [];
-      } else {
-        _desas = [];
-      }
+      _desas = _kecamatans.firstWhere((k) => k['id'].toString() == kecamatanId)['children'] ?? [];
+      _updateTingkatJabatanOptions();
     });
   }
 
-  Future<void> _onDesaChanged(String? desaId) async {
-    if (desaId == null) {
-      setState(() {
-        _selectedDesaId = null;
-        _selectedDesaData = null;
-        _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
-        _selectedJabatan = null;
-      });
-      return;
-    }
-
-    final desa = _desas.firstWhere(
-      (item) => item['id'].toString() == desaId,
-      orElse: () => null,
-    );
-
+  void _onDesaChanged(String? desaId) {
+    if (desaId == null) return;
     setState(() {
       _selectedDesaId = desaId;
-      _selectedDesaData = desa;
+      _selectedDesaData = _desas.firstWhere((d) => d['id'].toString() == desaId, orElse: () => null);
+      _updateTingkatJabatanOptions();
     });
+  }
 
-    final adminCheck = await _kemitraanService.checkDesaAdmin(desaId);
-    final hasAdmin = adminCheck['has_admin'] == true;
-
-    if (mounted) {
-      setState(() {
-        if (hasAdmin) {
-          _jabatanOptions = ['Pengurus RW', 'Pengurus RT'];
-          if (_selectedJabatan == 'Pemerintah Desa') {
-            _selectedJabatan = null;
-          }
-        } else {
-          _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
+  void _updateTingkatJabatanOptions() {
+    final bool hasAdmin = _selectedDesaData?['has_admin'] == true;
+    setState(() {
+      if (hasAdmin) {
+        _tingkatJabatanOptions = ['rw', 'rt'];
+        if (_selectedTingkatJabatan == 'desa') {
+          _selectedTingkatJabatan = null;
+          _selectedJabatanSpesifik = null;
         }
-      });
+      } else {
+        _tingkatJabatanOptions = ['desa', 'rw', 'rt'];
+      }
+      _updateJabatanSpesifikOptions();
+    });
+  }
+
+  void _onTingkatJabatanChanged(String? val) {
+    setState(() {
+      _selectedTingkatJabatan = val;
+      _selectedJabatanSpesifik = null;
+      _updateJabatanSpesifikOptions();
+    });
+  }
+
+  void _updateJabatanSpesifikOptions() {
+    if (_selectedTingkatJabatan == 'desa') {
+      _jabatanSpesifikOptions = ['Kepala Desa', 'Sekretaris Desa', 'BPD', 'Perangkat Desa', 'Pengelola Layanan Desa', 'Lainnya'];
+    } else if (_selectedTingkatJabatan == 'rw') {
+      _jabatanSpesifikOptions = ['Ketua RW', 'Sekretaris RW', 'Pengurus RW Lainnya'];
+    } else if (_selectedTingkatJabatan == 'rt') {
+      _jabatanSpesifikOptions = ['Ketua RT', 'Sekretaris RT', 'Pengurus RT Lainnya'];
+    } else {
+      _jabatanSpesifikOptions = [];
+    }
+  }
+
+  String _getTingkatJabatanLabel(String val) {
+    switch (val) {
+      case 'desa': return 'Pemerintah Desa / Kelurahan';
+      case 'rw': return 'Pengurus RW';
+      case 'rt': return 'Pengurus RT';
+      default: return val;
     }
   }
 
@@ -136,65 +154,6 @@ class _PartnershipRegistrationPageState
     }
   }
 
-  Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedKecamatanId == null || _selectedDesaId == null) {
-      _showError('Silakan pilih Kecamatan dan Kelurahan/Desa terlebih dahulu');
-      return;
-    }
-
-    if (_selectedJabatan == null) {
-      _showError('Silakan pilih Jabatan');
-      return;
-    }
-
-    if (_filePath == null) {
-      _showError('Silakan unggah dokumen SK / Surat Legalitas Desa');
-      return;
-    }
-
-    setState(() => _isSubmitting = true);
-
-    final String regionName = _selectedDesaData?['name'] ?? 'Desa Terkait';
-
-    final result = await _kemitraanService.submitPartnership(
-      applicantName: _namaPendaftarController.text.trim(),
-      position: _selectedJabatan!,
-      contactPhone: _noHpController.text.trim(),
-      contactEmail: _emailController.text.trim(),
-      regionId: _selectedKecamatanId!,
-      regionType: 'desa',
-      regionName: regionName,
-      reason: _pesanController.text.trim().isNotEmpty
-          ? _pesanController.text.trim()
-          : 'Pengajuan kemitraan resmi Desa $regionName',
-      filePath: _filePath!,
-    );
-
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
-
-    if (result['status'] == 'success') {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const AnimatedSuccessDialog(
-          message:
-              'Pengajuan kemitraan Desa berhasil dikirim! Tim Admin Kabupaten Bengkalis akan memverifikasi dokumen SK Anda.',
-          isLogout: false,
-        ),
-      );
-
-      await Future.delayed(const Duration(seconds: 3));
-      if (!mounted) return;
-      Navigator.pop(context); // close dialog
-      Navigator.pop(context); // close page
-    } else {
-      _showError(result['message'] ?? 'Gagal mengirim pengajuan kemitraan');
-    }
-  }
-
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -205,77 +164,114 @@ class _PartnershipRegistrationPageState
     );
   }
 
-  @override
-  void dispose() {
-    _namaPendaftarController.dispose();
-    _noHpController.dispose();
-    _emailController.dispose();
-    _pesanController.dispose();
-    super.dispose();
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedTingkatJabatan == null) {
+      _showError('Silakan pilih Tingkat Jabatan terlebih dahulu');
+      return;
+    }
+    
+    if (_selectedJabatanSpesifik == null) {
+      _showError('Silakan pilih Jabatan Spesifik terlebih dahulu');
+      return;
+    }
+
+    if (_selectedKecamatanId == null || _selectedDesaId == null) {
+      _showError('Silakan pilih Kecamatan dan Kelurahan/Desa terlebih dahulu');
+      return;
+    }
+
+    if (_filePath == null) {
+      _showError('Silakan unggah dokumen SK / Surat Tugas');
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    String parentRegionId = _selectedKecamatanId!;
+    String finalRegionName = _selectedDesaData?['name'] ?? 'Desa';
+    
+    if (_selectedTingkatJabatan == 'desa') {
+      parentRegionId = _selectedKecamatanId!;
+      finalRegionName = _selectedDesaData?['name'] ?? 'Desa';
+    } else if (_selectedTingkatJabatan == 'rw') {
+      parentRegionId = _selectedDesaId!;
+      String cleanRw = _nomorRwController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      String formattedRw = cleanRw.isNotEmpty ? 'RW ${cleanRw.padLeft(2, '0')}' : _nomorRwController.text;
+      finalRegionName = formattedRw;
+    } else if (_selectedTingkatJabatan == 'rt') {
+      parentRegionId = _selectedDesaId!;
+      String cleanRw = _nomorRwController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      String cleanRt = _nomorRtController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      String formattedRw = cleanRw.isNotEmpty ? 'RW ${cleanRw.padLeft(2, '0')}' : _nomorRwController.text;
+      String formattedRt = cleanRt.isNotEmpty ? 'RT ${cleanRt.padLeft(2, '0')}' : _nomorRtController.text;
+      finalRegionName = '$formattedRt / $formattedRw';
+    }
+
+    final result = await _kemitraanService.submitPartnership(
+      applicantName: _namaPendaftarController.text.trim(),
+      position: _selectedJabatanSpesifik!,
+      contactPhone: _noHpController.text.trim(),
+      contactEmail: _profileEmail ?? '',
+      regionId: parentRegionId,
+      regionType: _selectedTingkatJabatan!,
+      regionName: finalRegionName,
+      reason: _pesanController.text.trim().isNotEmpty
+          ? _pesanController.text.trim()
+          : 'Pengajuan kemitraan resmi',
+      filePath: _filePath!,
+    );
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+
+    if (result['status'] == 'success') {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              Navigator.pop(context); // Tutup dialog
+              Navigator.pop(context); // Kembali ke halaman sebelumnya
+            }
+          });
+          return AnimatedSuccessDialog(
+            message: 'Pengajuan Berhasil',
+            subMessage: 'Pengajuan kemitraan Anda telah dikirim dan sedang dalam proses peninjauan.',
+          );
+        },
+      );
+    } else {
+      _showError(result['message'] ?? 'Gagal mengirim pengajuan. Silakan coba lagi.');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     const Color primaryBlue = Color(0xFF2FA2F1);
-    const Color darkBlue = Color(0xFF0284C7);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
+        preferredSize: Size.fromHeight(60.h),
         child: AppBar(
+          backgroundColor: primaryBlue,
+          elevation: 0,
+          centerTitle: true,
           title: Text(
-            'Pengajuan Kemitraan Desa',
+            'Gabung Kemitraan',
             style: TextStyle(
-              fontSize: 16.5.sp,
-              fontWeight: FontWeight.bold,
               color: Colors.white,
-              letterSpacing: 0.3,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          centerTitle: true,
-          elevation: 0,
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                    : [primaryBlue, darkBlue],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: ClipRRect(
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: -30,
-                    right: -20,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withAlpha(22),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -20,
-                    left: -15,
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withAlpha(14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20.sp),
+            onPressed: () => Navigator.pop(context),
           ),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
@@ -288,18 +284,105 @@ class _PartnershipRegistrationPageState
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                 children: [
+                  
+                  // Banner Email
+                  if (_profileEmail != null && _profileEmail!.isNotEmpty)
+                    Container(
+                      margin: EdgeInsets.only(bottom: 16.h),
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: primaryBlue.withAlpha(20),
+                        borderRadius: BorderRadius.circular(10.r),
+                        border: Border.all(color: primaryBlue.withAlpha(50)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded, color: primaryBlue, size: 18.sp),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Text(
+                              'Email pemberitahuan akan dikirimkan ke: $_profileEmail. Pastikan akun ini adalah akun permanen Anda.',
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                color: isDark ? Colors.white70 : Colors.blueGrey[800],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // 1. Data Pemohon & Jabatan
+                  _buildSectionCard(
+                    isDark: isDark,
+                    title: '1. Data Penanggung Jawab',
+                    icon: Icons.person_rounded,
+                    iconColor: const Color(0xFF8B5CF6),
+                    children: [
+                      _buildTextFormField(
+                        controller: _namaPendaftarController,
+                        label: 'Nama Lengkap (Sesuai KTP)',
+                        hint: 'Contoh: Budi Santoso, S.Sos.',
+                        icon: Icons.badge_outlined,
+                        isDark: isDark,
+                        readOnly: true, // Karena di web readonly
+                      ),
+                      SizedBox(height: 12.h),
+                      _buildDropdownField(
+                        label: 'Tingkat Jabatan',
+                        hint: 'Pilih Tingkat',
+                        value: _selectedTingkatJabatan,
+                        items: _tingkatJabatanOptions.map((opt) {
+                          return DropdownMenuItem<String>(
+                            value: opt,
+                            child: Text(_getTingkatJabatanLabel(opt)),
+                          );
+                        }).toList(),
+                        onChanged: _onTingkatJabatanChanged,
+                        isDark: isDark,
+                      ),
+                      SizedBox(height: 12.h),
+                      _buildDropdownField(
+                        label: 'Jabatan Spesifik',
+                        hint: _selectedTingkatJabatan == null ? 'Pilih Tingkat Jabatan Dulu' : 'Pilih Jabatan',
+                        value: _selectedJabatanSpesifik,
+                        items: _jabatanSpesifikOptions.map((opt) {
+                          return DropdownMenuItem<String>(
+                            value: opt,
+                            child: Text(opt),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() => _selectedJabatanSpesifik = val);
+                        },
+                        isDark: isDark,
+                      ),
+                      SizedBox(height: 12.h),
+                      _buildTextFormField(
+                        controller: _noHpController,
+                        label: 'Nomor WhatsApp Aktif',
+                        hint: 'Contoh: 08123456789',
+                        icon: Icons.phone_android_rounded,
+                        keyboardType: TextInputType.phone,
+                        isDark: isDark,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.h),
+
                   // 2. Status Wilayah Banner
                   if (_selectedDesaData != null) _buildAdminDesaStatusCard(isDark),
                   if (_selectedDesaData != null) SizedBox(height: 16.h),
 
-                  // 3. Form Section 1: Informasi Wilayah
+                  // 3. Informasi Wilayah
                   _buildSectionCard(
                     isDark: isDark,
-                    title: '1. Informasi Wilayah Desa',
+                    title: '2. Informasi Wilayah',
                     icon: Icons.location_on_rounded,
                     iconColor: const Color(0xFF2FA2F1),
                     children: [
-                      // Kabupaten Fixed
                       _buildFixedField(
                         label: 'Kabupaten',
                         value: 'Kabupaten Bengkalis',
@@ -307,8 +390,6 @@ class _PartnershipRegistrationPageState
                         isDark: isDark,
                       ),
                       SizedBox(height: 12.h),
-
-                      // Dropdown Kecamatan
                       _buildDropdownField(
                         label: 'Kecamatan',
                         hint: 'Pilih Kecamatan',
@@ -323,8 +404,6 @@ class _PartnershipRegistrationPageState
                         isDark: isDark,
                       ),
                       SizedBox(height: 12.h),
-
-                      // Dropdown Desa / Kelurahan
                       _buildDropdownField(
                         label: 'Kelurahan / Desa',
                         hint: _selectedKecamatanId == null
@@ -372,101 +451,65 @@ class _PartnershipRegistrationPageState
                         onChanged: _onDesaChanged,
                         isDark: isDark,
                       ),
+                      if (_selectedTingkatJabatan == 'rw' || _selectedTingkatJabatan == 'rt')
+                        Padding(
+                          padding: EdgeInsets.only(top: 12.h),
+                          child: _buildTextFormField(
+                            controller: _nomorRwController,
+                            label: 'Nomor RW',
+                            hint: 'Contoh: 01',
+                            icon: Icons.numbers_rounded,
+                            keyboardType: TextInputType.number,
+                            isDark: isDark,
+                            validator: (val) =>
+                                val == null || val.isEmpty ? 'Nomor RW wajib diisi' : null,
+                          ),
+                        ),
+                      if (_selectedTingkatJabatan == 'rt')
+                        Padding(
+                          padding: EdgeInsets.only(top: 12.h),
+                          child: _buildTextFormField(
+                            controller: _nomorRtController,
+                            label: 'Nomor RT',
+                            hint: 'Contoh: 01',
+                            icon: Icons.numbers_rounded,
+                            keyboardType: TextInputType.number,
+                            isDark: isDark,
+                            validator: (val) =>
+                                val == null || val.isEmpty ? 'Nomor RT wajib diisi' : null,
+                          ),
+                        ),
                     ],
                   ),
                   SizedBox(height: 16.h),
 
-                  // 4. Form Section 2: Data Pemohon
+                  // 4. Unggah Dokumen
                   _buildSectionCard(
                     isDark: isDark,
-                    title: '2. Data Penanggung Jawab Desa / BUMDes',
-                    icon: Icons.person_rounded,
-                    iconColor: const Color(0xFF8B5CF6),
-                    children: [
-                      _buildTextFormField(
-                        controller: _namaPendaftarController,
-                        label: 'Nama Lengkap (Sesuai KTP)',
-                        hint: 'Contoh: Budi Santoso, S.Sos.',
-                        icon: Icons.badge_outlined,
-                        isDark: isDark,
-                        validator: (val) =>
-                            val == null || val.isEmpty ? 'Nama penanggung jawab wajib diisi' : null,
-                      ),
-                      _buildDropdownField(
-                        label: 'Jabatan / Posisi di Desa',
-                        hint: 'Pilih Jabatan',
-                        value: _selectedJabatan,
-                        items: _jabatanOptions.map((opt) {
-                          return DropdownMenuItem<String>(
-                            value: opt,
-                            child: Text(opt),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedJabatan = val;
-                          });
-                        },
-                        isDark: isDark,
-                      ),
-                      SizedBox(height: 12.h),
-                      _buildTextFormField(
-                        controller: _noHpController,
-                        label: 'Nomor WhatsApp Aktif',
-                        hint: 'Contoh: 081234567890',
-                        icon: Icons.phone_outlined,
-                        keyboardType: TextInputType.phone,
-                        isDark: isDark,
-                        validator: (val) =>
-                            val == null || val.isEmpty ? 'Nomor WhatsApp wajib diisi' : null,
-                      ),
-                      SizedBox(height: 12.h),
-                      _buildTextFormField(
-                        controller: _emailController,
-                        label: 'Email Kontak Resmi',
-                        hint: 'Contoh: desa.bengkalis@gmail.com',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        isDark: isDark,
-                        validator: (val) {
-                          if (val == null || val.isEmpty) return 'Email wajib diisi';
-                          if (!val.contains('@')) return 'Format email tidak valid';
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16.h),
-
-                  // 5. Form Section 3: Unggah Dokumen Legalitas
-                  _buildSectionCard(
-                    isDark: isDark,
-                    title: '3. Dokumen Legalitas & SK Desa',
-                    icon: Icons.assignment_outlined,
-                    iconColor: const Color(0xFF10B981),
+                    title: '3. Dokumen Persyaratan',
+                    icon: Icons.file_present_rounded,
+                    iconColor: const Color(0xFFF59E0B),
                     children: [
                       Text(
-                        'Unggah SK Pengangkatan Kepala Desa, SK Pendirian BUMDes, atau Surat Tugas resmi pemerintahan desa (PDF/JPG maks 5MB).',
+                        'Unggah SK / Surat Tugas Resmi',
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: isDark ? Colors.white60 : Colors.grey[600],
-                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.grey[700],
                         ),
                       ),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 8.h),
                       InkWell(
                         onTap: _pickFile,
                         borderRadius: BorderRadius.circular(12.r),
                         child: Container(
                           padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.white.withAlpha(5) : const Color(0xFFF1F5F9),
+                            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(
-                              color: _filePath != null
-                                  ? const Color(0xFF10B981)
-                                  : (isDark ? Colors.white12 : Colors.grey.shade300),
-                              width: _filePath != null ? 1.5 : 1,
+                              color: isDark ? Colors.white24 : Colors.grey.shade300,
+                              style: BorderStyle.solid,
                             ),
                           ),
                           child: Row(
@@ -474,48 +517,37 @@ class _PartnershipRegistrationPageState
                               Container(
                                 padding: EdgeInsets.all(10.w),
                                 decoration: BoxDecoration(
-                                  color: _filePath != null
-                                      ? const Color(0xFF10B981).withAlpha(25)
-                                      : primaryBlue.withAlpha(25),
+                                  color: const Color(0xFF2FA2F1).withAlpha(30),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
-                                  _filePath != null
-                                      ? Icons.check_circle_rounded
-                                      : Icons.cloud_upload_outlined,
-                                  color: _filePath != null
-                                      ? const Color(0xFF10B981)
-                                      : primaryBlue,
-                                  size: 22.sp,
+                                  _fileName == null ? Icons.cloud_upload_outlined : Icons.check_circle_outline,
+                                  color: const Color(0xFF2FA2F1),
+                                  size: 24.sp,
                                 ),
                               ),
-                              SizedBox(width: 12.w),
+                              SizedBox(width: 14.w),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _fileName ?? 'Pilih Dokumen SK / Surat Tugas',
+                                      _fileName ?? 'Pilih file atau seret dan lepas',
                                       style: TextStyle(
                                         fontSize: 13.sp,
-                                        fontWeight: FontWeight.bold,
-                                        color: _filePath != null
-                                            ? const Color(0xFF10B981)
-                                            : (isDark ? Colors.white : const Color(0xFF1E293B)),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    SizedBox(height: 2.h),
-                                    Text(
-                                      _filePath != null
-                                          ? 'Dokumen siap diunggah'
-                                          : 'Format: PDF, PNG, JPG (Maks. 5MB)',
-                                      style: TextStyle(
-                                        fontSize: 11.sp,
-                                        color: isDark ? Colors.white38 : Colors.grey[500],
+                                        fontWeight: _fileName == null ? FontWeight.w600 : FontWeight.bold,
+                                        color: isDark ? Colors.white : const Color(0xFF1E293B),
                                       ),
                                     ),
+                                    if (_fileName == null) SizedBox(height: 2.h),
+                                    if (_fileName == null)
+                                      Text(
+                                        'SK Jabatan (PDF, PNG, JPG maks 5MB)',
+                                        style: TextStyle(
+                                          fontSize: 11.sp,
+                                          color: isDark ? Colors.white60 : Colors.grey[600],
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -523,13 +555,13 @@ class _PartnershipRegistrationPageState
                           ),
                         ),
                       ),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 16.h),
                       _buildTextFormField(
                         controller: _pesanController,
-                        label: 'Catatan / Pesan Pengajuan (Opsional)',
-                        hint: 'Tuliskan catatan permohonan kemitraan desa...',
-                        icon: Icons.notes_rounded,
-                        maxLines: 2,
+                        label: 'Pesan Tambahan (Opsional)',
+                        hint: 'Alasan mengapa wilayah desa Anda ingin bergabung...',
+                        icon: Icons.message_rounded,
+                        maxLines: 3,
                         isDark: isDark,
                       ),
                     ],
@@ -545,49 +577,27 @@ class _PartnershipRegistrationPageState
     final bool hasAdmin = _selectedDesaData?['has_admin'] == true;
     final String desaName = _selectedDesaData?['name'] ?? 'Desa';
 
-    if (hasAdmin) {
-      return Container(
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF10B981).withAlpha(15),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Color(0xFF10B981).withAlpha(40)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.verified_rounded, color: Color(0xFF10B981), size: 20.sp),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Text(
-                '$desaName sudah memiliki akun kemitraan aktif di SilaDesBeng.',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: isDark ? Colors.white70 : const Color(0xFF047857),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    if (!hasAdmin) return const SizedBox.shrink();
 
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF2FA2F1).withAlpha(15),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Color(0xFF2FA2F1).withAlpha(40)),
+        color: const Color(0xFFFEF3C7), // Amber 100
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: const Color(0xFFFDE68A)), // Amber 200
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, color: Color(0xFF2FA2F1), size: 20.sp),
+          Icon(Icons.warning_amber_rounded, color: const Color(0xFFD97706), size: 20.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              'Permohonan kemitraan $desaName akan langsung diverifikasi oleh Admin Kabupaten Bengkalis.',
+              '$desaName sudah memiliki Admin Desa. Anda hanya dapat mendaftar sebagai Pengurus RW atau RT.',
               style: TextStyle(
-                fontSize: 12.sp,
-                color: isDark ? Colors.white70 : const Color(0xFF0284C7),
+                fontSize: 11.sp,
+                color: const Color(0xFF92400E), // Amber 900
+                height: 1.4,
               ),
             ),
           ),
@@ -607,9 +617,9 @@ class _PartnershipRegistrationPageState
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(18.r),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.grey.shade200,
+          color: isDark ? Colors.white12 : Colors.grey.shade200,
         ),
         boxShadow: [
           BoxShadow(
@@ -758,6 +768,7 @@ class _PartnershipRegistrationPageState
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
     required bool isDark,
+    bool readOnly = false,
     String? Function(String?)? validator,
     void Function(String)? onChanged,
   }) {
@@ -777,9 +788,10 @@ class _PartnershipRegistrationPageState
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          readOnly: readOnly,
           style: TextStyle(
             fontSize: 13.sp,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+            color: readOnly ? (isDark ? Colors.white54 : Colors.grey[600]) : (isDark ? Colors.white : const Color(0xFF0F172A)),
           ),
           onChanged: onChanged,
           validator: validator,
@@ -789,11 +801,11 @@ class _PartnershipRegistrationPageState
               fontSize: 13.sp,
               color: isDark ? Colors.white38 : Colors.grey[400],
             ),
-            prefixIcon: Icon(icon, size: 18.sp, color: const Color(0xFF2FA2F1)),
+            prefixIcon: Icon(icon, size: 18.sp, color: readOnly ? Colors.grey : const Color(0xFF2FA2F1)),
             contentPadding:
                 EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
             filled: true,
-            fillColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+            fillColor: readOnly ? (isDark ? Colors.white.withAlpha(10) : Colors.grey.shade200) : (isDark ? const Color(0xFF0F172A) : Colors.white),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
@@ -855,7 +867,7 @@ class _PartnershipRegistrationPageState
                     ),
                   )
                 : Text(
-                    'Kirim Pengajuan Kemitraan Desa',
+                    'Kirim Pengajuan Kemitraan',
                     style: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.bold),
                   ),
           ),
