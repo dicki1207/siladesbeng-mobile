@@ -24,9 +24,54 @@ class RegisterOtpPage extends StatefulWidget {
 class _RegisterOtpPageState extends State<RegisterOtpPage> {
   final _otpController = TextEditingController();
   bool _isLoading = false;
+  bool _isResending = false;
 
   static const Color _primaryBlue = Color(0xFF2FA2F1);
   static const Color _darkBlue = Color(0xFF0284C7);
+
+  Future<void> _resendOtp(String method) async {
+    if (_isResending) return;
+    setState(() => _isResending = true);
+    try {
+      final res = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/api/register/resend-otp'),
+        body: {
+          'email': widget.email,
+          'method': method,
+        },
+      );
+      final data = json.decode(res.body);
+      if (!mounted) return;
+      if (res.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Kode OTP telah dikirim ulang ke $method'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Gagal mengirim ulang OTP'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kesalahan jaringan: $e'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isResending = false);
+    }
+  }
 
   Future<void> _verifyOtp() async {
     final otp = _otpController.text.trim();
@@ -349,6 +394,49 @@ class _RegisterOtpPageState extends State<RegisterOtpPage> {
                         ),
                 ),
               ),
+              
+              SizedBox(height: 24.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Belum Terima Kode? ',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => _resendOtp('email'),
+                    child: Text(
+                      'Kirim Ulang Kode',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.bold,
+                        color: _primaryBlue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (widget.phone != null && widget.phone!.isNotEmpty) ...[
+                SizedBox(height: 16.h),
+                Center(
+                  child: InkWell(
+                    onTap: () => _resendOtp('whatsapp'),
+                    child: Text(
+                      'Kirim OTP melalui No. Telepon',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : const Color(0xFF475569),
+                        decoration: TextDecoration.underline,
+                        decorationColor: isDark ? Colors.white70 : const Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
