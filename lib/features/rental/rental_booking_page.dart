@@ -57,12 +57,39 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     decimalDigits: 0,
   );
 
+  bool get _isAmbulance {
+    final name = (widget.item['name'] ?? widget.item['nama_mobil'] ?? '').toString().toLowerCase();
+    final cat = (widget.category ?? widget.item['category'] ?? widget.item['kategori'] ?? '').toString().toLowerCase();
+    return name.contains('ambulan') || name.contains('jenazah') || cat.contains('ambulan');
+  }
+
+  bool get _isMobil {
+    final itemType = widget.item['type']?.toString().toLowerCase() ?? 'alat';
+    final cat = (widget.category ?? widget.item['category'] ?? '').toString().toLowerCase();
+    return itemType == 'mobil' || cat.contains('mobil') || _isAmbulance;
+  }
+
+  bool get _isBbmProvided {
+    if (_isAmbulance) return true;
+    final bbm = (widget.item['bbm_ditanggung'] ?? widget.item['bbm'] ?? widget.item['bahan_bakar'] ?? '').toString().toLowerCase();
+    return bbm.contains('pengelola') || bbm.contains('termasuk') || bbm.contains('disediakan') || bbm.contains('gratis');
+  }
+
   @override
   void initState() {
     super.initState();
     _durationDays = widget.initialDuration ?? 1;
     _startDate = DateUtils.dateOnly(DateTime.now());
     _loadUserData();
+
+    if (_isAmbulance) {
+      _driverOption = 'supir';
+    } else if (_isMobil) {
+      final opsi = (widget.item['opsi_supir'] ?? '').toString().toLowerCase();
+      if (opsi.contains('supir') && !opsi.contains('lepas') && !opsi.contains('bebas')) {
+        _driverOption = 'supir';
+      }
+    }
   }
 
   /// Tanggal selesai mengikuti konvensi yang sudah dipakai backend:
@@ -632,16 +659,20 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
     final String cat = widget.category?.toLowerCase() ?? '';
     final bool isFasilitas =
         itemType == 'fasilitas' || cat.contains('fasilitas');
+    final bool isMobilLepasKunci = _isMobil && _driverOption == 'sendiri';
+    final bool needsAddress = !isFasilitas && !isMobilLepasKunci;
 
     if (_nameController.text.trim().isEmpty ||
         _waController.text.trim().isEmpty ||
-        (!isFasilitas && _addressController.text.trim().isEmpty)) {
+        (needsAddress && _addressController.text.trim().isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isFasilitas
+            isFasilitas || isMobilLepasKunci
                 ? 'Mohon lengkapi Data Penyewa (Nama dan Nomor WhatsApp)'
-                : 'Mohon lengkapi Data Penyewa (Nama, WA, dan Alamat)',
+                : (_isAmbulance
+                    ? 'Mohon masukkan Titik Penjemputan Pasien'
+                    : 'Mohon lengkapi Data Penyewa (Nama, WA, dan Titik Jemput)'),
           ),
           backgroundColor: Colors.redAccent,
         ),
@@ -715,19 +746,22 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
         paymentMethod: paymentMethod,
       );
     } else if (itemType == 'mobil' || cat.contains('mobil')) {
-      // Determine delivery method
-      String deliveryMethod = _addressController.text.trim().isNotEmpty ? 'antar' : 'jemput';
-      
+      final bool isWithDriver = _isAmbulance || _driverOption != 'sendiri';
+      final String deliveryMethod = isWithDriver ? 'antar' : 'jemput';
+      final String finalAddress = isWithDriver
+          ? _addressController.text.trim()
+          : 'Pengambilan Mandiri di Kantor Pengelola / BUMDes (Lepas Kunci)';
+
       result = await _rentalService.bookMobil(
         mobilId: itemId,
         startDate: startDate,
         endDate: endDate,
         recipientName: _nameController.text,
-        deliveryAddress: _addressController.text,
+        deliveryAddress: finalAddress,
         deliveryMethod: deliveryMethod,
         paymentMethod: paymentMethod,
         rentalPurpose: _notesController.text,
-        denganSupir: _driverOption != 'sendiri',
+        denganSupir: isWithDriver,
       );
     } else if (itemType == 'fasilitas' || cat.contains('fasilitas')) {
       result = await _rentalService.bookFasilitas(
@@ -769,6 +803,10 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                 needsLogistics: _needsAdditionalFacilities,
                 totalPrice: total,
                 durationDays: _durationDays,
+                driverName: (_isAmbulance || (_isMobil && _driverOption != 'sendiri'))
+                    ? (widget.item['nama_supir'] ?? (_isAmbulance ? 'Supir Siaga Medis' : 'Supir Pengelola'))
+                    : null,
+                driverPhone: widget.item['kontak_supir'] ?? widget.item['phone'] ?? widget.item['telepon'],
               ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             final curve = CurvedAnimation(
@@ -1145,58 +1183,238 @@ class _RentalBookingPageState extends State<RentalBookingPage> {
                       ],
                     ),
                   ),
+                ] else if (_isMobil) ...[
+                  // 1. Pilihan Layanan Supir
+                  SizedBox(height: 4.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Pilihan Layanan Supir',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.grey[800],
+                        ),
+                      ),
+                      if (_isAmbulance)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8.r),
+                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.medical_services_rounded, size: 12.sp, color: Colors.redAccent),
+                              SizedBox(width: 4.w),
+                              Text(
+                                'Armada Medis',
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  if (_isAmbulance)
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.health_and_safety_rounded, color: const Color(0xFF10B981), size: 24.sp),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Supir Siaga Medis Desa (Terkunci)',
+                                  style: TextStyle(
+                                    fontSize: 12.5.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  'Sesuai SOP, Ambulans Desa wajib dikemudikan oleh Supir Siaga Resmi Desa untuk keselamatan rujukan darurat.',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: isDark ? Colors.white70 : Colors.grey[700],
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceChip(
+                            label: Center(
+                              child: Text(
+                                'Setir Sendiri',
+                                style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            selected: _driverOption == 'sendiri',
+                            onSelected: (val) =>
+                                setState(() => _driverOption = 'sendiri'),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: ChoiceChip(
+                            label: Center(
+                              child: Text(
+                                'Dengan Supir',
+                                style: TextStyle(fontSize: 11.5.sp, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            selected: _driverOption != 'sendiri',
+                            onSelected: (val) =>
+                                setState(() => _driverOption = 'supir'),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  SizedBox(height: 12.h),
+
+                  // 2. Ketentuan Bahan Bakar (BBM / Bensin)
+                  Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: _isBbmProvided
+                          ? const Color(0xFF10B981).withValues(alpha: 0.08)
+                          : const Color(0xFFF59E0B).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: _isBbmProvided
+                            ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                            : const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.local_gas_station_rounded,
+                          size: 22.sp,
+                          color: _isBbmProvided ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _isBbmProvided
+                                    ? 'BBM Disediakan Pengelola (Termasuk Bensin)'
+                                    : 'BBM Ditanggung Penyewa',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: _isBbmProvided
+                                      ? (isDark ? const Color(0xFF34D399) : const Color(0xFF047857))
+                                      : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309)),
+                                ),
+                              ),
+                              SizedBox(height: 2.h),
+                              Text(
+                                _isBbmProvided
+                                    ? 'Biaya bahan bakar/bensin sudah termasuk ke dalam paket layanan operasional kendaraan ini.'
+                                    : 'Bahan bakar selama masa sewa menjadi tanggung jawab warga. Kendaraan diserahterimakan dan dikembalikan pada posisi bensin yang sama.',
+                                style: TextStyle(
+                                  fontSize: 11.sp,
+                                  color: isDark ? Colors.white70 : Colors.grey[700],
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 14.h),
+
+                  // 3. Logika Logistik / Alamat Berdasarkan Opsi Supir
+                  if (_driverOption == 'sendiri')
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(14.r),
+                        border: Border.all(color: const Color(0xFF2563EB).withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.store_mall_directory_rounded, color: const Color(0xFF2563EB), size: 22.sp),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Pengambilan Mandiri (Lepas Kunci)',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                SizedBox(height: 3.h),
+                                Text(
+                                  'Kendaraan diambil mandiri di Kantor Pengelola / BUMDes Desa. Wajib membawa fisik KTP & SIM asli yang masih berlaku saat serah terima kunci.',
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    color: isDark ? Colors.white70 : Colors.grey[700],
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    _buildCleanTextField(
+                      controller: _addressController,
+                      label: _isAmbulance
+                          ? 'Titik Penjemputan Pasien / Pasien Berada'
+                          : 'Titik Penjemputan Rombongan / Alamat Warga',
+                      hint: 'Alamat lengkap RT/RW atau nama jalan tempat supir menjemput',
+                      prefixIcon: Icons.location_on_outlined,
+                      maxLines: 2,
+                    ),
                 ] else ...[
                   _buildCleanTextField(
                     controller: _addressController,
-                    label: itemType == 'mobil' || cat.contains('mobil')
-                        ? 'Alamat Penjemputan / Pengantaran Mobil'
-                        : 'Alamat Pengantaran / Lokasi Pemasangan',
+                    label: 'Alamat Pengantaran / Lokasi Pemasangan',
                     hint: 'Alamat lengkap RT/RW atau nama jalan',
                     prefixIcon: Icons.location_on_outlined,
                     maxLines: 2,
-                  ),
-                ],
-                if (itemType == 'mobil' || cat.contains('mobil')) ...[
-                  SizedBox(height: 12.h),
-                  Text(
-                    'Pilihan Pengemudi',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white60 : Colors.grey[700],
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ChoiceChip(
-                          label: Center(
-                            child: Text(
-                              'Setir Sendiri',
-                              style: TextStyle(fontSize: 12.sp),
-                            ),
-                          ),
-                          selected: _driverOption == 'sendiri',
-                          onSelected: (val) =>
-                              setState(() => _driverOption = 'sendiri'),
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: ChoiceChip(
-                          label: Center(
-                            child: Text(
-                              'Dengan Supir',
-                              style: TextStyle(fontSize: 12.sp),
-                            ),
-                          ),
-                          selected: _driverOption != 'sendiri',
-                          onSelected: (val) =>
-                              setState(() => _driverOption = 'supir'),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
                 if (itemType == 'fasilitas' || cat.contains('fasilitas')) ...[

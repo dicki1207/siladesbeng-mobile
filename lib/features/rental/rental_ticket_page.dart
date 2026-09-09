@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RentalTicketPage extends StatelessWidget {
   final String itemName;
@@ -11,6 +12,8 @@ class RentalTicketPage extends StatelessWidget {
   final bool needsLogistics;
   final int totalPrice;
   final int durationDays;
+  final String? driverName;
+  final String? driverPhone;
 
   const RentalTicketPage({
     super.key,
@@ -20,17 +23,37 @@ class RentalTicketPage extends StatelessWidget {
     required this.needsLogistics,
     required this.totalPrice,
     required this.durationDays,
+    this.driverName,
+    this.driverPhone,
   });
 
-  void _simulateWhatsApp(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Membuka WhatsApp: Halo Pengurus, saya ingin konfirmasi Bukti Transaksi...',
-        ),
-        backgroundColor: Colors.blue[800],
-      ),
-    );
+  Future<void> _openWhatsApp(BuildContext context) async {
+    final phone = (driverPhone != null && driverPhone!.trim().isNotEmpty)
+        ? driverPhone!.trim()
+        : '081234567890';
+    String cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62${cleanPhone.substring(1)}';
+    }
+    final msg = driverName != null
+        ? 'Halo Pak Supir ($driverName), saya $renterName yang memesan $itemName melalui SilaDesBeng. Ingin konfirmasi jadwal dan titik penjemputan.'
+        : 'Halo Pengurus BUMDes, saya $renterName ingin konfirmasi pemesanan sewa: $itemName.';
+    final url = Uri.parse('https://wa.me/$cleanPhone?text=${Uri.encodeComponent(msg)}');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Nomor WhatsApp: $cleanPhone')),
+        );
+      }
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Nomor WhatsApp: $cleanPhone')),
+      );
+    }
   }
 
   @override
@@ -366,18 +389,23 @@ class RentalTicketPage extends StatelessWidget {
                       
                       SizedBox(height: 24.h),
                       
-                      // ===== HUBUNGI PENGURUS BUTTON =====
+                      // ===== HUBUNGI PENGURUS / SUPIR BUTTON =====
                       SizedBox(
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton.icon(
-                          onPressed: () => _simulateWhatsApp(context),
-                          icon: Icon(Icons.wechat, size: 24.sp),
-                          label: Text('Hubungi Pengurus BUMDes', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),
+                          onPressed: () => _openWhatsApp(context),
+                          icon: Icon(Icons.chat_bubble_outline_rounded, size: 22.sp),
+                          label: Text(
+                            driverName != null
+                                ? 'Chat WhatsApp Supir ($driverName)'
+                                : 'Hubungi Pengurus BUMDes via WA',
+                            style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.bold),
+                          ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[600],
+                            backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                           ),
                         ),
                       ),
