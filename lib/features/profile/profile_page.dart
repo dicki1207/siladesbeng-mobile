@@ -433,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      'KTP DIGITAL',
+                      'KTP DIGITAL - SILADESBENG',
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w900,
