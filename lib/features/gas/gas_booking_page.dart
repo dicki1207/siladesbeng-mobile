@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/features/gas/gas_kk_scanner_page.dart';
 import 'package:siladesbeng_mobile/features/transaction/payment_instruction_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class GasBookingPage extends StatefulWidget {
   final dynamic item;
@@ -191,12 +192,44 @@ class _GasBookingPageState extends State<GasBookingPage> {
       Navigator.pop(context); // Close loading dialog
 
       if (response.statusCode == 200 && data['success'] == true) {
-        if (data['payment_data'] != null) {
+        final paymentData = data['payment_data'];
+        final snapUrl = paymentData is Map ? paymentData['snap_redirect_url'] : null;
+
+        if (snapUrl != null && snapUrl.toString().isNotEmpty) {
+          // Sejak server pindah dari Core API ke Snap, nomor VA tidak lagi
+          // diterbitkan di sisi kita - Midtrans yang menampilkannya di
+          // halamannya sendiri. Popup Snap tidak tersedia di aplikasi,
+          // jadi halaman itu dibuka di peramban.
+          final dibuka = await launchUrl(
+            Uri.parse(snapUrl.toString()),
+            mode: LaunchMode.externalApplication,
+          );
+
+          if (!mounted) return;
+
+          if (dibuka) {
+            // Status pesanan diperbarui server lewat notifikasi Midtrans,
+            // jadi cukup kembali; daftar aktivitas akan menampilkan hasilnya.
+            Navigator.pop(context);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Tidak dapat membuka halaman pembayaran. '
+                  'Buka menu Aktivitas untuk melanjutkan pembayaran.',
+                ),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        } else if (paymentData != null) {
+          // Jalur lama: dipertahankan untuk pesanan yang nomor VA-nya memang
+          // sudah tersimpan, mis. dibuat sebelum perpindahan ke Snap.
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => PaymentInstructionPage(
-                paymentData: data['payment_data'],
+                paymentData: paymentData,
                 onFinish: () {
                   Navigator.pop(context); // Pop booking page
                 },
