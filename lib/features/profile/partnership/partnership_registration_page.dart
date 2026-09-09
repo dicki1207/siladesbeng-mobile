@@ -263,7 +263,9 @@ class _PartnershipRegistrationPageState extends State<PartnershipRegistrationPag
           elevation: 0,
           centerTitle: true,
           title: Text(
-            'Gabung Kemitraan',
+            (_selectedDesaData?['has_admin'] == true) 
+                ? 'Permohonan Akun RT/RW' 
+                : 'Gabung Kemitraan',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18.sp,
@@ -868,7 +870,9 @@ class _PartnershipRegistrationPageState extends State<PartnershipRegistrationPag
                     ),
                   )
                 : Text(
-                    'Kirim Pengajuan Kemitraan',
+                    (_selectedDesaData?['has_admin'] == true) 
+                        ? 'Kirim Permohonan Akun' 
+                        : 'Kirim Pengajuan Kemitraan',
                     style: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.bold),
                   ),
           ),

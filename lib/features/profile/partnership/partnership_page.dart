@@ -6,11 +6,13 @@ import 'package:siladesbeng_mobile/features/profile/partnership/partnership_regi
 class PartnershipPage extends StatelessWidget {
   final bool isLoggedIn;
   final VoidCallback onLoginRequest;
+  final bool desaHasAdmin; // Menambahkan parameter desaHasAdmin
 
   const PartnershipPage({
     super.key,
     required this.isLoggedIn,
     required this.onLoginRequest,
+    this.desaHasAdmin = false, // Default false agar aman
   });
 
   @override
@@ -23,7 +25,7 @@ class PartnershipPage extends StatelessWidget {
       backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
-          'Gabung Kemitraan Desa',
+          desaHasAdmin ? 'Permohonan Akun RT/RW' : 'Gabung Kemitraan Desa',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -514,7 +516,7 @@ class PartnershipPage extends StatelessWidget {
             Icon(Icons.how_to_reg_rounded, color: Colors.white, size: 22.sp),
             SizedBox(width: 8.w),
             Text(
-              'Daftarkan Desa Sekarang',
+              desaHasAdmin ? 'Ajukan Pembuatan Akun RT/RW' : 'Daftarkan Desa Sekarang',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 15.sp,
@@ -624,7 +626,7 @@ class PartnershipPage extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    'Daftarkan Desa Sekarang',
+                    desaHasAdmin ? 'Ajukan Pembuatan Akun RT/RW' : 'Daftarkan Desa Sekarang',
                     style: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.bold),
                   ),
                 ),
