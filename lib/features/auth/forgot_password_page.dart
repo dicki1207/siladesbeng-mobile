@@ -168,11 +168,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             children: [
               SizedBox(height: 12.h),
 
-              // Ikon Visual Modern
+              // Logo SiladesBeng Resmi
               Center(
                 child: Image.asset(
-                  'assets/images/verifff.png',
-                  height: 100.w,
+                  'logodomain.png',
+                  height: 90.w,
+                  width: 90.w,
                   fit: BoxFit.contain,
                 ),
               ),

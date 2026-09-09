@@ -12,6 +12,7 @@ import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/features/auth/register_page.dart';
 import 'package:siladesbeng_mobile/features/auth/forgot_password_page.dart';
+import 'package:siladesbeng_mobile/features/auth/google_complete_profile_sheet.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -202,73 +203,120 @@ class _LoginPageState extends State<LoginPage> {
         );
         final data = json.decode(response.body);
         if (response.statusCode == 200 || response.statusCode == 201) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('auth_token', data['data']['token']);
-          await prefs.setString(
-            'profile_name',
-            data['data']['user']['name'] ?? user.displayName ?? 'Google User',
-          );
-          await prefs.setString(
-            'profile_email',
-            data['data']['user']['email'] ?? user.email ?? '',
-          );
-          if (data['data']['user'] != null &&
-              data['data']['user']['role'] != null) {
-            await prefs.setString('user_role', data['data']['user']['role']);
-          } else {
-            await prefs.setString('user_role', 'warga');
-          }
+          // 1. Jika butuh pelengkapan data wilayah & nomor HP (Pengguna Baru)
+          if (data['status'] == 'needs_completion') {
+            setState(() => _isLoading = false);
+            if (!mounted) return;
 
-          await prefs.setBool(
-            'is_verified',
-            VerificationGuard.isVerifiedFromApi(data['data']['user']),
-          );
-          await prefs.remove('profile_image');
-          if (user.photoURL != null) {
-            await prefs.setString('profile_image_url', user.photoURL!);
-          }
-
-          // Update FCM Token
-          final fcmToken = await FirebaseMessaging.instance.getToken();
-          if (fcmToken != null) {
-            await FirebaseMessagingService.updateTokenToServer(fcmToken);
-          }
-
-          if (!mounted) return;
-          final String displayName = data['data']['user']?['name'] ?? user.displayName ?? 'Warga';
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Selamat datang kembali, $displayName!',
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
-                    ),
-                  ),
-                ],
+            final completed = await showModalBottomSheet<bool>(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (ctx) => GoogleCompleteProfileSheet(
+                firebaseUser: user,
+                locationName: locationName,
               ),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: const Color(0xFF0284C7),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+            );
 
-          Navigator.pop(context, true);
-        } else {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Gagal: ${data['message']}'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
+            if (completed == true && mounted) {
+              final String displayName = user.displayName ?? 'Warga';
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Pendaftaran berhasil! Selamat datang, $displayName!',
+                          style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: const Color(0xFF0284C7),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+              Navigator.pop(context, true);
+            }
+            return;
+          }
+
+          // 2. Jika akun sudah ada dan login langsung sukses (Pengguna Lama)
+          if (data['status'] == 'success') {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('auth_token', data['data']['token']);
+            await prefs.setString(
+              'profile_name',
+              data['data']['user']['name'] ?? user.displayName ?? 'Google User',
+            );
+            await prefs.setString(
+              'profile_email',
+              data['data']['user']['email'] ?? user.email ?? '',
+            );
+            if (data['data']['user'] != null &&
+                data['data']['user']['role'] != null) {
+              await prefs.setString('user_role', data['data']['user']['role']);
+            } else {
+              await prefs.setString('user_role', 'warga');
+            }
+
+            await prefs.setBool(
+              'is_verified',
+              VerificationGuard.isVerifiedFromApi(data['data']['user']),
+            );
+            await prefs.remove('profile_image');
+            if (user.photoURL != null) {
+              await prefs.setString('profile_image_url', user.photoURL!);
+            }
+
+            // Update FCM Token
+            final fcmToken = await FirebaseMessaging.instance.getToken();
+            if (fcmToken != null) {
+              await FirebaseMessagingService.updateTokenToServer(fcmToken);
+            }
+
+            if (!mounted) return;
+            final String displayName = data['data']['user']?['name'] ?? user.displayName ?? 'Warga';
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Selamat datang kembali, $displayName!',
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
+                      ),
+                    ),
+                  ],
+                ),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: const Color(0xFF0284C7),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+
+            Navigator.pop(context, true);
+            return;
+          }
         }
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal: ${data['message'] ?? 'Terjadi kesalahan'}'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     } catch (e) {
       if (!mounted) return;

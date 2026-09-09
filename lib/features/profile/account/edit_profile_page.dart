@@ -37,12 +37,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final TextEditingController _desaController = TextEditingController(
     text: 'Belum ditentukan',
   );
-  final TextEditingController _rwController = TextEditingController(
-    text: 'Belum ditentukan',
-  );
-  final TextEditingController _rtController = TextEditingController(
-    text: 'Belum ditentukan',
-  );
+  final TextEditingController _rwController = TextEditingController();
+  final TextEditingController _rtController = TextEditingController();
 
   String? _selectedGender;
   String _nik = '';
@@ -133,8 +129,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
               _kecamatanController.text = region['kecamatan'] ?? 'Belum ditentukan';
               _desaController.text = region['desa'] ?? 'Belum ditentukan';
-              _rwController.text = region['rw'] ?? 'Belum ditentukan';
-              _rtController.text = region['rt'] ?? 'Belum ditentukan';
+
+              final rawRw = user['rw'] ?? region['rw'];
+              _rwController.text = (rawRw != null && rawRw != 'Belum ditentukan' && rawRw != '-')
+                  ? rawRw.toString()
+                  : '';
+
+              final rawRt = user['rt'] ?? region['rt'];
+              _rtController.text = (rawRt != null && rawRt != 'Belum ditentukan' && rawRt != '-')
+                  ? rawRt.toString()
+                  : '';
 
               _avatarUrl = data['data']['avatar_url'];
               _nik = user['nik']?.toString() ?? '';
@@ -176,8 +180,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       request.fields['name'] = _nameController.text.trim();
       request.fields['phone'] = _phoneController.text.trim();
       request.fields['address'] = _addressController.text.trim();
-      request.fields['rt'] = _rtController.text.trim();
-      request.fields['rw'] = _rwController.text.trim();
+      final rtVal = _rtController.text.trim();
+      final rwVal = _rwController.text.trim();
+      request.fields['rt'] = (rtVal.isEmpty || rtVal == 'Belum ditentukan') ? '' : rtVal;
+      request.fields['rw'] = (rwVal.isEmpty || rwVal == 'Belum ditentukan') ? '' : rwVal;
       if (_selectedGender != null) {
         request.fields['gender'] = _selectedGender!;
       }
@@ -785,6 +791,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   _rwController,
                                   prefixIcon: Icons.groups_outlined,
                                   keyboardType: TextInputType.number,
+                                  hintText: 'Contoh: 005',
+                                  maxLength: 10,
                                   isDark: isDark,
                                 ),
                               ),
@@ -798,6 +806,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   _rtController,
                                   prefixIcon: Icons.home_outlined,
                                   keyboardType: TextInputType.number,
+                                  hintText: 'Contoh: 013',
+                                  maxLength: 10,
                                   isDark: isDark,
                                 ),
                               ),
@@ -1239,6 +1249,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     IconData? prefixIcon,
     int maxLines = 1,
     TextInputType? keyboardType,
+    String? hintText,
+    int? maxLength,
     required bool isDark,
   }) {
     return Container(
@@ -1255,6 +1267,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         controller: controller,
         enabled: enabled,
         maxLines: maxLines,
+        maxLength: maxLength,
+        buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
         keyboardType: keyboardType,
         style: TextStyle(
           fontSize: 12.5.sp,
@@ -1265,6 +1279,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
         decoration: InputDecoration(
           isDense: true,
+          hintText: hintText,
+          hintStyle: TextStyle(
+            fontSize: 12.sp,
+            color: isDark ? Colors.white38 : Colors.grey.shade400,
+            fontWeight: FontWeight.w400,
+          ),
           contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 11.h),
           border: InputBorder.none,
           prefixIcon: prefixIcon != null
