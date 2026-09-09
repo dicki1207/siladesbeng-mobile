@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
+import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -240,47 +241,14 @@ class _GasBookingPageState extends State<GasBookingPage> {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (ctx) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: const Icon(
-                Icons.check_circle_rounded,
-                color: Colors.green,
-                size: 70,
-              ),
-              content: const Text(
-                'Pesanan Gas Berhasil Dibuat!\n\nMohon siapkan pembayaran tunai saat pesanan diterima/diambil.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14.5, height: 1.4),
-              ),
-              actions: [
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 36,
-                        vertical: 12,
-                      ),
-                    ),
-                    child: const Text(
-                      'Selesai',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
+            builder: (ctx) => const AnimatedSuccessDialog(
+              message: 'Pesanan Gas Berhasil Dibuat!',
+              subMessage: 'Mohon siapkan pembayaran tunai saat pesanan diterima/diambil.',
+              isLogout: false,
             ),
-          );
+          ).then((_) {
+            if (mounted) Navigator.pop(context);
+          });
         }
       } else {
         _showError(data['message'] ?? 'Gagal membuat pesanan');
