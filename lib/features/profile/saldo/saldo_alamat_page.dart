@@ -322,25 +322,6 @@ class _SaldoAlamatPageState extends State<SaldoAlamatPage> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Container(
-              padding: EdgeInsets.all(6.w),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(isDark ? 25 : 35),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.refresh_rounded,
-                color: Colors.white,
-                size: 18.sp,
-              ),
-            ),
-            onPressed: _loadAllData,
-            tooltip: 'Segarkan Data',
-          ),
-          SizedBox(width: 8.w),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF0284C7)))
