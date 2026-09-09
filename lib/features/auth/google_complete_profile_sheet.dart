@@ -392,8 +392,14 @@ class _GoogleCompleteProfileSheetState
             await FirebaseMessagingService.updateTokenToServer(fcmToken);
           }
 
+          final desaName = _selectedDesa?['name']?.toString() ?? 'Desa Terkait';
+          await prefs.setString('profile_desa', desaName);
+          if (_selectedDesa?['id'] != null) {
+            await prefs.setString('profile_region_id', _selectedDesa!['id'].toString());
+          }
+
           if (mounted) {
-            Navigator.pop(context, true); // Berhasil!
+            Navigator.pop(context, desaName); // Kembalikan nama desa
           }
           return;
         }

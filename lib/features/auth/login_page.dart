@@ -208,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
             setState(() => _isLoading = false);
             if (!mounted) return;
 
-            final completed = await showModalBottomSheet<bool>(
+            final completedDesa = await showModalBottomSheet<dynamic>(
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
@@ -218,30 +218,89 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
 
-            if (completed == true && mounted) {
-              final String displayName = user.displayName ?? 'Warga';
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
+            if (completedDesa != null && mounted) {
+              final String desaName = completedDesa is String && completedDesa.isNotEmpty
+                  ? completedDesa
+                  : 'Desa Terkait';
+
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+
+              // Tampilkan Pop-Up Notif Simpel bahwa akun dialihkan ke Unit Pelayanan Desa
+              await showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (dialogCtx) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 18),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Pendaftaran berhasil! Selamat datang, $displayName!',
-                          style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 13.5),
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0EA5E9).withAlpha(30),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.verified_rounded,
+                          color: Color(0xFF0EA5E9),
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Pendaftaran Berhasil!',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Akun Anda telah berhasil dialihkan dan terhubung ke Unit Pelayanan $desaName.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(dialogCtx),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0EA5E9),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Masuk ke Beranda',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: const Color(0xFF0284C7),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  duration: const Duration(seconds: 2),
                 ),
               );
-              Navigator.pop(context, true);
+
+              if (mounted) {
+                Navigator.pop(context, true);
+              }
             }
             return;
           }

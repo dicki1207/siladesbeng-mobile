@@ -18,6 +18,7 @@ import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'package:siladesbeng_mobile/features/profile/mutation/domicile_transfer_page.dart';
 import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
 import 'package:siladesbeng_mobile/features/profile/account/change_password_page.dart';
+import 'package:siladesbeng_mobile/features/profile/saldo/saldo_alamat_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -1159,6 +1160,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         icon: Icons.shield_rounded,
                         title: 'Keamanan & Kata Sandi',
                         targetPage: const ChangePasswordPage(),
+                        isFirst: false,
+                        isLast: false,
+                      ),
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.account_balance_wallet_rounded,
+                        title: 'Saldo & Alamat',
+                        subtitle: 'Dompet warga dan buku alamat pengiriman',
+                        targetPage: const SaldoAlamatPage(),
                         isFirst: false,
                         isLast: false,
                       ),
