@@ -544,27 +544,6 @@ class _ToolPackageBookingPageState extends State<ToolPackageBookingPage>
         ),
         backgroundColor: const Color(0xFF2563EB),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.chat_bubble_outline_rounded,
-              color: Colors.white,
-            ),
-            tooltip: 'Chat Layanan Penyewaan Alat',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const UnitServiceChatPage(
-                    serviceType: 'penyewaan',
-                    title: 'Layanan Pesan Penyewaan Alat',
-                  ),
-                ),
-              );
-            },
-          ),
-          SizedBox(width: 4.w),
-        ],
         elevation: 0,
         centerTitle: true,
         flexibleSpace: Container(

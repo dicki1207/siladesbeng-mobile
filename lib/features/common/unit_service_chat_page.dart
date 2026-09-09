@@ -209,7 +209,6 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 60,
-        titleSpacing: 0,
         backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFF2563EB),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -264,7 +263,12 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
+        centerTitle: true,
+        actions: const [
+          SizedBox(width: 48), // Penyeimbang tombol leading agar judul presisi di tengah
+        ],
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 38,
@@ -284,7 +288,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
               ),
             ),
             const SizedBox(width: 10),
-            Expanded(
+            Flexible(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,6 +305,7 @@ class _UnitServiceChatPageState extends State<UnitServiceChatPage> {
                   ),
                   const SizedBox(height: 1),
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         width: 7,

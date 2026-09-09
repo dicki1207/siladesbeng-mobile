@@ -120,73 +120,8 @@ class VerificationBanner extends StatefulWidget {
 }
 
 class _VerificationBannerState extends State<VerificationBanner> {
-  bool _isVerified = true; // sembunyikan dulu sampai status kebaca
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStatus();
-  }
-
-  Future<void> _loadStatus() async {
-    final verified = await VerificationGuard.isVerified();
-    if (mounted) setState(() => _isVerified = verified);
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_isVerified) return const SizedBox.shrink();
-
-    return Material(
-      color: const Color(0xFFFEF3C7),
-      child: InkWell(
-        onTap: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const VerificationPage()),
-          );
-          _loadStatus();
-        },
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-          child: Row(
-            children: [
-              Icon(
-                Icons.gpp_maybe_outlined,
-                color: const Color(0xFFB45309),
-                size: 20.sp,
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Text(
-                  'Akun belum diverifikasi. Anda bisa melihat-lihat, tapi '
-                  'pemesanan butuh verifikasi identitas.',
-                  style: TextStyle(
-                    color: const Color(0xFF92400E),
-                    fontSize: 11.5.sp,
-                    height: 1.35,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Verifikasi',
-                style: TextStyle(
-                  color: const Color(0xFFB45309),
-                  fontSize: 11.5.sp,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: const Color(0xFFB45309),
-                size: 18.sp,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return const SizedBox.shrink();
   }
 }

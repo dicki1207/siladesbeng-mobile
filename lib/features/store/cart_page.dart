@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
+import 'package:siladesbeng_mobile/core/verification_guard.dart';
 import 'pasar_checkout_page.dart';
 
 class CartPage extends StatefulWidget {
@@ -482,7 +483,14 @@ class _CartPageState extends State<CartPage> {
               ],
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                final canProceed = await VerificationGuard.ensureVerified(
+                  context,
+                  serviceName: 'Checkout BUMDes',
+                );
+                if (!canProceed) return;
+
+                if (!mounted) return;
                 Navigator.push(
                   context,
                   MaterialPageRoute(

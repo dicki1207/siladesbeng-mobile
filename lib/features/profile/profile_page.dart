@@ -11,7 +11,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:siladesbeng_mobile/features/profile/info/about_page.dart';
-import 'package:siladesbeng_mobile/features/profile/partnership/partnership_page.dart';
 import 'package:siladesbeng_mobile/features/profile/info/help_faq_page.dart';
 import 'package:siladesbeng_mobile/features/profile/verification/verification_page.dart';
 import 'package:siladesbeng_mobile/core/verification_guard.dart';
@@ -167,6 +166,12 @@ class _ProfilePageState extends State<ProfilePage> {
           await prefs.setString('profile_email', user['email'] ?? '');
           await prefs.setString('profile_nik', userNik);
           await prefs.setString('profile_address', userAddress);
+          final userDesa = (region['desa'] != null && region['desa'] != 'Belum ditentukan')
+              ? region['desa']
+              : (user['region'] != null && user['region']['name'] != null ? user['region']['name'] : '');
+          if (userDesa.toString().isNotEmpty) {
+            await prefs.setString('profile_desa', userDesa.toString());
+          }
           await prefs.setBool('is_verified', isVerified);
           // Sebelumnya 'is_blocked' tidak pernah ditulis di mana pun, jadi
           // gerbang "pindah domisili" di beranda selalu mati.
@@ -1070,7 +1075,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   _buildSectionHeader(
                     context,
-                    'Aktivitas & Kemitraan',
+                    'Aktivitas & Mutasi Domisili',
                   ),
                   SizedBox(height: 12.h),
                   _buildMenuGroup(context, [
@@ -1109,29 +1114,15 @@ class _ProfilePageState extends State<ProfilePage> {
                           isLast: false,
                         ),
                       ),
-                    if (_isVerified)
-                      _buildMenuTile(
-                        context,
-                        icon: Icons.swap_horiz_rounded,
-                        title: 'Mutasi Domisili',
-                        subtitle: 'Handshake data kependudukan',
-                        targetPage: const DomicileTransferPage(),
-                        isFirst: false,
-                        isLast: true,
-                      ),
-                    if (!_isVerified)
-                      _buildMenuTile(
-                        context,
-                        icon: Icons.handshake_rounded,
-                        title: 'Gabung Kemitraan',
-                        targetPage: PartnershipPage(
-                          isLoggedIn: _isLoggedIn,
-                          onLoginRequest: _navigateToLogin,
-                        ),
-                        isFirst: false,
-                        isLast: true,
-                      ),
-                    ]),
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.swap_horiz_rounded,
+                      title: 'Mutasi Domisili',
+                      targetPage: const DomicileTransferPage(),
+                      isFirst: false,
+                      isLast: true,
+                    ),
+                  ]),
                   SizedBox(height: 24.h),
                   _buildSectionHeader(
                     context,
@@ -1167,7 +1158,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         icon: Icons.account_balance_wallet_rounded,
                         title: 'Saldo & Alamat',
-                        subtitle: 'Dompet warga dan buku alamat pengiriman',
                         targetPage: const SaldoAlamatPage(),
                         isFirst: false,
                         isLast: false,

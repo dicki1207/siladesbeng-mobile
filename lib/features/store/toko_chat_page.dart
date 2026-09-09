@@ -278,7 +278,10 @@ class _TokoChatPageState extends State<TokoChatPage> {
         foregroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
-        titleSpacing: 0,
+        centerTitle: true,
+        actions: const [
+          SizedBox(width: 48),
+        ],
         flexibleSpace: Stack(
           fit: StackFit.expand,
           children: [
@@ -330,6 +333,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Store Avatar with Online Indicator
             Stack(
@@ -381,7 +385,7 @@ class _TokoChatPageState extends State<TokoChatPage> {
             ),
             const SizedBox(width: 10),
             // Store Name & Support Status
-            Expanded(
+            Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

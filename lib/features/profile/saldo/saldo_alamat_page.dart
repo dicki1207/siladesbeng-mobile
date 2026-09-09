@@ -232,20 +232,114 @@ class _SaldoAlamatPageState extends State<SaldoAlamatPage> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'Saldo & Alamat',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF2FA2F1),
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFF2FA2F1), const Color(0xFF0284C7)],
+                ),
+              ),
+            ),
+            // Glowing ambient light circle 1 (Top Right)
+            Positioned(
+              top: -30,
+              right: -20,
+              child: Container(
+                width: 120.w,
+                height: 120.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(22),
+                ),
+              ),
+            ),
+            // Glowing ambient light circle 2 (Bottom Left)
+            Positioned(
+              bottom: -25,
+              left: -15,
+              child: Container(
+                width: 90.w,
+                height: 90.h,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withAlpha(14),
+                ),
+              ),
+            ),
+          ],
+        ),
+        leading: IconButton(
+          icon: Container(
+            padding: EdgeInsets.all(6.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(isDark ? 25 : 35),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 16.sp,
+            ),
+          ),
+          onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Saldo & Alamat',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 16.5.sp,
+                letterSpacing: 0.2,
+              ),
+            ),
+            Text(
+              'Dompet Warga & Buku Alamat',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withAlpha(210),
+                fontWeight: FontWeight.w500,
+                fontSize: 11.sp,
+                letterSpacing: 0.1,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
+            icon: Container(
+              padding: EdgeInsets.all(6.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(isDark ? 25 : 35),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.refresh_rounded,
+                color: Colors.white,
+                size: 18.sp,
+              ),
+            ),
             onPressed: _loadAllData,
-            icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Segarkan Data',
           ),
+          SizedBox(width: 8.w),
         ],
       ),
       body: _isLoading

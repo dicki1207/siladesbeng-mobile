@@ -18,7 +18,15 @@ class PasarProductService {
         if (sort != 'latest') 'sort': sort,
       });
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 3));
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      final headers = <String, String>{};
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final response = await http.get(uri, headers: headers).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

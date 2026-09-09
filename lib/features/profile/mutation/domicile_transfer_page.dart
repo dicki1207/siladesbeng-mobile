@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 import 'package:siladesbeng_mobile/services/mutasi_service.dart';
@@ -23,10 +25,11 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
   final _reasonController = TextEditingController();
   final _customDesaTujuanController = TextEditingController();
 
-  String _userName = 'Diki Wahyu';
-  String _userNik = '1403010101900001';
-  String _userAddress = 'Jalan Haji Usman Zein, Bengkalis';
-  final String _desaAsal = 'Desa Sila-DesBeng (Desa Saat Ini)';
+  String _userName = 'Pemohon';
+  String _userNik = '';
+  String _userAddress = '';
+  String _desaAsal = 'Memuat desa...';
+  String _desaAsalClean = '';
   String _selectedDesaTujuan = 'Desa Batin Solapan (Kec. Bathin Solapan)';
 
   // Database Lengkap Desa & Kecamatan se-Kabupaten Bengkalis
@@ -272,17 +275,64 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    final name = prefs.getString('profile_name') ?? 'Diki Wahyu';
-    final nik = prefs.getString('profile_nik') ?? '1403010101900001';
-    final address =
-        prefs.getString('profile_address') ??
-        'Jalan Haji Usman Zein, Bengkalis';
+    String name = prefs.getString('profile_name') ?? 'Pemohon';
+    String nik = prefs.getString('profile_nik') ?? '';
+    String address = prefs.getString('profile_address') ?? '';
+    String desa = prefs.getString('profile_desa') ?? '';
+
+    // Selalu sinkronkan dengan data profil resmi jika desa/nik kosong
+    try {
+      final token = prefs.getString('auth_token') ?? prefs.getString('token');
+      if (token != null) {
+        final res = await http.get(
+          Uri.parse('https://siladesbeng.inovasia.site/api/user'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+          },
+        ).timeout(const Duration(seconds: 4));
+
+        if (res.statusCode == 200) {
+          final data = json.decode(res.body);
+          if (data['status'] == 'success') {
+            final user = data['data']['user'] ?? {};
+            final region = data['data']['region_info'] ?? {};
+
+            name = user['name'] ?? name;
+            nik = user['nik']?.toString() ?? nik;
+            address = user['address'] ?? address;
+
+            if (region['desa'] != null && region['desa'] != 'Belum ditentukan') {
+              desa = region['desa'];
+            } else if (user['region'] != null && user['region']['name'] != null) {
+              desa = user['region']['name'];
+            }
+
+            if (desa.isNotEmpty) {
+              await prefs.setString('profile_desa', desa);
+            }
+            if (name.isNotEmpty) {
+              await prefs.setString('profile_name', name);
+            }
+            if (nik.isNotEmpty) {
+              await prefs.setString('profile_nik', nik);
+            }
+          }
+        }
+      }
+    } catch (_) {}
 
     if (mounted) {
       setState(() {
         _userName = name;
         _userNik = nik;
         _userAddress = address;
+        _desaAsalClean = desa;
+        if (desa.isNotEmpty) {
+          _desaAsal = '$desa (Desa Saat Ini)';
+        } else {
+          _desaAsal = 'Desa Belum Ditentukan';
+        }
       });
     }
   }
@@ -413,8 +463,8 @@ class _DomicileTransferPageState extends State<DomicileTransferPage> {
     final response = await _mutasiService.store(
       nama: _userName,
       nik: _userNik,
-      noKk: '1403010101900055',
-      desaAsal: _desaAsal,
+      noKk: null,
+      desaAsal: _desaAsalClean.isNotEmpty ? _desaAsalClean : _desaAsal.replaceAll(' (Desa Saat Ini)', '').trim(),
       desaTujuan: finalDesaTujuan,
       alamat: _userAddress,
       statusPemohon: 'Mandiri (Diri Sendiri)',

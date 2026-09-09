@@ -55,6 +55,9 @@ class _LoginPageState extends State<LoginPage> {
           if (user != null) {
             await prefs.setString('profile_name', user['name'] ?? '');
             await prefs.setString('profile_email', user['email'] ?? '');
+            if (user['region'] != null && user['region']['name'] != null) {
+              await prefs.setString('profile_desa', user['region']['name']);
+            }
             if (data['data']['avatar_url'] != null) {
               await prefs.setString(
                 'profile_image_url',
