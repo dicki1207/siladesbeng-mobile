@@ -26,9 +26,8 @@ class _PartnershipRegistrationPageState
 
   final _namaPendaftarController = TextEditingController();
   final _nikController = TextEditingController();
-  final _jabatanController = TextEditingController(
-    text: 'Kepala Desa / Direktur BUMDes',
-  );
+  String? _selectedJabatan;
+  List<String> _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
   final _noHpController = TextEditingController();
   final _emailController = TextEditingController();
   final _pesanController = TextEditingController();
@@ -77,11 +76,13 @@ class _PartnershipRegistrationPageState
     });
   }
 
-  void _onDesaChanged(String? desaId) {
+  Future<void> _onDesaChanged(String? desaId) async {
     if (desaId == null) {
       setState(() {
         _selectedDesaId = null;
         _selectedDesaData = null;
+        _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
+        _selectedJabatan = null;
       });
       return;
     }
@@ -95,6 +96,22 @@ class _PartnershipRegistrationPageState
       _selectedDesaId = desaId;
       _selectedDesaData = desa;
     });
+
+    final adminCheck = await _kemitraanService.checkDesaAdmin(desaId);
+    final hasAdmin = adminCheck['has_admin'] == true;
+
+    if (mounted) {
+      setState(() {
+        if (hasAdmin) {
+          _jabatanOptions = ['Pengurus RW', 'Pengurus RT'];
+          if (_selectedJabatan == 'Pemerintah Desa') {
+            _selectedJabatan = null;
+          }
+        } else {
+          _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
+        }
+      });
+    }
   }
 
   Future<void> _scanKtpForAutofill() async {
@@ -188,6 +205,11 @@ class _PartnershipRegistrationPageState
       return;
     }
 
+    if (_selectedJabatan == null) {
+      _showError('Silakan pilih Jabatan');
+      return;
+    }
+
     if (_filePath == null) {
       _showError('Silakan unggah dokumen SK / Surat Legalitas Desa');
       return;
@@ -199,7 +221,7 @@ class _PartnershipRegistrationPageState
 
     final result = await _kemitraanService.submitPartnership(
       applicantName: _namaPendaftarController.text.trim(),
-      position: _jabatanController.text.trim(),
+      position: _selectedJabatan!,
       contactPhone: _noHpController.text.trim(),
       contactEmail: _emailController.text.trim(),
       regionId: _selectedKecamatanId!,
@@ -248,7 +270,6 @@ class _PartnershipRegistrationPageState
   void dispose() {
     _namaPendaftarController.dispose();
     _nikController.dispose();
-    _jabatanController.dispose();
     _noHpController.dispose();
     _emailController.dispose();
     _pesanController.dispose();
@@ -452,14 +473,22 @@ class _PartnershipRegistrationPageState
                         },
                       ),
                       SizedBox(height: 12.h),
-                      _buildTextFormField(
-                        controller: _jabatanController,
+                      _buildDropdownField(
                         label: 'Jabatan / Posisi di Desa',
-                        hint: 'Contoh: Kepala Desa / Direktur BUMDes',
-                        icon: Icons.work_outline_rounded,
+                        hint: 'Pilih Jabatan',
+                        value: _selectedJabatan,
+                        items: _jabatanOptions.map((opt) {
+                          return DropdownMenuItem<String>(
+                            value: opt,
+                            child: Text(opt),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedJabatan = val;
+                          });
+                        },
                         isDark: isDark,
-                        validator: (val) =>
-                            val == null || val.isEmpty ? 'Jabatan wajib diisi' : null,
                       ),
                       SizedBox(height: 12.h),
                       _buildTextFormField(

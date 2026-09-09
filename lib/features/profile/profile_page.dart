@@ -18,6 +18,8 @@ import 'package:siladesbeng_mobile/features/profile/mutation/domicile_transfer_p
 import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
 import 'package:siladesbeng_mobile/features/profile/account/change_password_page.dart';
 import 'package:siladesbeng_mobile/features/profile/saldo/saldo_alamat_page.dart';
+import 'package:siladesbeng_mobile/features/profile/partnership/partnership_page.dart';
+import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -42,6 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? _imagePath;
   String? _imageUrl;
   bool _isVerified = false;
+  bool _desaHasAdmin = false;
   String _userRole = 'warga';
 
   @override
@@ -191,14 +194,22 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           }
 
+          bool fetchedDesaHasAdmin = false;
+          if (user['region_id'] != null) {
+            final adminCheck = await KemitraanService().checkDesaAdmin(user['region_id'].toString());
+            fetchedDesaHasAdmin = adminCheck['has_admin'] == true;
+          }
+
           if (mounted) {
             setState(() {
+              _isLoggedIn = true;
               _name = user['name'] ?? _name;
               _email = user['email'] ?? _email;
               _nik = userNik;
               _address = userAddress;
               _desa = userDesa.toString();
               _isVerified = isVerified;
+              _desaHasAdmin = fetchedDesaHasAdmin;
               _userRole = user['role'] ?? _userRole;
               if (data['data']['avatar_url'] != null) {
                 _imageUrl = data['data']['avatar_url'];
@@ -1117,11 +1128,25 @@ class _ProfilePageState extends State<ProfilePage> {
                           isLast: false,
                         ),
                       ),
+                    if (_isVerified)
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.swap_horiz_rounded,
+                        title: 'Mutasi Domisili',
+                        subtitle: 'Pindah domisili desa / alamat',
+                        targetPage: const DomicileTransferPage(),
+                        isFirst: false,
+                        isLast: false,
+                      ),
                     _buildMenuTile(
                       context,
-                      icon: Icons.swap_horiz_rounded,
-                      title: 'Mutasi Domisili',
-                      targetPage: const DomicileTransferPage(),
+                      icon: _desaHasAdmin ? Icons.verified_user_rounded : Icons.handshake_rounded,
+                      title: _desaHasAdmin ? 'Klaim Hak Akses Wilayah' : 'Gabung Kemitraan',
+                      subtitle: _desaHasAdmin ? 'Untuk pengurus RT / RW' : 'Daftarkan desa Anda',
+                      targetPage: PartnershipPage(
+                        isLoggedIn: _isLoggedIn,
+                        onLoginRequest: _navigateToLogin,
+                      ),
                       isFirst: false,
                       isLast: true,
                     ),
@@ -1161,6 +1186,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         context,
                         icon: Icons.account_balance_wallet_rounded,
                         title: 'Saldo & Alamat',
+                        subtitle: 'Dompet warga dan buku alamat pengiriman',
                         targetPage: const SaldoAlamatPage(),
                         isFirst: false,
                         isLast: false,
