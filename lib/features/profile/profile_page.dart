@@ -1128,16 +1128,25 @@ class _ProfilePageState extends State<ProfilePage> {
                           isLast: false,
                         ),
                       ),
-                    if (_isVerified)
-                      _buildMenuTile(
-                        context,
-                        icon: Icons.swap_horiz_rounded,
-                        title: 'Mutasi Domisili',
-                        subtitle: 'Pindah domisili desa / alamat',
-                        targetPage: const DomicileTransferPage(),
-                        isFirst: false,
-                        isLast: false,
-                      ),
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.swap_horiz_rounded,
+                      title: 'Mutasi Domisili',
+                      subtitle: 'Pindah domisili desa / alamat',
+                      targetPage: const DomicileTransferPage(),
+                      isFirst: false,
+                      isLast: false,
+                      onTapOverride: !_isVerified 
+                          ? () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Anda belum terverifikasi. Silakan lakukan Verifikasi Akun terlebih dahulu untuk menggunakan fitur Mutasi.'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                          : null,
+                    ),
                     _buildMenuTile(
                       context,
                       icon: _desaHasAdmin ? Icons.verified_user_rounded : Icons.handshake_rounded,
