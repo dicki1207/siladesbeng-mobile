@@ -6,7 +6,7 @@ import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
 
 class PartnershipRegistrationPage extends StatefulWidget {
-  const PartnershipRegistrationPage({Key? key}) : super(key: key);
+  const PartnershipRegistrationPage({super.key});
 
   @override
   State<PartnershipRegistrationPage> createState() => _PartnershipRegistrationPageState();
@@ -227,14 +227,15 @@ class _PartnershipRegistrationPageState extends State<PartnershipRegistrationPag
     setState(() => _isSubmitting = false);
 
     if (result['status'] == 'success') {
+      final navigator = Navigator.of(context);
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) {
+        builder: (_) {
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) {
-              Navigator.pop(context); // Tutup dialog
-              Navigator.pop(context); // Kembali ke halaman sebelumnya
+              navigator.pop(); // Tutup dialog
+              navigator.pop(); // Kembali ke halaman sebelumnya
             }
           });
           return AnimatedSuccessDialog(
