@@ -1,7 +1,7 @@
+import package:shared_preferences/shared_preferences.dart;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:siladesbeng_mobile/features/profile/verification/ktp_camera_scanner_page.dart';
 import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
 import 'package:siladesbeng_mobile/services/kyc_service.dart';
 import 'package:siladesbeng_mobile/widgets/animated_success_dialog.dart';
@@ -18,14 +18,11 @@ class _PartnershipRegistrationPageState
     extends State<PartnershipRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   final KemitraanService _kemitraanService = KemitraanService();
-  final KycService _kycService = KycService();
 
   bool _isSubmitting = false;
   bool _isLoadingRegions = true;
-  bool _isScanningKtp = false;
 
   final _namaPendaftarController = TextEditingController();
-  final _nikController = TextEditingController();
   String? _selectedJabatan;
   List<String> _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
   final _noHpController = TextEditingController();
@@ -46,6 +43,17 @@ class _PartnershipRegistrationPageState
     super.initState();
     _isLoadingRegions = true;
     _fetchRegions();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString('profile_name') ?? '';
+    if (mounted) {
+      setState(() {
+        _namaPendaftarController.text = name;
+      });
+    }
   }
 
   Future<void> _fetchRegions() async {
@@ -111,75 +119,6 @@ class _PartnershipRegistrationPageState
           _jabatanOptions = ['Pemerintah Desa', 'Pengurus RW', 'Pengurus RT'];
         }
       });
-    }
-  }
-
-  Future<void> _scanKtpForAutofill() async {
-    final String? imagePath = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(builder: (_) => const KtpCameraScannerPage()),
-    );
-
-    if (imagePath == null) return;
-
-    setState(() => _isScanningKtp = true);
-
-    try {
-      final res = await _kycService.processKtp(imagePath: imagePath);
-      if (!mounted) return;
-      setState(() => _isScanningKtp = false);
-
-      if (res['status'] == 'success' && res['ocr_data'] != null) {
-        final ocr = res['ocr_data'];
-        final String? ocrName = ocr['nama'];
-        final String? ocrNik = ocr['nik'];
-        final String? ocrKec = ocr['kecamatan'];
-        final String? ocrDesa = ocr['kelurahan_desa'];
-
-        if (ocrName != null && ocrName.isNotEmpty) {
-          _namaPendaftarController.text = ocrName;
-        }
-        if (ocrNik != null && ocrNik.isNotEmpty) {
-          _nikController.text = ocrNik;
-        }
-
-        // Try to match Kecamatan and Desa
-        if (ocrKec != null && _kecamatans.isNotEmpty) {
-          final matchedKec = _kecamatans.firstWhere(
-            (k) =>
-                k['name'].toString().toLowerCase().contains(ocrKec.toLowerCase()),
-            orElse: () => null,
-          );
-          if (matchedKec != null) {
-            _onKecamatanChanged(matchedKec['id'].toString());
-
-            if (ocrDesa != null && _desas.isNotEmpty) {
-              final matchedDesa = _desas.firstWhere(
-                (d) =>
-                    d['name'].toString().toLowerCase().contains(ocrDesa.toLowerCase()),
-                orElse: () => null,
-              );
-              if (matchedDesa != null) {
-                _onDesaChanged(matchedDesa['id'].toString());
-              }
-            }
-          }
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Data KTP berhasil dipindai & diisi otomatis!'),
-            backgroundColor: Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else {
-        _showError('Gagal memproses KTP: ${res['message'] ?? 'Foto kurang jelas'}');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isScanningKtp = false);
-      _showError('Terjadi kesalahan saat memproses KTP: $e');
     }
   }
 
@@ -269,7 +208,6 @@ class _PartnershipRegistrationPageState
   @override
   void dispose() {
     _namaPendaftarController.dispose();
-    _nikController.dispose();
     _noHpController.dispose();
     _emailController.dispose();
     _pesanController.dispose();
@@ -350,10 +288,6 @@ class _PartnershipRegistrationPageState
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                 children: [
-                  // 1. KTP Auto Scan Card
-                  _buildKtpAutoFillCard(isDark),
-                  SizedBox(height: 16.h),
-
                   // 2. Status Wilayah Banner
                   if (_selectedDesaData != null) _buildAdminDesaStatusCard(isDark),
                   if (_selectedDesaData != null) SizedBox(height: 16.h),
@@ -458,21 +392,6 @@ class _PartnershipRegistrationPageState
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Nama penanggung jawab wajib diisi' : null,
                       ),
-                      SizedBox(height: 12.h),
-                      _buildTextFormField(
-                        controller: _nikController,
-                        label: 'Nomor Induk Kependudukan (NIK)',
-                        hint: '16 Digit NIK',
-                        icon: Icons.credit_card_rounded,
-                        keyboardType: TextInputType.number,
-                        isDark: isDark,
-                        validator: (val) {
-                          if (val == null || val.isEmpty) return 'NIK wajib diisi';
-                          if (val.length != 16) return 'NIK harus 16 digit';
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 12.h),
                       _buildDropdownField(
                         label: 'Jabatan / Posisi di Desa',
                         hint: 'Pilih Jabatan',
@@ -619,93 +538,6 @@ class _PartnershipRegistrationPageState
               ),
             ),
       bottomSheet: _buildBottomSubmitBar(isDark),
-    );
-  }
-
-  Widget _buildKtpAutoFillCard(bool isDark) {
-    const Color primaryBlue = Color(0xFF2FA2F1);
-
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [primaryBlue.withAlpha(50), const Color(0xFF0F172A)]
-              : [const Color(0xFFEFF6FF), Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: primaryBlue.withAlpha(60),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10.w),
-            decoration: BoxDecoration(
-              color: primaryBlue.withAlpha(25),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.document_scanner_rounded,
-              color: primaryBlue,
-              size: 22.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Pindai KTP (Isi Otomatis)',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF1E293B),
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  'Pindai e-KTP untuk mengisi Nama, NIK & Wilayah otomatis',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: isDark ? Colors.white60 : Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 8.w),
-          ElevatedButton(
-            onPressed: _isScanningKtp ? null : _scanKtpForAutofill,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryBlue,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              elevation: 0,
-            ),
-            child: _isScanningKtp
-                ? SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Text(
-                    'Pindai',
-                    style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
-                  ),
-          ),
-        ],
-      ),
     );
   }
 
