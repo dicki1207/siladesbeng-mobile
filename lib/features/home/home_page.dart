@@ -251,234 +251,121 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchPublicData() async {
-    _fetchUnreadNotifications();
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       final headers = token != null ? {'Authorization': 'Bearer $token'} : null;
 
-      // ==========================================
-      // LOAD APIs INDEPENDENTLY (TIDAK SALING BLOCK)
-      // ==========================================
+      List<dynamic> newBanners = _banners;
+      List<dynamic> newAnnouncements = _announcements;
+      List<dynamic> newAvailableServices = _availableServices;
+      List<dynamic> newUnitPelayanan = _unitPelayanan;
+      List<Map<String, dynamic>> newPopularItems = _popularItems;
 
       // 1. Fetch Banners
-      http
-          .get(Uri.parse('${ApiConfig.baseUrl}/api/banners'))
-          .then((res) {
-            if (!mounted) return;
-            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-              try {
-                final List rawBanners = json.decode(res.body)['data'] ?? [];
-                setState(() {
-                  _banners = rawBanners.map((item) {
-                    if (item is Map<String, dynamic> &&
-                        item['image_url'] != null) {
-                      String imgUrl = item['image_url'].toString();
-                      if (imgUrl.startsWith('http://siladesbeng')) {
-                        imgUrl = imgUrl.replaceFirst('http://', 'https://');
-                      }
-                      imgUrl = imgUrl.replaceAll(
-                        'http://localhost:8000',
-                        ApiConfig.baseUrl,
-                      );
-                      imgUrl = imgUrl.replaceAll(
-                        'http://localhost',
-                        ApiConfig.baseUrl,
-                      );
-                      imgUrl = imgUrl.replaceAll(
-                        'http://127.0.0.1:8000',
-                        ApiConfig.baseUrl,
-                      );
-                      imgUrl = imgUrl.replaceAll(
-                        'http://127.0.0.1',
-                        ApiConfig.baseUrl,
-                      );
-                      item['image_url'] = imgUrl;
-                    }
-                    return item;
-                  }).where((item) {
-                    // Buang banner nonaktif / tanpa gambar supaya tidak jadi
-                    // slide kosong di beranda
-                    if (item is! Map<String, dynamic>) return false;
-                    final isActive = item['is_active'];
-                    if (isActive == false ||
-                        isActive == 0 ||
-                        isActive == '0') {
-                      return false;
-                    }
-                    return _resolveBannerUrl(item).isNotEmpty;
-                  }).toList();
-                });
-              } catch (_) {}
+      final fBanners = http.get(Uri.parse('${ApiConfig.baseUrl}/api/banners')).then((res) {
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          final List rawBanners = json.decode(res.body)['data'] ?? [];
+          newBanners = rawBanners.map((item) {
+            if (item is Map<String, dynamic> && item['image_url'] != null) {
+              String imgUrl = item['image_url'].toString();
+              imgUrl = imgUrl.replaceFirst('http://siladesbeng', 'https://siladesbeng');
+              imgUrl = imgUrl.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+              imgUrl = imgUrl.replaceAll('http://localhost', ApiConfig.baseUrl);
+              imgUrl = imgUrl.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+              imgUrl = imgUrl.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
+              item['image_url'] = imgUrl;
             }
-          })
-          .catchError((_) {});
+            return item;
+          }).where((item) {
+            if (item is! Map<String, dynamic>) return false;
+            final isActive = item['is_active'];
+            if (isActive == false || isActive == 0 || isActive == '0') return false;
+            return _resolveBannerUrl(item).isNotEmpty;
+          }).toList();
+        }
+      }).catchError((_) {});
 
       // 2. Fetch Announcements
-      http
-          .get(Uri.parse('${ApiConfig.baseUrl}/api/announcements'))
-          .then((res) {
-            if (!mounted) return;
-            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-              try {
-                final List data = json.decode(res.body)['data'] ?? [];
-                if (data.isNotEmpty) {
-                  final validData = data
-                      .map((item) {
-                    if (item is Map<String, dynamic> &&
-                        item['image'] != null) {
-                      String img = item['image'].toString();
-                      if (img.startsWith('http://siladesbeng')) {
-                        img = img.replaceFirst('http://', 'https://');
-                      }
-                      img = img.replaceAll(
-                        'http://localhost:8000',
-                        ApiConfig.baseUrl,
-                      );
-                      img = img.replaceAll(
-                        'http://localhost',
-                        ApiConfig.baseUrl,
-                      );
-                      img = img.replaceAll(
-                        'http://127.0.0.1:8000',
-                        ApiConfig.baseUrl,
-                      );
-                      img = img.replaceAll(
-                        'http://127.0.0.1',
-                        ApiConfig.baseUrl,
-                      );
-                      item['image'] = img;
-                    }
-                    return item;
-                  }).toList();
-                    setState(() {
-                    _announcements = validData;
-                  });
-                } else {
-                  setState(() {
-                    _announcements = [];
-                  });
-                }
-              } catch (_) {
-                setState(() {
-                  _announcements = [];
-                });
+      final fAnnouncements = http.get(Uri.parse('${ApiConfig.baseUrl}/api/announcements')).then((res) {
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          final List data = json.decode(res.body)['data'] ?? [];
+          if (data.isNotEmpty) {
+            newAnnouncements = data.map((item) {
+              if (item is Map<String, dynamic> && item['image'] != null) {
+                String img = item['image'].toString();
+                img = img.replaceFirst('http://siladesbeng', 'https://siladesbeng');
+                img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+                img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
+                img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+                img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
+                item['image'] = img;
               }
-            }
-          })
-          .catchError((_) {
-            if (mounted) {
-              setState(() {
-                _announcements = [];
-              });
-            }
-          });
+              return item;
+            }).toList();
+          } else {
+            newAnnouncements = [];
+          }
+        }
+      }).catchError((_) { newAnnouncements = []; });
 
       // 3. Fetch Services
-      http
-          .get(Uri.parse('${ApiConfig.baseUrl}/api/services'))
-          .then((res) {
-            if (!mounted) return;
-            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-              try {
-                final List rawServices = json.decode(res.body)['data'] ?? [];
-                setState(() {
-                  _availableServices = rawServices.map((item) {
-                    if (item is Map<String, dynamic> && item['image'] != null) {
-                      String img = item['image'].toString();
-                      if (img.startsWith('http://siladesbeng')) {
-                        img = img.replaceFirst('http://', 'https://');
-                      }
-                      img = img.replaceAll(
-                        'http://localhost:8000',
-                        ApiConfig.baseUrl,
-                      );
-                      img = img.replaceAll(
-                        'http://localhost',
-                        ApiConfig.baseUrl,
-                      );
-                      img = img.replaceAll(
-                        'http://127.0.0.1:8000',
-                        ApiConfig.baseUrl,
-                      );
-                      img = img.replaceAll(
-                        'http://127.0.0.1',
-                        ApiConfig.baseUrl,
-                      );
-                      item['image'] = img;
-                    }
-                    return item;
-                  }).toList();
-                });
-              } catch (_) {}
+      final fServices = http.get(Uri.parse('${ApiConfig.baseUrl}/api/services')).then((res) {
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          final List rawServices = json.decode(res.body)['data'] ?? [];
+          newAvailableServices = rawServices.map((item) {
+            if (item is Map<String, dynamic> && item['image'] != null) {
+              String img = item['image'].toString();
+              img = img.replaceFirst('http://siladesbeng', 'https://siladesbeng');
+              img = img.replaceAll('http://localhost:8000', ApiConfig.baseUrl);
+              img = img.replaceAll('http://localhost', ApiConfig.baseUrl);
+              img = img.replaceAll('http://127.0.0.1:8000', ApiConfig.baseUrl);
+              img = img.replaceAll('http://127.0.0.1', ApiConfig.baseUrl);
+              item['image'] = img;
             }
-          })
-          .catchError((_) {});
+            return item;
+          }).toList();
+        }
+      }).catchError((_) {});
 
       // 4. Fetch Unit Pelayanan
-      http
-          .get(
-            Uri.parse('${ApiConfig.baseUrl}/api/unit-pelayanan'),
-            headers: headers,
-          )
-          .then((res) {
-            if (!mounted) return;
-            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-              try {
-                final List data = json.decode(res.body)['data'] ?? [];
-                setState(() {
-                  _unitPelayanan = data.length >= 4
-                      ? data
-                      : _getDefaultUnitPelayanan();
-                });
-              } catch (_) {
-                setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
-              }
-            } else {
-              setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
-            }
-          })
-          .catchError((_) {
-            if (mounted) {
-              setState(() => _unitPelayanan = _getDefaultUnitPelayanan());
-            }
-          });
+      final fUnitPelayanan = http.get(Uri.parse('${ApiConfig.baseUrl}/api/unit-pelayanan'), headers: headers).then((res) {
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          final List data = json.decode(res.body)['data'] ?? [];
+          newUnitPelayanan = data.length >= 4 ? data : _getDefaultUnitPelayanan();
+        } else {
+          newUnitPelayanan = _getDefaultUnitPelayanan();
+        }
+      }).catchError((_) { newUnitPelayanan = _getDefaultUnitPelayanan(); });
 
       // 5. Fetch Popular Items
-      http
-          .get(Uri.parse('${ApiConfig.baseUrl}/api/popular'))
-          .then((res) {
-            if (!mounted) return;
-            if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
-              try {
-                final Map<String, dynamic> data = json.decode(res.body);
-                if (data['status'] == 'success') {
-                  final list = List<Map<String, dynamic>>.from(data['data']);
-                  setState(() {
-                    _popularItems = list;
-                  });
-                }
-              } catch (_) {
-                setState(() {
-                  _popularItems = [];
-                });
-              }
-            }
-          })
-          .catchError((_) {
-            if (mounted) {
-              setState(() {
-                _popularItems = [];
-              });
-            }
-          });
+      final fPopular = http.get(Uri.parse('${ApiConfig.baseUrl}/api/popular')).then((res) {
+        if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
+          final Map<String, dynamic> data = json.decode(res.body);
+          if (data['status'] == 'success') {
+            newPopularItems = List<Map<String, dynamic>>.from(data['data']);
+          }
+        }
+      }).catchError((_) { newPopularItems = []; });
 
-      await Future.delayed(const Duration(milliseconds: 200));
+      // Tunggu semua request selesai
+      await Future.wait([fBanners, fAnnouncements, fServices, fUnitPelayanan, fPopular]);
+
+      if (mounted) {
+        setState(() {
+          _banners = newBanners;
+          _announcements = newAnnouncements;
+          _availableServices = newAvailableServices;
+          _unitPelayanan = newUnitPelayanan;
+          _popularItems = newPopularItems;
+        });
+      }
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _unitPelayanan = _getDefaultUnitPelayanan();
-      });
+      if (mounted) {
+        setState(() {
+          _unitPelayanan = _getDefaultUnitPelayanan();
+        });
+      }
     }
   }
 
