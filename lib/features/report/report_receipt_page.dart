@@ -2,11 +2,8 @@ import 'dart:convert';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -148,42 +145,6 @@ class _ReportReceiptPageState extends State<ReportReceiptPage> {
   }
  }
 
- pw.Widget _buildPdfSectionHeader(String title) {
-  return pw.Text(
-   title,
-   style: pw.TextStyle(
-    fontSize: 10,
-    fontWeight: pw.FontWeight.bold,
-    color: PdfColors.blue800,
-    letterSpacing: 0.5,
-   ),
-  );
- }
-
- pw.Widget _buildPdfRow(String label, String value) {
-  return pw.Padding(
-   padding: const pw.EdgeInsets.only(bottom: 4),
-   child: pw.Row(
-    crossAxisAlignment: pw.CrossAxisAlignment.start,
-    children: [
-     pw.SizedBox(
-      width: 140,
-      child: pw.Text(
-       label,
-       style: const pw.TextStyle(fontSize: 9.5, color: PdfColors.grey700),
-      ),
-     ),
-     pw.Text(': ', style: const pw.TextStyle(fontSize: 9.5, color: PdfColors.grey700)),
-     pw.Expanded(
-      child: pw.Text(
-       value,
-       style: pw.TextStyle(fontSize: 9.5, fontWeight: pw.FontWeight.bold, color: PdfColors.grey900),
-      ),
-     ),
-    ],
-   ),
-  );
- }
 
  void _shareReceipt() {
   final ref = _referenceNumber;
