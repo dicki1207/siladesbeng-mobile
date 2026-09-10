@@ -30,8 +30,13 @@ class CustomCachedImage extends StatelessWidget {
              const Icon(Icons.broken_image, color: Colors.grey);
     }
 
+    String finalUrl = url;
+    if (finalUrl.startsWith('http://siladesbeng.inovasia.site')) {
+      finalUrl = finalUrl.replaceFirst('http://', 'https://');
+    }
+
     return CachedNetworkImage(
-      imageUrl: url,
+      imageUrl: finalUrl,
       width: width,
       height: height,
       fit: fit,
