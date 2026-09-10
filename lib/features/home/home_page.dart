@@ -238,6 +238,10 @@ class _HomePageState extends State<HomePage> {
       height: height,
       fit: fit,
       memCacheWidth: 500,
+      httpHeaders: const {
+        'Referer': 'https://siladesbeng.inovasia.site/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      },
       placeholder: (ctx, url) => Container(color: Colors.grey[200]),
       errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
     );
@@ -1338,6 +1342,10 @@ class _HomePageState extends State<HomePage> {
                                         imageUrl: imageUrl,
                                         fit: BoxFit.cover,
                                         memCacheWidth: 500,
+                                        httpHeaders: const {
+                                          'Referer': 'https://siladesbeng.inovasia.site/',
+                                          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                                        },
                                         placeholder: (ctx, url) => Container(color: Colors.grey[200]),
                                         errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                                       ),

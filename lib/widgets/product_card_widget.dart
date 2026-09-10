@@ -90,6 +90,10 @@ class ProductCardWidget extends StatelessWidget {
                                   imageUrl: imageUrl,
                                   fit: BoxFit.contain,
                                   memCacheWidth: 400,
+                                  httpHeaders: const {
+                                    'Referer': 'https://siladesbeng.inovasia.site/',
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                                  },
                                   placeholder: (ctx, url) => const Center(
                                     child: SizedBox(
                                       width: 24,
