@@ -61,17 +61,8 @@ class _NewsPageState extends State<NewsPage> {
       });
     }
     
-    // Guest should not see Pengumuman (RT/RW specific)
-    if (widget.postCategory == 'Berita' || _isLoggedIn) {
-      _fetchNews();
-    } else {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _newsList = [];
-        });
-      }
-    }
+    // Allow all users (including guests) to see news and announcements
+    _fetchNews();
   }
 
   Future<void> _fetchNews() async {
@@ -494,7 +485,7 @@ class _NewsPageState extends State<NewsPage> {
                             Text(
                               isBerita
                                   ? 'Belum Ada Berita'
-                                  : (!_isLoggedIn ? 'Silakan Login' : 'Belum Ada Pengumuman'),
+                                  : 'Belum Ada Pengumuman',
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
@@ -507,7 +498,7 @@ class _NewsPageState extends State<NewsPage> {
                             Text(
                               isBerita
                                   ? 'Belum ada berita daerah yang dipublikasikan.'
-                                  : (!_isLoggedIn ? 'Anda harus login untuk melihat pengumuman daerah khusus untuk wilayah Anda.' : 'Belum ada pengumuman yang sesuai dengan filter.'),
+                                  : 'Belum ada pengumuman yang sesuai dengan filter.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: isDark

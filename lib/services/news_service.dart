@@ -78,7 +78,7 @@ class NewsService {
       final response = await http.get(
         Uri.parse('$baseUrl/news$queryString'),
         headers: headers,
-      ).timeout(const Duration(seconds: 3));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
