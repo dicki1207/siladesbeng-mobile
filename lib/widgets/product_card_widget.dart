@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../utils/custom_cache_manager.dart';
 
 class ProductCardWidget extends StatelessWidget {
   final String title;
@@ -87,7 +88,8 @@ class ProductCardWidget extends StatelessWidget {
                                   ),
                                 )
                               : CachedNetworkImage(
-                                  imageUrl: imageUrl,
+                                  imageUrl: imageUrl.startsWith('http://siladesbeng') ? imageUrl.replaceFirst('http://', 'https://') : imageUrl,
+                                  cacheManager: CustomCacheManager(),
                                   fit: BoxFit.contain,
                                   memCacheWidth: 400,
                                   httpHeaders: const {
@@ -98,6 +100,7 @@ class ProductCardWidget extends StatelessWidget {
                                     child: SizedBox(
                                       width: 24,
                                       height: 24,
+
                                       child: CircularProgressIndicator(strokeWidth: 2),
                                     ),
                                   ),

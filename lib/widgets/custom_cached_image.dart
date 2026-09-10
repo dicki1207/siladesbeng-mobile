@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../utils/custom_cache_manager.dart';
 
 class CustomCachedImage extends StatelessWidget {
   final String url;
@@ -37,6 +38,7 @@ class CustomCachedImage extends StatelessWidget {
 
     return CachedNetworkImage(
       imageUrl: finalUrl,
+      cacheManager: CustomCacheManager(),
       width: width,
       height: height,
       fit: fit,

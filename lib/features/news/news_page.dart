@@ -6,6 +6,7 @@ import 'package:siladesbeng_mobile/services/news_service.dart';
 import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
 import 'package:siladesbeng_mobile/features/profile/event_gotong_royong_page.dart';
 import 'package:siladesbeng_mobile/features/admin/create_news_page.dart';
+import 'package:siladesbeng_mobile/utils/custom_cache_manager.dart';
 
 class NewsPage extends StatefulWidget {
   final String postCategory; // 'Berita' or 'Pengumuman'
@@ -591,7 +592,10 @@ class _NewsPageState extends State<NewsPage> {
                     child: Stack(
                       children: [
                         CachedNetworkImage(
-                          imageUrl: news['image']?.toString() ?? '',
+                          imageUrl: (news['image']?.toString() ?? '').startsWith('http://siladesbeng')
+                              ? (news['image']?.toString() ?? '').replaceFirst('http://', 'https://')
+                              : (news['image']?.toString() ?? ''),
+                          cacheManager: CustomCacheManager(),
                           height: 95,
                           width: 95,
                           fit: BoxFit.cover,

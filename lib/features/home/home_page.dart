@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:intl/intl.dart';
+import 'package:siladesbeng_mobile/utils/custom_cache_manager.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart'; // Import Full Screen Login Page
 import 'package:siladesbeng_mobile/features/notification/notification_page.dart';
 import 'package:siladesbeng_mobile/features/rental/tool_package_booking_page.dart';
@@ -234,6 +235,7 @@ class _HomePageState extends State<HomePage> {
     }
     return CachedNetworkImage(
       imageUrl: cleanPath,
+      cacheManager: CustomCacheManager(),
       width: width,
       height: height,
       fit: fit,
@@ -651,10 +653,15 @@ class _HomePageState extends State<HomePage> {
                         child: ClipOval(
                           child: CachedNetworkImage(
                             imageUrl: '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
+                            cacheManager: CustomCacheManager(),
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
                             memCacheWidth: 500,
+                            httpHeaders: const {
+                              'Referer': 'https://siladesbeng.inovasia.site/',
+                              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                            },
                             placeholder: (ctx, url) => Container(color: Colors.grey[200]),
                             errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                           ),
@@ -715,10 +722,15 @@ class _HomePageState extends State<HomePage> {
                       : (_isLoggedIn && _userImageUrl != null)
                       ? CachedNetworkImage(
                           imageUrl: _userImageUrl!,
+                          cacheManager: CustomCacheManager(),
                           width: 40,
                           height: 40,
                           fit: BoxFit.cover,
                           memCacheWidth: 500,
+                          httpHeaders: const {
+                            'Referer': 'https://siladesbeng.inovasia.site/',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                          },
                           placeholder: (ctx, url) => Container(color: Colors.grey[200]),
                           errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
                         )
@@ -900,10 +912,15 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(20.r),
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
+                    cacheManager: CustomCacheManager(),
                     fit: BoxFit.fill,
                     width: double.infinity,
                     height: double.infinity,
                     memCacheWidth: 500,
+                    httpHeaders: const {
+                      'Referer': 'https://siladesbeng.inovasia.site/',
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                    },
                     placeholder: (ctx, url) =>
                         Container(color: Colors.grey[200]),
                     errorWidget: (ctx, url, err) {
@@ -1176,8 +1193,13 @@ class _HomePageState extends State<HomePage> {
                         child: imgPath.startsWith('http')
                             ? CachedNetworkImage(
                                 imageUrl: imgPath,
+                                cacheManager: CustomCacheManager(),
                                 fit: BoxFit.contain,
                                 memCacheWidth: 200,
+                                httpHeaders: const {
+                                  'Referer': 'https://siladesbeng.inovasia.site/',
+                                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                                },
                                 placeholder: (ctx, url) => Container(color: Colors.transparent),
                                 errorWidget: (ctx, url, err) => Image.asset(
                                   fallbackAsset,
@@ -1340,6 +1362,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                       child: CachedNetworkImage(
                                         imageUrl: imageUrl,
+                                        cacheManager: CustomCacheManager(),
                                         fit: BoxFit.cover,
                                         memCacheWidth: 500,
                                         httpHeaders: const {
