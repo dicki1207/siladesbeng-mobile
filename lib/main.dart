@@ -7,7 +7,19 @@ import 'package:siladesbeng_mobile/core/theme.dart';
 import 'package:siladesbeng_mobile/services/firebase_messaging_service.dart';
 import 'splash_screen.dart';
 
+import 'dart:io';
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() async {
+  HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   
   // Inisialisasi locale bahasa Indonesia untuk formatting tanggal
