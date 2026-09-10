@@ -103,8 +103,14 @@ class _GasPageState extends State<GasPage> {
             _allGasItems = rawItems.map((item) {
               item['name'] = item['jenis_gas'] ?? item['name'];
               item['price'] = item['harga_satuan'] ?? item['price'];
-              item['image'] =
-                  item['image_url'] ?? item['image'] ?? 'assets/images/F2.png';
+              
+              String imageUrl = item['image_url'] ?? item['image'] ?? 'assets/images/F2.png';
+              if (imageUrl.startsWith('http://siladesbeng.inovasia.site')) {
+                imageUrl = imageUrl.replaceFirst('http://', 'https://');
+              }
+              imageUrl = imageUrl.replaceAll('http://localhost:8000', 'https://siladesbeng.inovasia.site');
+              
+              item['image'] = imageUrl;
               item['description'] =
                   item['deskripsi'] ?? item['description'] ?? '';
               return item;

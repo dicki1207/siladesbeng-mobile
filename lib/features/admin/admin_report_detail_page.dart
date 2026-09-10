@@ -47,6 +47,9 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
   String _getImageUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http://') || path.startsWith('https://')) {
+      if (path.startsWith('http://siladesbeng')) {
+        return path.replaceFirst('http://', 'https://');
+      }
       return path;
     }
     final cleanPath = path.startsWith('/') ? path.substring(1) : path;

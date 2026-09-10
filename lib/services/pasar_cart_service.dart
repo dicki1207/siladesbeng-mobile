@@ -23,7 +23,18 @@ class PasarCartService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          return List<Map<String, dynamic>>.from(data['data']);
+          var items = List<Map<String, dynamic>>.from(data['data']);
+          return items.map((item) {
+            if (item['image_url'] != null && item['image_url'].toString().startsWith('http://siladesbeng')) {
+              item['image_url'] = item['image_url'].toString().replaceFirst('http://', 'https://');
+            }
+            if (item['produk'] != null && item['produk'] is Map) {
+              if (item['produk']['image_url'] != null && item['produk']['image_url'].toString().startsWith('http://siladesbeng')) {
+                item['produk']['image_url'] = item['produk']['image_url'].toString().replaceFirst('http://', 'https://');
+              }
+            }
+            return item;
+          }).toList();
         }
       }
       return [];

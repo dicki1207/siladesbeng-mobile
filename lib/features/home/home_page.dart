@@ -22,6 +22,7 @@ import 'package:siladesbeng_mobile/features/assistant/assistant_page.dart';
 import 'package:siladesbeng_mobile/widgets/premium_header.dart';
 import 'package:siladesbeng_mobile/features/store/store_page.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
+import 'package:siladesbeng_mobile/features/home/all_services_page.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onNavigateToProfile;
@@ -52,7 +53,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _announcements = [];
   List<dynamic> _unitPelayanan = [];
   List<dynamic> _availableServices = [];
-  List<Map<String, dynamic>> _pasarDaerahProducts = [];
+  List<Map<String, dynamic>> _popularItems = [];
   // _isLoading removed — fallback data renders instantly
   double _assistantX = -1;
   double _assistantY = -1;
@@ -69,7 +70,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _showcaseView = ShowcaseView.register(scope: 'home');
     _unitPelayanan = _getDefaultUnitPelayanan();
-    _pasarDaerahProducts = [];
+    _popularItems = [];
     _announcements = [];
     _loadProfileData();
     _fetchPublicData();
@@ -273,6 +274,9 @@ class _HomePageState extends State<HomePage> {
                     if (item is Map<String, dynamic> &&
                         item['image_url'] != null) {
                       String imgUrl = item['image_url'].toString();
+                      if (imgUrl.startsWith('http://siladesbeng')) {
+                        imgUrl = imgUrl.replaceFirst('http://', 'https://');
+                      }
                       imgUrl = imgUrl.replaceAll(
                         'http://localhost:8000',
                         ApiConfig.baseUrl,
@@ -324,6 +328,9 @@ class _HomePageState extends State<HomePage> {
                     if (item is Map<String, dynamic> &&
                         item['image'] != null) {
                       String img = item['image'].toString();
+                      if (img.startsWith('http://siladesbeng')) {
+                        img = img.replaceFirst('http://', 'https://');
+                      }
                       img = img.replaceAll(
                         'http://localhost:8000',
                         ApiConfig.baseUrl,
@@ -379,6 +386,9 @@ class _HomePageState extends State<HomePage> {
                   _availableServices = rawServices.map((item) {
                     if (item is Map<String, dynamic> && item['image'] != null) {
                       String img = item['image'].toString();
+                      if (img.startsWith('http://siladesbeng')) {
+                        img = img.replaceFirst('http://', 'https://');
+                      }
                       img = img.replaceAll(
                         'http://localhost:8000',
                         ApiConfig.baseUrl,
@@ -434,25 +444,23 @@ class _HomePageState extends State<HomePage> {
             }
           });
 
-      // 5. Fetch Pasar Daerah
+      // 5. Fetch Popular Items
       http
-          .get(Uri.parse('${ApiConfig.baseUrl}/api/pasar-daerah/products'))
+          .get(Uri.parse('${ApiConfig.baseUrl}/api/popular'))
           .then((res) {
             if (!mounted) return;
             if (res.statusCode == 200 && res.body.trim().startsWith('{')) {
               try {
                 final Map<String, dynamic> data = json.decode(res.body);
                 if (data['status'] == 'success') {
-                  final list = List<Map<String, dynamic>>.from(data['data'])
-                      .where((item) => !(item['nama_produk']?.toString().toLowerCase().contains('seman') ?? false))
-                      .toList();
+                  final list = List<Map<String, dynamic>>.from(data['data']);
                   setState(() {
-                    _pasarDaerahProducts = list;
+                    _popularItems = list;
                   });
                 }
               } catch (_) {
                 setState(() {
-                  _pasarDaerahProducts = [];
+                  _popularItems = [];
                 });
               }
             }
@@ -460,7 +468,7 @@ class _HomePageState extends State<HomePage> {
           .catchError((_) {
             if (mounted) {
               setState(() {
-                _pasarDaerahProducts = [];
+                _popularItems = [];
               });
             }
           });
@@ -1323,9 +1331,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBumdesStoreMini() {
-    // We no longer use mock products here, we use _pasarDaerahProducts.
+    // We no longer use mock products here, we use _popularItems.
     // If it's empty, we won't show the horizontal list.
-    if (_pasarDaerahProducts.isEmpty) return const SizedBox.shrink();
+    if (_popularItems.isEmpty) return const SizedBox.shrink();
 
     return Container(
       margin: EdgeInsets.only(top: 24.h),
@@ -1346,7 +1354,12 @@ class _HomePageState extends State<HomePage> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    _checkLoginAndProceed('Toko BUMDes');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AllServicesPage(initialServices: _availableServices),
+                      ),
+                    );
                   },
                   child: Text(
                     'Lihat Semua',
@@ -1367,22 +1380,40 @@ class _HomePageState extends State<HomePage> {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: 16.w),
-              itemCount: _pasarDaerahProducts.length > 5
+              itemCount: _popularItems.length > 5
                   ? 5
-                  : _pasarDaerahProducts.length,
+                  : _popularItems.length,
               itemBuilder: (context, index) {
-                final product = _pasarDaerahProducts[index];
+                final product = _popularItems[index];
 
-                String name = product['nama_produk'] ?? 'Tanpa Nama';
-                dynamic rawPrice = product['harga'] ?? 0;
+                String name = product['name'] ?? product['nama_produk'] ?? 'Tanpa Nama';
+                dynamic rawPrice = product['price'] ?? product['harga'] ?? 0;
                 double price = (rawPrice is String)
                     ? (double.tryParse(rawPrice) ?? 0)
                     : (rawPrice as num).toDouble();
                 String imageUrl = product['image_url'] ?? '';
+                if (imageUrl.startsWith('http://siladesbeng')) {
+                  imageUrl = imageUrl.replaceFirst('http://', 'https://');
+                }
                 String satuan = product['satuan'] != null ? '/ ${product['satuan']}' : '';
 
                 return GestureDetector(
-                  onTap: () => _checkLoginAndProceed('Toko BUMDes'),
+                  onTap: () {
+                    String type = product['type'] ?? 'pasar';
+                    if (type == 'pasar') {
+                      _checkLoginAndProceed('Toko BUMDes');
+                    } else if (type == 'gas') {
+                      _checkLoginAndProceed('Beli Gas');
+                    } else if (type == 'mobil') {
+                      _checkLoginAndProceed('Sewa Mobil');
+                    } else if (type == 'alat') {
+                      _checkLoginAndProceed('Sewa Alat');
+                    } else if (type == 'fasilitas') {
+                      _checkLoginAndProceed('Sewa Fasilitas');
+                    } else {
+                      _checkLoginAndProceed('Toko BUMDes');
+                    }
+                  },
                   child: Container(
                     width: 140,
                     margin: EdgeInsets.only(right: 12.w, bottom: 4.h),

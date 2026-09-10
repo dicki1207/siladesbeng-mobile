@@ -12,6 +12,7 @@ import 'report_store_dialog.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:siladesbeng_mobile/core/api_config.dart';
 
 class PasarDetailPage extends StatefulWidget {
  final int productId;
@@ -284,10 +285,11 @@ class _PasarDetailPageState extends State<PasarDetailPage>
        IconButton(
         icon: const Icon(Icons.share_outlined),
         onPressed: () {
+         final webUrl = '${ApiConfig.baseUrl}/pasar-daerah/${widget.productId}';
          SharePlus.instance.share(
           ShareParams(
            text:
-             'Lihat produk $name dari BUMDes $regionName di Pasar Daerah SiladesBeng!',
+             'Lihat produk $name dari BUMDes $regionName di Pasar Daerah SiladesBeng!\n\nBeli sekarang: $webUrl',
           ),
          );
         },

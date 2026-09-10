@@ -31,7 +31,21 @@ class PasarProductService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          return List<Map<String, dynamic>>.from(data['data']);
+          var items = List<Map<String, dynamic>>.from(data['data']);
+          return items.map((item) {
+            if (item['image_url'] != null && item['image_url'].toString().startsWith('http://siladesbeng')) {
+              item['image_url'] = item['image_url'].toString().replaceFirst('http://', 'https://');
+            }
+            if (item['images'] != null && item['images'] is List) {
+              item['images'] = (item['images'] as List).map((img) {
+                if (img.toString().startsWith('http://siladesbeng')) {
+                  return img.toString().replaceFirst('http://', 'https://');
+                }
+                return img;
+              }).toList();
+            }
+            return item;
+          }).toList();
         }
       }
       return [];
@@ -67,7 +81,19 @@ class PasarProductService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          return Map<String, dynamic>.from(data['data']);
+          var item = Map<String, dynamic>.from(data['data']);
+          if (item['image_url'] != null && item['image_url'].toString().startsWith('http://siladesbeng')) {
+            item['image_url'] = item['image_url'].toString().replaceFirst('http://', 'https://');
+          }
+          if (item['images'] != null && item['images'] is List) {
+            item['images'] = (item['images'] as List).map((img) {
+              if (img.toString().startsWith('http://siladesbeng')) {
+                return img.toString().replaceFirst('http://', 'https://');
+              }
+              return img;
+            }).toList();
+          }
+          return item;
         }
       }
       return null;

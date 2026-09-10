@@ -19,6 +19,7 @@ import 'package:siladesbeng_mobile/features/admin/admin_portal_page.dart';
 import 'package:siladesbeng_mobile/features/profile/account/change_password_page.dart';
 import 'package:siladesbeng_mobile/features/profile/saldo/saldo_alamat_page.dart';
 import 'package:siladesbeng_mobile/features/profile/partnership/partnership_page.dart';
+import 'package:siladesbeng_mobile/features/profile/region_directory/region_directory_page.dart';
 import 'package:siladesbeng_mobile/services/kemitraan_service.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -1156,6 +1157,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         isLoggedIn: _isLoggedIn,
                         onLoginRequest: _navigateToLogin,
                       ),
+                      isFirst: false,
+                      isLast: false,
+                    ),
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.account_tree_rounded,
+                      iconColor: const Color(0xFF0284C7),
+                      title: 'Profil & Struktur Wilayah',
+                      subtitle: 'Bagan tata kerja & perangkat pemerintahan',
+                      targetPage: const RegionDirectoryPage(),
                       isFirst: false,
                       isLast: true,
                     ),

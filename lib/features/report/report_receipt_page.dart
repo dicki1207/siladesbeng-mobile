@@ -520,6 +520,9 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
 
  String _formatImageUrl(String path) {
   if (path.startsWith('http://') || path.startsWith('https://')) {
+   if (path.startsWith('http://siladesbeng')) {
+    return path.replaceFirst('http://', 'https://');
+   }
    return path;
   }
   final clean = path.startsWith('/') ? path.substring(1) : path;

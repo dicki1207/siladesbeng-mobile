@@ -26,11 +26,24 @@ class NewsService {
   String _replaceLocalhost(String? url) {
     if (url == null || url.isEmpty) return '';
     String fixedUrl = url;
+
+    // Fix HTTP to HTTPS for release builds (Android blocks cleartext HTTP)
+    if (fixedUrl.startsWith('http://siladesbeng.inovasia.site')) {
+      fixedUrl = fixedUrl.replaceFirst('http://', 'https://');
+    }
+
     // Replace all localhost variants with the actual server IP
     fixedUrl = fixedUrl.replaceAll('http://localhost:8000', 'https://siladesbeng.inovasia.site');
     fixedUrl = fixedUrl.replaceAll('http://localhost', 'https://siladesbeng.inovasia.site');
     fixedUrl = fixedUrl.replaceAll('http://127.0.0.1:8000', 'https://siladesbeng.inovasia.site');
     fixedUrl = fixedUrl.replaceAll('http://127.0.0.1', 'https://siladesbeng.inovasia.site');
+    fixedUrl = fixedUrl.replaceAll('http://10.0.2.2:8000', 'https://siladesbeng.inovasia.site');
+    fixedUrl = fixedUrl.replaceAll('http://10.0.2.2', 'https://siladesbeng.inovasia.site');
+
+    if (!fixedUrl.startsWith('http')) {
+      return 'https://siladesbeng.inovasia.site/$fixedUrl';
+    }
+
     return fixedUrl;
   }
 

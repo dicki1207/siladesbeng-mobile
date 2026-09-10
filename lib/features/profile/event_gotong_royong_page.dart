@@ -95,6 +95,9 @@ class _EventGotongRoyongPageState extends State<EventGotongRoyongPage> {
     if (raw == null || raw.toString().trim().isEmpty) return null;
     final str = raw.toString().trim();
     if (str.startsWith('http://') || str.startsWith('https://')) {
+      if (str.startsWith('http://siladesbeng')) {
+        return str.replaceFirst('http://', 'https://');
+      }
       final uri = Uri.tryParse(str);
       if (uri != null && (uri.host == 'localhost' || uri.host == '127.0.0.1')) {
         final baseUri = Uri.parse(ApiConfig.baseUrl);

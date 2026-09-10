@@ -512,7 +512,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       case 3:
         return 'Kedipkan Kedua Mata';
       default:
-        return 'Memproses Biometrik...';
+        return 'Menyiapkan Data Profil...';
     }
   }
 
@@ -532,7 +532,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
       case 3:
         return 'Kedipkan kedua mata Anda secara wajar';
       default:
-        return 'Menyinkronkan data biometrik kependudukan...';
+        return 'Menyiapkan data untuk proses verifikasi...';
     }
   }
 
@@ -843,7 +843,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                     ),
                     SizedBox(height: 20.h),
                     Text(
-                      'Menyinkronkan Data Biometrik...',
+                      'Menyiapkan Data Profil...',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16.sp,
@@ -852,7 +852,7 @@ class _CameraRecordingPageState extends State<CameraRecordingPage>
                     ),
                     SizedBox(height: 6.h),
                     Text(
-                      'Verifikasi Dukcapil / SIAK sedang diproses',
+                      'Data akan dikirim untuk proses verifikasi',
                       style: TextStyle(color: Colors.white60, fontSize: 12.5.sp),
                     ),
                   ],

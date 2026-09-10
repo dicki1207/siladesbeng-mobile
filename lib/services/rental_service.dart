@@ -24,26 +24,28 @@ class RentalService {
   }
 
   String _replaceLocalhost(String? url) {
-    if (url == null) return '';
-    final ip = baseUrl.replaceAll('http://', '').split(':').first;
-    if (url.contains('localhost')) {
-      return url.replaceAll('localhost', '$ip:8000');
+    if (url == null || url.isEmpty) return '';
+    String fixedUrl = url;
+    
+    // Fix HTTP to HTTPS for release builds (Android blocks cleartext HTTP)
+    if (fixedUrl.startsWith('http://siladesbeng.inovasia.site')) {
+      fixedUrl = fixedUrl.replaceFirst('http://', 'https://');
     }
-    if (url.contains('127.0.0.1')) {
-      return url.replaceAll('127.0.0.1', ip);
-    }
-    // Note: asset() in laravel might use localhost without port, or 127.0.0.1:8000
-    // So let's make sure it handles both gracefully
-    if (url.contains('10.0.2.2')) {
-      return url.replaceAll('10.0.2.2', ip);
+
+    // Replace all localhost variants with the actual server IP
+    fixedUrl = fixedUrl.replaceAll('http://localhost:8000', 'https://siladesbeng.inovasia.site');
+    fixedUrl = fixedUrl.replaceAll('http://localhost', 'https://siladesbeng.inovasia.site');
+    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1:8000', 'https://siladesbeng.inovasia.site');
+    fixedUrl = fixedUrl.replaceAll('http://127.0.0.1', 'https://siladesbeng.inovasia.site');
+    fixedUrl = fixedUrl.replaceAll('http://10.0.2.2:8000', 'https://siladesbeng.inovasia.site');
+    fixedUrl = fixedUrl.replaceAll('http://10.0.2.2', 'https://siladesbeng.inovasia.site');
+
+    // Fallback: if it's just a relative path, prepend baseUrl (removing /api)
+    if (!fixedUrl.startsWith('http')) {
+      return 'https://siladesbeng.inovasia.site/$fixedUrl';
     }
     
-    // Fallback: if it's just a relative path, prepend baseUrl
-    if (!url.startsWith('http')) {
-      return 'http://$ip:8000/$url';
-    }
-    
-    return url;
+    return fixedUrl;
   }
 
   List<dynamic> _fixImageUrls(List<dynamic> items) {

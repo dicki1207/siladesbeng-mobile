@@ -1,9 +1,15 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:siladesbeng_mobile/widgets/ticket_card.dart';
 
-class GasReceiptPage extends StatelessWidget {
+class GasReceiptPage extends StatefulWidget {
   final String orderNumber;
   final String orderDate;
   final String buyerName;
@@ -31,8 +37,91 @@ class GasReceiptPage extends StatelessWidget {
     required this.total,
   });
 
+  @override
+  State<GasReceiptPage> createState() => _GasReceiptPageState();
+}
+
+class _GasReceiptPageState extends State<GasReceiptPage> {
+  final GlobalKey _receiptCardKey = GlobalKey();
+  bool _isGeneratingImage = false;
+
   String _formatCurrency(int amount) {
-    return 'Rp ${amount.toString().replaceAllMapped(RegExp(r'\\B(?=(\\d{3})+(?!\\d))'), (match) => '.')}';
+    return 'Rp ${amount.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')}';
+  }
+
+  Future<void> _generateAndDownloadPng() async {
+    if (_isGeneratingImage) return;
+
+    setState(() => _isGeneratingImage = true);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+            ),
+            const SizedBox(width: 12),
+            const Text('Sedang membuat gambar Bukti Transaksi (PNG)...'),
+          ],
+        ),
+        backgroundColor: const Color(0xFF2563EB),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 1),
+      ),
+    );
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      final boundary = _receiptCardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        throw Exception('Gagal menemukan tampilan struk');
+      }
+
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        throw Exception('Gagal mengonversi gambar ke format PNG');
+      }
+
+      final Uint8List pngBytes = byteData.buffer.asUint8List();
+      final dir = await getTemporaryDirectory();
+      final cleanOrderNumber = widget.orderNumber.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+      final file = File('${dir.path}/Bukti_Transaksi_$cleanOrderNumber.png');
+      await file.writeAsBytes(pngBytes);
+
+      if (!mounted) return;
+      setState(() => _isGeneratingImage = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bukti Transaksi (PNG) berhasil dibuat!'),
+          backgroundColor: Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Bukti Transaksi SilaDesBeng: ${widget.orderNumber}',
+          subject: 'Bukti Transaksi - SilaDesBeng',
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isGeneratingImage = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal membuat gambar PNG: $e'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -99,256 +188,293 @@ class GasReceiptPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: TicketCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // HEADER
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Logo
-                  Row(
-                    children: [
-                      CustomCachedImage(
-                        'https://siladesbeng.inovasia.site/assets/img/logo.png', // Fallback
-                        height: 40,
-                        errorBuilder: (c, e, s) => const Icon(
-                          Icons.gas_meter,
-                          color: Colors.blue,
-                          size: 40,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'SiladesBeng',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Bukti Transaksi',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        'Unit Pembelian Gas',
-                        style: TextStyle(fontSize: 10, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // INFO PESANAN
-              _buildInfoRow('No. Pesanan', orderNumber),
-              _buildInfoRow('Waktu Pemesanan', orderDate),
-              _buildInfoRow('Nama Akun Pemesan', buyerName),
-              _buildInfoRow('Email Akun Pemesan', email),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: DashedLineSeparator(),
-              ),
-
-              // NAMA DAN ALAMAT
-              const Text(
-                'Nama dan Alamat Pembeli Gas',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              _buildInfoRow('Nama Lengkap', buyerName),
-              _buildInfoRow('Alamat', address),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: DashedLineSeparator(),
-              ),
-
-              // INFO PEMBAYARAN
-              const Text(
-                'Informasi Pembayaran',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              _buildInfoRow('Waktu Pembayaran', '-'),
-              _buildInfoRow('Metode Pembayaran', paymentMethod),
-              _buildInfoRow('Total Pembayaran', _formatCurrency(total)),
-              _buildInfoRow('Status', status),
-
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: DashedLineSeparator(),
-              ),
-
-              // DETAIL PEMBELIAN
-              const Text(
-                'Detail Pembayaran',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'Keterangan',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text(
-                      'Jumlah',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'Satuan',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      'Total',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(thickness: 1),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(itemName, style: const TextStyle(fontSize: 12)),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text(
-                      '$quantity',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      _formatCurrency(price),
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      _formatCurrency(total),
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          children: [
+            RepaintBoundary(
+              key: _receiptCardKey,
+              child: TicketCard(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // HEADER
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Total Pemesanan',
-                          style: TextStyle(fontSize: 12),
+                        // Logo
+                        Row(
+                          children: [
+                            CustomCachedImage(
+                              'https://siladesbeng.inovasia.site/assets/img/logo.png', // Fallback
+                              height: 40,
+                              errorBuilder: (c, e, s) => const Icon(
+                                Icons.gas_meter,
+                                color: Colors.blue,
+                                size: 40,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'SiladesBeng',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          _formatCurrency(total),
-                          style: const TextStyle(fontSize: 12),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Bukti Transaksi',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              'Unit Pembelian Gas',
+                              style: TextStyle(fontSize: 10, color: Colors.grey),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Total Dibayar',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                        Text(
-                          _formatCurrency(total),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+                    const SizedBox(height: 24),
 
-              const SizedBox(height: 32),
+                    // INFO PESANAN
+                    _buildInfoRow('No. Pesanan', widget.orderNumber),
+                    _buildInfoRow('Waktu Pemesanan', widget.orderDate),
+                    _buildInfoRow('Nama Akun Pemesan', widget.buyerName),
+                    _buildInfoRow('Email Akun Pemesan', widget.email),
 
-              // QR CODE & FOOTER
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      'Bengkalis, $orderDate',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: DashedLineSeparator(),
                     ),
-                    const SizedBox(height: 4),
-                    const Text('Hormat Kami', style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 16),
-                    QrImageView(
-                      data: orderNumber,
-                      version: QrVersions.auto,
-                      size: 100.0,
+
+                    // NAMA DAN ALAMAT
+                    const Text(
+                      'Nama dan Alamat Pembeli Gas',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'SiladesBeng',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    _buildInfoRow('Nama Lengkap', widget.buyerName),
+                    _buildInfoRow('Alamat', widget.address),
+
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: DashedLineSeparator(),
                     ),
+
+                    // INFO PEMBAYARAN
                     const Text(
-                      'Platform E-Government Kab. Bengkalis',
-                      style: TextStyle(fontSize: 10, color: Colors.grey),
+                      'Informasi Pembayaran',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow('Waktu Pembayaran', '-'),
+                    _buildInfoRow('Metode Pembayaran', widget.paymentMethod),
+                    _buildInfoRow('Total Pembayaran', _formatCurrency(widget.total)),
+                    _buildInfoRow('Status', widget.status),
+
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: DashedLineSeparator(),
+                    ),
+
+                    // DETAIL PEMBELIAN
+                    const Text(
+                      'Detail Pembayaran',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'Keterangan',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            'Jumlah',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'Satuan',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            'Total',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(thickness: 1),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Text(widget.itemName, style: const TextStyle(fontSize: 12)),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            '${widget.quantity}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            _formatCurrency(widget.price),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            _formatCurrency(widget.total),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Total Pemesanan',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                _formatCurrency(widget.total),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Total Dibayar',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                              Text(
+                                _formatCurrency(widget.total),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // QR CODE & FOOTER
+                    Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            'Bengkalis, ${widget.orderDate}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text('Hormat Kami', style: TextStyle(fontSize: 12)),
+                          const SizedBox(height: 16),
+                          QrImageView(
+                            data: widget.orderNumber,
+                            version: QrVersions.auto,
+                            size: 100.0,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'SiladesBeng',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const Text(
+                            'Platform E-Government Kab. Bengkalis',
+                            style: TextStyle(fontSize: 10, color: Colors.grey),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            // Tombol Unduh & Share
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: _isGeneratingImage ? null : _generateAndDownloadPng,
+                icon: _isGeneratingImage
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.download_rounded),
+                label: Text(
+                  _isGeneratingImage ? 'Menyiapkan Gambar...' : 'Unduh Bukti Transaksi (PNG)',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
