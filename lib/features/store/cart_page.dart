@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 import 'package:siladesbeng_mobile/core/verification_guard.dart';
+import 'package:siladesbeng_mobile/utils/custom_cache_manager.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'pasar_checkout_page.dart';
 
 class CartPage extends StatefulWidget {
@@ -286,7 +288,16 @@ class _CartPageState extends State<CartPage> {
                     color: Colors.grey[200],
                     child: (item['image_url'] != null)
                         ? CachedNetworkImage(
-                            imageUrl: item['image_url'],
+                            imageUrl: (item['image_url']?.toString() ?? '').startsWith('http://siladesbeng')
+                                ? (item['image_url']?.toString() ?? '').replaceFirst('http://', 'https://')
+                                : (item['image_url']?.toString() ?? ''),
+                            cacheManager: CustomCacheManager(),
+                            httpHeaders: const {
+                              'Referer': 'https://siladesbeng.inovasia.site/',
+                              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                            },
+                            width: 65.w,
+                            height: 65.h,
                             fit: BoxFit.cover,
                             memCacheWidth: 500,
                             placeholder: (ctx, url) => Container(color: Colors.grey[200]),

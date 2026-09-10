@@ -13,6 +13,7 @@ import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
+import 'package:siladesbeng_mobile/utils/custom_cache_manager.dart';
 
 class PasarDetailPage extends StatefulWidget {
  final int productId;
@@ -165,7 +166,14 @@ class _PasarDetailPageState extends State<PasarDetailPage>
         child: imageSource.startsWith('assets/')
           ? Image.asset(imageSource, fit: BoxFit.contain)
           : CachedNetworkImage(
-            imageUrl: imageSource,
+            imageUrl: imageSource.startsWith('http://siladesbeng')
+                ? imageSource.replaceFirst('http://', 'https://')
+                : imageSource,
+            cacheManager: CustomCacheManager(),
+            httpHeaders: const {
+              'Referer': 'https://siladesbeng.inovasia.site/',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            },
             fit: BoxFit.contain,
             memCacheWidth: 500,
             placeholder: (ctx, url) => Container(color: Colors.grey[200]),
@@ -346,7 +354,14 @@ class _PasarDetailPageState extends State<PasarDetailPage>
             return GestureDetector(
              onTap: () => _showImageZoomDialog(_images[index]),
              child: CachedNetworkImage(
-              imageUrl: _images[index],
+              imageUrl: _images[index].startsWith('http://siladesbeng')
+                  ? _images[index].replaceFirst('http://', 'https://')
+                  : _images[index],
+              cacheManager: CustomCacheManager(),
+              httpHeaders: const {
+                'Referer': 'https://siladesbeng.inovasia.site/',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+              },
               fit: BoxFit.cover,
               memCacheWidth: 500,
               placeholder: (ctx, url) => Container(color: Colors.grey[200]),
@@ -606,7 +621,14 @@ class _PasarDetailPageState extends State<PasarDetailPage>
             borderRadius: BorderRadius.circular(13),
             child: (_seller != null && _seller!['avatar'] != null && _seller!['avatar'].toString().isNotEmpty)
               ? CachedNetworkImage(
-                imageUrl: _seller!['avatar'],
+                imageUrl: _seller!['avatar'].toString().startsWith('http://siladesbeng')
+                    ? _seller!['avatar'].toString().replaceFirst('http://', 'https://')
+                    : _seller!['avatar'].toString(),
+                cacheManager: CustomCacheManager(),
+                httpHeaders: const {
+                  'Referer': 'https://siladesbeng.inovasia.site/',
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                },
                 fit: BoxFit.cover,
                 memCacheWidth: 500,
                 placeholder: (ctx, url) => Container(color: Colors.grey[200]),
@@ -1495,10 +1517,17 @@ class _PasarDetailPageState extends State<PasarDetailPage>
        ),
        child: imageUrl != null
          ? CachedNetworkImage(
-           imageUrl: imageUrl,
+           imageUrl: imageUrl.toString().startsWith('http://siladesbeng')
+               ? imageUrl.toString().replaceFirst('http://', 'https://')
+               : imageUrl.toString(),
+           cacheManager: CustomCacheManager(),
+           httpHeaders: const {
+             'Referer': 'https://siladesbeng.inovasia.site/',
+             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+           },
+           fit: BoxFit.cover,
            width: 135,
            height: 95,
-           fit: BoxFit.cover,
            memCacheWidth: 500,
            placeholder: (ctx, url) => Container(color: Colors.grey[200]),
            errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
