@@ -203,7 +203,7 @@ class _GasBookingPageState extends State<GasBookingPage> {
           // jadi halaman itu dibuka di peramban.
           final dibuka = await launchUrl(
             Uri.parse(snapUrl.toString()),
-            mode: LaunchMode.externalApplication,
+            mode: LaunchMode.inAppBrowserView,
           );
 
           if (!mounted) return;
