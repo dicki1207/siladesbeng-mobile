@@ -542,7 +542,7 @@ class _AdminReportDetailPageState extends State<AdminReportDetailPage> {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                         userAgentPackageName: 'com.siladesbeng.app',
                       ),
                       MarkerLayer(

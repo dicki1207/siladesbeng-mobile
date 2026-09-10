@@ -746,7 +746,7 @@ class _ReportPageState extends State<ReportPage> {
                             ),
                             children: [
                               TileLayer(
-                                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
                                 userAgentPackageName: 'com.example.siladesbeng',
                               ),
                               if (_hasSelectedLocation)

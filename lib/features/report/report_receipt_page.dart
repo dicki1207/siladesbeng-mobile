@@ -97,7 +97,7 @@ class _ReportReceiptPageState extends State<ReportReceiptPage> {
 
   ScaffoldMessenger.of(context).showSnackBar(
    const SnackBar(
-    content: Text('Sedang menyusun dokumen PDF bukti laporan...'),
+    content: Text('Mengunduh dokumen PDF bukti laporan...'),
     backgroundColor: Color(0xFF0284C7),
     behavior: SnackBarBehavior.floating,
    ),
@@ -105,327 +105,37 @@ class _ReportReceiptPageState extends State<ReportReceiptPage> {
 
   try {
    final id = _cleanId;
-   final ref = _referenceNumber;
+   if (id.isEmpty) return;
 
-   final namaPelapor = _detailData?['user']?['name'] ??
-     _detailData?['nama'] ??
-     'Warga Terdaftar';
-   final rt = _detailData?['rt_number'] ?? _detailData?['rt'] ?? '-';
-   final rw = _detailData?['rw_number'] ?? _detailData?['rw'] ?? '-';
-   final lokasi = _detailData?['lokasi']?.toString() ?? '';
-   final lat = _detailData?['latitude']?.toString();
-   final lng = _detailData?['longitude']?.toString();
-   final catatanAdmin = _detailData?['catatan_admin'] ??
-     _detailData?['catatan_rw'] ??
-     _detailData?['catatan_rt'];
-   final handlerName = _detailData?['handler_name'] ?? 'Pemerintah Desa Bengkalis';
-   final escalation = _detailData?['escalation_level']?.toString().toUpperCase() ?? 'DESA';
+   final prefs = await SharedPreferences.getInstance();
+   final token = prefs.getString('auth_token') ?? prefs.getString('token');
 
-   final pdf = pw.Document();
+   final url = Uri.parse('${ApiConfig.baseUrl}/user/laporan/export/$id?token=$token');
+   
+   final response = await http.get(url);
+   
+   if (response.statusCode == 200) {
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/Bukti_Laporan_$id.pdf');
+    await file.writeAsBytes(response.bodyBytes);
 
-   // Load logo
-   pw.MemoryImage? logoImage;
-   try {
-    final logoData = await rootBundle.load('logodomain.png');
-    logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
-   } catch (_) {}
-
-   // Tentukan warna status PDF
-   PdfColor statusPdfColor = PdfColors.blue700;
-   final statusUpper = widget.status.toUpperCase();
-   if (statusUpper.contains('SELESAI') || statusUpper.contains('SUKSES') || statusUpper.contains('APPROVED')) {
-    statusPdfColor = PdfColors.green700;
-   } else if (statusUpper.contains('PROSES') || statusUpper.contains('TINDAK')) {
-    statusPdfColor = PdfColors.blue700;
-   } else if (statusUpper.contains('TOLAK') || statusUpper.contains('BATAL')) {
-    statusPdfColor = PdfColors.red700;
+    if (mounted) {
+     await SharePlus.instance.share(
+      ShareParams(
+       files: [XFile(file.path)],
+       text: 'Bukti Pelaporan Resmi Sila-DesBeng: #$id',
+       subject: 'Bukti Laporan - SilaDesBeng',
+      ),
+     );
+    }
    } else {
-    statusPdfColor = PdfColors.orange700;
-   }
-
-   pdf.addPage(
-    pw.Page(
-     pageFormat: PdfPageFormat.a4,
-     margin: const pw.EdgeInsets.all(32),
-     build: (pw.Context ctx) {
-      return pw.Column(
-       crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-       children: [
-        // 1. Kop Dokumen Resmi
-        pw.Row(
-         crossAxisAlignment: pw.CrossAxisAlignment.center,
-         children: [
-          if (logoImage != null)
-           pw.Image(logoImage, width: 48, height: 48)
-          else
-           pw.Container(
-            width: 48,
-            height: 48,
-            decoration: const pw.BoxDecoration(
-             color: PdfColors.blue800,
-             shape: pw.BoxShape.circle,
-            ),
-           ),
-          pw.SizedBox(width: 14),
-          pw.Expanded(
-           child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-             pw.Text(
-              'PEMERINTAH KABUPATEN BENGKALIS',
-              style: pw.TextStyle(
-               fontSize: 10.5,
-               fontWeight: pw.FontWeight.bold,
-               color: PdfColors.grey700,
-               letterSpacing: 1.0,
-              ),
-             ),
-             pw.SizedBox(height: 2),
-             pw.Text(
-              'SILA-DESBENG E-GOVERNMENT',
-              style: pw.TextStyle(
-               fontSize: 15,
-               fontWeight: pw.FontWeight.bold,
-               color: PdfColors.blue900,
-              ),
-             ),
-             pw.Text(
-              'Sistem Informasi & Layanan Digital Terpadu Desa Bengkalis',
-              style: const pw.TextStyle(
-               fontSize: 9,
-               color: PdfColors.grey600,
-              ),
-             ),
-            ],
-           ),
-          ),
-         ],
-        ),
-
-        pw.SizedBox(height: 12),
-        pw.Divider(thickness: 1.5, color: PdfColors.blue900),
-        pw.SizedBox(height: 10),
-
-        // 2. Banner Judul Bukti Registrasi
-        pw.Container(
-         padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-         decoration: pw.BoxDecoration(
-          color: PdfColors.blue800,
-          borderRadius: pw.BorderRadius.circular(6),
-         ),
-         child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-           pw.Text(
-            'BUKTI REGISTRASI PELAPORAN WARGA',
-            style: pw.TextStyle(
-             color: PdfColors.white,
-             fontSize: 11,
-             fontWeight: pw.FontWeight.bold,
-             letterSpacing: 0.5,
-            ),
-           ),
-           pw.Text(
-            'Ref: $ref',
-            style: pw.TextStyle(
-             color: PdfColors.white,
-             fontSize: 10,
-             fontWeight: pw.FontWeight.bold,
-            ),
-           ),
-          ],
-         ),
-        ),
-
-        pw.SizedBox(height: 8),
-
-        // Status Bar
-        pw.Container(
-         padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-         decoration: pw.BoxDecoration(
-          color: PdfColors.grey100,
-          borderRadius: pw.BorderRadius.circular(4),
-          border: pw.Border.all(color: PdfColors.grey300),
-         ),
-         child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-           pw.Text(
-            'STATUS TIKET:',
-            style: pw.TextStyle(
-             fontSize: 10,
-             fontWeight: pw.FontWeight.bold,
-             color: PdfColors.grey700,
-            ),
-           ),
-           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: pw.BoxDecoration(
-             color: statusPdfColor,
-             borderRadius: pw.BorderRadius.circular(4),
-            ),
-            child: pw.Text(
-             statusUpper,
-             style: pw.TextStyle(
-              color: PdfColors.white,
-              fontSize: 9.5,
-              fontWeight: pw.FontWeight.bold,
-             ),
-            ),
-           ),
-          ],
-         ),
-        ),
-
-        pw.SizedBox(height: 12),
-
-        // 3. Section I: Data Identitas & Pelapor
-        _buildPdfSectionHeader('I. INFORMASI IDENTITAS & PELAPORAN'),
-        pw.SizedBox(height: 6),
-        _buildPdfRow('Nomor Tiket Aduan', '#$id'),
-        _buildPdfRow('Nama Pelapor', namaPelapor),
-        _buildPdfRow('Kategori Laporan', widget.category),
-        _buildPdfRow('Tanggal Pengajuan', widget.date),
-        _buildPdfRow('Wilayah Domisili', 'RT $rt / RW $rw'),
-        _buildPdfRow('Tingkat Penanganan', 'Tingkat $escalation'),
-
-        pw.SizedBox(height: 10),
-        pw.Divider(thickness: 0.5, color: PdfColors.grey300),
-        pw.SizedBox(height: 8),
-
-        // 4. Section II: Isi Laporan
-        _buildPdfSectionHeader('II. RINCIAN & DESKRIPSI LAPORAN'),
-        pw.SizedBox(height: 6),
-        pw.Container(
-         width: double.infinity,
-         padding: const pw.EdgeInsets.all(10),
-         decoration: pw.BoxDecoration(
-          color: PdfColors.grey50,
-          borderRadius: pw.BorderRadius.circular(6),
-          border: pw.Border.all(color: PdfColors.grey300),
-         ),
-         child: pw.Text(
-          widget.description,
-          style: const pw.TextStyle(fontSize: 10.5, lineSpacing: 2),
-         ),
-        ),
-
-        if (lokasi.isNotEmpty || (lat != null && lng != null)) ...[
-         pw.SizedBox(height: 10),
-         pw.Divider(thickness: 0.5, color: PdfColors.grey300),
-         pw.SizedBox(height: 8),
-         _buildPdfSectionHeader('III. LOKASI KEJADIAN'),
-         pw.SizedBox(height: 6),
-         if (lokasi.isNotEmpty) _buildPdfRow('Alamat/Petunjuk', lokasi),
-         if (lat != null && lng != null) _buildPdfRow('Titik Koordinat GPS', '$lat, $lng'),
-        ],
-
-        if (catatanAdmin != null && catatanAdmin.toString().isNotEmpty) ...[
-         pw.SizedBox(height: 10),
-         pw.Divider(thickness: 0.5, color: PdfColors.grey300),
-         pw.SizedBox(height: 8),
-         _buildPdfSectionHeader('IV. CATATAN PENANGANAN RESMI'),
-         pw.SizedBox(height: 6),
-         _buildPdfRow('Petugas Penangan', handlerName),
-         _buildPdfRow('Tanggapan', catatanAdmin.toString()),
-        ],
-
-        pw.Spacer(),
-
-        // 5. Section Keabsahan & QR Code (Centered)
-        pw.Container(
-         padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-         decoration: pw.BoxDecoration(
-          color: PdfColors.grey50,
-          borderRadius: pw.BorderRadius.circular(8),
-          border: pw.Border.all(color: PdfColors.grey300),
-         ),
-         child: pw.Row(
-          crossAxisAlignment: pw.CrossAxisAlignment.center,
-          children: [
-           pw.Container(
-            padding: const pw.EdgeInsets.all(4),
-            decoration: pw.BoxDecoration(
-             color: PdfColors.white,
-             borderRadius: pw.BorderRadius.circular(6),
-             border: pw.Border.all(color: PdfColors.grey400),
-            ),
-            child: pw.BarcodeWidget(
-             barcode: pw.Barcode.qrCode(),
-             data: '${ApiConfig.baseUrl}/validasi/laporan/$id',
-             width: 65,
-             height: 65,
-            ),
-           ),
-           pw.SizedBox(width: 14),
-           pw.Expanded(
-            child: pw.Column(
-             crossAxisAlignment: pw.CrossAxisAlignment.start,
-             children: [
-              pw.Text(
-               'TANDA TANGAN & KEABSAHAN ELEKTRONIK',
-               style: pw.TextStyle(
-                fontSize: 9.5,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.blue900,
-               ),
-              ),
-              pw.SizedBox(height: 2),
-              pw.Text(
-               'Diterbitkan oleh: $handlerName',
-               style: pw.TextStyle(
-                fontSize: 9.5,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.grey800,
-               ),
-              ),
-              pw.SizedBox(height: 2),
-              pw.Text(
-               'Dokumen ini sah dan diterbitkan secara digital oleh Sistem E-Government Sila-DesBeng Kabupaten Bengkalis tanpa memerlukan tanda tangan basah.',
-               style: const pw.TextStyle(
-                fontSize: 8,
-                color: PdfColors.grey600,
-                lineSpacing: 1.5,
-               ),
-              ),
-             ],
-            ),
-           ),
-          ],
-         ),
-        ),
-
-        pw.SizedBox(height: 6),
-        pw.Center(
-         child: pw.Text(
-          'Dicetak secara otomatis melalui Aplikasi Mobile Resmi SilaDesBeng',
-          style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey500),
-         ),
-        ),
-       ],
-      );
-     },
-    ),
-   );
-
-   final dir = await getTemporaryDirectory();
-   final file = File('${dir.path}/Bukti_Laporan_$id.pdf');
-   await file.writeAsBytes(await pdf.save());
-
-   if (mounted) {
-    await SharePlus.instance.share(
-     ShareParams(
-      files: [XFile(file.path)],
-      text: 'Bukti Pelaporan Resmi Sila-DesBeng: #$id',
-      subject: 'Bukti Laporan - SilaDesBeng',
-     ),
-    );
+    throw Exception('Gagal mengunduh dari server (${response.statusCode})');
    }
   } catch (e) {
    if (mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
      SnackBar(
-      content: Text('Gagal membuat PDF bukti laporan: $e'),
+      content: Text('Gagal mengunduh PDF bukti laporan: $e'),
       backgroundColor: Colors.redAccent,
       behavior: SnackBarBehavior.floating,
      ),
