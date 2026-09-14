@@ -12,6 +12,9 @@ import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
+import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:siladesbeng_mobile/utils/custom_cache_manager.dart';
 
 class StorePage extends StatefulWidget {
   const StorePage({super.key});
@@ -1514,7 +1517,14 @@ class _StorePageState extends State<StorePage> {
                     ),
                     child: imageUrl != null
                         ? CachedNetworkImage(
-                            imageUrl: imageUrl,
+                            imageUrl: imageUrl.toString().startsWith('http://siladesbeng')
+                                ? imageUrl.toString().replaceFirst('http://', 'https://')
+                                : imageUrl.toString(),
+                            cacheManager: CustomCacheManager(),
+                            httpHeaders: const {
+                              'Referer': 'https://siladesbeng.inovasia.site/',
+                              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                            },
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
