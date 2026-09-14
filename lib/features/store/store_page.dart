@@ -12,8 +12,6 @@ import 'package:siladesbeng_mobile/services/pasar_product_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_cart_service.dart';
 import 'package:siladesbeng_mobile/services/pasar_favorite_service.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
-import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:siladesbeng_mobile/utils/custom_cache_manager.dart';
 
 class StorePage extends StatefulWidget {
