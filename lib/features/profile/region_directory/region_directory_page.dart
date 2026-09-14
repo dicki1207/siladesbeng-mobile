@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:siladesbeng_mobile/core/theme.dart';
 import 'package:siladesbeng_mobile/services/region_directory_service.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 
 class RegionDirectoryPage extends StatefulWidget {
   final int? initialRegionId;
@@ -781,21 +781,10 @@ class _RegionDirectoryPageState extends State<RegionDirectoryPage> {
                   bottomRight: Radius.circular(13.r),
                 ),
                 child: photoUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: photoUrl,
+                    ? CustomCachedImage(
+                        photoUrl,
                         fit: BoxFit.cover,
-                        memCacheWidth: 400,
-                        placeholder: (context, url) => Container(
-                          color: isDark ? Colors.grey[800] : Colors.grey[200],
-                          child: const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
+                        errorBuilder: (context, error, stackTrace) => Container(
                           color: isDark ? Colors.grey[850] : Colors.grey[100],
                           child: Icon(
                             Icons.person_rounded,

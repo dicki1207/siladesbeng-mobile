@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/auth/login_page.dart';
 import 'package:siladesbeng_mobile/features/transaction/transaction_detail_page.dart';
+import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 
 class TransactionHistoryPage extends StatefulWidget {
   const TransactionHistoryPage({super.key});
@@ -90,7 +91,7 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/history'),
+        Uri.parse('${ApiConfig.baseUrl}/api/history'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -895,12 +896,11 @@ class TransactionHistoryPageState extends State<TransactionHistoryPage> {
                     padding: EdgeInsets.all(8.0.w),
                     child: item['image'] != null
                         ? (item['image'].toString().startsWith('http')
-                              ? CachedNetworkImage(
-                                  imageUrl: item['image'],
+                              ? CustomCachedImage(
+                                  item['image'].toString(),
                                   fit: BoxFit.cover,
-                                  memCacheWidth: 500,
-                                  placeholder: (ctx, url) => Container(color: Colors.grey[200]),
-                                  errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
+                                  loadingBuilder: (ctx, child, progress) => Container(color: Colors.grey[200]),
+                                  errorBuilder: (ctx, err, stack) => const Icon(Icons.broken_image, color: Colors.grey),
                                 )
                               : Image.asset(
                                   item['image'],

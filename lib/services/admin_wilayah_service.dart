@@ -19,7 +19,7 @@ class AdminWilayahService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

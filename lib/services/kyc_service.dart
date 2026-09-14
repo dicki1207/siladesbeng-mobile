@@ -44,7 +44,7 @@ class KycService {
       var file = await http.MultipartFile.fromPath('ktp_image', imagePath);
       request.files.add(file);
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await request.send().timeout(const Duration(seconds: 30));
       var response = await http.Response.fromStream(streamedResponse);
 
       final responseData = json.decode(response.body);
@@ -112,7 +112,7 @@ class KycService {
         request.files.add(file);
       }
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await request.send().timeout(const Duration(seconds: 30));
       var response = await http.Response.fromStream(streamedResponse);
 
       final responseData = json.decode(response.body);

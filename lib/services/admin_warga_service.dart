@@ -28,7 +28,7 @@ class AdminWargaService {
       final response = await http.get(
         Uri.parse('$baseUrl/wilayah/warga'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -50,7 +50,7 @@ class AdminWargaService {
       final response = await http.get(
         Uri.parse('$baseUrl/wilayah/warga/$id'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 
@@ -84,7 +84,7 @@ class AdminWargaService {
         Uri.parse('$baseUrl/wilayah/warga/$userId/approve-kyc'),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 
@@ -118,7 +118,7 @@ class AdminWargaService {
         Uri.parse('$baseUrl/wilayah/warga/$userId/reject-kyc'),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 

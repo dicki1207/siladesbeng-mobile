@@ -115,7 +115,7 @@ class FirebaseMessagingService {
         body: {
           'fcm_token': fcmToken,
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (res.statusCode == 200) {
         debugPrint('Berhasil update FCM Token ke server');

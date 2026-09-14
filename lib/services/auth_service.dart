@@ -13,7 +13,7 @@ class AuthService {
           'email_or_phone': emailOrPhone,
           'otp_method': method,
         },
-      );
+      ).timeout(const Duration(seconds: 10));
       return json.decode(response.body);
     } catch (e) {
       return {'status': 'error', 'message': 'Terjadi kesalahan sistem: $e'};
@@ -29,7 +29,7 @@ class AuthService {
           'email_or_phone': emailOrPhone,
           'otp': otp,
         },
-      );
+      ).timeout(const Duration(seconds: 10));
       return json.decode(response.body);
     } catch (e) {
       return {'status': 'error', 'message': 'Terjadi kesalahan sistem: $e'};
@@ -47,7 +47,7 @@ class AuthService {
           'password': password,
           'password_confirmation': passwordConfirmation,
         },
-      );
+      ).timeout(const Duration(seconds: 10));
       return json.decode(response.body);
     } catch (e) {
       return {'status': 'error', 'message': 'Terjadi kesalahan sistem: $e'};

@@ -59,7 +59,7 @@ class UnitChatService {
         url += '?${Uri(queryParameters: queryParams).query}';
       }
 
-      final response = await http.get(Uri.parse(url), headers: headers);
+      final response = await http.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success' && data['data'] != null) {
@@ -110,7 +110,7 @@ class UnitChatService {
         Uri.parse('$baseUrl/unit-chat/$service/send'),
         headers: headers,
         body: json.encode(body),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -146,7 +146,7 @@ class UnitChatService {
         Uri.parse('$baseUrl/unit-chat/$service/escalate'),
         headers: headers,
         body: json.encode(body),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         return json.decode(response.body);

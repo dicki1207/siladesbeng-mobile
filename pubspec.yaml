@@ -23,7 +23,6 @@ dependencies:
   connectivity_plus: ^7.3.0
   animated_text_kit: ^4.3.0
   intl: ^0.20.3
-  lottie: ^3.3.3
   shimmer: ^3.0.0
   slide_to_act: ^2.0.2
   animations: ^2.2.0
@@ -64,4 +63,3 @@ flutter:
   assets:
     - assets/images/
     - assets/images/banks/
-    - logodomain.png

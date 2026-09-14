@@ -27,16 +27,23 @@ void main() async {
   
   try {
     await Firebase.initializeApp();
-    
-    // Inisialisasi Firebase Messaging
-    final fcmService = FirebaseMessagingService();
-    await fcmService.initNotifications();
   } catch (e, stackTrace) {
-    debugPrint('Error during initialization: $e');
+    debugPrint('Error during Firebase init: $e');
     debugPrint('StackTrace: $stackTrace');
   }
   
   runApp(const MyApp());
+
+  // Inisialisasi FCM di background SETELAH UI sudah muncul
+  // agar tidak memblokir startup jika koneksi lambat
+  Future.microtask(() async {
+    try {
+      final fcmService = FirebaseMessagingService();
+      await fcmService.initNotifications();
+    } catch (e) {
+      debugPrint('Error FCM init (non-blocking): $e');
+    }
+  });
 }
 
 class MyApp extends StatefulWidget {

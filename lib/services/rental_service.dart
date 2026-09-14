@@ -74,7 +74,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/rental/items'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -94,7 +94,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/rental/items/$id'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -148,7 +148,7 @@ class RentalService {
         Uri.parse('$baseUrl/rental/booking'),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 
@@ -197,7 +197,7 @@ class RentalService {
         Uri.parse('$baseUrl/rental/booking-package'),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 
@@ -225,7 +225,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/rental/my-bookings'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -246,7 +246,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/mobil'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -266,7 +266,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/mobil/$id'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -310,7 +310,7 @@ class RentalService {
         Uri.parse('$baseUrl/mobil/booking'),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 
@@ -338,7 +338,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/mobil/my-bookings'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -359,7 +359,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/fasilitas'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -379,7 +379,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/fasilitas/$id'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -421,7 +421,7 @@ class RentalService {
         Uri.parse('$baseUrl/fasilitas/booking'),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 
@@ -449,7 +449,7 @@ class RentalService {
       final response = await http.get(
         Uri.parse('$baseUrl/fasilitas/my-bookings'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -485,7 +485,7 @@ class RentalService {
         Uri.parse(url),
         headers: headers,
         body: reason != null ? json.encode({'reason': reason}) : null,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 

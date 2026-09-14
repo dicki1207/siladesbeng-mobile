@@ -56,8 +56,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _availableServices = [];
   List<Map<String, dynamic>> _popularItems = [];
   // _isLoading removed — fallback data renders instantly
-  double _assistantX = -1;
-  double _assistantY = -1;
+  final ValueNotifier<Offset> _assistantPos = ValueNotifier(const Offset(-1, -1));
   final TextEditingController _searchController = TextEditingController();
 
   String _userName = 'Tamu';
@@ -509,6 +508,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     // _showcaseView.unregister(); // Prevent unregister on route replace race condition
     _searchController.dispose();
+    _assistantPos.dispose();
     super.dispose();
   }
 
@@ -518,11 +518,11 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: LayoutBuilder(
         builder: (context, constraints) {
-          if (_assistantX == -1) {
-            _assistantX = constraints.maxWidth - 100; // default right side
-            _assistantY =
-                constraints.maxHeight -
-                180; // Keep it well above the bottom navigation bar
+          if (_assistantPos.value.dx == -1) {
+            _assistantPos.value = Offset(
+              constraints.maxWidth - 100, // default right side
+              constraints.maxHeight - 180, // Keep above bottom nav
+            );
           }
           return Stack(
             children: [
@@ -554,124 +554,120 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              // Floating Tanya Assistant (Draggable)
-              Positioned(
-                left: _assistantX,
-                top: _assistantY,
-                child: Showcase(
-                  titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
-                  descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
-                  key: _keyAsisten,
-                  title: 'Tanya Asisten AI',
-                  description: 'Butuh bantuan seputar layanan desa? Ketuk asisten pintar ini untuk bertanya apa saja.',
-                  targetShapeBorder: const CircleBorder(),
-                  child: GestureDetector(
-                  onPanUpdate: (details) {
-                    setState(() {
-                      _assistantX += details.delta.dx;
-                      _assistantY += details.delta.dy;
+              // Floating Tanya Assistant (Draggable) — uses ValueListenableBuilder
+              // sehingga drag hanya me-rebuild widget ini, bukan seluruh HomePage
+              ValueListenableBuilder<Offset>(
+                valueListenable: _assistantPos,
+                builder: (context, pos, _) {
+                  return Positioned(
+                    left: pos.dx,
+                    top: pos.dy,
+                    child: Showcase(
+                      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
+                      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
+                      key: _keyAsisten,
+                      title: 'Tanya Asisten AI',
+                      description: 'Butuh bantuan seputar layanan desa? Ketuk asisten pintar ini untuk bertanya apa saja.',
+                      targetShapeBorder: const CircleBorder(),
+                      child: GestureDetector(
+                      onPanUpdate: (details) {
+                        final cur = _assistantPos.value;
+                        double newX = cur.dx + details.delta.dx;
+                        double newY = cur.dy + details.delta.dy;
 
-                      // Clamp to screen bounds
-                      if (_assistantX < 0) {
-                        _assistantX = 0;
-                      }
-                      if (_assistantX > constraints.maxWidth - 60) {
-                        _assistantX = constraints.maxWidth - 60;
-                      }
-                      if (_assistantY < 0) {
-                        _assistantY = 0;
-                      }
-                      // Prevent it from hiding behind the footer/bottom nav (approx 180px reserved)
-                      if (_assistantY > constraints.maxHeight - 180) {
-                        _assistantY = constraints.maxHeight - 180;
-                      }
-                    });
-                  },
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AssistantPage(),
-                      ),
-                    );
-                  },
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Text Bubble outside the icon bounds
-                      Positioned(
-                        bottom: 65.h,
-                        right: (_assistantX > constraints.maxWidth / 2)
-                            ? 0
-                            : null,
-                        left: (_assistantX <= constraints.maxWidth / 2)
-                            ? 0
-                            : null,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 6.h,
+                        // Clamp to screen bounds
+                        newX = newX.clamp(0.0, constraints.maxWidth - 60);
+                        newY = newY.clamp(0.0, constraints.maxHeight - 180);
+
+                        _assistantPos.value = Offset(newX, newY);
+                      },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AssistantPage(),
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.blueAccent,
-                            borderRadius: BorderRadius.circular(15.r),
-                          ),
-                          child: DefaultTextStyle(
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.bold,
+                        );
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // Text Bubble outside the icon bounds
+                          Positioned(
+                            bottom: 65.h,
+                            right: (pos.dx > constraints.maxWidth / 2)
+                                ? 0
+                                : null,
+                            left: (pos.dx <= constraints.maxWidth / 2)
+                                ? 0
+                                : null,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 6.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent,
+                                borderRadius: BorderRadius.circular(15.r),
+                              ),
+                              child: DefaultTextStyle(
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                child: AnimatedTextKit(
+                                  animatedTexts: [
+                                    TypewriterAnimatedText(
+                                      'Tanya Asisten',
+                                      speed: const Duration(milliseconds: 100),
+                                    ),
+                                  ],
+                                  repeatForever: true,
+                                  pause: const Duration(milliseconds: 2000),
+                                  displayFullTextOnTap: true,
+                                  stopPauseOnTap: true,
+                                ),
+                              ),
                             ),
-                            child: AnimatedTextKit(
-                              animatedTexts: [
-                                TypewriterAnimatedText(
-                                  'Tanya Asisten',
-                                  speed: const Duration(milliseconds: 100),
+                          ),
+                          // Icon Stack
+                          Container(
+                            padding: EdgeInsets.all(4.w),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
                                 ),
                               ],
-                              repeatForever: true,
-                              pause: const Duration(milliseconds: 2000),
-                              displayFullTextOnTap: true,
-                              stopPauseOnTap: true,
+                            ),
+                            child: ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
+                                cacheManager: CustomCacheManager(),
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 500,
+                                httpHeaders: const {
+                                  'Referer': 'https://siladesbeng.inovasia.site/',
+                                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                                },
+                                placeholder: (ctx, url) => Container(color: Colors.grey[200]),
+                                errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                      // Icon Stack
-                      Container(
-                        padding: EdgeInsets.all(4.w),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: CachedNetworkImage(
-                            imageUrl: '${ApiConfig.baseUrl}/User/img/logo/logocb.webp',
-                            cacheManager: CustomCacheManager(),
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 500,
-                            httpHeaders: const {
-                              'Referer': 'https://siladesbeng.inovasia.site/',
-                              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                            },
-                            placeholder: (ctx, url) => Container(color: Colors.grey[200]),
-                            errorWidget: (ctx, url, err) => const Icon(Icons.broken_image, color: Colors.grey),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                );
+                },
               ),
-            ),
           ],
         );
       },

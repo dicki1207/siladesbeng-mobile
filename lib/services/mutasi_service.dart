@@ -27,7 +27,7 @@ class MutasiService {
       final response = await http.get(
         Uri.parse('$baseUrl/mutasi'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
@@ -72,7 +72,7 @@ class MutasiService {
         Uri.parse('$baseUrl/mutasi'),
         headers: headers,
         body: body,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 
@@ -103,7 +103,7 @@ class MutasiService {
       final response = await http.delete(
         Uri.parse('$baseUrl/mutasi/$id'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final responseData = json.decode(response.body);
 

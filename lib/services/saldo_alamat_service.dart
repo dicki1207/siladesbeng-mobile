@@ -23,7 +23,7 @@ class SaldoAlamatService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -63,7 +63,7 @@ class SaldoAlamatService {
           'nama_pemilik': namaPemilik,
           if (catatan != null && catatan.isNotEmpty) 'catatan': catatan,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -89,7 +89,7 @@ class SaldoAlamatService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -115,7 +115,7 @@ class SaldoAlamatService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -143,7 +143,7 @@ class SaldoAlamatService {
           'Content-Type': 'application/json',
         },
         body: json.encode(payload),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if ((response.statusCode == 200 || response.statusCode == 201) && data['status'] == 'success') {
@@ -171,7 +171,7 @@ class SaldoAlamatService {
           'Content-Type': 'application/json',
         },
         body: json.encode(payload),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -197,7 +197,7 @@ class SaldoAlamatService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -223,7 +223,7 @@ class SaldoAlamatService {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
       if (response.statusCode == 200 && data['status'] == 'success') {
@@ -241,7 +241,7 @@ class SaldoAlamatService {
       final res = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/api/kemitraan/regions'),
         headers: {'Accept': 'application/json'},
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (res.statusCode == 200) {
         final data = json.decode(res.body);

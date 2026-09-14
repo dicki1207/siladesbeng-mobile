@@ -24,6 +24,9 @@ class _MainWrapperState extends State<MainWrapper> {
   final GlobalKey _newsKey = GlobalKey();
   final GlobalKey _adminPortalKey = GlobalKey();
 
+  // Track tab yang sudah pernah dikunjungi (lazy loading)
+  final Set<int> _initializedTabs = {0}; // Tab 0 (Home) selalu dimuat
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +42,16 @@ class _MainWrapperState extends State<MainWrapper> {
     }
   }
 
+  /// Membangun widget tab hanya jika tab sudah pernah dikunjungi.
+  /// Jika belum, tampilkan placeholder kosong ringan.
+  Widget _buildLazyTab(int index, Widget child) {
+    if (_initializedTabs.contains(index)) {
+      return child;
+    }
+    // Placeholder ringan — tidak memuat API apapun
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isAdmin = _userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin';
@@ -46,43 +59,43 @@ class _MainWrapperState extends State<MainWrapper> {
         ? 'Admin RT'
         : (_userRole == 'rw' ? 'Admin RW' : 'Admin');
 
+    final int profileIndex = isAdmin ? 4 : 3;
+
     final List<Widget> pages = isAdmin
         ? [
-            HomePage(
-              key: _homeKey,
-              onNavigateToProfile: () {
-                setState(() {
-                  _currentIndex = 4; // Switch ke tab Profil (indeks ke-4 jika ada Admin Tab)
-                });
-              },
-              onNavigateToNews: () {
-                setState(() {
-                  _currentIndex = 1; // Switch ke tab Kabar Daerah
-                });
-              },
+            _buildLazyTab(
+              0,
+              HomePage(
+                key: _homeKey,
+                onNavigateToProfile: () {
+                  _navigateToTab(4);
+                },
+                onNavigateToNews: () {
+                  _navigateToTab(1);
+                },
+              ),
             ),
-            KabarDaerahPage(key: _newsKey),
-            AdminPortalPage(key: _adminPortalKey), // Tab Eksekutif Pengurus di Posisi Pusat Footer Nav
-            TransactionHistoryPage(key: _activityKey),
-            ProfilePage(key: _profileKey),
+            _buildLazyTab(1, KabarDaerahPage(key: _newsKey)),
+            _buildLazyTab(2, AdminPortalPage(key: _adminPortalKey)),
+            _buildLazyTab(3, TransactionHistoryPage(key: _activityKey)),
+            _buildLazyTab(4, ProfilePage(key: _profileKey)),
           ]
         : [
-            HomePage(
-              key: _homeKey,
-              onNavigateToProfile: () {
-                setState(() {
-                  _currentIndex = 3; // Switch ke tab Profil (indeks ke-3 untuk warga biasa)
-                });
-              },
-              onNavigateToNews: () {
-                setState(() {
-                  _currentIndex = 1; // Switch ke tab Kabar Daerah
-                });
-              },
+            _buildLazyTab(
+              0,
+              HomePage(
+                key: _homeKey,
+                onNavigateToProfile: () {
+                  _navigateToTab(profileIndex);
+                },
+                onNavigateToNews: () {
+                  _navigateToTab(1);
+                },
+              ),
             ),
-            KabarDaerahPage(key: _newsKey),
-            TransactionHistoryPage(key: _activityKey),
-            ProfilePage(key: _profileKey),
+            _buildLazyTab(1, KabarDaerahPage(key: _newsKey)),
+            _buildLazyTab(2, TransactionHistoryPage(key: _activityKey)),
+            _buildLazyTab(3, ProfilePage(key: _profileKey)),
           ];
 
     return Scaffold(
@@ -93,9 +106,7 @@ class _MainWrapperState extends State<MainWrapper> {
         isAdmin: isAdmin,
         adminRoleLabel: adminLabel,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          _navigateToTab(index);
           final int activityTabIndex = isAdmin ? 3 : 2;
           if (index == activityTabIndex) {
             _activityKey.currentState?.checkLoginStatus();
@@ -105,5 +116,13 @@ class _MainWrapperState extends State<MainWrapper> {
       body: IndexedStack(index: _currentIndex, children: pages),
     );
   }
-}
 
+  /// Navigasi ke tab tertentu. Jika tab belum pernah dimuat,
+  /// tandai sebagai initialized sehingga widget-nya akan di-build.
+  void _navigateToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+      _initializedTabs.add(index); // Tandai tab ini sudah diinisialisasi
+    });
+  }
+}
