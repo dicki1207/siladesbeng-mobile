@@ -15,6 +15,7 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   late Map<String, dynamic> _newsItem;
   int _currentImageIndex = 0;
   List<dynamic> _images = [];
+  final PageController _pageController = PageController();
   
   List<dynamic> _otherNews = [];
   bool _isLoadingOther = true;
@@ -26,6 +27,12 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
     _parseImages();
     _fetchDetails();
     _fetchOtherNews();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _parseImages() {
@@ -105,6 +112,7 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                     )
                   else
                     PageView.builder(
+                      controller: _pageController,
                       itemCount: _images.length,
                       onPageChanged: (index) {
                         setState(() {
@@ -122,30 +130,8 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                         );
                       },
                     ),
-                  
-                  // Image dots indicator
-                  if (_images.length > 1)
-                    Positioned(
-                      bottom: 40,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(_images.length, (index) {
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: _currentImageIndex == index ? 12 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(128),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
 
-                  // Gradient overlay to make back button visible
+                  // Gradient overlay agar panah & tombol back tetap terlihat jelas
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -154,11 +140,98 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                         colors: [
                           Colors.black.withAlpha(150),
                           Colors.transparent,
-                          Colors.black.withAlpha(100),
+                          Colors.black.withAlpha(150),
                         ],
                       ),
                     ),
                   ),
+
+                  // Navigation Arrows & Dots (Slider Interaktif)
+                  if (_images.length > 1) ...[
+                    // Panah Kiri
+                    if (_currentImageIndex > 0)
+                      Positioned(
+                        left: 8,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: InkWell(
+                            onTap: () {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(150),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                    // Panah Kanan
+                    if (_currentImageIndex < _images.length - 1)
+                      Positioned(
+                        right: 8,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: InkWell(
+                            onTap: () {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(150),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.chevron_right, color: Colors.white, size: 28),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                    // Image dots indicator (Gaya Kapsul Hitam Transparan)
+                    Positioned(
+                      bottom: 45,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(120),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: List.generate(_images.length, (index) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  width: _currentImageIndex == index ? 12 : 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(100),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -183,6 +256,7 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. Kategori & Tombol Share
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -192,60 +266,104 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withAlpha(30),
+                          color: Theme.of(context).primaryColor, // Warna solid agar menonjol
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Theme.of(context).primaryColor.withAlpha(50),
-                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context).primaryColor.withAlpha(60),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Text(
-                          _newsItem['category']?.toString() ?? 'Pengumuman',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
+                          (_newsItem['category']?.toString() ?? 'Pengumuman').toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                            color: Colors.white, // Teks putih kontras tinggi
                           ),
                         ),
                       ),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 14,
-                            color: Colors.grey[500],
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _newsItem['date']?.toString() ?? '-',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[500],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      IconButton(
+                        icon: const Icon(Icons.share_outlined),
+                        color: Colors.grey[600],
+                        iconSize: 22,
+                        splashRadius: 20,
+                        onPressed: () {
+                          // TODO: Tambahkan fitur share link berita
+                        },
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  
+                  // 2. Judul Berita
                   Text(
                     _newsItem['title']?.toString() ?? 'Tidak ada judul',
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      height: 1.4,
+                      fontSize: 26, // Lebih besar
+                      fontWeight: FontWeight.w900, // Lebih tebal
+                      letterSpacing: -0.5,
+                      height: 1.35,
                       color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 24),
+                  
+                  // 3. Profil Penulis & Tanggal (Gaya Editorial)
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Theme.of(context).primaryColor.withAlpha(30),
+                        child: Icon(Icons.person_outline, color: Theme.of(context).primaryColor),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pemerintah Desa',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _newsItem['date']?.toString() ?? '-',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.bookmark_border_rounded, color: Colors.grey[400], size: 24),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 24),
                   Divider(color: Colors.grey.withAlpha(50), thickness: 1),
                   const SizedBox(height: 24),
+                  
+                  // 4. Konten Utama (Lebih Gelap & Rapi)
                   Text(
                     _newsItem['desc']?.toString() ?? _newsItem['content']?.toString() ?? _newsItem['description']?.toString() ?? 'Tidak ada konten.',
                     style: TextStyle(
                       fontSize: 16,
-                      height: 1.8,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                      height: 1.85, // Jarak antar baris lebih nyaman
+                      letterSpacing: 0.2, // Spasi antar huruf
+                      // Gunakan warna gelap tegas (slate) di mode terang agar mata tidak sakit
+                      color: Theme.of(context).brightness == Brightness.dark 
+                          ? Colors.white.withAlpha(200) 
+                          : const Color(0xFF2D3748), 
                     ),
                   ),
                   
