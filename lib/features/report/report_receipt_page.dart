@@ -400,7 +400,7 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
                 ],
                ),
                child: Image.asset(
-                'logodomain.png',
+                'assets/images/logodomain.png',
                 width: 28,
                 height: 28,
                 fit: BoxFit.contain,
@@ -899,7 +899,7 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
                  version: QrVersions.auto,
                  size: 115,
                  backgroundColor: Colors.white,
-                 embeddedImage: const AssetImage('logodomain.png'),
+                 embeddedImage: const AssetImage('assets/images/logodomain.png'),
                  embeddedImageStyle: const QrEmbeddedImageStyle(
                   size: Size(26, 26),
                  ),
@@ -913,7 +913,7 @@ Dokumen ini diterbitkan secara sah oleh Sistem E-Government Sila-DesBeng Kabupat
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                  Image.asset(
-                  'logodomain.png',
+                  'assets/images/logodomain.png',
                   width: 18,
                   height: 18,
                   fit: BoxFit.contain,

@@ -16,7 +16,7 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   int _currentImageIndex = 0;
   List<dynamic> _images = [];
   final PageController _pageController = PageController();
-  
+
   List<dynamic> _otherNews = [];
   bool _isLoadingOther = true;
 
@@ -36,9 +36,13 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   }
 
   void _parseImages() {
-    if (_newsItem.containsKey('images') && _newsItem['images'] is List && (_newsItem['images'] as List).isNotEmpty) {
+    if (_newsItem.containsKey('images') &&
+        _newsItem['images'] is List &&
+        (_newsItem['images'] as List).isNotEmpty) {
       _images = List<dynamic>.from(_newsItem['images']);
-    } else if (_newsItem.containsKey('image') && _newsItem['image'] != null) {
+    } else if (_newsItem.containsKey('image') &&
+        _newsItem['image'] != null &&
+        _newsItem['image'].toString().isNotEmpty) {
       _images = [_newsItem['image']];
     }
   }
@@ -46,7 +50,9 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
   Future<void> _fetchDetails() async {
     if (_newsItem['id'] == null) return;
     try {
-      final detail = await NewsService().getNewsDetail(_newsItem['id']);
+      final id = int.tryParse(_newsItem['id'].toString());
+      if (id == null) return;
+      final detail = await NewsService().getNewsDetail(id);
       if (detail != null && mounted) {
         setState(() {
           _newsItem = detail;
@@ -60,14 +66,17 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
 
   Future<void> _fetchOtherNews() async {
     try {
-      final String category = _newsItem['category']?.toString() ?? 'Pengumuman';
-      // If it's Pengumuman, fetch Pengumuman, otherwise try to fetch Berita
-      final String postCat = category.toLowerCase().contains('pengumuman') ? 'Pengumuman' : 'Berita';
-      
-      final news = await NewsService().getNews(postCategory: postCat);
+      // Fetch all news without strict category filter so other news always appears
+      final news = await NewsService().getNews();
       if (mounted) {
+        final currentId = _newsItem['id']?.toString();
+        final filtered = news
+            .where((n) => n['id']?.toString() != currentId)
+            .take(5)
+            .toList();
+
         setState(() {
-          _otherNews = news.where((n) => n['id'] != _newsItem['id']).take(5).toList();
+          _otherNews = filtered;
           _isLoadingOther = false;
         });
       }
@@ -76,422 +85,598 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 320,
-            pinned: true,
-            backgroundColor: Theme.of(context).primaryColor,
+  void _openFullScreenImage(int initialIndex) {
+    if (_images.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
             elevation: 0,
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(30),
-              child: Container(
-                height: 30,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(30),
-                  ),
-                ),
-              ),
+            title: Text(
+              '${initialIndex + 1}/${_images.length}',
+              style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (_images.isEmpty)
-                    Container(
-                      color: Colors.grey[800],
-                      child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                    )
-                  else
-                    PageView.builder(
-                      controller: _pageController,
-                      itemCount: _images.length,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentImageIndex = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return CustomCachedImage(
-                          _images[index]?.toString() ?? '',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[800],
-                            child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
-                          ),
-                        );
-                      },
-                    ),
-
-                  // Gradient overlay agar panah & tombol back tetap terlihat jelas
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withAlpha(150),
-                          Colors.transparent,
-                          Colors.black.withAlpha(150),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Navigation Arrows & Dots (Slider Interaktif)
-                  if (_images.length > 1) ...[
-                    // Panah Kiri
-                    if (_currentImageIndex > 0)
-                      Positioned(
-                        left: 8,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: InkWell(
-                            onTap: () {
-                              _pageController.previousPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(150),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                    // Panah Kanan
-                    if (_currentImageIndex < _images.length - 1)
-                      Positioned(
-                        right: 8,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: InkWell(
-                            onTap: () {
-                              _pageController.nextPage(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(150),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.chevron_right, color: Colors.white, size: 28),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                    // Image dots indicator (Gaya Kapsul Hitam Transparan)
-                    Positioned(
-                      bottom: 45,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(120),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: List.generate(_images.length, (index) {
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  width: _currentImageIndex == index ? 12 : 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: _currentImageIndex == index ? Colors.white : Colors.white.withAlpha(100),
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                );
-                              }),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            leading: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withAlpha(100),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ),
+            centerTitle: true,
           ),
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-              color: Theme.of(context).scaffoldBackgroundColor,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Kategori & Tombol Share
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor, // Warna solid agar menonjol
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(context).primaryColor.withAlpha(60),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          (_newsItem['category']?.toString() ?? 'Pengumuman').toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                            color: Colors.white, // Teks putih kontras tinggi
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.share_outlined),
-                        color: Colors.grey[600],
-                        iconSize: 22,
-                        splashRadius: 20,
-                        onPressed: () {
-                          // TODO: Tambahkan fitur share link berita
-                        },
-                      ),
-                    ],
+          body: PageView.builder(
+            controller: PageController(initialPage: initialIndex),
+            itemCount: _images.length,
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 3.5,
+                child: Center(
+                  child: CustomCachedImage(
+                    _images[index]?.toString() ?? '',
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 16),
-                  
-                  // 2. Judul Berita
-                  Text(
-                    _newsItem['title']?.toString() ?? 'Tidak ada judul',
-                    style: TextStyle(
-                      fontSize: 26, // Lebih besar
-                      fontWeight: FontWeight.w900, // Lebih tebal
-                      letterSpacing: -0.5,
-                      height: 1.35,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // 3. Profil Penulis & Tanggal (Gaya Editorial)
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Theme.of(context).primaryColor.withAlpha(30),
-                        child: Icon(Icons.person_outline, color: Theme.of(context).primaryColor),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Pemerintah Desa',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _newsItem['date']?.toString() ?? '-',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[500],
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(Icons.bookmark_border_rounded, color: Colors.grey[400], size: 24),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  Divider(color: Colors.grey.withAlpha(50), thickness: 1),
-                  const SizedBox(height: 24),
-                  
-                  // 4. Konten Utama (Lebih Gelap & Rapi)
-                  Text(
-                    _newsItem['desc']?.toString() ?? _newsItem['content']?.toString() ?? _newsItem['description']?.toString() ?? 'Tidak ada konten.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.85, // Jarak antar baris lebih nyaman
-                      letterSpacing: 0.2, // Spasi antar huruf
-                      // Gunakan warna gelap tegas (slate) di mode terang agar mata tidak sakit
-                      color: Theme.of(context).brightness == Brightness.dark 
-                          ? Colors.white.withAlpha(200) 
-                          : const Color(0xFF2D3748), 
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Berita Lainnya Section
-                  Text(
-                    'Berita Lainnya',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).textTheme.bodyLarge?.color,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  if (_isLoadingOther)
-                    const Center(child: CircularProgressIndicator())
-                  else if (_otherNews.isEmpty)
-                    Center(
-                      child: Text(
-                        'Tidak ada berita lainnya.',
-                        style: TextStyle(color: Colors.grey[500]),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      height: 220,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: _otherNews.length,
-                        itemBuilder: (context, index) {
-                          final item = _otherNews[index];
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => NewsDetailPage(newsItem: item),
-                                ),
-                              );
-                            },
-                            child: _buildOtherNewsCard(item),
-                          );
-                        },
-                      ),
-                    ),
-                    
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildOtherNewsCard(Map<String, dynamic> item) {
-    String imageUrl = item['image']?.toString() ?? '';
-    if (imageUrl.isEmpty && item['images'] != null && item['images'] is List && (item['images'] as List).isNotEmpty) {
-      imageUrl = item['images'][0].toString();
-    }
-    
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 16, bottom: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 5,
-            offset: Offset(0, 3),
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      // 1. App Bar Bersih & Natural (Tidak ada balok biru saat di-scroll)
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.grey.withAlpha(30),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 18,
+              color: isDark ? Colors.white : const Color(0xFF1E293B),
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.grey.withAlpha(30),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.share_outlined,
+                size: 20,
+                color: isDark ? Colors.white : const Color(0xFF1E293B),
+              ),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tautan berita disalin')),
+                );
+              },
+            ),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: SizedBox(
-              height: 110,
-              width: double.infinity,
-              child: CustomCachedImage(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.image, color: Colors.grey),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['date']?.toString() ?? '',
-                    style: TextStyle(
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 2. Kategori & Tanggal Badge Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withAlpha(60),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    (_newsItem['category']?.toString() ?? 'Pengumuman').toUpperCase(),
+                    style: const TextStyle(
                       fontSize: 11,
-                      color: Colors.grey[500],
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.0,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Expanded(
-                    child: Text(
-                      item['title']?.toString() ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      size: 14,
+                      color: Colors.grey[500],
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _newsItem['date']?.toString() ?? '-',
+                      style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        height: 1.2,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w600,
                       ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // 3. Judul Berita (Besar, Bold, Rapi)
+            Text(
+              _newsItem['title']?.toString() ?? 'Tidak ada judul',
+              style: TextStyle(
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.3,
+                height: 1.35,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // 4. Info Penulis & Lokasi
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF1E293B)
+                    : Theme.of(context).primaryColor.withAlpha(15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Theme.of(context).primaryColor.withAlpha(35),
+                    child: Icon(
+                      Icons.account_balance_rounded,
+                      color: Theme.of(context).primaryColor,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _newsItem['author']?.toString() ?? 'Pemerintah Desa',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                        if (_newsItem['location'] != null &&
+                            _newsItem['location'].toString().trim().isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on_outlined,
+                                size: 12,
+                                color: Colors.grey[500],
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  _newsItem['location'].toString(),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[500],
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 20),
+
+            // 5. Slider Gambar Proporsional (TIDAK KEPOTONG, mirip tampilan web)
+            if (_images.isNotEmpty) ...[
+              _buildImageCard(isDark),
+              const SizedBox(height: 24),
+            ],
+
+            Divider(color: Colors.grey.withAlpha(40), thickness: 1),
+            const SizedBox(height: 18),
+
+            // 6. Konten Artikel
+            SelectableText(
+              _newsItem['desc']?.toString() ??
+                  _newsItem['content']?.toString() ??
+                  _newsItem['description']?.toString() ??
+                  'Tidak ada konten.',
+              style: TextStyle(
+                fontSize: 15.5,
+                height: 1.85,
+                letterSpacing: 0.2,
+                color: isDark
+                    ? Colors.white.withAlpha(210)
+                    : const Color(0xFF2D3748),
+              ),
+            ),
+
+            const SizedBox(height: 36),
+
+            // 7. Bagian Kabar Terkait Lainnya (Sekarang muncul & interaktif)
+            _buildRelatedNewsSection(isDark),
+
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageCard(bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 50 : 25),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: AspectRatio(
+          aspectRatio: 16 / 10, // Proporsi ideal agar foto tidak terpotong
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Gambar Slider
+              PageView.builder(
+                controller: _pageController,
+                itemCount: _images.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentImageIndex = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () => _openFullScreenImage(index),
+                    child: CustomCachedImage(
+                      _images[index]?.toString() ?? '',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[800],
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              // Tombol Zoom / Fullscreen di pojok kanan atas
+              Positioned(
+                top: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: () => _openFullScreenImage(_currentImageIndex),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(140),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.fullscreen_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Panah Navigasi Kiri & Kanan jika gambar > 1
+              if (_images.length > 1) ...[
+                if (_currentImageIndex > 0)
+                  Positioned(
+                    left: 10,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(140),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.chevron_left_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                if (_currentImageIndex < _images.length - 1)
+                  Positioned(
+                    right: 10,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withAlpha(140),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Indikator Dots Kapsul di Bawah Gambar
+                Positioned(
+                  bottom: 12,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withAlpha(140),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(_images.length, (index) {
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: _currentImageIndex == index ? 14 : 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: _currentImageIndex == index
+                                  ? Colors.white
+                                  : Colors.white.withAlpha(100),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRelatedNewsSection(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Kabar Terkait Lainnya',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_isLoadingOther)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (_otherNews.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.grey.withAlpha(25),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Center(
+              child: Text(
+                'Tidak ada kabar lainnya.',
+                style: TextStyle(color: Colors.grey[500], fontSize: 13),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _otherNews.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final item = _otherNews[index];
+              return _buildRelatedNewsTile(item, isDark);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildRelatedNewsTile(Map<String, dynamic> item, bool isDark) {
+    String imageUrl = item['image']?.toString() ?? '';
+    if (imageUrl.isEmpty &&
+        item['images'] != null &&
+        item['images'] is List &&
+        (item['images'] as List).isNotEmpty) {
+      imageUrl = item['images'][0].toString();
+    }
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NewsDetailPage(newsItem: item),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark ? Colors.white.withAlpha(15) : Colors.grey.withAlpha(40),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 30 : 10),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Thumbnail Foto
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 90,
+                height: 70,
+                child: CustomCachedImage(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.image_outlined, color: Colors.grey),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            // Teks Berita
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withAlpha(25),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          (item['category']?.toString() ?? 'Berita').toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        item['date']?.toString() ?? '',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    item['title']?.toString() ?? '',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

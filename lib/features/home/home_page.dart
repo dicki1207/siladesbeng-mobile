@@ -53,6 +53,7 @@ class _HomePageState extends State<HomePage> {
   final Set<String> _failedBannerUrls = {};
   List<dynamic> _announcements = [];
   List<dynamic> _unitPelayanan = [];
+  bool _isUnitPelayananExpanded = false;
   List<dynamic> _availableServices = [];
   List<Map<String, dynamic>> _popularItems = [];
   // _isLoading removed — fallback data renders instantly
@@ -1107,6 +1108,7 @@ class _HomePageState extends State<HomePage> {
               horizontal: 24.w,
             ), // Samakan margin dengan elemen lain
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Unit Pelayanan',
@@ -1115,122 +1117,166 @@ class _HomePageState extends State<HomePage> {
                     color: Theme.of(context).primaryColor,
                   ),
                 ),
+                if (_unitPelayanan.length > 4)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isUnitPelayananExpanded = !_isUnitPelayananExpanded;
+                      });
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withAlpha(20),
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _isUnitPelayananExpanded ? 'Tutup' : 'Lihat Semua',
+                            style: TextStyle(
+                              fontSize: 11.5.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          SizedBox(width: 3.w),
+                          Icon(
+                            _isUnitPelayananExpanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            size: 16.sp,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
           SizedBox(height: 16.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: GridView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 12.0,
-                mainAxisSpacing: 16.0,
-                childAspectRatio: 0.75,
+          AnimatedSize(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOut,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: GridView.builder(
+                key: ValueKey<bool>(_isUnitPelayananExpanded),
+                padding: EdgeInsets.zero,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 12.0,
+                  mainAxisSpacing: 14.0,
+                  childAspectRatio: 0.68, // Lebih tinggi agar teks 2 baris tidak kepotong
+                ),
+                itemCount: _isUnitPelayananExpanded
+                    ? _unitPelayanan.length
+                    : (_unitPelayanan.length > 4 ? 4 : _unitPelayanan.length),
+                itemBuilder: (context, index) {
+                  final item = _unitPelayanan[index];
+                  Color cardColor = Colors.grey;
+                  if (item['color'] == 'blue') cardColor = Colors.blueAccent;
+                  if (item['color'] == 'orange') cardColor = Colors.orangeAccent;
+                  if (item['color'] == 'red') cardColor = Colors.redAccent;
+                  if (item['color'] == 'green') cardColor = Colors.green;
+                  if (item['color'] == 'purple') cardColor = Colors.purple;
+                  if (item['color'] == 'teal') cardColor = Colors.teal;
+
+                  String imgPath =
+                      item['imageUrl']?.toString() ??
+                      item['image']?.toString() ??
+                      '';
+                  String fallbackAsset = 'assets/images/F2.png';
+                  final titleLower = (item['title'] ?? '')
+                      .toString()
+                      .toLowerCase();
+                  if (titleLower.contains('pasar') ||
+                      titleLower.contains('toko') ||
+                      imgPath.contains('PasarDaerah')) {
+                    fallbackAsset = 'assets/images/PasarDaerah.png';
+                  } else if (titleLower.contains('gas') ||
+                      imgPath.contains('F2')) {
+                    fallbackAsset = 'assets/images/F2.png';
+                  } else if (titleLower.contains('lapor') ||
+                      imgPath.contains('lapor')) {
+                    fallbackAsset = 'assets/images/lapor.png';
+                  } else if (titleLower.contains('alat') ||
+                      imgPath.contains('F1')) {
+                    fallbackAsset = 'assets/images/F1.png';
+                  } else if (titleLower.contains('ambulans') ||
+                      titleLower.contains('mobil') ||
+                      imgPath.contains('mobil')) {
+                    fallbackAsset = 'assets/images/mobil.png';
+                  } else if (titleLower.contains('fasilitas') ||
+                      titleLower.contains('gedung') ||
+                      imgPath.contains('fasilitas')) {
+                    fallbackAsset = 'assets/images/fasilitas.png';
+                  }
+
+                  return GestureDetector(
+                    onTap: () => _checkLoginAndProceed(item['action']),
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 56,
+                          width: 56,
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: cardColor.withAlpha(20),
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(color: cardColor.withAlpha(50)),
+                          ),
+                          child: imgPath.startsWith('http')
+                              ? CachedNetworkImage(
+                                  imageUrl: imgPath,
+                                  cacheManager: CustomCacheManager(),
+                                  fit: BoxFit.contain,
+                                  memCacheWidth: 200,
+                                  httpHeaders: const {
+                                    'Referer': 'https://siladesbeng.inovasia.site/',
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                                  },
+                                  placeholder: (ctx, url) => Container(color: Colors.transparent),
+                                  errorWidget: (ctx, url, err) => Image.asset(
+                                    fallbackAsset,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, _, _) =>
+                                        Icon(Icons.storefront_rounded, color: cardColor),
+                                  ),
+                                )
+                              : Image.asset(
+                                  imgPath,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, _, _) => Image.asset(
+                                    fallbackAsset,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (_, _, _) =>
+                                        Icon(Icons.apps, color: cardColor),
+                                  ),
+                                ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Text(
+                          item['title'],
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.5.sp,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                            color: Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              itemCount: _unitPelayanan.length,
-              itemBuilder: (context, index) {
-                final item = _unitPelayanan[index];
-                Color cardColor = Colors.grey;
-                if (item['color'] == 'blue') cardColor = Colors.blueAccent;
-                if (item['color'] == 'orange') cardColor = Colors.orangeAccent;
-                if (item['color'] == 'red') cardColor = Colors.redAccent;
-                if (item['color'] == 'green') cardColor = Colors.green;
-                if (item['color'] == 'purple') cardColor = Colors.purple;
-                if (item['color'] == 'teal') cardColor = Colors.teal;
-
-                String imgPath =
-                    item['imageUrl']?.toString() ??
-                    item['image']?.toString() ??
-                    '';
-                String fallbackAsset = 'assets/images/F2.png';
-                final titleLower = (item['title'] ?? '')
-                    .toString()
-                    .toLowerCase();
-                if (titleLower.contains('pasar') ||
-                    titleLower.contains('toko') ||
-                    imgPath.contains('PasarDaerah')) {
-                  fallbackAsset = 'assets/images/PasarDaerah.png';
-                } else if (titleLower.contains('gas') ||
-                    imgPath.contains('F2')) {
-                  fallbackAsset = 'assets/images/F2.png';
-                } else if (titleLower.contains('lapor') ||
-                    imgPath.contains('lapor')) {
-                  fallbackAsset = 'assets/images/lapor.png';
-                } else if (titleLower.contains('alat') ||
-                    imgPath.contains('F1')) {
-                  fallbackAsset = 'assets/images/F1.png';
-                } else if (titleLower.contains('ambulans') ||
-                    titleLower.contains('mobil') ||
-                    imgPath.contains('mobil')) {
-                  fallbackAsset = 'assets/images/mobil.png';
-                } else if (titleLower.contains('fasilitas') ||
-                    titleLower.contains('gedung') ||
-                    imgPath.contains('fasilitas')) {
-                  fallbackAsset = 'assets/images/fasilitas.png';
-                }
-
-                return GestureDetector(
-                  onTap: () => _checkLoginAndProceed(item['action']),
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 56,
-                        width: 56,
-                        padding: EdgeInsets.all(12.w),
-                        decoration: BoxDecoration(
-                          color: cardColor.withAlpha(20),
-                          borderRadius: BorderRadius.circular(16.r),
-                          border: Border.all(color: cardColor.withAlpha(50)),
-                        ),
-                        child: imgPath.startsWith('http')
-                            ? CachedNetworkImage(
-                                imageUrl: imgPath,
-                                cacheManager: CustomCacheManager(),
-                                fit: BoxFit.contain,
-                                memCacheWidth: 200,
-                                httpHeaders: const {
-                                  'Referer': 'https://siladesbeng.inovasia.site/',
-                                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                                },
-                                placeholder: (ctx, url) => Container(color: Colors.transparent),
-                                errorWidget: (ctx, url, err) => Image.asset(
-                                  fallbackAsset,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, _, _) =>
-                                      Icon(Icons.storefront_rounded, color: cardColor),
-                                ),
-                              )
-                            : Image.asset(
-                                imgPath,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, _, _) => Image.asset(
-                                  fallbackAsset,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, _, _) =>
-                                      Icon(Icons.apps, color: cardColor),
-                                ),
-                              ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        item['title'],
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
             ),
           ),
         ],

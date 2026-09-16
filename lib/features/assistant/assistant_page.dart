@@ -252,7 +252,7 @@ class _AssistantPageState extends State<AssistantPage> {
     children: [
      const CircleAvatar(
       radius: 12,
-      backgroundImage: AssetImage('logodomain.png'),
+      backgroundImage: AssetImage('assets/images/logodomain.png'),
       backgroundColor: Colors.transparent,
      ),
      SizedBox(width: 8.w),
@@ -302,7 +302,7 @@ class _AssistantPageState extends State<AssistantPage> {
      if (!isUser) ...[
       const CircleAvatar(
        radius: 16,
-       backgroundImage: AssetImage('logodomain.png'),
+       backgroundImage: AssetImage('assets/images/logodomain.png'),
        backgroundColor: Colors.transparent,
       ),
       SizedBox(width: 8.w),

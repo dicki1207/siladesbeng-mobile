@@ -171,7 +171,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               // Logo SiladesBeng Resmi
               Center(
                 child: Image.asset(
-                  'logodomain.png',
+                  'assets/images/logodomain.png',
                   height: 90.w,
                   width: 90.w,
                   fit: BoxFit.contain,

@@ -150,7 +150,7 @@ class AboutPage extends StatelessWidget {
               border: Border.all(color: const Color(0xFFBFDBFE), width: 1.5),
             ),
             child: Image.asset(
-              'logodomain.png',
+              'assets/images/logodomain.png',
               width: 54,
               height: 54,
               fit: BoxFit.contain,

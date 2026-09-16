@@ -280,7 +280,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                             child: Opacity(
                               opacity: 0.07,
                               child: Image.asset(
-                                'logodomain.png',
+                                'assets/images/logodomain.png',
                                 width: 260,
                                 height: 260,
                                 fit: BoxFit.contain,
@@ -301,7 +301,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Image.asset(
-                                    'logodomain.png',
+                                    'assets/images/logodomain.png',
                                     height: 44,
                                     width: 44,
                                     fit: BoxFit.contain,
@@ -609,7 +609,7 @@ class _TransactionReceiptPageState extends State<TransactionReceiptPage> {
                                         version: QrVersions.auto,
                                         size: 110.0.sp,
                                         backgroundColor: Colors.white,
-                                        embeddedImage: const AssetImage('logodomain.png'),
+                                        embeddedImage: const AssetImage('assets/images/logodomain.png'),
                                         embeddedImageStyle: const QrEmbeddedImageStyle(
                                           size: Size(26, 26),
                                         ),

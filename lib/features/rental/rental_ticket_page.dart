@@ -160,7 +160,7 @@ class RentalTicketPage extends StatelessWidget {
                   child: Opacity(
                     opacity: 0.06,
                     child: Image.asset(
-                      'logodomain.png',
+                      'assets/images/logodomain.png',
                       width: 280,
                       height: 280,
                       fit: BoxFit.contain,
@@ -190,7 +190,7 @@ class RentalTicketPage extends StatelessWidget {
                         children: [
                           // Logo SiladesBeng
                           Image.asset(
-                            'logodomain.png',
+                            'assets/images/logodomain.png',
                             height: 50,
                             width: 50,
                             fit: BoxFit.contain,
@@ -333,7 +333,7 @@ class RentalTicketPage extends StatelessWidget {
                             version: QrVersions.auto,
                             size: 120.0.sp,
                             backgroundColor: Colors.white,
-                            embeddedImage: const AssetImage('logodomain.png'),
+                            embeddedImage: const AssetImage('assets/images/logodomain.png'),
                             embeddedImageStyle: const QrEmbeddedImageStyle(
                               size: Size(35, 35),
                             ),
