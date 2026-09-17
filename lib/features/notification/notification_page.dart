@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:siladesbeng_mobile/core/api_config.dart';
 import 'package:siladesbeng_mobile/features/notification/models/notification_model.dart';
 import 'package:siladesbeng_mobile/features/notification/notification_detail_page.dart';
+import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
+import 'package:siladesbeng_mobile/services/news_service.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -278,6 +280,26 @@ class _NotificationPageState extends State<NotificationPage> {
     final isRejected =
         lowerTitle.contains('ditolak') || lowerMessage.contains('ditolak');
 
+    if (type == 'berita' || lowerTitle.contains('kabar berita')) {
+      return {
+        'label': 'Kabar Berita',
+        'icon': Icons.newspaper_rounded,
+        'gradient': const [Color(0xFF2563EB), Color(0xFF38BDF8)],
+        'lightBg': const Color(0xFFEFF6FF),
+        'textColor': const Color(0xFF1D4ED8),
+      };
+    }
+
+    if (type == 'pengumuman' || lowerTitle.contains('pengumuman desa')) {
+      return {
+        'label': 'Pengumuman',
+        'icon': Icons.campaign_rounded,
+        'gradient': const [Color(0xFFEA580C), Color(0xFFFB923C)],
+        'lightBg': const Color(0xFFFFF7ED),
+        'textColor': const Color(0xFFC2410C),
+      };
+    }
+
     switch (type) {
       case 'pesan_admin':
         return {
@@ -349,10 +371,70 @@ class _NotificationPageState extends State<NotificationPage> {
     }
   }
 
-  void _openDetail(NotificationModel notif) {
+  Future<void> _openDetail(NotificationModel notif) async {
     if (!notif.isRead) {
       _markAsRead(notif.id, silent: true);
     }
+
+    final isNews = notif.type == 'berita' ||
+        notif.type == 'pengumuman' ||
+        notif.title.contains('[Kabar Berita]') ||
+        notif.title.contains('[Pengumuman Desa]') ||
+        (notif.link != null && notif.link!.contains('announcements'));
+
+    if (isNews) {
+      int? newsId;
+      if (notif.link != null) {
+        final matches = RegExp(r'/(\d+)').allMatches(notif.link!);
+        if (matches.isNotEmpty) {
+          newsId = int.tryParse(matches.last.group(1)!);
+        }
+      }
+
+      String cleanTitle = notif.title
+          .replaceAll('[Kabar Berita]', '')
+          .replaceAll('[Pengumuman Desa]', '')
+          .trim();
+
+      Map<String, dynamic> newsItem = {
+        'id': newsId,
+        'title': cleanTitle.isNotEmpty ? cleanTitle : notif.title,
+        'desc': notif.message,
+        'image': notif.fullImageUrl ?? notif.image,
+        'date': DateFormat('yyyy-MM-dd').format(notif.createdAt),
+        'category': notif.title.contains('[Kabar Berita]') ? 'Berita' : 'Pengumuman',
+      };
+
+      // Jika ada ID atau belum ada, coba cari berita lengkapnya
+      if (newsId == null) {
+        try {
+          final allNews = await NewsService().getNews();
+          final found = allNews.firstWhere(
+            (item) =>
+                item['title'] != null &&
+                cleanTitle.isNotEmpty &&
+                item['title']
+                    .toString()
+                    .toLowerCase()
+                    .contains(cleanTitle.toLowerCase().substring(0, cleanTitle.length.clamp(0, 20))),
+            orElse: () => null,
+          );
+          if (found != null && found is Map) {
+            newsItem = Map<String, dynamic>.from(found);
+          }
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => NewsDetailPage(newsItem: newsItem),
+        ),
+      ).then((_) => _fetchNotifications());
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -367,7 +449,14 @@ class _NotificationPageState extends State<NotificationPage> {
     } else if (_selectedFilter == 'pesan_admin') {
       return _notifications.where((n) => n.type == 'pesan_admin').toList();
     } else if (_selectedFilter == 'status') {
-      return _notifications.where((n) => n.type != 'pesan_admin').toList();
+      return _notifications.where((n) {
+        final isNews = n.type == 'berita' ||
+            n.type == 'pengumuman' ||
+            n.title.contains('[Kabar Berita]') ||
+            n.title.contains('[Pengumuman Desa]') ||
+            (n.link != null && n.link!.contains('announcements'));
+        return n.type != 'pesan_admin' && !isNews;
+      }).toList();
     }
     return _notifications;
   }

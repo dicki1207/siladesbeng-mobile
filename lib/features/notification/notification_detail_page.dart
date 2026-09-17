@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:siladesbeng_mobile/widgets/custom_cached_image.dart';
 import 'package:intl/intl.dart';
 import 'package:siladesbeng_mobile/features/notification/models/notification_model.dart';
+import 'package:siladesbeng_mobile/features/news/news_detail_page.dart';
+import 'package:siladesbeng_mobile/services/news_service.dart';
+import 'package:siladesbeng_mobile/features/transaction/transaction_history_page.dart';
 
 class NotificationDetailPage extends StatelessWidget {
   final NotificationModel notification;
@@ -18,6 +21,26 @@ class NotificationDetailPage extends StatelessWidget {
     final lowerMessage = message.toLowerCase();
     final isRejected =
         lowerTitle.contains('ditolak') || lowerMessage.contains('ditolak');
+
+    if (type == 'berita' || lowerTitle.contains('kabar berita')) {
+      return {
+        'label': 'Kabar Berita',
+        'icon': Icons.newspaper_rounded,
+        'gradient': const [Color(0xFF2563EB), Color(0xFF38BDF8)],
+        'lightBg': const Color(0xFFEFF6FF),
+        'textColor': const Color(0xFF1D4ED8),
+      };
+    }
+
+    if (type == 'pengumuman' || lowerTitle.contains('pengumuman desa')) {
+      return {
+        'label': 'Pengumuman',
+        'icon': Icons.campaign_rounded,
+        'gradient': const [Color(0xFFEA580C), Color(0xFFFB923C)],
+        'lightBg': const Color(0xFFFFF7ED),
+        'textColor': const Color(0xFFC2410C),
+      };
+    }
 
     switch (type) {
       case 'pesan_admin':
@@ -165,6 +188,12 @@ class NotificationDetailPage extends StatelessWidget {
     ).format(notification.createdAt);
 
     final imageUrl = notification.fullImageUrl;
+
+    final bool isNews = notification.type == 'berita' ||
+        notification.type == 'pengumuman' ||
+        notification.title.contains('[Kabar Berita]') ||
+        notification.title.contains('[Pengumuman Desa]') ||
+        (notification.link != null && notification.link!.contains('announcements'));
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0B1120) : const Color(0xFFF8FAFC),
@@ -554,6 +583,68 @@ class NotificationDetailPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (isNews) ...[
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.newspaper_rounded, size: 20),
+                        label: const Text(
+                          'BACA BERITA SELENGKAPNYA',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.5,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        onPressed: () => _navigateToNews(context),
+                      ),
+                    ),
+                  ] else if (['status_berubah', 'status_update', 'pembayaran_masuk', 'pengajuan_selesai', 'delivery_proof'].contains(notification.type)) ...[
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0D9488),
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.receipt_long_rounded, size: 20),
+                        label: Text(
+                          notification.title.toLowerCase().contains('menunggu') 
+                              ? 'LANJUT KE PEMBAYARAN' 
+                              : 'LIHAT RIWAYAT TRANSAKSI',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.5,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TransactionHistoryPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -626,6 +717,57 @@ class NotificationDetailPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _navigateToNews(BuildContext context) async {
+    int? newsId;
+    if (notification.link != null) {
+      final matches = RegExp(r'/(\d+)').allMatches(notification.link!);
+      if (matches.isNotEmpty) {
+        newsId = int.tryParse(matches.last.group(1)!);
+      }
+    }
+
+    String cleanTitle = notification.title
+        .replaceAll('[Kabar Berita]', '')
+        .replaceAll('[Pengumuman Desa]', '')
+        .trim();
+
+    Map<String, dynamic> newsItem = {
+      'id': newsId,
+      'title': cleanTitle.isNotEmpty ? cleanTitle : notification.title,
+      'desc': notification.message,
+      'image': notification.fullImageUrl ?? notification.image,
+      'date': DateFormat('yyyy-MM-dd').format(notification.createdAt),
+      'category': notification.title.contains('[Kabar Berita]') ? 'Berita' : 'Pengumuman',
+    };
+
+    if (newsId == null) {
+      try {
+        final allNews = await NewsService().getNews();
+        final found = allNews.firstWhere(
+          (item) =>
+              item['title'] != null &&
+              cleanTitle.isNotEmpty &&
+              item['title']
+                  .toString()
+                  .toLowerCase()
+                  .contains(cleanTitle.toLowerCase().substring(0, cleanTitle.length.clamp(0, 20))),
+          orElse: () => null,
+        );
+        if (found != null && found is Map) {
+          newsItem = Map<String, dynamic>.from(found);
+        }
+      } catch (_) {}
+    }
+
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NewsDetailPage(newsItem: newsItem),
       ),
     );
   }

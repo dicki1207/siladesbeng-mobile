@@ -85,44 +85,44 @@ class RegionDirectoryService {
     } catch (_) {}
 
     // 2. Fallback: Struktur Organisasi Lengkap & Profesional (Siap Lomba)
-    return _generateFallbackProfile(regionId);
+    return generateFallbackProfile(regionId);
   }
 
-  Map<String, dynamic> _generateFallbackProfile(int regionId) {
+  Map<String, dynamic> generateFallbackProfile(int regionId, {String? regionName, String? regionType}) {
     // Cari detail nama wilayah jika ada di cache
-    String regionName = 'Pemerintah Kabupaten Bengkalis';
-    String regionType = 'kabupaten';
+    String finalRegionName = regionName ?? 'Pemerintah Kabupaten Bengkalis';
+    String finalRegionType = regionType ?? 'kabupaten';
 
-    if (regionId > 0 && _cachedRegions.isNotEmpty) {
+    if (regionId > 0 && _cachedRegions.isNotEmpty && regionName == null) {
       for (var kec in _cachedRegions) {
         if (kec['id'] == regionId) {
-          regionName = kec['name'];
-          regionType = 'kecamatan';
+          finalRegionName = kec['name'];
+          finalRegionType = 'kecamatan';
           break;
         }
         final desas = kec['desas'] as List? ?? [];
         for (var d in desas) {
           if (d['id'] == regionId) {
-            regionName = d['name'];
-            regionType = 'desa';
+            finalRegionName = d['name'];
+            finalRegionType = 'desa';
             break;
           }
         }
       }
     }
 
-    if (regionType == 'desa') {
-      final isPematangDuku = regionName.toLowerCase().contains('pematang duku');
+    if (finalRegionType == 'desa') {
+      final isPematangDuku = finalRegionName.toLowerCase().contains('pematang duku');
       final kadesName = isPematangDuku ? "Bapak Mas'ud" : "Drs. H. Ahmad Fauzi";
 
       return {
         'region': {
           'id': regionId,
-          'name': regionName,
+          'name': finalRegionName,
           'type': 'desa',
           'profile_text': 'Pemerintah Desa berkomitmen memberikan pelayanan prima, transparan, dan terintegrasi melalui ekosistem digital SILA-DesBeng.',
           'contact_phone': '085278901234',
-          'contact_email': 'kontak@${regionName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '')}.desa.id',
+          'contact_email': 'kontak@${finalRegionName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '')}.desa.id',
           'active_services': ['Pasar Daerah', 'Penyewaan Alat', 'Pemesanan Gas', 'Laporan Warga'],
         },
         'structure': [
@@ -133,7 +133,7 @@ class RegionDirectoryService {
               {
                 'id': 101,
                 'name': kadesName,
-                'position': 'Kepala Desa',
+                'position': 'Kepala Desa (Pucuk Pimpinan)',
                 'photo_url': '',
                 'level': 1,
                 'order': 1,
@@ -147,7 +147,7 @@ class RegionDirectoryService {
               {
                 'id': 102,
                 'name': 'M. Ridwan, S.AP.',
-                'position': 'Sekretaris Desa',
+                'position': 'Sekretaris Desa (Sekdes)',
                 'photo_url': '',
                 'level': 2,
                 'order': 1,
@@ -164,12 +164,12 @@ class RegionDirectoryService {
           },
           {
             'level': 3,
-            'level_name': 'Seksi Pelayanan & Pemerintahan',
+            'level_name': 'Badan Permusyawaratan Desa (BPD)',
             'members': [
               {
                 'id': 104,
                 'name': 'Hasan Basri, S.IP.',
-                'position': 'Kasi Pelayanan & Kesejahteraan',
+                'position': 'Ketua BPD',
                 'photo_url': '',
                 'level': 3,
                 'order': 1,
@@ -177,7 +177,7 @@ class RegionDirectoryService {
               {
                 'id': 105,
                 'name': 'Zulkifli, S.H.',
-                'position': 'Kasi Pemerintahan & Trantib',
+                'position': 'Wakil Ketua / Anggota BPD',
                 'photo_url': '',
                 'level': 3,
                 'order': 2,
@@ -216,11 +216,11 @@ class RegionDirectoryService {
           },
         ]
       };
-    } else if (regionType == 'kecamatan') {
+    } else if (finalRegionType == 'kecamatan') {
       return {
         'region': {
           'id': regionId,
-          'name': regionName,
+          'name': finalRegionName,
           'type': 'kecamatan',
           'profile_text': 'Pemerintah Kecamatan sebagai koordinator pelayanan publik dan pembina tata kelola desa di wilayah Kabupaten Bengkalis.',
           'contact_phone': '081234567890',
@@ -235,7 +235,7 @@ class RegionDirectoryService {
               {
                 'id': 201,
                 'name': 'H. Taufik Hidayat, S.STP., M.Si.',
-                'position': 'Camat',
+                'position': 'Camat (Pucuk Pimpinan)',
                 'photo_url': '',
                 'level': 1,
                 'order': 1,
@@ -248,7 +248,7 @@ class RegionDirectoryService {
             'members': [
               {
                 'id': 202,
-                'name': 'Drs. Supardi, M.Si.',
+                'name': 'Dedi Kurniawan, S.Sos.',
                 'position': 'Sekretaris Camat (Sekcam)',
                 'photo_url': '',
                 'level': 2,
@@ -258,12 +258,12 @@ class RegionDirectoryService {
           },
           {
             'level': 3,
-            'level_name': 'Kepala Seksi (Kasi)',
+            'level_name': 'Seksi Pelayanan & Trantib',
             'members': [
               {
                 'id': 203,
-                'name': 'Ir. Hendrianto',
-                'position': 'Kasi Pemberdayaan Masyarakat (PMD)',
+                'name': 'Hj. Siti Aminah, S.IP.',
+                'position': 'Kasi Pemberdayaan Masyarakat',
                 'photo_url': '',
                 'level': 3,
                 'order': 1,
@@ -317,7 +317,7 @@ class RegionDirectoryService {
         'structure': [
           {
             'level': 1,
-            'level_name': 'Pimpinan Daerah',
+            'level_name': 'Kepala Daerah',
             'members': [
               {
                 'id': 1,
@@ -327,18 +327,24 @@ class RegionDirectoryService {
                 'level': 1,
                 'order': 1,
               },
+            ]
+          },
+          {
+            'level': 2,
+            'level_name': 'Wakil Kepala Daerah',
+            'members': [
               {
                 'id': 2,
                 'name': 'Dr. H. Bagus Santoso, M.P.',
                 'position': 'Wakil Bupati Bengkalis',
                 'photo_url': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bagus_Santoso_Wakil_Bupati_Bengkalis.jpg/480px-Bagus_Santoso_Wakil_Bupati_Bengkalis.jpg',
-                'level': 1,
-                'order': 2,
+                'level': 2,
+                'order': 1,
               },
             ]
           },
           {
-            'level': 2,
+            'level': 3,
             'level_name': 'Sekretariat & Pembina',
             'members': [
               {
@@ -346,7 +352,7 @@ class RegionDirectoryService {
                 'name': 'dr. Ersan Saputra TH',
                 'position': 'Sekretaris Daerah Kab. Bengkalis',
                 'photo_url': '',
-                'level': 2,
+                'level': 3,
                 'order': 1,
               },
               {
@@ -354,13 +360,13 @@ class RegionDirectoryService {
                 'name': 'Drs. H. Ismail, M.P.',
                 'position': 'Kepala Dinas PMD (Pembina BUMDes)',
                 'photo_url': '',
-                'level': 2,
+                'level': 3,
                 'order': 2,
               },
             ]
           },
           {
-            'level': 3,
+            'level': 4,
             'level_name': 'Pengurus BUMDes Bersama',
             'members': [
               {

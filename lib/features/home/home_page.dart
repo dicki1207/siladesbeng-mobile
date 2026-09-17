@@ -897,6 +897,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20.r),
                   color: Colors.grey.withAlpha(25),
+                  border: Border.all(color: Colors.grey.withAlpha(40), width: 0.8),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha(15),
@@ -910,7 +911,7 @@ class _HomePageState extends State<HomePage> {
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
                     cacheManager: CustomCacheManager(),
-                    fit: BoxFit.fill,
+                    fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
                     memCacheWidth: 500,
@@ -1125,31 +1126,23 @@ class _HomePageState extends State<HomePage> {
                       });
                     },
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      width: 32.w,
+                      height: 32.w,
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColor.withAlpha(20),
-                        borderRadius: BorderRadius.circular(20.r),
+                        shape: BoxShape.circle,
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _isUnitPelayananExpanded ? 'Tutup' : 'Lihat Semua',
-                            style: TextStyle(
-                              fontSize: 11.5.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          SizedBox(width: 3.w),
-                          Icon(
-                            _isUnitPelayananExpanded
-                                ? Icons.keyboard_arrow_up_rounded
-                                : Icons.keyboard_arrow_down_rounded,
-                            size: 16.sp,
+                      child: Center(
+                        child: AnimatedRotation(
+                          turns: _isUnitPelayananExpanded ? 0.5 : 0.0,
+                          duration: const Duration(milliseconds: 320),
+                          curve: Curves.easeInOutCubic,
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 22.sp,
                             color: Theme.of(context).primaryColor,
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -1157,131 +1150,163 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           SizedBox(height: 16.h),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeInOut,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: GridView.builder(
-                key: ValueKey<bool>(_isUnitPelayananExpanded),
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 12.0,
-                  mainAxisSpacing: 14.0,
-                  childAspectRatio: 0.68, // Lebih tinggi agar teks 2 baris tidak kepotong
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              children: [
+                // Baris 1: 4 Layanan Utama (Selalu Tampil Penuh & Rapi)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int i = 0;
+                        i < (_unitPelayanan.length > 4 ? 4 : _unitPelayanan.length);
+                        i++) ...[
+                      if (i > 0) SizedBox(width: 12.w),
+                      Expanded(
+                        child: _buildUnitPelayananItem(_unitPelayanan[i]),
+                      ),
+                    ],
+                  ],
                 ),
-                itemCount: _isUnitPelayananExpanded
-                    ? _unitPelayanan.length
-                    : (_unitPelayanan.length > 4 ? 4 : _unitPelayanan.length),
-                itemBuilder: (context, index) {
-                  final item = _unitPelayanan[index];
-                  Color cardColor = Colors.grey;
-                  if (item['color'] == 'blue') cardColor = Colors.blueAccent;
-                  if (item['color'] == 'orange') cardColor = Colors.orangeAccent;
-                  if (item['color'] == 'red') cardColor = Colors.redAccent;
-                  if (item['color'] == 'green') cardColor = Colors.green;
-                  if (item['color'] == 'purple') cardColor = Colors.purple;
-                  if (item['color'] == 'teal') cardColor = Colors.teal;
 
-                  String imgPath =
-                      item['imageUrl']?.toString() ??
-                      item['image']?.toString() ??
-                      '';
-                  String fallbackAsset = 'assets/images/F2.png';
-                  final titleLower = (item['title'] ?? '')
-                      .toString()
-                      .toLowerCase();
-                  if (titleLower.contains('pasar') ||
-                      titleLower.contains('toko') ||
-                      imgPath.contains('PasarDaerah')) {
-                    fallbackAsset = 'assets/images/PasarDaerah.png';
-                  } else if (titleLower.contains('gas') ||
-                      imgPath.contains('F2')) {
-                    fallbackAsset = 'assets/images/F2.png';
-                  } else if (titleLower.contains('lapor') ||
-                      imgPath.contains('lapor')) {
-                    fallbackAsset = 'assets/images/lapor.png';
-                  } else if (titleLower.contains('alat') ||
-                      imgPath.contains('F1')) {
-                    fallbackAsset = 'assets/images/F1.png';
-                  } else if (titleLower.contains('ambulans') ||
-                      titleLower.contains('mobil') ||
-                      imgPath.contains('mobil')) {
-                    fallbackAsset = 'assets/images/mobil.png';
-                  } else if (titleLower.contains('fasilitas') ||
-                      titleLower.contains('gedung') ||
-                      imgPath.contains('fasilitas')) {
-                    fallbackAsset = 'assets/images/fasilitas.png';
-                  }
-
-                  return GestureDetector(
-                    onTap: () => _checkLoginAndProceed(item['action']),
-                    child: Column(
-                      children: [
-                        Container(
-                          height: 56,
-                          width: 56,
-                          padding: EdgeInsets.all(12.w),
-                          decoration: BoxDecoration(
-                            color: cardColor.withAlpha(20),
-                            borderRadius: BorderRadius.circular(16.r),
-                            border: Border.all(color: cardColor.withAlpha(50)),
-                          ),
-                          child: imgPath.startsWith('http')
-                              ? CachedNetworkImage(
-                                  imageUrl: imgPath,
-                                  cacheManager: CustomCacheManager(),
-                                  fit: BoxFit.contain,
-                                  memCacheWidth: 200,
-                                  httpHeaders: const {
-                                    'Referer': 'https://siladesbeng.inovasia.site/',
-                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                                  },
-                                  placeholder: (ctx, url) => Container(color: Colors.transparent),
-                                  errorWidget: (ctx, url, err) => Image.asset(
-                                    fallbackAsset,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, _, _) =>
-                                        Icon(Icons.storefront_rounded, color: cardColor),
-                                  ),
-                                )
-                              : Image.asset(
-                                  imgPath,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, _, _) => Image.asset(
-                                    fallbackAsset,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, _, _) =>
-                                        Icon(Icons.apps, color: cardColor),
-                                  ),
-                                ),
-                        ),
-                        SizedBox(height: 6.h),
-                        Text(
-                          item['title'],
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10.5.sp,
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                            color: Theme.of(context).textTheme.bodyMedium?.color,
-                          ),
-                        ),
-                      ],
+                // Baris 2: Animasi Buka-Tutup Halus (Fade & Slide Seamless)
+                if (_unitPelayanan.length > 4)
+                  AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 320),
+                    firstCurve: Curves.easeInOutCubic,
+                    secondCurve: Curves.easeInOutCubic,
+                    sizeCurve: Curves.easeInOutCubic,
+                    crossFadeState: _isUnitPelayananExpanded
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    firstChild: const SizedBox(width: double.infinity, height: 0),
+                    secondChild: Padding(
+                      padding: EdgeInsets.only(top: 14.h),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (int i = 4; i < _unitPelayanan.length; i++) ...[
+                            if (i > 4) SizedBox(width: 12.w),
+                            Expanded(
+                              child: _buildUnitPelayananItem(_unitPelayanan[i]),
+                            ),
+                          ],
+                          // Slot transparan penyeimbang agar lebar kartu baris 2 persis sama dengan baris 1
+                          for (int i = 0; i < (4 - (_unitPelayanan.length - 4)); i++) ...[
+                            SizedBox(width: 12.w),
+                            const Expanded(child: SizedBox()),
+                          ],
+                        ],
+                      ),
                     ),
-                  );
-                },
-              ),
+                  ),
+              ],
             ),
           ),
         ],
       ),
     ),
+    );
+  }
+
+  Widget _buildUnitPelayananItem(dynamic item) {
+    Color cardColor = Colors.grey;
+    if (item['color'] == 'blue') cardColor = Colors.blueAccent;
+    if (item['color'] == 'orange') cardColor = Colors.orangeAccent;
+    if (item['color'] == 'red') cardColor = Colors.redAccent;
+    if (item['color'] == 'green') cardColor = Colors.green;
+    if (item['color'] == 'purple') cardColor = Colors.purple;
+    if (item['color'] == 'teal') cardColor = Colors.teal;
+
+    String imgPath =
+        item['imageUrl']?.toString() ??
+        item['image']?.toString() ??
+        '';
+    String fallbackAsset = 'assets/images/F2.png';
+    final titleLower = (item['title'] ?? '')
+        .toString()
+        .toLowerCase();
+    if (titleLower.contains('pasar') ||
+        titleLower.contains('toko') ||
+        imgPath.contains('PasarDaerah')) {
+      fallbackAsset = 'assets/images/PasarDaerah.png';
+    } else if (titleLower.contains('gas') ||
+        imgPath.contains('F2')) {
+      fallbackAsset = 'assets/images/F2.png';
+    } else if (titleLower.contains('lapor') ||
+        imgPath.contains('lapor')) {
+      fallbackAsset = 'assets/images/lapor.png';
+    } else if (titleLower.contains('alat') ||
+        imgPath.contains('F1')) {
+      fallbackAsset = 'assets/images/F1.png';
+    } else if (titleLower.contains('ambulans') ||
+        titleLower.contains('mobil') ||
+        imgPath.contains('mobil')) {
+      fallbackAsset = 'assets/images/mobil.png';
+    } else if (titleLower.contains('fasilitas') ||
+        titleLower.contains('gedung') ||
+        imgPath.contains('fasilitas')) {
+      fallbackAsset = 'assets/images/fasilitas.png';
+    }
+
+    return GestureDetector(
+      onTap: () => _checkLoginAndProceed(item['action']),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 56,
+            width: 56,
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: cardColor.withAlpha(20),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: cardColor.withAlpha(50)),
+            ),
+            child: imgPath.startsWith('http')
+                ? CachedNetworkImage(
+                    imageUrl: imgPath,
+                    cacheManager: CustomCacheManager(),
+                    fit: BoxFit.contain,
+                    memCacheWidth: 200,
+                    httpHeaders: const {
+                      'Referer': 'https://siladesbeng.inovasia.site/',
+                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                    },
+                    placeholder: (ctx, url) => Container(color: Colors.transparent),
+                    errorWidget: (ctx, url, err) => Image.asset(
+                      fallbackAsset,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) =>
+                          Icon(Icons.storefront_rounded, color: cardColor),
+                    ),
+                  )
+                : Image.asset(
+                    imgPath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => Image.asset(
+                      fallbackAsset,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) =>
+                          Icon(Icons.apps, color: cardColor),
+                    ),
+                  ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            item['title'] ?? '',
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10.5.sp,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1291,7 +1316,7 @@ class _HomePageState extends State<HomePage> {
     if (_popularItems.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      margin: EdgeInsets.only(top: 24.h),
+      margin: EdgeInsets.only(top: 6.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
