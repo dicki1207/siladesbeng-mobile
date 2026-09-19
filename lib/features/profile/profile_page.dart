@@ -32,9 +32,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   late final ShowcaseView _showcaseView;
   final GlobalKey _keyVerification = GlobalKey();
-  final GlobalKey _keyActivity = GlobalKey();
-  final GlobalKey _keyRtRw = GlobalKey();
-  final GlobalKey _keyEditProfile = GlobalKey();
 
   bool _isLoggedIn = false;
   String _name = 'Warga Desa';
@@ -53,10 +50,6 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _showcaseView = ShowcaseView.register(scope: 'profile');
     _loadProfile();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndStartShowcase(
-);
-    });
   }
 
   @override
@@ -65,30 +58,24 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   List<GlobalKey> get _activeShowcaseKeys {
-    List<GlobalKey> keys = [];
-    if (_isLoggedIn) {
-      keys.addAll([_keyVerification, _keyActivity]);
-      if (_userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin') {
-        keys.add(_keyRtRw);
-      }
-      keys.add(_keyEditProfile);
-    } else {
-      keys.add(_keyActivity);
-      if (_userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin') {
-        keys.add(_keyRtRw);
-      }
+    // Tur mati total untuk tamu dan warga yang sudah terverifikasi
+    if (!_isLoggedIn || _isVerified) {
+      return [];
     }
-    return keys;
+    // Hanya sorot 1 hal baru yang penting: Aktivasi Akun Warga
+    return [_keyVerification];
   }
 
-  Future<void> _checkAndStartShowcase(
-) async {
+  Future<void> _checkAndStartShowcase() async {
     try {
+      // Jangan pernah jalankan tur jika belum login atau sudah terverifikasi
+      if (!_isLoggedIn || _isVerified) return;
+
       final prefs = await SharedPreferences.getInstance();
       final hasSeenTour = prefs.getBool('has_seen_profile_tour') ?? false;
       if (!hasSeenTour && mounted) {
         await Future.delayed(const Duration(milliseconds: 600));
-        if (mounted) {
+        if (mounted && _isLoggedIn && !_isVerified && _activeShowcaseKeys.isNotEmpty) {
           _showcaseView.startShowCase(_activeShowcaseKeys);
           await prefs.setBool('has_seen_profile_tour', true);
         }
@@ -124,6 +111,10 @@ class _ProfilePageState extends State<ProfilePage> {
       _imageUrl = prefs.getString('profile_image_url');
       _isVerified = prefs.getBool('is_verified') ?? false;
       _userRole = prefs.getString('user_role') ?? 'warga';
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndStartShowcase();
     });
 
     // Verifikasi token ke server di latar belakang
@@ -233,6 +224,7 @@ class _ProfilePageState extends State<ProfilePage> {
     await prefs.remove('profile_image');
     await prefs.remove('user_role');
     await prefs.remove('is_verified');
+    await prefs.remove('has_seen_profile_tour');
     if (!context.mounted) return;
 
     if (!forced) {
@@ -962,15 +954,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _isVerified
-                                ? Icons.verified_rounded
-                                : Icons.person_outline_rounded,
+                            !_isLoggedIn
+                                ? Icons.person_outline_rounded
+                                : (_isVerified
+                                    ? Icons.verified_rounded
+                                    : Icons.person_outline_rounded),
                             color: Colors.white,
                             size: 15.sp,
                           ),
                           SizedBox(width: 5.w),
                           Text(
-                            _isVerified ? 'Terverifikasi' : 'Warga',
+                            !_isLoggedIn
+                                ? 'Mode Tamu'
+                                : (_isVerified ? 'Terverifikasi' : 'Warga'),
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 12.sp,
@@ -1012,9 +1008,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
                       descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
                       key: _keyVerification,
-                      title: 'Verifikasi & KTP Digital',
+                      title: 'Aktivasi Akun Warga',
                       description:
-                          'Lengkapi data NIK untuk verifikasi akun, membuka fitur RT/RW, serta mengakses KTP Digital resmi.',
+                          'Lengkapi data diri Anda untuk menikmati semua layanan resmi desa.',
                       child: _buildProfileHeaderCard(margin: EdgeInsets.zero),
                     ),
                   ),
@@ -1094,40 +1090,24 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   SizedBox(height: 12.h),
                   _buildMenuGroup(context, [
-                    Showcase(
-                      titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
-                      descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
-                      key: _keyActivity,
+                    _buildMenuTile(
+                      context,
+                      icon: Icons.receipt_long_rounded,
                       title: 'Riwayat Aktivitas',
-                      description:
-                          'Cek status pelaporan pengaduan, penyewaan fasilitas/alat BUMDes, serta riwayat belanja Anda.',
-                      child: _buildMenuTile(
-                        context,
-                        icon: Icons.receipt_long_rounded,
-                        title: 'Riwayat Aktivitas',
-                        targetPage: const TransactionHistoryPage(),
-                        isFirst: true,
-                        isLast: false,
-                        onTapOverride: !_isLoggedIn ? () => _navigateToLogin() : null,
-                      ),
+                      targetPage: const TransactionHistoryPage(),
+                      isFirst: true,
+                      isLast: false,
+                      onTapOverride: !_isLoggedIn ? () => _navigateToLogin() : null,
                     ),
                     if (_userRole == 'rt' || _userRole == 'rw' || _userRole == 'admin')
-                      Showcase(
-                        titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
-                        descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
-                        key: _keyRtRw,
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.admin_panel_settings_rounded,
                         title: 'Portal Pengurus RT / RW',
-                        description:
-                            'Layanan administrasi dan persetujuan permohonan warga bagi pengurus RT dan RW.',
-                        child: _buildMenuTile(
-                          context,
-                          icon: Icons.admin_panel_settings_rounded,
-                          title: 'Portal Pengurus RT / RW',
-                          subtitle: 'Layanan administrasi & pengurus wilayah',
-                          targetPage: const AdminPortalPage(),
-                          isFirst: false,
-                          isLast: false,
-                        ),
+                        subtitle: 'Layanan administrasi & pengurus wilayah',
+                        targetPage: const AdminPortalPage(),
+                        isFirst: false,
+                        isLast: false,
                       ),
                     _buildMenuTile(
                       context,
@@ -1137,16 +1117,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       targetPage: const DomicileTransferPage(),
                       isFirst: false,
                       isLast: false,
-                      onTapOverride: !_isVerified 
-                          ? () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Anda belum terverifikasi. Silakan lakukan Verifikasi Akun terlebih dahulu untuk menggunakan fitur Mutasi.'),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                            }
-                          : null,
+                      onTapOverride: !_isLoggedIn
+                          ? () => _navigateToLogin()
+                          : (!_isVerified
+                              ? () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Anda belum terverifikasi. Silakan lakukan Aktivasi Akun terlebih dahulu untuk menggunakan fitur Mutasi.'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                }
+                              : null),
                     ),
                     _buildMenuTile(
                       context,
@@ -1179,20 +1161,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   SizedBox(height: 14.h),
                   _buildMenuGroup(context, [
                     if (_isLoggedIn) ...[
-                      Showcase(
-                        titleTextStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700, color: Color(0xFF0F172A), letterSpacing: -0.2),
-                        descTextStyle: TextStyle(fontSize: 12.0.sp, fontWeight: FontWeight.w400, color: Color(0xFF475569), height: 1.35),
-                        key: _keyEditProfile,
+                      _buildMenuTile(
+                        context,
+                        icon: Icons.manage_accounts_rounded,
                         title: 'Edit Profil & Data Diri',
-                        description: 'Ubah informasi identitas dan domisili Anda.',
-                        child: _buildMenuTile(
-                          context,
-                          icon: Icons.manage_accounts_rounded,
-                          title: 'Edit Profil & Data Diri',
-                          targetPage: const EditProfilePage(),
-                          isFirst: true,
-                          isLast: false,
-                        ),
+                        targetPage: const EditProfilePage(),
+                        isFirst: true,
+                        isLast: false,
                       ),
                       _buildMenuTile(
                         context,
